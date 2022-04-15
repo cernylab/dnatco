@@ -1,0 +1,26 @@
+{
+    "compilerOptions": {
+        "declaration": true,
+        "declarationMap": true,
+        "incremental": true,
+        "lib": [ "es2015", "es2016", "dom" ],
+        "module": "commonjs",
+        "target": "es2016",
+        "jsx": "react",
+
+        "alwaysStrict": true,
+        "noImplicitThis": true,
+        "strict": true,
+
+        "noUnusedLocals": true,
+        "esModuleInterop": true,
+
+        "moduleResolution": "node",
+        "inlineSourceMap": true,
+        "inlineSources": true,
+
+        "outDir": "lib",
+        "rootDir": "src"
+    },
+    "include": [ "src/**/*" ]
+}

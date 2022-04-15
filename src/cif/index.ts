@@ -1,0 +1,184 @@
+import { Category, Schema } from './categories';
+import { Parser } from './parser';
+import { KnownCategories } from './register';
+
+function toArray<T>(list: (string|null)[], conv: (v: string) => T) {
+    const array = new Array<T|null>(list.length);
+    for (let idx = 0; idx < list.length; idx++) {
+        const v = list[idx];
+        if (v === null)
+            array[idx] = null;
+        else
+            array[idx] = conv(v);
+    }
+
+    return array;
+}
+
+export namespace Cif {
+    export type Block = {
+        name: string;
+        tables: Map<string, Table<any>>;
+    }
+
+    export class Column<T> {
+        constructor(readonly values: T[]|null, readonly cifType: Schema.CifType) {
+        }
+
+        hasValues() {
+            return this.values !== null;
+        }
+
+        value(row: number): T|null {
+            if (this.values === null)
+                throw new Error('Column has no values');
+            return this.values[row];
+        }
+    }
+
+    export type Row<S extends Schema.Schema> = {
+        [K in keyof S]: S[K]['T']|null;
+    }
+
+    export function Row<S extends Schema.Schema>(table: Table<S>, row: number): Row<S> {
+        const r: Partial<Row<S>> = {};
+        const schema = TableAsSchema(table);
+
+        for (const key in schema) {
+            const col = table[key];
+            r[key as keyof Row<S>] = col.hasValues() ? col.value(row) : null;
+        }
+
+        return r as Row<S>;
+    }
+
+    const TableBase = {
+        _rowCount: 0,
+    };
+    export type TableBase = typeof TableBase;
+    export type Table<S extends Schema.Schema> = {
+        [K in keyof S]: Column<S[K]['T']>;
+    } & TableBase;
+
+    export function TableAsSchema<S extends Schema.Schema, T = any>(table: Table<S>) {
+        const schema: Record<string, Schema.CifType<T>> = {};
+
+        for (const key in table) {
+            if (!(key in TableBase))
+                schema[key] = table[key].cifType;
+        }
+
+        return schema as S;
+    }
+
+    function handleRecord<S extends Schema.Schema>(data: Record<string, (string|null)[]>, schema: S, name: string): Table<S> {
+        const accum: Record<string, Column<any>> = {};
+
+        let rowCount = 0;
+        for (const column in data) {
+            if (rowCount === 0)
+                rowCount = data[column].length;
+            else if (rowCount !== data[column].length)
+                throw new Error(`Mismatching number of columns in category ${name}`);
+        }
+
+        for (const column in schema) {
+            const col = schema[column];
+
+            if (!(column in data)) {
+                if (col.mandatory)
+                    throw new Error(`Column ${column} is mandatory but not present in ${name}`);
+                else
+                    accum[column] = new Column(null, col);
+            } else {
+                const list = data[column];
+
+                try {
+                    if (Schema.isDate(col)) {
+                        accum[column] = new Column(toArray(list, Schema.toDate), col);
+                    } else if (Schema.isEnum(col)) {
+                        accum[column] = new Column(toArray(list, x => Schema.toEnum(x, col)), col);
+                    } else {
+                        switch (col.cifType) {
+                        case 'float':
+                            accum[column] = new Column(toArray(list, Schema.toFloat), col);
+                            break;
+                        case 'int':
+                            accum[column] = new Column(toArray(list, Schema.toInt), col);
+                            break;
+                        case 'str':
+                            accum[column] = new Column(toArray(list, Schema.toStr), col);
+                            break;
+                        case 'time':
+                            accum[column] = new Column(toArray(list, Schema.toTime), col);
+                            break;
+                        }
+                    }
+                } catch (e) {
+                    throw new Error(`Cannot process category ${schema.name}, field ${column} is invalid: ${e}`);
+                }
+            }
+        }
+
+        return { _rowCount: rowCount, ...accum } as Table<S>;
+    }
+
+    function loopify(data: Record<string, string|null>) {
+        const loop: Record<keyof typeof data, (string|null)[]> = {};
+
+        for (const prop in data)
+            loop[prop] = [data[prop]];
+
+        return loop;
+    }
+
+    export class Cif {
+        constructor(private readonly blocks: Block[], readonly raw: string) {
+        }
+
+        get blockCount() {
+            return this.blocks.length;
+        }
+
+        hasTable<S extends Schema.Schema>(category: Category<S>, block = 0) {
+            return this.blocks[block].tables.has(category.name);
+        }
+
+        table<S extends Schema.Schema>(category: Category<S>, block = 0): Table<S> {
+            const tbl = this.blocks[block].tables.get(category.name);
+            if (!tbl)
+                throw new Error(`No table ${category.name} in cif file`);
+            return tbl as Table<S>;
+        }
+    }
+
+    export function read(data: string) {
+        const cif = Parser.parse(data);
+
+        const blocks = new Array<Block>();
+
+        for (const block of cif) {
+            const tables = new Map<string, any>();
+
+            for (const name in block.categories) {
+                const cat = block.categories[name];
+
+                const template = KnownCategories.find(x => x.name === name);
+                if (template) {
+                    if (Parser.isLoop(cat)) {
+                        const table = handleRecord(cat.data, template.schema, template.name);
+                        tables.set(name, table);
+                    } else if (Parser.isPairs(cat)) {
+                        const loop = loopify(cat.data);
+                        const table = handleRecord(loop, template.schema, template.name);
+                        tables.set(name, table);
+                    }
+                }
+            }
+
+            blocks.push({ name: block.name, tables });
+        }
+
+        return new Cif(blocks, data);
+    }
+}
