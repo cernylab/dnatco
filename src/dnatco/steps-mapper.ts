@@ -121,35 +121,31 @@ export namespace StepsMapper {
         next.fill(-1);
 
         for (let idx = 1; idx < orderedSteps.length; idx++) {
-            const prevStep = orderedSteps[idx - 1];
             const step = orderedSteps[idx];
-            // Can this step be connected to the previous step?
-            if (prevStep.model === step.model && prevStep.chain === step.chain) {
-                // Simple case where we do not bifrucate due to alternate positions
-                if (prevStep.altPos2 === '' && step.altPos1 === '') {
-                    next[idx - 1] = idx; // If we bifrucate on alternate positions, we will overwrite previous value. Is this a problem?
-                    previous[idx] = idx - 1;
-                } else if (step.altPos1 !== '') {
-                    // We are in alternate positions bifrucation. Look further back to find the correct previous step
-                    let jdx = idx - 1;
-                    for (; jdx >= 0; jdx--) {
-                        const candidate = orderedSteps[jdx];
-                        if (candidate.altPos2 === step.altPos1) {
-                            next[jdx] = idx;
-                            previous[idx] = jdx;
-                            break;
-                        }
-                    }
-                    // We could not find any matching previous step
-                    // NOTE: This does not make any sense and it is actually a defect in DNATCO.
-                    // We cannot do anything about it except log a warning and revisit this once the issue in DNATCO is fixed.
-                    if (jdx === -1)
-                        console.warn(`Could not find previous step for a step ${step.name} which has alternate positions`);
-                } else {
-                    // There is a "third" option with step.altPos1 === '' and prevStep.altPos2 !== '' but this should not happen in well-formed data
-                    console.warn(`altPos1 for step ${step.name} is empty but altPos2 of ${prevStep.name} is set to ${prevStep.altPos2}. This does not make sense.`);
+
+            console.log(`Chaining ${step.name}`);
+
+            let found = false;
+            for (let sdx = idx - 1; sdx >= 0; sdx--) {
+                const candidate = orderedSteps[sdx];
+
+                // Can this step be connected to the previous step?
+                if (!(candidate.model === step.model && candidate.chain === step.chain))
+                    break; // It cannot. Assume that we ran outside the chain and abandon this step
+
+                //console.log(`Trying ${candidate.name} against ${step.name}`);
+
+                if (candidate.resNo2 !== step.resNo1) // Can this step overlap the previous step?
+                    continue; // They cannot, look further back
+
+                if (candidate.altPos2 === step.altPos1) {
+                    found = true;
+                    next[sdx] = idx;
+                    previous[idx] = sdx;
                 }
             }
+            if (!found)
+                console.warn(`Could not find previous step for step ${step.name}`);
         }
 
         return {
