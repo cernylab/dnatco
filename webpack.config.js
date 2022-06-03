@@ -44,7 +44,7 @@ const sharedConfig = {
                         },
                     },
                 ],
-            },
+            }
         ],
     },
     plugins: [
@@ -59,9 +59,13 @@ const sharedConfig = {
     resolve: {
         modules: [
             'node_modules',
-            path.resolve(__dirname, 'lib/')
+            path.resolve(__dirname, 'jsLLKA/'),
+            path.resolve(__dirname, 'lib/'),
         ],
     },
+    experiments: {
+        topLevelAwait: true,
+    }
 };
 
 function createApp(name) {

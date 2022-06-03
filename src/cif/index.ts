@@ -115,21 +115,12 @@ export namespace Cif {
                         }
                     }
                 } catch (e) {
-                    throw new Error(`Cannot process category ${schema.name}, field ${column} is invalid: ${e}`);
+                    throw new Error(`Cannot process category ${name}, field ${column} is invalid: ${e}`);
                 }
             }
         }
 
         return { _rowCount: rowCount, ...accum } as Table<S>;
-    }
-
-    function loopify(data: Record<string, string|null>) {
-        const loop: Record<keyof typeof data, (string|null)[]> = {};
-
-        for (const prop in data)
-            loop[prop] = [data[prop]];
-
-        return loop;
     }
 
     export class Cif {
@@ -165,14 +156,8 @@ export namespace Cif {
 
                 const template = KnownCategories.find(x => x.name === name);
                 if (template) {
-                    if (Parser.isLoop(cat)) {
-                        const table = handleRecord(cat.data, template.schema, template.name);
-                        tables.set(name, table);
-                    } else if (Parser.isPairs(cat)) {
-                        const loop = loopify(cat.data);
-                        const table = handleRecord(loop, template.schema, template.name);
-                        tables.set(name, table);
-                    }
+                    const table = handleRecord(cat, template.schema, template.name);
+                    tables.set(name, table);
                 }
             }
 

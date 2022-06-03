@@ -67,7 +67,7 @@ export class App extends WithSubscriptions<Partial<App.Props>, State> {
             this.ingestionInProgress = false;
 
             return (e as Error).toString();
-        };
+        }
     }
 
     private tryIngestCif(result: Result<string>) {
@@ -167,13 +167,21 @@ export namespace App {
     }
 }
 
-const ReDNATCO = {
-    start: (config: Partial<App.Props>) => {
-        ReactDOM.render(
-            <App {...config} />,
-            document.getElementById('app')
-        );
-    },
-};
+async function getConfig(): Promise<Partial<App.Props>> {
+    try {
+        return await (await fetch('./config.json')).json();
+    } catch (e) {
+        return {};
+    }
+}
 
-(window as any).ReDNATCO = ReDNATCO;
+async function bootstrap() {
+    const config = await getConfig();
+
+    ReactDOM.render(
+        <App {...config} />,
+        document.getElementById('app')
+    );
+}
+
+bootstrap();

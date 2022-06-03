@@ -35,7 +35,7 @@ export class Atom {
 
 export class Residue {
     readonly atoms = new Array<Atom>();
-    readonly authNum: string;
+    readonly authNum: number;
     readonly authCompound: string;
     readonly compound: string;
 
@@ -43,7 +43,7 @@ export class Residue {
         const fr = rows[0];
 
         this.compound = fr.label_comp_id!.trim();
-        this.authNum = fr.auth_seq_id ?? fr.label_seq_id?.toString() ?? '';
+        this.authNum = fr.auth_seq_id ?? fr.label_seq_id!;
         this.authCompound = (fr.auth_comp_id ?? fr.label_comp_id)!.trim();
 
         for (const row of rows)

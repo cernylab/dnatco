@@ -4,7 +4,7 @@
         "declarationMap": true,
         "incremental": true,
         "lib": [ "es2015", "es2016", "dom" ],
-        "module": "commonjs",
+        "module": "es6",
         "target": "es2016",
         "jsx": "react",
 
@@ -20,7 +20,12 @@
         "inlineSources": true,
 
         "outDir": "lib",
-        "rootDir": "src"
+        "rootDir": "src",
+
+        "baseUrl": ".",
+        "paths": {
+            "jsLLKA": [ "jsLLKA", "jsLLKA/@types" ]
+        }
     },
     "include": [ "src/**/*" ]
 }

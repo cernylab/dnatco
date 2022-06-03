@@ -114,16 +114,16 @@ export namespace NtC {
     export const Step = {
         id: 0,
         name: '',
-        chain1: '',
+        chain: '',
+        model: 0,
         resNo1: 0,
         base1: 'A' as NucleicBase,
         altPos1: '',
-        chain2: '',
         resNo2: 0,
         base2: 'A' as NucleicBase,
         altPos2: '',
-        model: 0,
         NtC: 'NANT' as Conformer,
+        closestNtC: 'NANT' as Conformer,
     };
     export type Step = typeof Step;
 }

@@ -1,279 +1,350 @@
-/* BEWARE, BEWARE, the code below is terrible */
+export type Category = Record<string, (string|null)[]>;
 
-function _ln(data: string): { idx: number, line: string } {
-    const idx = data.indexOf('\n');
-    if (idx < 0)
-        return { idx: -1, line: '' };
-    return { idx, line: data.slice(0, idx) };
-}
+export class Block {
+    anonymousCategoriesCount = 0;
+    categories: Record<string, Category> = {};
 
-function _lnt(data: string): { idx: number, line: string } {
-    const l = _ln(data);
-    return { idx: l.idx, line: l.line.trim() };
-}
+    constructor(public readonly name: string) {
+        this.name = name;
 
-function checkQuoted(s: string) {
-    if (s.length < 2)
-        return { isQuoted: false, quoteChar: '' };
-    const ch = s[0];
-    return {
-        isQuoted: ch === '\'' || ch === '"',
-        quoteChar: ch
-    };
-}
-
-function replaceEvery(s: string, what: string, by: string) {
-    let idx = s.indexOf(what);
-    while(idx >= 0) {
-        s = s.replace(what, by);
-        idx = s.indexOf(what);
-    }
-    return s;
-}
-
-function parseBlock(line: string) {
-    const toks = line.split('_');
-    if (toks.length !== 2)
-        throw new Error('Invalid data block line');
-    if (toks[1].length < 1)
-        throw new Error('Block name has no name');
-    return toks[1];
-}
-
-function parseLoopBody(data: string, headers: string[]): { loop: Parser.Loop, tail: string } {
-    let loop: Parser.Loop = {
-        kind: 'loop',
-        data: {},
+        this.categories = {};
     }
 
-    for (const h of headers)
-        loop.data[h] = [];
+    add(category: string|null, keyword: string, value: string) {
+        if (category === null)
+            category = this.nextAnonymousCategoryName();
 
-    while (data.length > 0) {
-        let { idx, line } = _lnt(data);
-        if (idx < 0)
-            throw new Error('mmCif fle unexpectedly ended in the middle of a loop body');
+        const actualValue = (value === '?' || value === '.') ? null : value;
 
-        if (line.startsWith('#'))
-            return { loop, tail: data.slice(idx + 1) };
+        if (this.categories[category] === undefined)
+            this.categories[category] = {};
+        if (this.categories[category][keyword] === undefined)
+            this.categories[category][keyword] = [actualValue];
+        else
+            this.categories[category][keyword].push(actualValue);
+    }
 
-        let content: string[] = [];
+    nextAnonymousCategoryName() {
+        return `anonymous_${this.anonymousCategoriesCount++}`;
+    }
+}
 
-        while (content.length < headers.length) {
-            if (data.length < 1)
-                throw new Error('mmCif file unexpectedly ended in the middle of a loop body');
+const TabCharCode         =  9;
+const NLCharCode          = 10;
+const SpaceCharCode       = 32;
+const DoubleQuoteCharCode = 34;
+const HashCharCode        = 35;
+const SingleQuoteCharCode = 39;
+const SemicolonCharCode   = 59;
+const UnderscoreCharCode  = 95;
 
-            if (line.length < 1) {
-                data = data.slice(idx + 1);
-                ({ idx, line } = _lnt(data));
-            } else if (line[0] === ';') {
-                const kdx = data.slice(1).search(/^;\n/gm);
-                if (kdx < 0)
-                    throw new Error('Multiline entry without terminating semicolon');
-                const mline = data.slice(1, kdx);
-                content.push(replaceEvery(mline, '\n', ''));
-                data = data.slice(kdx + 2); // +2 because we need to skip the newline too
-                ({ idx, line } = _lnt(data));
-            } else {
-                while (line.length > 0) {
-                    const { isQuoted, quoteChar } = checkQuoted(line);
-                    const isBlockEnd = isQuoted ? (ch: string) => ch === quoteChar : (ch: string) => ch === ' ' || ch === '\t';
-                    let block = '';
+type TokenKind = 'comment' | 'data-block' | 'loop' | 'multiline' | 'key' | 'value' | 'save-block';
+type Token = { text: string, kind: TokenKind };
 
-                    let jdx = 0 + (isQuoted ? 1 : 0);
-                    while (jdx < line.length && !isBlockEnd(line[jdx]))
-                        block += line[jdx++];
+function Token(text: string, kind: TokenKind): Token {
+    return { text, kind };
+}
 
-                    if (jdx === line.length && isQuoted && line[jdx - 1] !== '\'')
-                        throw new Error('Unterminated quoted block');
+class Stream {
+    private stream: string;
+    private cursor: number;
+    private length: number;
+    lineCounter = 1;
 
-                    content.push(block);
-                    line = line.slice(jdx + 1).trimStart();
+    constructor(data: string) {
+        this.stream = data;
+        this.cursor = 0;
+        this.length = data.length;
+    }
+
+    private getCifToken() {
+        let charCode = this.stream.charCodeAt(this.cursor);
+        const quote = (charCode === SingleQuoteCharCode || charCode === DoubleQuoteCharCode) ? charCode : undefined;
+
+        const from = this.cursor;
+        let idx = from + 1;
+        for (; idx < this.length; idx++) {
+            charCode = this.stream.charCodeAt(idx);
+            if (quote) {
+                if (charCode == NLCharCode)
+                    throw new Error(`Quoted token that begins on line ${this.lineCounter} contains a new line`);
+                else if (charCode === quote) {
+                    // Jump one character ahead to get past the ending quote
+                    // Note that we cannot dequote the string here because CIF names are allowed to be expressed as "Value"
+                    // if they are quoted. Dequoting the string would therefore confuse the token kind detection
+                    idx++;
+                    break;
                 }
+            } else if (
+                charCode === SpaceCharCode ||
+                charCode === TabCharCode ||
+                charCode === NLCharCode
+            )
+                break;
+        }
 
-                data = data.slice(idx + 1);
-                ({ idx, line } = _lnt(data));
+        if (quote && idx === this.length)
+            throw new Error(`Unterminated quoted token that begins on line ${this.lineCounter}`);
+        const text = this.stream.substring(from, idx);
+        const advance = text.length;
+        return { text: text, advance: advance };
+    }
+
+    private tokenKind(text: string): TokenKind {
+        const charCode = text.charCodeAt(0);
+
+        if (charCode === UnderscoreCharCode)
+            return 'key';
+        else if (charCode === HashCharCode)
+            return 'comment';
+        else if (charCode === SemicolonCharCode && (this.cursor === 0 || this.stream.charCodeAt(this.cursor - 1) === NLCharCode))
+            return 'multiline';
+        else if (text.startsWith('data_'))
+            return 'data-block';
+        else if (text.startsWith('loop_'))
+            return 'loop';
+        else if (text.startsWith('save_'))
+            return 'save-block';
+        else
+            return 'value';
+    }
+
+    eat() {
+        const { text, advance } = this.getCifToken();
+
+        // Move to the beginning of the next token
+        this.cursor += advance;
+        for (let idx = this.cursor; idx < this.length; idx++) {
+            const charCode = this.stream.charCodeAt(idx);
+            const isNewLine = charCode === NLCharCode;
+
+            const isWhiteSpace = (charCode === SpaceCharCode) || (charCode === TabCharCode) || isNewLine;
+            if (!isWhiteSpace)
+                break;
+
+            if (isNewLine)
+                this.lineCounter++;
+            this.cursor++;
+        }
+
+        const kind = this.tokenKind(text);
+        return Token(text, kind);
+    }
+
+    eatLine() {
+        let end = undefined;
+        for (let idx = this.cursor; idx < this.length; idx++) {
+            if (this.stream.charCodeAt(idx) === NLCharCode) {
+                end = idx;
+                this.lineCounter++;
+                break;
             }
         }
 
-        for (let cdx = 0; cdx < headers.length; cdx++) {
-            const c = content[cdx];
-            if (c === undefined)
-                throw new Error('Undefined entry, this should never happen');
-            else if (c === '?' || c === '.')
-                loop.data[headers[cdx]].push(null);
-            else
-                loop.data[headers[cdx]].push(content[cdx]);
+        const line = this.stream.substring(this.cursor, end);
+
+        if (end !== undefined)
+            this.cursor = end + 1;
+        else
+            this.cursor = this.length;
+
+        return line;
+    }
+
+    exhausted() { return this.cursor === this.length; }
+
+    peek() {
+        const { text } = this.getCifToken();
+        const kind = this.tokenKind(text);
+
+        return Token(text, kind);
+    }
+}
+
+function keyToCategoryKeyword(key: string, lineNo: number): { category: string|null, keyword: string } {
+    // CONFORMANCE: Check that there is only one dot
+    let [ category, keyword ] = splitOnFirst(key, '.');
+
+    if (category.length < 2)
+        throw new Error(`Invalid name token on line ${lineNo}`);
+
+    if (keyword === undefined)
+        return { category: null, keyword: category.substring(1) }; // "Swap" keyword for category because we need to have anonymous categories to deal with non-mmCif data
+
+    return { category: category.substring(1), keyword: keyword };
+}
+
+function doKeyValue(tok: Token, block: Block, stream: Stream) {
+    if (stream.exhausted())
+        throw new Error(`Unexpected end of file on line ${stream.lineCounter}`);
+
+    const { category, keyword } = keyToCategoryKeyword(tok.text, stream.lineCounter);
+
+    while (!stream.exhausted()) {
+        const { kind } = stream.peek();
+
+        if (kind === 'value') {
+            block.add(category, keyword, stream.eat().text);
+            return;
+        } else if (kind === 'comment')
+            stream.eatLine();
+        else if (kind === 'multiline') {
+            block.add(category, keyword, doMultiline(stream.eat(), stream));
+            return;
+        }
+    }
+}
+
+function doLoop(block: Block, stream: Stream) {
+    if (stream.exhausted())
+        throw new Error(`Unexpected end of file on line ${stream.lineCounter}`);
+
+    let { text, kind } = stream.eat();
+    if (kind !== 'key')
+        throw new Error(`Loop on line ${stream.lineCounter} does not define any columns`);
+
+    const { category, keyword } = keyToCategoryKeyword(text, stream.lineCounter);
+    const loopCategory = category;
+    const columns = [keyword];
+    const rows = [];
+    let currentRow = [];
+    while (!stream.exhausted()) {
+        const { kind } = stream.peek();
+
+        if (kind === 'comment')
+            stream.eatLine();
+        else if (kind === 'value') {
+            if (columns.length === 0)
+                throw new Error(`Loop on line ${stream.lineCounter} does not define any columns`);
+
+            currentRow.push(stream.eat().text);
+            if (currentRow.length === columns.length) {
+                rows.push(currentRow);
+                currentRow = [];
+            }
+        } else if (kind === 'multiline') {
+            if (columns.length === 0)
+                throw new Error(`Loop on line ${stream.lineCounter} does not define any columns`);
+
+            const value = doMultiline(stream.eat(), stream);
+            currentRow.push(value);
+            if (currentRow.length === columns.length) {
+                rows.push(currentRow);
+                currentRow = [];
+            }
+        } else if (kind === 'key') {
+            // If we have data that can make up a loop, assume that that loop ends here
+            if (rows.length > 0 && currentRow.length === 0)
+                break;
+
+            const tok = stream.eat();
+            const { category, keyword } = keyToCategoryKeyword(tok.text, stream.lineCounter);
+            if (loopCategory !== category)
+                throw new Error(`Mismatching categories "${category}" vs. "${loopCategory}" in loop on line ${stream.lineCounter}`);
+            columns.push(keyword);
+        } else {
+            // If we have data that can make up a loop, assume that that loop ends here
+            if (rows.length > 0 && currentRow.length === 0)
+                break;
+
+            throw new Error(`Malformed loop on line ${stream.lineCounter}`);
         }
     }
 
-    throw new Error('mmCif file ended unexpectedly in the middle of a loop body');
+    const actualCategory = loopCategory === null ? block.nextAnonymousCategoryName() : loopCategory;
+
+    for (let colIdx = 0; colIdx < columns.length; colIdx++) {
+        for (let rowIdx = 0; rowIdx < rows.length; rowIdx++)
+            block.add(actualCategory ?? null, columns[colIdx], rows[rowIdx][colIdx]);
+    }
 }
 
-function parseLoopHeader(data: string): { categoryName: string, headers: string[], tail: string } {
-    let categoryName = '';
-    let headers: string[] = [];
+function doMultiline(tok: Token, stream: Stream) {
+    if (stream.exhausted())
+        throw new Error(`Unexpected end of file on line ${stream.lineCounter}`);
 
-    while (data.length > 0) {
-        let { idx, line } = _lnt(data);
-        if (idx < 0)
-            throw new Error('mmCif file ended unexpectedly in the middle of a loop header');
-        if (line.length < 1)
-            throw new Error('Zero line length in loop header');
-        if (line[0] === ';')
-            throw new Error('Multiline entry sign in loop header is not handled');
-        if (line[0] !== '_')
-            return { tail: data, categoryName, headers };
+    let multiline = tok.text.substring(1);
+    while (!stream.exhausted()) {
+        const { kind } = stream.peek();
 
-        const segs = line.split('.');
-        if (segs.length !== 2)
-            throw new Error('Loop header has invalid format');
-
-        let [ cat, header ] = segs;
-        cat = cat.slice(1);
-
-        if (categoryName === '')
-            categoryName = cat;
-        else if (categoryName !== cat)
-            throw new Error('Multiple categories in one loop are not allowed');
-
-        if (headers.includes(header))
-            throw new Error('Duplicit header name');
-
-        headers.push(header);
-
-        data = data.slice(idx + 1);
+        if (kind === 'value')
+            multiline += (stream.eatLine() + " ");
+        else if (kind === 'multiline') {
+            stream.eat();
+            return multiline;
+        } else if (kind === 'comment')
+            stream.eatLine();
+        else
+            throw new Error(`Unexpected token in inside a multiline entry on line ${stream.lineCounter}`);
     }
 
-    throw new Error('mmCif file ended unexpectedly in the moddle of a loop header');
+    throw new Error('Unterminated multiline entry');
 }
 
-function parsePairEntry(line: string, data: string): { categoryName: string, key: string, value: string|null, tail: string } {
-    const dot = line.indexOf('.');
-    if (dot === -1)
-        throw new Error('Category name delimiter not found');
-    else if (dot === 0)
-        throw new Error('Empty category name');
-
-    const categoryName = line.slice(1, dot);
-
-    line = line.slice(dot + 1);
-    const  space = line.indexOf(' ');
-    if (space === -1)
-        throw new Error('Pair has no value');
-
-    const key = line.slice(0, space);
-    let value: string|null = line.slice(space + 1).trim();
-    if (value.length === 1 && value === '.' || value === '?')
-        value = null;
-    else if (value.length === 0) {
-        let next = _ln(data);
-        while (next.line.startsWith(';')) {
-            value += next.line.slice(1);
-            data = data.slice(next.idx + 1);
-            next = _ln(data);
-        }
-    }
-
-    return { categoryName, key, value, tail: data };
-
-}
-
-function parsePairs(firstLine: string, data: string): { categoryName: string, pairs: Parser.Pairs, tail: string } {
-    let pairs: Parser.Pairs = {
-        kind: 'pairs',
-        data: {},
-    };
-
-    const first = parsePairEntry(firstLine, data);
-    const catName = first.categoryName;
-
-    pairs.data[first.key] = first.value;
-
-    while (data.length > 0) {
-        let { idx, line } = _ln(data);
-        if (line.startsWith('#'))
-            return { categoryName: catName, pairs, tail: data.slice(idx + 1) };
-
-        data = data.slice(idx + 1);
-
-        const { categoryName, key, value, tail } = parsePairEntry(line, data);
-        if (categoryName !== catName)
-            throw new Error(`Mismatching category names ${catName} vs. ${categoryName}`);
-        pairs.data[key] = value;
-        data = tail;
-    }
-
-    return { categoryName: catName, pairs, tail: data };
-}
-
-function toCif(data: string) {
-    const cif: Parser.mmCif = [];
-
-    let block: Parser.Block|undefined = undefined;
-
-    while (data.length > 0) {
-        const { idx, line } = _ln(data);
-        if (idx < 0)
-            return cif;
-
-        if (line.startsWith('data_')) {
-            if (block)
-                cif.push(block);
-            const name = parseBlock(line);
-            block = { name, categories: {} };
-            data = data.slice(idx + 1);
-
-            const secondLine = _lnt(data);
-            if (!secondLine.line.startsWith('#'))
-                throw new Error('Block definition is not separated by #');
-            data = data.slice(secondLine.idx + 1);
-            continue;
-        }
-        if (!block)
-            throw new Error('Data outside a block');
-
-        if (line === 'loop_') {
-            data = data.slice(idx + 1);
-            let { tail, headers, categoryName } = parseLoopHeader(data);
-            let loop; ({ tail, loop } = parseLoopBody(tail, headers));
-            block.categories[categoryName] = loop;
-            data = tail;
-        } else if (line.startsWith('_')) {
-            let { tail, pairs, categoryName } = parsePairs(line, data);
-            block.categories[categoryName] = pairs;
-            data = tail;
+function nextDataBlock(stream: Stream) {
+    while (!stream.exhausted()) {
+        const { kind } = stream.peek();
+        if (kind === 'comment')
+            stream.eatLine();
+        else if (kind === 'data-block') {
+            const [ _, name ] = splitOnFirst(stream.eat().text, '_');
+            return new Block(name ?? '');
         } else
-            data = data.slice(idx + 1);
+            stream.eat();
     }
 
-    if (block)
-        cif.push(block);
+    return null;
+}
 
-    return cif;
+function splitOnFirst(text: string, delimiter: string): [string, string|undefined] {
+    const idx = text.indexOf(delimiter);
+    if (idx === -1)
+        return [text, undefined];
+    return [text.substring(0, idx), text.substring(idx + 1)];
 }
 
 export namespace Parser {
-    export type Block = {
-        name: string;
-        categories: Categories;
-    };
-    export type Category = Pairs|Loop;
-    export type Categories = Record<string, Category>;
-    export type Loop = {
-        kind: 'loop';
-        data: Record<string, (string|null)[]>;
-    };
-    export type Pairs = {
-        kind: 'pairs';
-        data: Record<string, string|null>;
-    };
-    export type mmCif = Array<Block>;
-
-    export function isLoop(cat: Category): cat is Loop { return cat.kind === 'loop'; }
-    export function isPairs(cat: Category): cat is Pairs { return cat.kind === 'pairs'; }
-
     export function parse(data: string) {
-        return toCif(data);
+        const stream = new Stream(data);
+
+        const blocks = [];
+
+        let currentBlock = nextDataBlock(stream);
+        if (currentBlock === null)
+            throw new Error('File does not contain any data blocks');
+
+        while (!stream.exhausted()) {
+            const { kind } = stream.peek();
+
+            if (kind === 'data-block') {
+                const name  = splitOnFirst(stream.eat().text, '_')[1];
+                blocks.push(currentBlock);
+                currentBlock = new Block(name ?? '');
+            } else if (kind === 'key')
+                doKeyValue(stream.eat(), currentBlock, stream);
+            else if (kind === 'loop') {
+                stream.eat();
+                doLoop(currentBlock, stream);
+            } else if (kind === 'comment')
+                stream.eatLine();
+            else if (kind === 'multiline')
+                throw new Error(`Unexpected multiline entry marker on line ${stream.lineCounter})`);
+            else if (kind === 'value')
+                throw new Error(`Unexpected value without name on line ${stream.lineCounter})`);
+            else if (kind === 'save-block') {
+                stream.eat();
+
+                blocks.push(currentBlock);
+                currentBlock = nextDataBlock(stream);
+
+                if (currentBlock === null)
+                    return blocks;
+            } else
+                throw new Error(`Unknown or unhandled token on line ${stream.lineCounter}`);
+        }
+
+        blocks.push(currentBlock);
+
+        return blocks;
     }
 }

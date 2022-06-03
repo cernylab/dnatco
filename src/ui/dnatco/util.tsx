@@ -1,3 +1,12 @@
+function componentToHex(c: number) {
+  var hex = c.toString(16);
+  return hex.length == 1 ? "0" + hex : hex;
+}
+
+export function rgbToHex(rgb: { r: number, g: number, b: number }) {
+  return "#" + componentToHex(rgb.r) + componentToHex(rgb.g) + componentToHex(rgb.b);
+}
+
 export function rmsdToSemaphore(rmsd: number) {
     const MinRmsd = 0.0
     const MaxRmsd = 1.0;

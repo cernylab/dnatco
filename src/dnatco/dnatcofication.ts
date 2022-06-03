@@ -1,3 +1,4 @@
+import * as ConnSimil from './connectivity-similarity';
 import { ExtractInfo } from './extract-info';
 import { Structure } from './structure';
 import { Cif } from '../cif';
@@ -18,7 +19,9 @@ const RequiredDnatcoCategories: Category<any>[] = [
 export class Dnatcofication {
     private readonly ek = new EventsKeeper();
     private _cif?: Cif.Cif;
+    _connectivities: ConnSimil.AllConnectivities = { backward: [], forward: [] };
     _nucleicAcidChains = new Array<string[]>();
+    _similarities: ConnSimil.AllSimilarities = [];
     _steps = StepsMapper.Mapping();
     _structures = new Array<Structure>();
 
@@ -68,6 +71,14 @@ export class Dnatcofication {
         this._structures = structs;
         this._nucleicAcidChains = allNaChains;
         this._steps = StepsMapper.map(this._cif.table(NdbStructNtcStep),this._cif.table(NdbStructNtcStepSummary), Dnatcofication.Structure.numberOfModels(this));
+
+        const stepAtoms = ConnSimil.getStepAtomsNative(this._steps.steps, this._cif);
+        this._connectivities = ConnSimil.getConnectivities(this._steps.steps, stepAtoms, this._steps.previous, this._steps.next);
+        this._similarities = ConnSimil.getSimilarities(this._steps.steps, stepAtoms);
+
+        console.log(this._connectivities);
+
+        ConnSimil.releaseNativeAtoms(stepAtoms);
 
         this.events.structureChanged.next();
     }

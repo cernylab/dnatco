@@ -4,7 +4,8 @@ export const AtomSite_Schema = {
     auth_asym_id: Schema.strM,
     auth_atom_id: Schema.str,
     auth_comp_id: Schema.str,
-    auth_seq_id: Schema.str, /* NOTE: A lot of tools treat this as a number */
+    auth_seq_id: Schema.int, /* The specification considers this a string but a lot of tools treat this as a number.
+                                For convenience, we treat this as a number too */
     B_iso_or_equiv: Schema.float,
     Cartn_x: Schema.Float(0),
     Cartn_y: Schema.Float(0),
