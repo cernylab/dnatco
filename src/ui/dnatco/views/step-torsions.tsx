@@ -378,7 +378,11 @@ export class StepTorsions extends View<View.Props, State> {
                                     onChange={v => {
                                         const stepId = parseInt(v);
                                         const step = StepsMapper.byId(this.props.dnatcofication, stepId);
-                                        this.props.viewerApi.command(ViewerApi.Commands.SelectStep(step.name));
+                                        const { previous, next } = StepsMapper.previousNextById(this.props.dnatcofication, stepId);
+                                        const prevStepName = previous === -1 ? null : StepsMapper.byId(this.props.dnatcofication, previous).name;
+                                        const nextStepName = next === -1 ? null : StepsMapper.byId(this.props.dnatcofication, next).name;
+
+                                        this.props.viewerApi.command(ViewerApi.Commands.SelectStep(step.name, prevStepName, nextStepName));
                                         this.setState({ ...this.state, stepId });
                                     }}
                                 />

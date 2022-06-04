@@ -7,6 +7,7 @@ import { DynamicTable } from '../../common/dynamic-table';
 import { NamedList } from '../../common/named-list';
 import { NdbStructNtcOverall, NdbStructNtcStep, NdbStructNtcStepSummary } from '../../../cif/categories/ndb-struct-ntc';
 import { Dnatcofication } from '../../../dnatco/dnatcofication';
+import { StepsMapper } from '../../../dnatco/steps-mapper';
 import { sequence } from '../../../util';
 
 function rmsdToColor(rmsd: number): React.CSSProperties  {
@@ -63,8 +64,15 @@ export class ConfalsRmsds extends View<View.Props, State> {
             <DynamicTable
                 columns={[stepColumn, ntcColumn, canaColumn, confalColumn, rmsdColumn]}
                 onCellClicked={(row, col, item) => {
-                    if (col === 'Step')
-                        this.props.viewerApi.command(ViewerApi.Commands.SelectStep(item));
+                    if (col === 'Step') {
+                        const stepId = StepsMapper.byName(this.props.dnatcofication, item)?.id ?? -1;
+                        if (stepId !== -1) {
+                            const { previous, next } = StepsMapper.previousNextById(this.props.dnatcofication, stepId);
+                            const prevStepName = previous === -1 ? null : StepsMapper.byId(this.props.dnatcofication, previous).name;
+                            const nextStepName = next === -1 ? null : StepsMapper.byId(this.props.dnatcofication, next).name;
+                            this.props.viewerApi.command(ViewerApi.Commands.SelectStep(item, prevStepName, nextStepName));
+                        }
+                    }
                 }}
             />
         );

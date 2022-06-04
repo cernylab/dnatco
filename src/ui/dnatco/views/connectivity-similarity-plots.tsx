@@ -13,6 +13,8 @@ const ConnectivityXRange = [0, 0.5];
 const ConnectivityYRange = [0, 0.5];
 const SimilarityXRange = [0, 1.0];
 const SimilarityYRange = [0, 100];
+const NextColor = 'cyan';
+const PrevColor = 'blue';
 
 const PlotData = {
     x: new Array<number>(),
@@ -60,7 +62,7 @@ export class ConnectivitySimilarityPlots extends View<View.Props, State> {
                 const conn = back[ntc];
                 x.push(conn.C5PrimeDistance);
                 y.push(conn.O3PrimeDistance);
-                colors.push('blue');
+                colors.push(PrevColor);
                 tags.push(ntc);
             }
         }
@@ -69,7 +71,7 @@ export class ConnectivitySimilarityPlots extends View<View.Props, State> {
                 const conn = fwd[ntc];
                 x.push(conn.C5PrimeDistance);
                 y.push(conn.O3PrimeDistance);
-                colors.push('cyan');
+                colors.push(NextColor);
                 tags.push(ntc);
             }
         }
@@ -216,7 +218,11 @@ export class ConnectivitySimilarityPlots extends View<View.Props, State> {
                                     onChange={v => {
                                         const stepId = parseInt(v);
                                         const step = StepsMapper.byId(this.props.dnatcofication, stepId);
-                                        this.props.viewerApi.command(ViewerApi.Commands.SelectStep(step.name));
+                                        const { previous, next } = StepsMapper.previousNextById(this.props.dnatcofication, stepId);
+                                        const prevStepName = previous === -1 ? null : StepsMapper.byId(this.props.dnatcofication, previous).name;
+                                        const nextStepName = next === -1 ? null : StepsMapper.byId(this.props.dnatcofication, next).name;
+
+                                        this.props.viewerApi.command(ViewerApi.Commands.SelectStep(step.name, prevStepName, nextStepName));
                                         this.setState({ ...this.state, stepId });
                                     }}
                                 />
@@ -251,7 +257,7 @@ export class ConnectivitySimilarityPlots extends View<View.Props, State> {
 
                     <div className='rdo-plot-container'>
                         <div style={{ display: 'grid', gridTemplateColumns: 'auto auto auto' }}>
-                            <div style={{ fontWeight: 'bold', backgroundColor: 'cyan' }}>Previous step</div><div>Current step</div><div style={{ fontWeight: 'bold', backgroundColor: 'blue', color: 'white' }}>Next step</div>
+                            <div style={{ fontWeight: 'bold', backgroundColor: PrevColor, color: 'white' }}>Previous step</div><div>Current step</div><div style={{ fontWeight: 'bold', backgroundColor: NextColor, color: 'black' }}>Next step</div>
                             <div>
                                 {this.stepDescription(this.state.previousStepId)}
                             </div>

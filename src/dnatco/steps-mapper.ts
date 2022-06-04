@@ -123,8 +123,6 @@ export namespace StepsMapper {
         for (let idx = 1; idx < orderedSteps.length; idx++) {
             const step = orderedSteps[idx];
 
-            console.log(`Chaining ${step.name}`);
-
             let found = false;
             for (let sdx = idx - 1; sdx >= 0; sdx--) {
                 const candidate = orderedSteps[sdx];
@@ -132,8 +130,6 @@ export namespace StepsMapper {
                 // Can this step be connected to the previous step?
                 if (!(candidate.model === step.model && candidate.chain === step.chain))
                     break; // It cannot. Assume that we ran outside the chain and abandon this step
-
-                //console.log(`Trying ${candidate.name} against ${step.name}`);
 
                 if (candidate.resNo2 !== step.resNo1) // Can this step overlap the previous step?
                     continue; // They cannot, look further back

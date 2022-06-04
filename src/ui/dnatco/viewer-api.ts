@@ -10,13 +10,17 @@ export namespace ViewerApi {
         export type SelectStep = {
             type: 'select-step';
             stepName: string;
+            prevStepName: string|null;
+            nextStepName: string|null;
             referenceNtC: string;
             references: ('sel'|'prev'|'next')[];
         }
-        export function SelectStep(stepName: string, referenceNtC = '', references = ['sel', 'prev', 'next']): SelectStep {
+        export function SelectStep(stepName: string, prevStepName: string|null, nextStepName: string|null, referenceNtC = '', references = ['sel', 'prev', 'next']): SelectStep {
             return {
                 type: 'select-step',
                 stepName,
+                prevStepName,
+                nextStepName,
                 referenceNtC,
                 references: references as ('sel'|'prev'|'next')[],
             };
