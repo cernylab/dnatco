@@ -38,7 +38,8 @@ const SingleQuoteCharCode = 39;
 const SemicolonCharCode   = 59;
 const UnderscoreCharCode  = 95;
 
-type TokenKind = 'comment' | 'data-block' | 'loop' | 'multiline' | 'key' | 'value' | 'save-block';
+type TokenKind = 'comment' | 'data-block' | 'loop' | 'multiline' | 'key' | 'value' | 'save-block' |
+    'stop' | 'global-block';
 type Token = { text: string, kind: TokenKind };
 
 function Token(text: string, kind: TokenKind): Token {
@@ -91,6 +92,7 @@ class Stream {
     }
 
     private tokenKind(text: string): TokenKind {
+        text = text.toLowerCase();
         const charCode = text.charCodeAt(0);
 
         if (charCode === UnderscoreCharCode)
@@ -105,6 +107,10 @@ class Stream {
             return 'loop';
         else if (text.startsWith('save_'))
             return 'save-block';
+        else if (text.startsWith('stop_'))
+            return 'stop';
+        else if (text.startsWith('global_'))
+            return 'global-block';
         else
             return 'value';
     }
@@ -331,7 +337,8 @@ export namespace Parser {
                 throw new Error(`Unexpected multiline entry marker on line ${stream.lineCounter})`);
             else if (kind === 'value')
                 throw new Error(`Unexpected value without name on line ${stream.lineCounter})`);
-            else if (kind === 'save-block') {
+            else if (kind === 'save-block' || kind === 'stop' || kind === 'global-block') {
+                console.warn(`Skipping unhandled block type ${kind}`);
                 stream.eat();
 
                 blocks.push(currentBlock);
@@ -346,5 +353,24 @@ export namespace Parser {
         blocks.push(currentBlock);
 
         return blocks;
+    }
+
+    export function toString(cif: Block[]) {
+        let str = '';
+
+        for (const block of cif) {
+            str += `Data frame ${block.name}` + '\n';
+            for (const name in block.categories) {
+                str += name + '\n';
+                const cat = block.categories[name];
+                for (const entry in cat) {
+                    const values = cat[entry];
+                    str += '\t' + entry + ' ' + values.join(' ') + '\n';
+                }
+                str += '\n';
+            }
+        }
+
+        return str;
     }
 }
