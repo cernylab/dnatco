@@ -11,17 +11,21 @@ export class Block {
     }
 
     add(category: string|null, keyword: string, value: string) {
+        this.addMultiple(category, keyword, [value]);
+    }
+
+    addMultiple(category: string|null, keyword: string, values: string[]) {
         if (category === null)
             category = this.nextAnonymousCategoryName();
 
-        const actualValue = (value === '?' || value === '.') ? null : value;
+        const vals = values.map(value => (value === '?' || value === '.') ? null : value);
 
         if (this.categories[category] === undefined)
             this.categories[category] = {};
         if (this.categories[category][keyword] === undefined)
-            this.categories[category][keyword] = [actualValue];
+            this.categories[category][keyword] = vals
         else
-            this.categories[category][keyword].push(actualValue);
+            this.categories[category][keyword].push(...vals);
     }
 
     nextAnonymousCategoryName() {
@@ -38,11 +42,20 @@ const SingleQuoteCharCode = 39;
 const SemicolonCharCode   = 59;
 const UnderscoreCharCode  = 95;
 
-type TokenKind = 'comment' | 'data-block' | 'loop' | 'multiline' | 'key' | 'value' | 'save-block' |
-    'stop' | 'global-block';
-type Token = { text: string, kind: TokenKind };
+type Token = { text: string, kind: number };
+namespace TokenKind {
+    export const Comment = 0;
+    export const DataBlock = 1;
+    export const Loop = 2;
+    export const Multiline = 3;
+    export const Tag = 4;
+    export const Value = 5;
+    export const SaveBlock = 6;
+    export const Stop = 7;
+    export const GlobalBlock = 8;
+}
 
-function Token(text: string, kind: TokenKind): Token {
+function Token(text: string, kind: number): Token {
     return { text, kind };
 }
 
@@ -91,28 +104,33 @@ class Stream {
         return { text: text, advance: advance };
     }
 
-    private tokenKind(text: string): TokenKind {
-        text = text.toLowerCase();
+    private tokenKind(text: string) {
         const charCode = text.charCodeAt(0);
 
         if (charCode === UnderscoreCharCode)
-            return 'key';
+            return TokenKind.Tag;
         else if (charCode === HashCharCode)
-            return 'comment';
+            return TokenKind.Comment;
         else if (charCode === SemicolonCharCode && (this.cursor === 0 || this.stream.charCodeAt(this.cursor - 1) === NLCharCode))
-            return 'multiline';
-        else if (text.startsWith('data_'))
-            return 'data-block';
+            return TokenKind.Multiline;
+
+        if (text.length < 5)
+            return TokenKind.Value;
+
+        text = text.toLowerCase();
+
+        if (text.startsWith('data_'))
+            return TokenKind.DataBlock;
         else if (text.startsWith('loop_'))
-            return 'loop';
+            return TokenKind.Loop;
         else if (text.startsWith('save_'))
-            return 'save-block';
+            return TokenKind.SaveBlock;
         else if (text.startsWith('stop_'))
-            return 'stop';
+            return TokenKind.Stop;
         else if (text.startsWith('global_'))
-            return 'global-block';
+            return TokenKind.GlobalBlock;
         else
-            return 'value';
+            return TokenKind.Value;
     }
 
     eat() {
@@ -120,16 +138,15 @@ class Stream {
 
         // Move to the beginning of the next token
         this.cursor += advance;
-        for (let idx = this.cursor; idx < this.length; idx++) {
-            const charCode = this.stream.charCodeAt(idx);
+        while (this.cursor < this.length) {
+            const charCode = this.stream.charCodeAt(this.cursor);
             const isNewLine = charCode === NLCharCode;
 
             const isWhiteSpace = (charCode === SpaceCharCode) || (charCode === TabCharCode) || isNewLine;
             if (!isWhiteSpace)
                 break;
 
-            if (isNewLine)
-                this.lineCounter++;
+            this.lineCounter += isNewLine ? 1 : 0;
             this.cursor++;
         }
 
@@ -189,12 +206,12 @@ function doKeyValue(tok: Token, block: Block, stream: Stream) {
     while (!stream.exhausted()) {
         const { kind } = stream.peek();
 
-        if (kind === 'value') {
+        if (kind === TokenKind.Value) {
             block.add(category, keyword, stream.eat().text);
             return;
-        } else if (kind === 'comment')
+        } else if (kind === TokenKind.Comment)
             stream.eatLine();
-        else if (kind === 'multiline') {
+        else if (kind === TokenKind.Multiline) {
             block.add(category, keyword, doMultiline(stream.eat(), stream));
             return;
         }
@@ -206,41 +223,46 @@ function doLoop(block: Block, stream: Stream) {
         throw new Error(`Unexpected end of file on line ${stream.lineCounter}`);
 
     let { text, kind } = stream.eat();
-    if (kind !== 'key')
+    if (kind !== TokenKind.Tag)
         throw new Error(`Loop on line ${stream.lineCounter} does not define any columns`);
 
     const { category, keyword } = keyToCategoryKeyword(text, stream.lineCounter);
     const loopCategory = category;
     const columns = [keyword];
-    const rows = [];
-    let currentRow = [];
+
+    let columnData: string[][] = [];
+    let columnIndex = 0;
+
+    const allocateColumnData = () => {
+        for (let idx = 0; idx < columns.length; idx++) columnData.push([]);
+    }
+
     while (!stream.exhausted()) {
         const { kind } = stream.peek();
 
-        if (kind === 'comment')
+        if (kind === TokenKind.Comment)
             stream.eatLine();
-        else if (kind === 'value') {
+        else if (kind === TokenKind.Value) {
             if (columns.length === 0)
                 throw new Error(`Loop on line ${stream.lineCounter} does not define any columns`);
+            else if (columnData.length === 0) // First value token. We now know how many columns we have so we can allocate column data
+                allocateColumnData();
 
-            currentRow.push(stream.eat().text);
-            if (currentRow.length === columns.length) {
-                rows.push(currentRow);
-                currentRow = [];
-            }
-        } else if (kind === 'multiline') {
+            const value = stream.eat().text;
+            columnData[columnIndex].push(value);
+            columnIndex = (columnIndex + 1) % columns.length;
+        } else if (kind === TokenKind.Multiline) {
             if (columns.length === 0)
                 throw new Error(`Loop on line ${stream.lineCounter} does not define any columns`);
+            else if (columnData.length === 0) // First value token. We now know how many columns we have so we can allocate column data
+                allocateColumnData();
 
             const value = doMultiline(stream.eat(), stream);
-            currentRow.push(value);
-            if (currentRow.length === columns.length) {
-                rows.push(currentRow);
-                currentRow = [];
-            }
-        } else if (kind === 'key') {
+            columnData[columnIndex].push(value);
+            columnIndex = (columnIndex + 1) % columns.length;
+        } else if (kind === TokenKind.Tag) {
             // If we have data that can make up a loop, assume that that loop ends here
-            if (rows.length > 0 && currentRow.length === 0)
+            if (columnData.length > 0 && columnIndex === 0)
                 break;
 
             const tok = stream.eat();
@@ -250,7 +272,7 @@ function doLoop(block: Block, stream: Stream) {
             columns.push(keyword);
         } else {
             // If we have data that can make up a loop, assume that that loop ends here
-            if (rows.length > 0 && currentRow.length === 0)
+            if (columnData.length > 0 && columnIndex === 0)
                 break;
 
             throw new Error(`Malformed loop on line ${stream.lineCounter}`);
@@ -259,10 +281,8 @@ function doLoop(block: Block, stream: Stream) {
 
     const actualCategory = loopCategory === null ? block.nextAnonymousCategoryName() : loopCategory;
 
-    for (let colIdx = 0; colIdx < columns.length; colIdx++) {
-        for (let rowIdx = 0; rowIdx < rows.length; rowIdx++)
-            block.add(actualCategory ?? null, columns[colIdx], rows[rowIdx][colIdx]);
-    }
+    for (let colIdx = 0; colIdx < columnData.length; colIdx++)
+        block.addMultiple(actualCategory ?? null, columns[colIdx], columnData[colIdx]);
 }
 
 function doMultiline(tok: Token, stream: Stream) {
@@ -273,12 +293,12 @@ function doMultiline(tok: Token, stream: Stream) {
     while (!stream.exhausted()) {
         const { kind } = stream.peek();
 
-        if (kind === 'value')
+        if (kind === TokenKind.Value)
             multiline += (stream.eatLine() + " ");
-        else if (kind === 'multiline') {
+        else if (kind === TokenKind.Multiline) {
             stream.eat();
             return multiline;
-        } else if (kind === 'comment')
+        } else if (kind === TokenKind.Comment)
             stream.eatLine();
         else
             throw new Error(`Unexpected token in inside a multiline entry on line ${stream.lineCounter}`);
@@ -290,11 +310,11 @@ function doMultiline(tok: Token, stream: Stream) {
 function nextDataBlock(stream: Stream) {
     while (!stream.exhausted()) {
         const { kind } = stream.peek();
-        if (kind === 'comment')
+        if (kind === TokenKind.Comment)
             stream.eatLine();
-        else if (kind === 'data-block') {
-            const [ _, name ] = splitOnFirst(stream.eat().text, '_');
-            return new Block(name ?? '');
+        else if (kind === TokenKind.DataBlock) {
+            const name = splitOnFirst(stream.eat().text, '_')[1] ?? '';
+            return new Block(name);
         } else
             stream.eat();
     }
@@ -322,22 +342,22 @@ export namespace Parser {
         while (!stream.exhausted()) {
             const { kind } = stream.peek();
 
-            if (kind === 'data-block') {
-                const name  = splitOnFirst(stream.eat().text, '_')[1];
+            if (kind === TokenKind.DataBlock) {
+                const name = splitOnFirst(stream.eat().text, '_')[1] ?? '';
                 blocks.push(currentBlock);
-                currentBlock = new Block(name ?? '');
-            } else if (kind === 'key')
+                currentBlock = new Block(name);
+            } else if (kind === TokenKind.Tag)
                 doKeyValue(stream.eat(), currentBlock, stream);
-            else if (kind === 'loop') {
+            else if (kind === TokenKind.Loop) {
                 stream.eat();
                 doLoop(currentBlock, stream);
-            } else if (kind === 'comment')
+            } else if (kind === TokenKind.Comment)
                 stream.eatLine();
-            else if (kind === 'multiline')
+            else if (kind === TokenKind.Multiline)
                 throw new Error(`Unexpected multiline entry marker on line ${stream.lineCounter})`);
-            else if (kind === 'value')
+            else if (kind === TokenKind.Value)
                 throw new Error(`Unexpected value without name on line ${stream.lineCounter})`);
-            else if (kind === 'save-block' || kind === 'stop' || kind === 'global-block') {
+            else if (kind === TokenKind.SaveBlock || kind === TokenKind.Stop || kind === TokenKind.GlobalBlock) {
                 console.warn(`Skipping unhandled block type ${kind}`);
                 stream.eat();
 
