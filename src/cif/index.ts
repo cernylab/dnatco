@@ -84,14 +84,15 @@ export namespace Cif {
 
         for (const column in schema) {
             const col = schema[column];
+            const columnLwr = column.toLowerCase();
 
-            if (!(column in data)) {
+            if (!(columnLwr in data)) {
                 if (col.mandatory)
                     throw new Error(`Column ${column} is mandatory but not present in ${name}`);
                 else
                     accum[column] = new Column(null, col);
             } else {
-                const list = data[column];
+                const list = data[columnLwr];
 
                 try {
                     if (Schema.isDate(col)) {
@@ -132,11 +133,11 @@ export namespace Cif {
         }
 
         hasTable<S extends Schema.Schema>(category: Category<S>, block = 0) {
-            return this.blocks[block].tables.has(category.name);
+            return this.blocks[block].tables.has(category.name.toLowerCase());
         }
 
         table<S extends Schema.Schema>(category: Category<S>, block = 0): Table<S> {
-            const tbl = this.blocks[block].tables.get(category.name);
+            const tbl = this.blocks[block].tables.get(category.name.toLowerCase());
             if (!tbl)
                 throw new Error(`No table ${category.name} in cif file`);
             return tbl as Table<S>;
@@ -154,9 +155,9 @@ export namespace Cif {
             for (const name in block.categories) {
                 const cat = block.categories[name];
 
-                const template = KnownCategories.find(x => x.name === name);
+                const template = KnownCategories.find(x => x.name.toLowerCase() === name);
                 if (template) {
-                    const table = handleRecord(cat, template.schema, template.name);
+                    const table = handleRecord(cat, template.schema, template.name.toLowerCase());
                     tables.set(name, table);
                 }
             }

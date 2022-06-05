@@ -8,6 +8,7 @@ import { AboutTab } from './ui/about-tab';
 import { DnatcoViewerTab } from './ui/dnatco-viewer-tab';
 import { NavigationBar } from './ui/navigation-bar';
 import { StartTab } from './ui/start-tab';
+import { InProgress } from './ui/common/in-progress';
 import { WithSubscriptions } from './ui/service/with-subscriptions';
 import { MainScreen } from './ui/dnatco/main-screen';
 import '../assets/index.html';
@@ -58,13 +59,19 @@ export class App extends WithSubscriptions<Partial<App.Props>, State> {
 
         this.ingestionInProgress = true;
 
+        const inProgressDlg = await InProgress.create('Doing a thing...');
+
         try {
             await ingestor();
             this.ingestionInProgress = false;
+            InProgress.dismiss(inProgressDlg);
+
             this.setState({ ...this.state, selectedTab: 'annotation' });
+
             return undefined;
         } catch (e) {
             this.ingestionInProgress = false;
+            InProgress.dismiss(inProgressDlg);
 
             return (e as Error).toString();
         }
