@@ -184,40 +184,6 @@ class Stream {
     }
 }
 
-function keyToCategoryKeyword(key: string, lineNo: number): { category: string|null, keyword: string } {
-    // CONFORMANCE: Check that there is only one dot
-    let [ category, keyword ] = splitOnFirst(key, '.');
-
-    if (category.length < 2)
-        throw new Error(`Invalid name token on line ${lineNo}`);
-
-    if (keyword === undefined)
-        return { category: null, keyword: category.substring(1) }; // "Swap" keyword for category because we need to have anonymous categories to deal with non-mmCif data
-
-    return { category: category.substring(1), keyword: keyword };
-}
-
-function doKeyValue(tok: Token, block: Block, stream: Stream) {
-    if (stream.exhausted())
-        throw new Error(`Unexpected end of file on line ${stream.lineCounter}`);
-
-    const { category, keyword } = keyToCategoryKeyword(tok.text, stream.lineCounter);
-
-    while (!stream.exhausted()) {
-        const { kind } = stream.peek();
-
-        if (kind === TokenKind.Value) {
-            block.add(category, keyword, stream.eat().text);
-            return;
-        } else if (kind === TokenKind.Comment)
-            stream.eatLine();
-        else if (kind === TokenKind.Multiline) {
-            block.add(category, keyword, doMultiline(stream.eat(), stream));
-            return;
-        }
-    }
-}
-
 function doLoop(block: Block, stream: Stream) {
     if (stream.exhausted())
         throw new Error(`Unexpected end of file on line ${stream.lineCounter}`);
@@ -226,7 +192,7 @@ function doLoop(block: Block, stream: Stream) {
     if (kind !== TokenKind.Tag)
         throw new Error(`Loop on line ${stream.lineCounter} does not define any columns`);
 
-    const { category, keyword } = keyToCategoryKeyword(text, stream.lineCounter);
+    const { category, keyword } = tagToCategoryKeyword(text, stream.lineCounter);
     const loopCategory = category;
     const columns = [keyword];
 
@@ -266,9 +232,13 @@ function doLoop(block: Block, stream: Stream) {
                 break;
 
             const tok = stream.eat();
-            const { category, keyword } = keyToCategoryKeyword(tok.text, stream.lineCounter);
-            if (loopCategory !== category)
-                throw new Error(`Mismatching categories "${category}" vs. "${loopCategory}" in loop on line ${stream.lineCounter}`);
+            const { category, keyword } = tagToCategoryKeyword(tok.text, stream.lineCounter);
+            if (loopCategory !== category) {
+                if (columnData.length === 0)
+                    throw new Error(`Mismatching categories "${category}" vs. "${loopCategory}" in loop on line ${stream.lineCounter}`);
+                else
+                    throw new Error(`Malformed loop on line ${stream.lineCounter}`);
+            }
             columns.push(keyword);
         } else {
             // If we have data that can make up a loop, assume that that loop ends here
@@ -307,6 +277,28 @@ function doMultiline(tok: Token, stream: Stream) {
     throw new Error('Unterminated multiline entry');
 }
 
+function doTagValue(tok: Token, block: Block, stream: Stream) {
+    if (stream.exhausted())
+        throw new Error(`Unexpected end of file on line ${stream.lineCounter}`);
+
+    const { category, keyword } = tagToCategoryKeyword(tok.text, stream.lineCounter);
+
+    while (!stream.exhausted()) {
+        const { kind } = stream.peek();
+
+        if (kind === TokenKind.Value) {
+            block.add(category, keyword, stream.eat().text);
+            return;
+        } else if (kind === TokenKind.Comment)
+            stream.eatLine();
+        else if (kind === TokenKind.Multiline) {
+            block.add(category, keyword, doMultiline(stream.eat(), stream));
+            return;
+        } else
+            throw new Error(`Unexpected token kind ${kind} in tag-value entry on line ${stream.lineCounter}`);
+    }
+}
+
 function nextDataBlock(stream: Stream) {
     while (!stream.exhausted()) {
         const { kind } = stream.peek();
@@ -329,6 +321,19 @@ function splitOnFirst(text: string, delimiter: string): [string, string|undefine
     return [text.substring(0, idx), text.substring(idx + 1)];
 }
 
+function tagToCategoryKeyword(key: string, lineNo: number): { category: string|null, keyword: string } {
+    // CONFORMANCE: Check that there is only one dot
+    let [ category, keyword ] = splitOnFirst(key, '.');
+
+    if (category.length < 2)
+        throw new Error(`Invalid name token on line ${lineNo}`);
+
+    if (keyword === undefined)
+        return { category: null, keyword: category.substring(1).toLowerCase() }; // "Swap" keyword for category because we need to have anonymous categories to deal with non-mmCif data
+
+    return { category: category.substring(1).toLowerCase(), keyword: keyword.toLowerCase() };
+}
+
 export namespace Parser {
     export function parse(data: string) {
         const stream = new Stream(data);
@@ -347,7 +352,7 @@ export namespace Parser {
                 blocks.push(currentBlock);
                 currentBlock = new Block(name);
             } else if (kind === TokenKind.Tag)
-                doKeyValue(stream.eat(), currentBlock, stream);
+                doTagValue(stream.eat(), currentBlock, stream);
             else if (kind === TokenKind.Loop) {
                 stream.eat();
                 doLoop(currentBlock, stream);
