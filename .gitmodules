@@ -1,3 +1,6 @@
 [submodule "jsLLKA"]
 	path = jsLLKA
 	url = git@gitlab.cesnet.cz:madcatxster/jsLLKA
+[submodule "molstar"]
+	path = molstar
+	url = https://github.com/MadCatX/molstar.git
