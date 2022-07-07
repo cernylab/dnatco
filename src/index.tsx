@@ -1,5 +1,5 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
+import * as RDC from 'react-dom/client';
 import { GlobalConfig } from './global-config';
 import { Result, isError, isOk } from './dnatco';
 import { Engine } from './dnatco/engine';
@@ -185,10 +185,8 @@ async function getConfig(): Promise<Partial<App.Props>> {
 async function bootstrap() {
     const config = await getConfig();
 
-    ReactDOM.render(
-        <App {...config} />,
-        document.getElementById('app')
-    );
+    const root = RDC.createRoot(document.getElementById('app')!);
+    root.render(<App {...config} />);
 }
 
 bootstrap();

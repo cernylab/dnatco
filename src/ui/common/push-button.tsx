@@ -141,6 +141,7 @@ export namespace BasePushButton {
         onMouseLeave?: (e: React.MouseEvent) => void;
         className?: string
         classNameDisabled?: string;
+        children?: React.ReactNode;
     }
 }
 

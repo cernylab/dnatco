@@ -1,5 +1,5 @@
 import * as React from 'react';
-import * as ReactDOM from 'react-dom';
+import * as RDC from 'react-dom/client';
 import { PushButton } from './push-button';
 
 export class Popup extends React.Component<Popup.Props> {
@@ -31,17 +31,18 @@ export class Popup extends React.Component<Popup.Props> {
 export namespace Popup {
     export interface Props {
         parentElement: HTMLElement;
+        children?: React.ReactNode;
     }
 
     export function create(children: React.ReactNode) {
         const tainer = document.createElement('div');
         document.body.appendChild(tainer);
 
-        ReactDOM.render(
+        const reactRoot = RDC.createRoot(tainer!)
+        reactRoot.render(
             <Popup parentElement={tainer}>
                 {children}
-            </Popup>,
-            tainer
+            </Popup>
         );
     }
 }
