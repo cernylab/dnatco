@@ -79,7 +79,7 @@ export namespace Cif {
             if (rowCount === 0)
                 rowCount = data[column].length;
             else if (rowCount !== data[column].length)
-                throw new Error(`Mismatching number of columns in category ${name}`);
+                throw new Error(`Mismatching number of columns in category ${name}, expected ${rowCount}, got ${data[column].length}`);
         }
 
         for (const column in schema) {

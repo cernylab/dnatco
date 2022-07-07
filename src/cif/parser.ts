@@ -5,8 +5,6 @@ export class Block {
     categories: Record<string, Category> = {};
 
     constructor(public readonly name: string) {
-        this.name = name;
-
         this.categories = {};
     }
 
@@ -53,6 +51,7 @@ namespace TokenKind {
     export const SaveBlock = 6;
     export const Stop = 7;
     export const GlobalBlock = 8;
+    export const Empty = 9;
 }
 
 function Token(text: string, kind: number): Token {
@@ -63,12 +62,21 @@ class Stream {
     private stream: string;
     private cursor: number;
     private length: number;
+
+    private primedText: string;
+    private primedKind: number;
+    private isPrimed: boolean;
+
     lineCounter = 1;
 
     constructor(data: string) {
         this.stream = data;
         this.cursor = 0;
         this.length = data.length;
+
+        this.primedText = '';
+        this.primedKind = -1;
+        this.isPrimed = false;
     }
 
     private getCifToken() {
@@ -99,9 +107,21 @@ class Stream {
 
         if (quote && idx === this.length)
             throw new Error(`Unterminated quoted token that begins on line ${this.lineCounter}`);
-        const text = this.stream.substring(from, idx);
-        const advance = text.length;
-        return { text: text, advance: advance };
+        return this.stream.substring(from, idx);
+    }
+
+    private isEmptyToken(text: string) {
+        for (let idx = 0; idx < text.length; idx++) {
+            const charCode = text.charCodeAt(idx);
+            const whiteSpace =
+                charCode === SpaceCharCode ||
+                charCode === TabCharCode ||
+                charCode === NLCharCode;
+            if (!whiteSpace)
+                return false;
+        }
+
+        return true;
     }
 
     private tokenKind(text: string) {
@@ -115,14 +135,14 @@ class Stream {
             return TokenKind.Multiline;
 
         if (text.length < 5)
-            return TokenKind.Value;
+            return this.isEmptyToken(text) ? TokenKind.Empty : TokenKind.Value;
 
         text = text.toLowerCase();
 
-        if (text.startsWith('data_'))
-            return TokenKind.DataBlock;
-        else if (text.startsWith('loop_'))
+        if (text.startsWith('loop_'))
             return TokenKind.Loop;
+        else if (text.startsWith('data_'))
+            return TokenKind.DataBlock;
         else if (text.startsWith('save_'))
             return TokenKind.SaveBlock;
         else if (text.startsWith('stop_'))
@@ -130,14 +150,23 @@ class Stream {
         else if (text.startsWith('global_'))
             return TokenKind.GlobalBlock;
         else
-            return TokenKind.Value;
+            return this.isEmptyToken(text) ? TokenKind.Empty : TokenKind.Value;
     }
 
     eat() {
-        const { text, advance } = this.getCifToken();
+        const [ text, kind ] = (() => {
+            if (this.isPrimed) {
+                this.isPrimed = false;
+                return [ this.primedText, this.primedKind ];
+            } else {
+                const text = this.getCifToken();
+                const kind = this.tokenKind(text);
+                return [ text, kind ];
+            }
+        })();
 
         // Move to the beginning of the next token
-        this.cursor += advance;
+        this.cursor += text.length;
         while (this.cursor < this.length) {
             const charCode = this.stream.charCodeAt(this.cursor);
             const isNewLine = charCode === NLCharCode;
@@ -150,11 +179,12 @@ class Stream {
             this.cursor++;
         }
 
-        const kind = this.tokenKind(text);
         return Token(text, kind);
     }
 
     eatLine() {
+        this.isPrimed = false;
+
         let end = undefined;
         for (let idx = this.cursor; idx < this.length; idx++) {
             if (this.stream.charCodeAt(idx) === NLCharCode) {
@@ -176,11 +206,14 @@ class Stream {
 
     exhausted() { return this.cursor === this.length; }
 
-    peek() {
-        const { text } = this.getCifToken();
-        const kind = this.tokenKind(text);
+    peekKind() {
+        if (this.isPrimed)
+            return Token(this.primedText, this.primedKind);
 
-        return Token(text, kind);
+        this.primedText = this.getCifToken();
+        this.primedKind = this.tokenKind(this.primedText);
+
+        return this.primedKind;
     }
 }
 
@@ -204,10 +237,12 @@ function doLoop(block: Block, stream: Stream) {
     }
 
     while (!stream.exhausted()) {
-        const { kind } = stream.peek();
+        const kind = stream.peekKind();
 
         if (kind === TokenKind.Comment)
             stream.eatLine();
+        else if (kind == TokenKind.Empty)
+            stream.eat();
         else if (kind === TokenKind.Value) {
             if (columns.length === 0)
                 throw new Error(`Loop on line ${stream.lineCounter} does not define any columns`);
@@ -261,7 +296,7 @@ function doMultiline(tok: Token, stream: Stream) {
 
     let multiline = tok.text.substring(1);
     while (!stream.exhausted()) {
-        const { kind } = stream.peek();
+        const kind = stream.peekKind();
 
         if (kind === TokenKind.Value)
             multiline += (stream.eatLine() + " ");
@@ -270,6 +305,8 @@ function doMultiline(tok: Token, stream: Stream) {
             return multiline;
         } else if (kind === TokenKind.Comment)
             stream.eatLine();
+        else if (kind == TokenKind.Empty)
+            stream.eat();
         else
             throw new Error(`Unexpected token in inside a multiline entry on line ${stream.lineCounter}`);
     }
@@ -284,7 +321,7 @@ function doTagValue(tok: Token, block: Block, stream: Stream) {
     const { category, keyword } = tagToCategoryKeyword(tok.text, stream.lineCounter);
 
     while (!stream.exhausted()) {
-        const { kind } = stream.peek();
+        const kind = stream.peekKind();
 
         if (kind === TokenKind.Value) {
             block.add(category, keyword, stream.eat().text);
@@ -297,11 +334,13 @@ function doTagValue(tok: Token, block: Block, stream: Stream) {
         } else
             throw new Error(`Unexpected token kind ${kind} in tag-value entry on line ${stream.lineCounter}`);
     }
+
+    throw new Error(`Unexpected end of file on line ${stream.lineCounter}`);
 }
 
 function nextDataBlock(stream: Stream) {
     while (!stream.exhausted()) {
-        const { kind } = stream.peek();
+        const kind = stream.peekKind();
         if (kind === TokenKind.Comment)
             stream.eatLine();
         else if (kind === TokenKind.DataBlock) {
@@ -345,7 +384,7 @@ export namespace Parser {
             throw new Error('File does not contain any data blocks');
 
         while (!stream.exhausted()) {
-            const { kind } = stream.peek();
+            const kind = stream.peekKind();
 
             if (kind === TokenKind.DataBlock) {
                 const name = splitOnFirst(stream.eat().text, '_')[1] ?? '';
@@ -362,6 +401,8 @@ export namespace Parser {
                 throw new Error(`Unexpected multiline entry marker on line ${stream.lineCounter})`);
             else if (kind === TokenKind.Value)
                 throw new Error(`Unexpected value without name on line ${stream.lineCounter})`);
+            else if (kind === TokenKind.Empty)
+                stream.eat();
             else if (kind === TokenKind.SaveBlock || kind === TokenKind.Stop || kind === TokenKind.GlobalBlock) {
                 console.warn(`Skipping unhandled block type ${kind}`);
                 stream.eat();
