@@ -26,7 +26,7 @@ export class Dnatcofication {
     _structures = new Array<Structure>();
 
     readonly events = {
-        structureChanged: this.ek.subject<void>(),
+        structureChanged: this.ek.subject<boolean>(),
     };
 
     private isDnatcofied(cif: Cif.Cif) {
@@ -80,7 +80,7 @@ export class Dnatcofication {
 
         ConnSimil.releaseNativeAtoms(stepAtoms);
 
-        this.events.structureChanged.next();
+        this.events.structureChanged.next(true);
     }
 
     rawCif() {

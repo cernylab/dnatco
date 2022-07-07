@@ -66,8 +66,6 @@ export class App extends WithSubscriptions<Partial<App.Props>, State> {
             this.ingestionInProgress = false;
             InProgress.dismiss(inProgressDlg);
 
-            this.setState({ ...this.state, selectedTab: 'annotation' });
-
             return undefined;
         } catch (e) {
             this.ingestionInProgress = false;
@@ -134,10 +132,9 @@ export class App extends WithSubscriptions<Partial<App.Props>, State> {
     componentDidMount() {
         this.subscribe(
             this.dnatcofication.events.structureChanged,
-            () => {
-                const have = this.dnatcofication.haveStructure();
+            (have: boolean) => {
                 if (have !== this.state.haveStructure)
-                    this.setState({ ...this.state, haveStructure: have });
+                    this.setState({ ...this.state, haveStructure: have, selectedTab: have ? 'annotation' : 'start' });
             }
         );
     }
