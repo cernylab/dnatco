@@ -4,6 +4,7 @@ import { ViewerApi } from '../viewer-api';
 import { Common as C } from '../common';
 import { ComboBox } from '../../common/combo-box';
 import { NamedList } from '../../common/named-list';
+import { Tooltip } from '../../common/tooltip';
 import { Cif } from '../../../cif';
 import {
     NdbStructNtcStepParameters, NdbStructNtcStepParameters_Schema,
@@ -34,10 +35,6 @@ const DistancesCaptions = {
     cc: 'CC',
     nn: 'NN',
 };
-
-function numOrNA(n: number, decimals = 2, padding = 7) {
-    return isNaN(n) ? C.NA : toFixed(n, decimals, { char: '\u00A0', length: padding });
-}
 
 function distanceColumn(table: Cif.Table<NdbStructNtcStepParameters_Schema>, dist: NtC.Distance) {
     switch (dist) {
@@ -175,6 +172,55 @@ function TorsionInfo(): TorsionInfo {
         diff: { delta1: NaN, epsilon1: NaN, zeta1: NaN, alpha2: NaN, beta2: NaN, gamma2: NaN, delta2: NaN, chi1: NaN, chi2: NaN, nccn: NaN },
         reference: { delta1: NaN, epsilon1: NaN, zeta1: NaN, alpha2: NaN, beta2: NaN, gamma2: NaN, delta2: NaN, chi1: NaN, chi2: NaN, nccn: NaN },
     };
+}
+
+const TorsionNames = [
+    { tag: 'd1', name: 'δ1' },
+    { tag: 'e1', name: 'ɛ1' },
+    { tag: 'z1', name: 'ζ1' },
+    { tag: 'a2', name: '⍺2' },
+    { tag: 'b2', name: 'β2' },
+    { tag: 'g2', name: 'ɣ2' },
+    { tag: 'd2', name: 'δ2' },
+    { tag: 'ch1', name: 'χ1' },
+    { tag: 'ch2', name: 'χ2' },
+];
+function mkViolationDetailsToolip(details: string|null) {
+    if (details === null)
+        return [];
+
+    const elems: JSX.Element[] = [];
+    const items = details.split(';');
+
+    let keyIdx = 0;
+    for (const it of items) {
+        if (it.startsWith('cNn')) {
+            const tor = TorsionNames.find(x => x.tag.endsWith(it.substring(3)));
+            if (tor)
+                elems.push(<div key={keyIdx++}>{`${tor.name} exceeded tolerance against the average of all nearest neighbors`}</div>);
+        } else if (it.startsWith('cAn')) {
+            const tor = TorsionNames.find(x => x.tag.endsWith(it.substring(3)));
+            if (tor)
+                elems.push(<div key={keyIdx++}>{`${tor.name} exceeded tolerance against the nearest neighbor`}</div>);
+        } else if (it === 'cNN')
+            elems.push(<div key={keyIdx++}>NN distance exceeded tolerance</div>);
+        else if (it === 'cCC')
+            elems.push(<div key={keyIdx++}>CC distance exceeded tolerance</div>);
+        else if (it === 'cmu')
+            elems.push(<div key={keyIdx++}>μ pseudotorsion exceeded tolerance</div>);
+        else if (it === 'cMB')
+            elems.push(<div key={keyIdx++}>Sum of differences of first 7 torsions exceeded tolerance</div>);
+        else if (it === 'cP')
+            elems.push(<div key={keyIdx++}>Pseudorotation of the first ribose ring exceeded tolerance</div>);
+        else if (it === 'cP1')
+            elems.push(<div key={keyIdx++}>Pseudorotation of the second ribose ring exceeded tolerance</div>);
+    }
+
+    return elems;
+}
+
+function numOrNA(n: number, decimals = 2, padding = 7) {
+    return isNaN(n) ? C.NA : toFixed(n, decimals, { char: '\u00A0', length: padding });
 }
 
 interface State {
@@ -416,7 +462,7 @@ export class StepTorsions extends View<View.Props, State> {
                                 <td className='rdo-numeric-table'>{numOrNA(torsionInfo.actual[tor])}</td>
                                 <td className='rdo-numeric-table'>{numOrNA(torsionInfo.reference[tor])}</td>
                                 <td className='rdo-numeric-table'>{numOrNA(torsionInfo.diff[tor])}</td>
-                                <td className='rdo-numeric-table'>{numOrNA(torsionInfo.confal[tor])}</td>
+                                <td className='rdo-numeric-table'>{numOrNA(torsionInfo.confal[tor], 0)}</td>
                             </tr>
                         ))}
                         {DistancesDisplayOrder.map((dist, idx) => (
@@ -425,7 +471,7 @@ export class StepTorsions extends View<View.Props, State> {
                                 <td className='rdo-numeric-table'>{numOrNA(distanceInfo.actual[dist])}</td>
                                 <td className='rdo-numeric-table'>{numOrNA(distanceInfo.reference[dist])}</td>
                                 <td className='rdo-numeric-table'>{numOrNA(distanceInfo.diff[dist])}</td>
-                                <td className='rdo-numeric-table'>{numOrNA(distanceInfo.confal[dist])}</td>
+                                <td className='rdo-numeric-table'>{numOrNA(distanceInfo.confal[dist], 0)}</td>
                             </tr>
                         ))}
                     </tbody>
@@ -436,7 +482,15 @@ export class StepTorsions extends View<View.Props, State> {
                         { name: 'Step conformer', value: stepInfo.conformer },
                         { name: 'Cartesian RMSD', value: `${stepInfo.cartesianRmsd!.toFixed(2)} Å` },
                         { name: 'Pseudorotation', value: `${stepInfo.p1}, ${stepInfo.tau1}, ${stepInfo.pn1} / ${stepInfo.p2}, ${stepInfo.tau2}, ${stepInfo.pn2}` },
-                        { name: 'Details',        value: stepInfo.details },
+                        {
+                            name: 'Details',
+                            value:
+                                <Tooltip
+                                    tag={stepInfo.details}
+                                >
+                                    {mkViolationDetailsToolip(stepInfo.details)}
+                                </Tooltip>
+                        },
                     ]}
                 />
             </div>

@@ -440,6 +440,25 @@ th.rdo-data-table {
     font-size: var(--font-uber);
 }
 
+.rdo-tooltip {
+    display: flex;
+    position: relative;
+}
+
+.rdo-tooltip-text {
+    box-shadow: 0 0 5px 2px var(--color-b);
+    background-color: var(--color-c);
+    border: 2px solid var(--color-b);
+    padding: 0.2em;
+    position: absolute;
+    transition: opacity var(--anim-speed);
+    z-index: 99;
+}
+
+.rdo-tooltip-text-faded {
+    opacity: 0;
+}
+
 .rdo-view-caption {
     font-size: var(--font-xxlarge);
     font-weight: bold;
