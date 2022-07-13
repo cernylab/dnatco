@@ -194,11 +194,11 @@ function mkViolationDetailsToolip(details: string|null) {
 
     let keyIdx = 0;
     for (const it of items) {
-        if (it.startsWith('cNn')) {
+        if (it.startsWith('cAn')) {
             const tor = TorsionNames.find(x => x.tag.endsWith(it.substring(3)));
             if (tor)
                 elems.push(<div key={keyIdx++}>{`${tor.name} exceeded tolerance against the average of all nearest neighbors`}</div>);
-        } else if (it.startsWith('cAn')) {
+        } else if (it.startsWith('cNn')) {
             const tor = TorsionNames.find(x => x.tag.endsWith(it.substring(3)));
             if (tor)
                 elems.push(<div key={keyIdx++}>{`${tor.name} exceeded tolerance against the nearest neighbor`}</div>);
