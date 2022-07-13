@@ -140,7 +140,7 @@ export class App extends WithSubscriptions<Partial<App.Props>, State> {
         this.subscribe(
             this.dnatcofication.events.structureChanged,
             (have: boolean) => {
-                if (have !== this.state.haveStructure)
+                if (have)
                     this.setState({ ...this.state, haveStructure: have, selectedTab: have ? 'annotation' : 'start' });
             }
         );
