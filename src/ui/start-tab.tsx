@@ -88,22 +88,23 @@ export class StartTab extends React.Component<StartTab.Props, State> {
                                     />
                                     <PushButton
                                         caption='Proceed'
-                                            onClick={() => {
-                                                if (isPdbId(this.state.pdbId)) {
-                                                    Popup.create(
-                                                        <div className='rdo-error-text'>This function is currently unavailable</div>
-                                                    );
-                                                    //this.props.onDoPdbId(this.state.pdbId);
-                                                } else if (this.state.pdbId.length === 0) {
-                                                    Popup.create(
-                                                        <div className='rdo-error-text'>Please enter a valid PDB ID</div>
-                                                    );
-                                                } else {
-                                                    Popup.create(
-                                                        <div className='rdo-error-text'>{`${this.state.pdbId} is not a valid PDB ID`}</div>
-                                                    );
-                                                }
+                                        onClick={() => {
+                                            if (isPdbId(this.state.pdbId)) {
+                                                Popup.create(
+                                                    <div className='rdo-error-text'>This function is currently unavailable</div>
+                                                );
+                                                //this.props.onDoPdbId(this.state.pdbId);
+                                            } else if (this.state.pdbId.length === 0) {
+                                                Popup.create(
+                                                    <div className='rdo-error-text'>Please enter a valid PDB ID</div>
+                                                );
+                                            } else {
+                                                Popup.create(
+                                                    <div className='rdo-error-text'>{`${this.state.pdbId} is not a valid PDB ID`}</div>
+                                                );
+                                            }
                                         }}
+                                        enabled={this.props.dnatcofierReady}
                                     />
                                     <div></div>
                                 </div>
@@ -158,7 +159,7 @@ export class StartTab extends React.Component<StartTab.Props, State> {
                                     </div>
                                     <PushButton
                                         caption='Proceed'
-                                        enabled={this.state.coordsFile !== null}
+                                        enabled={this.state.coordsFile !== null && this.props.dnatcofierReady}
                                         onClick={() => {
                                             if (this.state.coordsFile) {
                                                 this.props.onDoCustomStructure(this.state.coordsFile, this.state.densityMapFile).then(error => {
@@ -230,5 +231,6 @@ export namespace StartTab {
         onDoPdbId: (pdbId: string) => Promise<string|undefined>;
         onDoCustomStructure: (coordsFile: File, densityMapFile: File|null) => Promise<string|undefined>;
         onDoRawLink: (link: string) => Promise<string|undefined>;
+        dnatcofierReady: boolean;
     }
 }

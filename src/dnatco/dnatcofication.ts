@@ -1,4 +1,5 @@
 import * as ConnSimil from './connectivity-similarity';
+import { Dnatcofier } from './dnatcofier';
 import { ExtractInfo } from './extract-info';
 import { Structure } from './structure';
 import { Cif } from '../cif';
@@ -54,9 +55,14 @@ export class Dnatcofication {
     }
 
     ingest(cif: string) {
-        const prov = Cif.read(cif);
-        if (!this.isDnatcofied(prov))
-            throw new Error('cif file does not contain required DNATCO categories');
+        let prov = Cif.read(cif);
+        if (!this.isDnatcofied(prov)) {
+            // Got a CIF without DNATCO categories. Let's try to create them ourselves
+            const maybeDnatcofiedCif = Dnatcofier.dnatcoify(cif);
+            prov = Cif.read(maybeDnatcofiedCif);
+            if (!this.isDnatcofied(prov))
+                throw new Error('Input CIF file does not contain required DNATCO categories and ReDNATCO\'s automatic assignment process was unsuccessful. Sorry...');
+        }
 
         const structs = new Array<Structure>();
         structs.push(new Structure(prov.table(AtomSite, 0))); // NOTE: We are explicitly ignoring any blocks except the first one
@@ -72,13 +78,12 @@ export class Dnatcofication {
         this._nucleicAcidChains = allNaChains;
         this._steps = StepsMapper.map(this._cif.table(NdbStructNtcStep),this._cif.table(NdbStructNtcStepSummary), Dnatcofication.Structure.numberOfModels(this));
 
-        const stepAtoms = ConnSimil.getStepAtomsNative(this._steps.steps, this._cif);
-        this._connectivities = ConnSimil.getConnectivities(this._steps.steps, stepAtoms, this._steps.previous, this._steps.next);
-        this._similarities = ConnSimil.getSimilarities(this._steps.steps, stepAtoms);
+        const stepsAtoms = ConnSimil.getStepsAtoms(this._steps.steps, this._cif);
+        this._connectivities = ConnSimil.getConnectivities(this._steps.steps, stepsAtoms, this._steps.previous, this._steps.next);
+        this._similarities = ConnSimil.getSimilarities(this._steps.steps, stepsAtoms);
+        stepsAtoms.delete();
 
         console.log(this._connectivities);
-
-        ConnSimil.releaseNativeAtoms(stepAtoms);
 
         this.events.structureChanged.next(true);
     }

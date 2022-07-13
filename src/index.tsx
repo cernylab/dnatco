@@ -4,10 +4,12 @@ import { GlobalConfig } from './global-config';
 import { Result, isError, isOk } from './dnatco';
 import { Engine } from './dnatco/engine';
 import { Dnatcofication } from './dnatco/dnatcofication';
+import { Dnatcofier } from './dnatco/dnatcofier';
 import { AboutTab } from './ui/about-tab';
 import { DnatcoViewerTab } from './ui/dnatco-viewer-tab';
 import { NavigationBar } from './ui/navigation-bar';
 import { StartTab } from './ui/start-tab';
+import { Popup } from './ui/common/popup';
 import { InProgress } from './ui/common/in-progress';
 import { WithSubscriptions } from './ui/service/with-subscriptions';
 import { MainScreen } from './ui/dnatco/main-screen';
@@ -17,6 +19,7 @@ import '../assets/rednatco.css';
 interface State {
     haveStructure: boolean;
     selectedTab: NavigationBar.Tabs;
+    dnatcofierReady: boolean;
 }
 export class App extends WithSubscriptions<Partial<App.Props>, State> {
     private dnatcofication = new Dnatcofication();
@@ -35,6 +38,7 @@ export class App extends WithSubscriptions<Partial<App.Props>, State> {
         this.state = {
             haveStructure: false,
             selectedTab: 'start',
+            dnatcofierReady: false,
         };
     }
 
@@ -71,6 +75,8 @@ export class App extends WithSubscriptions<Partial<App.Props>, State> {
             this.ingestionInProgress = false;
             InProgress.dismiss(inProgressDlg);
 
+            console.log(e); // @nocheckin
+
             return (e as Error).toString();
         }
     }
@@ -91,6 +97,7 @@ export class App extends WithSubscriptions<Partial<App.Props>, State> {
                     onDoCustomStructure={(coordsFile, densityMapFile) => this.loadStructure(async () => await this.fromCustomStructure(coordsFile, densityMapFile))}
                     onDoPdbId={pdbId => this.loadStructure(async () => await this.fromPdbId(pdbId))}
                     onDoRawLink={link => this.loadStructure(async () => await this.fromRawLink(link))}
+                    dnatcofierReady={this.state.dnatcofierReady}
                 />
             );
         case 'annotation':
@@ -137,6 +144,17 @@ export class App extends WithSubscriptions<Partial<App.Props>, State> {
                     this.setState({ ...this.state, haveStructure: have, selectedTab: have ? 'annotation' : 'start' });
             }
         );
+
+        Dnatcofier.initialize().then(() => {
+            this.setState({ ...this.state, dnatcofierReady: true });
+        }).catch(e => {
+            Popup.create(
+                <div className='rdo-error-text'>
+                    <div>{e.toString()}</div>
+                    <div>ReDNATCO cannon function when its engine fails to initialize. Try to refresh the page...</div>
+                 </div>
+            );
+        });
     }
 
     componentWillUnmount() {

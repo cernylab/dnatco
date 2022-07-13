@@ -1,0 +1,18 @@
+export namespace M {
+    /* Degrees to radians */
+    export function d2r(angle: number) {
+        return angle * Math.PI / 180.0;
+    }
+
+    /* Radians to degrees */
+    export function r2d(angle: number) {
+        return angle * 180.0 / Math.PI;
+    }
+
+    /* Angle in <-PI; PI > range to <0; 2PI> range */
+    export function aXf(angle: number) {
+        const neg = (angle < 0.0) ? 1 : 0;
+
+        return neg * ((2.0*Math.PI) + angle) + (1.0 - neg) * angle;
+    }
+}

@@ -25,7 +25,7 @@ const NumNtCs = NtCsVector.size();
 const NtCNames = Array.from(jsLLKA.IterateVector(NtCsVector)).map(ntc => jsLLKA.LLKA.NtCToName(ntc));
 
 function gatherStepAtoms(step: NtC.Step, atoms: Cif.Table<AtomSite_Schema>) {
-    const gathered = [];
+    const gathered = jsLLKA.CLLKAStructure();
 
     const pdbx_PDB_model_num = atoms.pdbx_PDB_model_num.values!;
     const label_asym_id = atoms.label_asym_id.values!;
@@ -42,37 +42,46 @@ function gatherStepAtoms(step: NtC.Step, atoms: Cif.Table<AtomSite_Schema>) {
         const altId = label_alt_id[row];
         if (resNo === step.resNo1 && (altId === null || altId === step.altPos1)) {
             const atom = Cif.Row(atoms, row);
-            gathered.push(
-                jsLLKA.Atom({
-                    type_symbol: atom.type_symbol!,
-                    label_atom_id: atom.label_atom_id!,
-                    label_comp_id: atom.label_comp_id!,
-                    label_asym_id: atom.label_asym_id!,
-                    auth_atom_id: atom.auth_atom_id ?? atom.label_atom_id!,
-                    coords: new jsLLKA.LLKA.Point(atom.Cartn_x, atom.Cartn_y, atom.Cartn_z),
-                    id: atom.id!,
-                    label_seq_id: atom.label_seq_id!,
-                    auth_seq_id: atom.auth_seq_id ?? atom.label_seq_id!,
-                    pdbx_PDB_model_num: atom.pdbx_PDB_model_num ?? 1,
-                    label_alt_id: atom.label_alt_id ?? ''
-                })
+            gathered.push_back(
+                jsLLKA.CLLKAAtom(
+                    atom.type_symbol!,
+                    atom.label_atom_id!,
+                    atom.label_entity_id!,
+                    atom.label_comp_id!,
+                    atom.label_asym_id!,
+                    atom.auth_atom_id ?? '',
+                    atom.auth_comp_id ?? '',
+                    atom.auth_asym_id ?? '',
+                    jsLLKA.CLLKAPoint(atom.Cartn_x!, atom.Cartn_y!, atom.Cartn_z!),
+                    atom.id!,
+                    atom.label_seq_id!,
+                    atom.auth_seq_id ? atom.auth_seq_id : atom.label_seq_id!,
+                    atom.pdbx_PDB_model_num ?? 1,
+                    atom.pdbx_PDB_ins_code?.charCodeAt(0) ?? jsLLKA.NO_INSCODE,
+                    atom.label_alt_id?.charCodeAt(0) ?? jsLLKA.NO_ALTID
+                )
             );
         } else if (resNo === step.resNo2 && (altId === null || altId === step.altPos2)) {
             const atom = Cif.Row(atoms, row);
-            gathered.push(
-                jsLLKA.Atom({
-                    type_symbol: atom.type_symbol!,
-                    label_atom_id: atom.label_atom_id!,
-                    label_comp_id: atom.label_comp_id!,
-                    label_asym_id: atom.label_asym_id!,
-                    auth_atom_id: atom.auth_atom_id ?? atom.label_atom_id!,
-                    coords: new jsLLKA.LLKA.Point(atom.Cartn_x, atom.Cartn_y, atom.Cartn_z),
-                    id: atom.id!,
-                    label_seq_id: atom.label_seq_id!,
-                    auth_seq_id: atom.auth_seq_id ?? atom.label_seq_id!,
-                    pdbx_PDB_model_num: atom.pdbx_PDB_model_num ?? 1,
-                    label_alt_id: atom.label_alt_id ?? ''
-                })
+            // REVIEW: Why do we have to distinct conditions that do the same thing?
+            gathered.push_back(
+                jsLLKA.CLLKAAtom(
+                    atom.type_symbol!,
+                    atom.label_atom_id!,
+                    atom.label_entity_id!,
+                    atom.label_comp_id!,
+                    atom.label_asym_id!,
+                    atom.auth_atom_id ?? '',
+                    atom.auth_comp_id ?? '',
+                    atom.auth_asym_id ?? '',
+                    jsLLKA.CLLKAPoint(atom.Cartn_x!, atom.Cartn_y!, atom.Cartn_z!),
+                    atom.id!,
+                    atom.label_seq_id!,
+                    atom.auth_seq_id ? atom.auth_seq_id : atom.label_seq_id!,
+                    atom.pdbx_PDB_model_num ?? 1,
+                    atom.pdbx_PDB_ins_code?.charCodeAt(0) ?? jsLLKA.NO_INSCODE,
+                    atom.label_alt_id?.charCodeAt(0) ?? jsLLKA.NO_ALTID
+                )
             );
         }
     }
@@ -80,19 +89,19 @@ function gatherStepAtoms(step: NtC.Step, atoms: Cif.Table<AtomSite_Schema>) {
     return gathered;
 }
 
-export function getStepAtomsNative(steps: NtC.Step[], cif: Cif.Cif) {
+export function getStepsAtoms(steps: NtC.Step[], cif: Cif.Cif) {
     const atoms = cif.table(AtomSite, 0);
-    const gatheredAtoms = [];
+    const gatheredAtoms = jsLLKA.CLLKAStructures();
 
     for (const step of steps)
-        gatheredAtoms.push(gatherStepAtoms(step, atoms));
+        gatheredAtoms.push_back(gatherStepAtoms(step, atoms));
 
     return gatheredAtoms;
 }
 
-export function getConnectivities(steps: NtC.Step[], stepAtoms: jsLLKA.LLKAAtom[][], previous: number[], next: number[]): AllConnectivities {
-    if (steps.length !== stepAtoms.length)
-        throw new Error(`Mismatching number of steps ${steps.length} and step atoms ${stepAtoms.length}`);
+export function getConnectivities(steps: NtC.Step[], stepsAtoms: jsLLKA.LLKAStructures, previous: number[], next: number[]): AllConnectivities {
+    if (steps.length !== stepsAtoms.size())
+        throw new Error(`Mismatching number of steps ${steps.length} and step atoms ${stepsAtoms.size()}`);
 
     const backward = new Array<Connectivities|null>();
     const forward = new Array<Connectivities|null>();
@@ -101,9 +110,9 @@ export function getConnectivities(steps: NtC.Step[], stepAtoms: jsLLKA.LLKAAtom[
         const prevStepIdx = previous[idx];
         const nextStepIdx = next[idx];
 
-        const prevStepStru = prevStepIdx !== -1 ? jsLLKA.StructureFromNative(stepAtoms[prevStepIdx]) : null;
-        const currentStepStru = jsLLKA.StructureFromNative(stepAtoms[idx]);
-        const nextStepStru = nextStepIdx !== -1 ? jsLLKA.StructureFromNative(stepAtoms[nextStepIdx]) : null;
+        const prevStepStru = prevStepIdx !== -1 ? stepsAtoms.get(prevStepIdx) : null;
+        const currentStepStru = stepsAtoms.get(idx);
+        const nextStepStru = nextStepIdx !== -1 ? stepsAtoms.get(nextStepIdx) : null;
 
         const ntc = jsLLKA.LLKA.nameToNtC(steps[idx].closestNtC);
         if (ntc == jsLLKA.LLKA.NtC.LLKA_NANT) {
@@ -115,7 +124,7 @@ export function getConnectivities(steps: NtC.Step[], stepAtoms: jsLLKA.LLKAAtom[
 
         // Are we connected backwards?
         if (prevStepStru) {
-            const resConn = new jsLLKA.RCResult<jsLLKA.Connectivities>(jsLLKA.LLKA.measureStepConnectivityNtCsMultipleFirst(prevStepStru, NtCsVector, currentStepStru, ntc));
+            const resConn = jsLLKA.measureStepConnectivityNtCsMultipleFirst(prevStepStru, NtCsVector, currentStepStru, ntc);
             if (resConn.isSuccess()) {
                 const succ = resConn.success();
                 const connectivities: Connectivities = {};
@@ -129,13 +138,13 @@ export function getConnectivities(steps: NtC.Step[], stepAtoms: jsLLKA.LLKAAtom[
                 backward.push(null);
             }
 
-            resConn.release();
+            resConn.delete();
         } else
             backward.push(null);
 
         // Are we connected forwards?
         if (nextStepStru) {
-            const resConn = new jsLLKA.RCResult<jsLLKA.Connectivities>(jsLLKA.LLKA.measureStepConnectivityNtCsMultipleSecond(currentStepStru, ntc, nextStepStru, NtCsVector));
+            const resConn = jsLLKA.LLKA.measureStepConnectivityNtCsMultipleSecond(currentStepStru, ntc, nextStepStru, NtCsVector);
             if (resConn.isSuccess()) {
                 const succ = resConn.success();
                 const connectivities: Connectivities = {};
@@ -149,7 +158,7 @@ export function getConnectivities(steps: NtC.Step[], stepAtoms: jsLLKA.LLKAAtom[
                 forward.push(null);
             }
 
-            resConn.release();
+            resConn.delete();
         } else
             forward.push(null);
 
@@ -161,16 +170,16 @@ export function getConnectivities(steps: NtC.Step[], stepAtoms: jsLLKA.LLKAAtom[
     return { backward, forward };
 }
 
-export function getSimilarities(steps: NtC.Step[], stepAtoms: jsLLKA.LLKAAtom[][]) {
-    if (steps.length !== stepAtoms.length)
-        throw new Error(`Mismatching number of steps ${steps.length} and step atoms ${stepAtoms.length}`);
+export function getSimilarities(steps: NtC.Step[], stepsAtoms: jsLLKA.LLKAStructures) {
+    if (steps.length !== stepsAtoms.size())
+        throw new Error(`Mismatching number of steps ${steps.length} and step atoms ${stepsAtoms.size()}`);
 
     const allSimilarities: AllSimilarities = [];
 
     for (let idx = 0; idx < steps.length; idx++) {
-        const stru = jsLLKA.StructureFromNative(stepAtoms[idx]);
+        const stru = stepsAtoms.get(idx);
 
-        const resSimil = new jsLLKA.RCResult<jsLLKA.Similarities>(jsLLKA.LLKA.measureStepSimilarityNtCMultiple(stru, NtCsVector));
+        const resSimil = jsLLKA.LLKA.measureStepSimilarityNtCMultiple(stru, NtCsVector);
         stru.delete();
 
         if (resSimil.isSuccess()) {
@@ -184,12 +193,8 @@ export function getSimilarities(steps: NtC.Step[], stepAtoms: jsLLKA.LLKAAtom[][
         } else
             allSimilarities.push(null);
 
-        resSimil.release();
+        resSimil.delete();
     }
 
     return allSimilarities;
-}
-
-export function releaseNativeAtoms(atoms: jsLLKA.LLKAAtom[][]) {
-    atoms.forEach(ats => ats.forEach(at => at.delete()));
 }
