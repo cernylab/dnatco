@@ -159,6 +159,7 @@ const StepInfo = {
     p2: 0,
     tau2: 0,
     pn2: C.NA,
+    details: ''
 };
 
 type TorsionInfo = {
@@ -242,7 +243,7 @@ export class StepTorsions extends View<View.Props, State> {
     }
 
     private stepInfo(stepId: number) {
-        if (!this.stepSumTable || !this.sugarStepParamsTable)
+        if (!this.stepSumTable || !this.sugarStepParamsTable || !this.stepParamsTable)
             return StepInfo;
 
         const { assigned_NtC, cartesian_rmsd_closest_NtC_representative } = this.stepSumTable;
@@ -255,15 +256,22 @@ export class StepTorsions extends View<View.Props, State> {
         if (index === -1)
             return StepInfo;
 
+        const { details } = this.stepParamsTable;
+        index = this.stepParamsTable?.step_id.values?.indexOf(stepId) ?? -1;
+        if (index === -1)
+            return StepInfo;
+
+
         return {
             cartesianRmsd: cartesian_rmsd_closest_NtC_representative.value(index),
-            conformer: assigned_NtC.value(index),
-            p1: P_1.value(index),
-            tau1: tau_1.value(index),
-            pn1: Pn_1.value(index),
-            p2: P_2.value(index),
-            tau2: tau_2.value(index),
-            pn2: Pn_2.value(index),
+            conformer: assigned_NtC.value(index)!,
+            p1: P_1.value(index)!,
+            tau1: tau_1.value(index)!,
+            pn1: Pn_1.value(index)!,
+            p2: P_2.value(index)!,
+            tau2: tau_2.value(index)!,
+            pn2: Pn_2.value(index)!,
+            details: details.value(index)!,
         };
     }
 
@@ -425,9 +433,10 @@ export class StepTorsions extends View<View.Props, State> {
                 <div className='rdo-line-spacer' />
                 <NamedList
                     items={[
-                        { name: 'Step conformer', value: stepInfo.conformer! },
+                        { name: 'Step conformer', value: stepInfo.conformer },
                         { name: 'Cartesian RMSD', value: `${stepInfo.cartesianRmsd!.toFixed(2)} Å` },
                         { name: 'Pseudorotation', value: `${stepInfo.p1}, ${stepInfo.tau1}, ${stepInfo.pn1} / ${stepInfo.p2}, ${stepInfo.tau2}, ${stepInfo.pn2}` },
+                        { name: 'Details',        value: stepInfo.details },
                     ]}
                 />
             </div>
