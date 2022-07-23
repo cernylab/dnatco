@@ -40,18 +40,19 @@ const SingleQuoteCharCode = 39;
 const SemicolonCharCode   = 59;
 const UnderscoreCharCode  = 95;
 
+type PrimingState = { isPrimed: boolean, quotesIgnored: boolean };
 type Token = { text: string, kind: number };
 namespace TokenKind {
-    export const Comment = 0;
-    export const DataBlock = 1;
-    export const Loop = 2;
-    export const Multiline = 3;
-    export const Tag = 4;
-    export const Value = 5;
-    export const SaveBlock = 6;
-    export const Stop = 7;
-    export const GlobalBlock = 8;
-    export const Empty = 9;
+    export const Value       = 0;
+    export const Tag         = (1 << 0);
+    export const Comment     = (1 << 1);
+    export const Multiline   = (1 << 2);
+    export const Loop        = (1 << 3);
+    export const DataBlock   = (1 << 4);
+    export const SaveBlock   = (1 << 5);
+    export const Stop        = (1 << 6);
+    export const GlobalBlock = (1 << 7);
+    export const Empty       = (1 << 8);
 }
 
 function Token(text: string, kind: number): Token {
@@ -65,7 +66,7 @@ class Stream {
 
     private primedText: string;
     private primedKind: number;
-    private isPrimed: boolean;
+    private primingState: PrimingState;
 
     lineCounter = 1;
 
@@ -76,12 +77,12 @@ class Stream {
 
         this.primedText = '';
         this.primedKind = -1;
-        this.isPrimed = false;
+        this.primingState = { isPrimed: false, quotesIgnored: false };
     }
 
-    private getCifToken() {
+    private getCifToken(ignoreQuotes: boolean) {
         let charCode = this.stream.charCodeAt(this.cursor);
-        const quote = (charCode === SingleQuoteCharCode || charCode === DoubleQuoteCharCode) ? charCode : undefined;
+        const quote = (!ignoreQuotes && (charCode === SingleQuoteCharCode || charCode === DoubleQuoteCharCode)) ? charCode : undefined;
 
         const from = this.cursor;
         let idx = from + 1;
@@ -114,9 +115,9 @@ class Stream {
         for (let idx = 0; idx < text.length; idx++) {
             const charCode = text.charCodeAt(idx);
             const whiteSpace =
+                charCode === NLCharCode ||
                 charCode === SpaceCharCode ||
-                charCode === TabCharCode ||
-                charCode === NLCharCode;
+                charCode === TabCharCode;
             if (!whiteSpace)
                 return false;
         }
@@ -124,16 +125,20 @@ class Stream {
         return true;
     }
 
+    private isPrimed(ignoreQuotes: boolean): boolean {
+        return this.primingState.isPrimed === true && this.primingState.quotesIgnored === ignoreQuotes;
+    }
+
     private tokenKind(text: string) {
         const charCode = text.charCodeAt(0);
 
-        if (charCode === UnderscoreCharCode)
-            return TokenKind.Tag;
-        else if (charCode === HashCharCode)
-            return TokenKind.Comment;
-        else if (charCode === SemicolonCharCode && (this.cursor === 0 || this.stream.charCodeAt(this.cursor - 1) === NLCharCode))
-            return TokenKind.Multiline;
+        const kind =
+            ((charCode == UnderscoreCharCode ? 1 : 0) << 0) |
+            ((charCode == HashCharCode ? 1 : 0)       << 1) |
+            (((charCode == SemicolonCharCode && (this.cursor === 0 || this.stream.charCodeAt(this.cursor - 1)) === NLCharCode) ? 1 : 0) << 2);
 
+        if (kind !== 0)
+            return kind;
         if (text.length < 5)
             return this.isEmptyToken(text) ? TokenKind.Empty : TokenKind.Value;
 
@@ -149,24 +154,23 @@ class Stream {
             return TokenKind.Stop;
         else if (text.startsWith('global_'))
             return TokenKind.GlobalBlock;
-        else
-            return this.isEmptyToken(text) ? TokenKind.Empty : TokenKind.Value;
+
+        return this.isEmptyToken(text) ? TokenKind.Empty : TokenKind.Value;
     }
 
-    eat() {
-        const [ text, kind ] = (() => {
-            if (this.isPrimed) {
-                this.isPrimed = false;
-                return [ this.primedText, this.primedKind ];
-            } else {
-                const text = this.getCifToken();
-                const kind = this.tokenKind(text);
-                return [ text, kind ];
-            }
-        })();
+    eat(ignoreQuotes: boolean = false) {
+        let token: Token|undefined = undefined;
+
+        if (this.isPrimed(ignoreQuotes)) {
+            this.primingState.isPrimed = false;
+            token = Token(this.primedText, this.primedKind);
+        } else {
+            const text = this.getCifToken(ignoreQuotes);
+            token = Token(text, this.tokenKind(text));
+        }
 
         // Move to the beginning of the next token
-        this.cursor += text.length;
+        this.cursor += token.text.length;
         while (this.cursor < this.length) {
             const charCode = this.stream.charCodeAt(this.cursor);
             const isNewLine = charCode === NLCharCode;
@@ -179,11 +183,11 @@ class Stream {
             this.cursor++;
         }
 
-        return Token(text, kind);
+        return token;
     }
 
     eatLine() {
-        this.isPrimed = false;
+        this.primingState.isPrimed = false;
 
         let end = undefined;
         for (let idx = this.cursor; idx < this.length; idx++) {
@@ -206,12 +210,15 @@ class Stream {
 
     exhausted() { return this.cursor === this.length; }
 
-    peekKind() {
-        if (this.isPrimed)
-            return Token(this.primedText, this.primedKind);
+    peekKind(ignoreQuotes: boolean = false): number {
+        if (this.isPrimed(ignoreQuotes))
+            return this.primedKind;
 
-        this.primedText = this.getCifToken();
+        this.primedText = this.getCifToken(ignoreQuotes);
         this.primedKind = this.tokenKind(this.primedText);
+
+        this.primingState.isPrimed = true;
+        this.primingState.quotesIgnored = ignoreQuotes;
 
         return this.primedKind;
     }
@@ -258,7 +265,7 @@ function doLoop(block: Block, stream: Stream) {
             else if (columnData.length === 0) // First value token. We now know how many columns we have so we can allocate column data
                 allocateColumnData();
 
-            const value = doMultiline(stream.eat(), stream);
+            const value = doMultiline(stream.eat().text, stream);
             columnData[columnIndex].push(value);
             columnIndex = (columnIndex + 1) % columns.length;
         } else if (kind === TokenKind.Tag) {
@@ -284,41 +291,40 @@ function doLoop(block: Block, stream: Stream) {
         }
     }
 
+    if (!(columnData.length > 0 && columnIndex === 0))
+        throw new Error('File ended in the middle of a loop');
+
     const actualCategory = loopCategory === null ? block.nextAnonymousCategoryName() : loopCategory;
 
     for (let colIdx = 0; colIdx < columnData.length; colIdx++)
         block.addMultiple(actualCategory ?? null, columns[colIdx], columnData[colIdx]);
 }
 
-function doMultiline(tok: Token, stream: Stream) {
+function doMultiline(text: string, stream: Stream) {
     if (stream.exhausted())
         throw new Error(`Unexpected end of file on line ${stream.lineCounter}`);
 
-    let multiline = tok.text.substring(1);
+    let multiline = text.substring(1);
     while (!stream.exhausted()) {
-        const kind = stream.peekKind();
+        const kind = stream.peekKind(true);
 
-        if (kind === TokenKind.Value)
-            multiline += (stream.eatLine() + " ");
-        else if (kind === TokenKind.Multiline) {
-            stream.eat();
-            return multiline;
+        if (kind === TokenKind.Multiline) {
+            stream.eat(true);
+            return multiline.substring(0, multiline.length - 1);
         } else if (kind === TokenKind.Comment)
             stream.eatLine();
-        else if (kind == TokenKind.Empty)
-            stream.eat();
         else
-            throw new Error(`Unexpected token in inside a multiline entry on line ${stream.lineCounter}`);
+            multiline += stream.eatLine();
     }
 
     throw new Error('Unterminated multiline entry');
 }
 
-function doTagValue(tok: Token, block: Block, stream: Stream) {
+function doTagValue(text: string, block: Block, stream: Stream) {
     if (stream.exhausted())
         throw new Error(`Unexpected end of file on line ${stream.lineCounter}`);
 
-    const { category, keyword } = tagToCategoryKeyword(tok.text, stream.lineCounter);
+    const { category, keyword } = tagToCategoryKeyword(text, stream.lineCounter);
 
     while (!stream.exhausted()) {
         const kind = stream.peekKind();
@@ -329,7 +335,7 @@ function doTagValue(tok: Token, block: Block, stream: Stream) {
         } else if (kind === TokenKind.Comment)
             stream.eatLine();
         else if (kind === TokenKind.Multiline) {
-            block.add(category, keyword, doMultiline(stream.eat(), stream));
+            block.add(category, keyword, doMultiline(stream.eat().text, stream));
             return;
         } else
             throw new Error(`Unexpected token kind ${kind} in tag-value entry on line ${stream.lineCounter}`);
@@ -391,7 +397,7 @@ export namespace Parser {
                 blocks.push(currentBlock);
                 currentBlock = new Block(name);
             } else if (kind === TokenKind.Tag)
-                doTagValue(stream.eat(), currentBlock, stream);
+                doTagValue(stream.eat().text, currentBlock, stream);
             else if (kind === TokenKind.Loop) {
                 stream.eat();
                 doLoop(currentBlock, stream);
@@ -413,7 +419,7 @@ export namespace Parser {
                 if (currentBlock === null)
                     return blocks;
             } else
-                throw new Error(`Unknown or unhandled token on line ${stream.lineCounter}`);
+                throw new Error(`Unknown or unhandled token ${kind} on line ${stream.lineCounter}`);
         }
 
         blocks.push(currentBlock);

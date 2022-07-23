@@ -55,6 +55,8 @@ export class Dnatcofication {
     }
 
     ingest(cif: string) {
+        const tStart = performance.now();
+
         let prov = Cif.read(cif);
         if (!this.isDnatcofied(prov)) {
             // Got a CIF without DNATCO categories. Let's try to create them ourselves
@@ -83,7 +85,9 @@ export class Dnatcofication {
         this._similarities = ConnSimil.getSimilarities(this._steps.steps, stepsAtoms);
         stepsAtoms.delete();
 
-        console.log(this._connectivities);
+        const tEnd = performance.now();
+
+        console.log(`Dnatcofication process took ${((tEnd - tStart) / 1000.0).toFixed(3)} sec`);
 
         this.events.structureChanged.next(true);
     }

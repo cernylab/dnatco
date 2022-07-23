@@ -185,8 +185,8 @@ export function getSimilarities(steps: NtC.Step[], stepsAtoms: jsLLKA.LLKAStruct
         if (resSimil.isSuccess()) {
             const similarities: Similarities = {};
             const succ = resSimil.success();
-            for (let idx = 0; idx < NumNtCs; idx++)
-                similarities[NtCNames[idx]] = { ...succ.get(idx) };
+            for (let jdx = 0; jdx < NumNtCs; jdx++)
+                similarities[NtCNames[jdx]] = { ...succ.get(jdx) };
 
             succ.delete();
             allSimilarities.push(similarities);
