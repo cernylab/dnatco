@@ -80,7 +80,7 @@ export class App extends WithSubscriptions<Partial<App.Props>, State> {
 
         this.ingestionInProgress = true;
 
-        const inProgressDlg = await InProgress.create('Processing custom structure', '', true);
+        const inProgressDlg = await InProgress.create('Processing custom structure', 'Preparing', true);
         const worker = BackgroundWorker<DnatcoficationData, P>();
 
         worker.onmessage = (ev: MessageEvent<WorkerMessage.Out<DnatcoficationData>>) => {

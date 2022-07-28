@@ -77,10 +77,12 @@ export namespace Dnatcofier {
         return clsfCtx;
     }
 
-    export function dnatcoify(cif: string, clsfCtxData: ClassificationResources.Data, bgCtx: DnatcoficationTaskContext) {
+    export function dnatcoify(cif: string, clsfCtxData: ClassificationResources.Data, ctx: DnatcoficationTaskContext) {
+        ctx.status = 'Initializing classification context';
+
         const clsfCtx = initializeClassificationContext(clsfCtxData);
 
-        bgCtx.status = 'Reading CIF data';
+        ctx.status = 'Reading CIF data';
         const res = jsLLKA.cifToStructure(cif, jsLLKA.MINICIF_GET_CIFDATA);
         if (!res.isSuccess()) {
             clsfCtx.delete();
@@ -93,7 +95,7 @@ export namespace Dnatcofier {
         const cifData = importedStru.cifData;
         res.delete();
 
-        bgCtx.status = 'Splitting structrure to dinucletide steps';
+        ctx.status = 'Splitting structrure to dinucletide steps';
         const res2 = jsLLKA.splitStructureToDinucleotideSteps(importedStru.structure);
         if (!res2.isSuccess()) {
             clsfCtx.delete();
@@ -105,7 +107,7 @@ export namespace Dnatcofier {
         const steps = res2.success();
         res2.delete();
 
-        bgCtx.status = 'Classifying dinucleotide steps';
+        ctx.status = 'Classifying dinucleotide steps';
         const res3 = jsLLKA.classifySteps(steps, clsfCtx);
         if (!res3.isSuccess()) {
             clsfCtx.delete();
@@ -117,13 +119,13 @@ export namespace Dnatcofier {
         const attemptedSteps = res3.success();
         res3.delete();
 
-        bgCtx.status = 'Adding DNATCO categories to CIF';
+        ctx.status = 'Adding DNATCO categories to CIF';
         const cifDataDNATCO = jsLLKA.addDNATCOCategoriesToCif(cifData, attemptedSteps, steps, importedStru.id, false);
         steps.delete();
         attemptedSteps.delete();
         clsfCtx.delete();
 
-        bgCtx.status = 'Writing out extended CIF file';
+        ctx.status = 'Writing out extended CIF file';
         const res4 = jsLLKA.cifDataToString(cifDataDNATCO, true);
         if (!res4.isSuccess()) {
             const fail = res4.failure();
