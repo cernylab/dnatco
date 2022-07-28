@@ -3,6 +3,7 @@ import * as RDC from 'react-dom/client';
 import { GlobalConfig } from './global-config';
 import { ClassificationResources } from './dnatco/classification-resources';
 import { Dnatcofication, DnatcoficationData } from './dnatco/dnatcofication';
+import { Reader } from './dnatco/reader';
 import { AboutTab } from './ui/about-tab';
 import { DnatcoViewerTab } from './ui/dnatco-viewer-tab';
 import { NavigationBar } from './ui/navigation-bar';
@@ -54,10 +55,10 @@ export class App extends WithSubscriptions<Partial<App.Props>, State> {
         this.loadStructure(task);
     }
 
-    private fromPdbId(pdbId: string) {
-        const task: Task<{ pdbId: string, clsfResData: ClassificationResources.Data }> = {
+    private fromPdbId(pdbId: string, db: Reader.SupportedDatabases) {
+        const task: Task<{ pdbId: string, db: Reader.SupportedDatabases, clsfResData: ClassificationResources.Data }> = {
             taskFunc: 'dnatco-from-pdb-id',
-            payload: { pdbId, clsfResData },
+            payload: { pdbId, db, clsfResData },
             initialStatus: ''
         };
 
@@ -80,7 +81,7 @@ export class App extends WithSubscriptions<Partial<App.Props>, State> {
 
         this.ingestionInProgress = true;
 
-        const inProgressDlg = await InProgress.create('Processing custom structure', 'Preparing', true);
+        const inProgressDlg = await InProgress.create('Processing structure', 'Preparing', true);
         const worker = BackgroundWorker<DnatcoficationData, P>();
 
         worker.onmessage = (ev: MessageEvent<WorkerMessage.Out<DnatcoficationData>>) => {
@@ -104,7 +105,7 @@ export class App extends WithSubscriptions<Partial<App.Props>, State> {
                 if (data.finished.state === 'failed') {
                     Popup.create(
                         <>
-                            <div className='rdo-error-text'>Cannot process custom structure</div>
+                            <div className='rdo-error-text'>Cannot process structure</div>
                             <div className='rdo-error-text'>{data.finished.message ?? 'Unknown error'}</div>
                          </>
                     );
@@ -123,7 +124,7 @@ export class App extends WithSubscriptions<Partial<App.Props>, State> {
             return (
                 <StartTab
                     onDoCustomStructure={(coordsFile, densityMapFile) => this.fromCustomStructure(coordsFile, densityMapFile)}
-                    onDoPdbId={pdbId => this.fromPdbId(pdbId)}
+                    onDoPdbId={(pdbId, db) => this.fromPdbId(pdbId, db)}
                     onDoRawLink={link => this.fromRawLink(link)}
                     dnatcofierReady={this.state.dnatcofierReady}
                 />

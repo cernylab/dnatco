@@ -3,7 +3,9 @@ import { ungzip } from '../zip/unzip';
 
 const Utf8Decoder = new TextDecoder('utf-8');
 
-export namespace Engine {
+export namespace Reader {
+    export type SupportedDatabases = 'rcsb' | 'redo';
+
     async function blobToText(buf: ArrayBuffer, gzipped: boolean) {
         const data = new Uint8Array(buf);
         const ungzipped = gzipped ? await ungzip(data) : data;
@@ -18,9 +20,7 @@ export namespace Engine {
         return await file.text();
     }
 
-    export async function dnatcoifyCustom(coordsFile: File, densityMapFile: File|null) {
-        // HACK
-
+    export async function fromFile(coordsFile: File, densityMapFile: File|null) {
         try {
             const text = await fileToText(coordsFile);
             return OkResult(text);
@@ -29,24 +29,35 @@ export namespace Engine {
         }
     }
 
-    export async function dnatcoifyPdbId(pdbId: string) {
-        // HACK
+    export async function fromPdbId(pdbId: string, db: SupportedDatabases) {
+        const [ url, gzipped ] = (() => {
+            if (db === 'rcsb')
+                return [ `https://files.rcsb.org/download/${pdbId.toUpperCase()}.cif.gz`, true ];
+            else if (db === 'redo') {
+                const id = pdbId.toLowerCase();
+                return [ `https://pdb-redo.eu/db/${id}/${id}_final.cif`, false ];
+            } else
+                throw new Error('Unsupported database');
+        })();
 
         try {
-            const req = await fetch(`https://dnatco.datmos.org/v4.1/RCSB/cif_dnatco_updated/${pdbId}_v41C35A23.cif.gz`);
-            const cif = await blobToText(await req.arrayBuffer(), true);
+            const req = await fetch(url);
+            if (!req.ok)
+                return ErrorResult(`Cannot load data: ${req.statusText}`);
+            const cif = await blobToText(await req.arrayBuffer(), gzipped);
             return OkResult(cif);
         } catch (e) {
             return ErrorResult(`Cannot load data ${e}`);
         }
     }
 
-    export async function dnatcoifyLink(link: string) {
+    export async function fromLink(link: string) {
         // Not really a hack
 
         try {
             const req = await fetch(link);
-
+            if (!req.ok)
+                return ErrorResult(`Cannot load data: ${req.statusText}`);
             const cif = await blobToText(await req.arrayBuffer(), false);
             return OkResult(cif);
         } catch (e) {

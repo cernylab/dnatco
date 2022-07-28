@@ -6,14 +6,14 @@ import { DummyButton, PushButton } from './common/push-button';
 import { ShadowedBox } from './common/shadowed-box';
 import { SpinBox } from './common/spin-box';
 import { NtC } from '../dnatco/ntc';
+import { Reader } from '../dnatco/reader';
 import { isPdbId } from '../util';
 
-type Databases = 'RCSB-PDB' | 'PDB-REDO';
 type SearchRedundacy = 'non-redundant' | 'all';
 
 const DatabaseOptions = [
-    { value: 'RCSB-PDB', caption: 'RSCB-PDB' },
-    { value: 'PDB-REDO', caption: 'PDB-REDO' },
+    { value: 'rcsb', caption: 'RSCB-PDB' },
+    { value: 'redo', caption: 'PDB-REDO' },
 ];
 const NtCOptions = NtC.Conformers.map(cfrm => { return { value: cfrm, caption: cfrm } });
 const SearchLimitHard = 500;
@@ -25,7 +25,7 @@ const SearchRedundancyOptions = [
 interface State {
     coordsFile: File|null;
     densityMapFile: File|null;
-    database: Databases;
+    database: Reader.SupportedDatabases;
     pdbId: string;
     searchLargeStructures: boolean;
     searchLimit: number;
@@ -39,7 +39,7 @@ export class StartTab extends React.Component<StartTab.Props, State> {
 
         this.state = {
             coordsFile: null,
-            database: 'RCSB-PDB',
+            database: 'rcsb',
             densityMapFile: null,
             pdbId: '',
             searchLimit: 200,
@@ -84,17 +84,14 @@ export class StartTab extends React.Component<StartTab.Props, State> {
                                     <ComboBox
                                         options={DatabaseOptions}
                                         value={this.state.database}
-                                        onChange={v => this.setState({ ...this.state, database: v as Databases })}
+                                        onChange={v => this.setState({ ...this.state, database: v as Reader.SupportedDatabases })}
                                     />
                                     <PushButton
                                         caption='Proceed'
                                         onClick={() => {
-                                            if (isPdbId(this.state.pdbId)) {
-                                                Popup.create(
-                                                    <div className='rdo-error-text'>This function is currently unavailable</div>
-                                                );
-                                                //this.props.onDoPdbId(this.state.pdbId);
-                                            } else if (this.state.pdbId.length === 0) {
+                                            if (isPdbId(this.state.pdbId))
+                                                this.props.onDoPdbId(this.state.pdbId, this.state.database);
+                                            else if (this.state.pdbId.length === 0) {
                                                 Popup.create(
                                                     <div className='rdo-error-text'>Please enter a valid PDB ID</div>
                                                 );
@@ -218,7 +215,7 @@ export class StartTab extends React.Component<StartTab.Props, State> {
 
 export namespace StartTab {
     export interface Props {
-        onDoPdbId: (pdbId: string) => void,
+        onDoPdbId: (pdbId: string, db: Reader.SupportedDatabases) => void,
         onDoCustomStructure: (coordsFile: File, densityMapFile: File|null) => void,
         onDoRawLink: (link: string) => void,
         dnatcofierReady: boolean;
