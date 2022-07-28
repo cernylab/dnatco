@@ -110,9 +110,9 @@ function extractModels(atom_site: Cif.Table<AtomSite_Schema>) {
     const { pdbx_PDB_model_num, _rowCount } = atom_site;
 
     const models = new Map<number, AtomSiteRow[]>();
-    if (pdbx_PDB_model_num.hasValues()) {
+    if (Cif.Column.hasValues(pdbx_PDB_model_num)) {
         for (let row = 0; row < _rowCount; row++) {
-            const modelNum = pdbx_PDB_model_num.value(row);
+            const modelNum = Cif.Column.value(pdbx_PDB_model_num, row);
             if (!modelNum)
                 throw new Error('Model number is not specified for all atoms. We don\'t know how to handle this');
             const model = models.get(modelNum);

@@ -258,11 +258,11 @@ export class StepTorsions extends View<View.Props, State> {
         const info = DistanceInfo();
         for (const key in info.actual) {
             const dist = key as keyof DistanceInfo['actual'];
-            info.actual[dist] = distanceColumn(this.stepParamsTable, dist).value(idx)!;
+            info.actual[dist] = Cif.Column.value(distanceColumn(this.stepParamsTable, dist), idx)!;
         }
         for (const key in info.diff) {
             const dist = key as keyof DistanceInfo['diff'];
-            info.diff[dist] = distanceDiffColumn(this.stepParamsTable, dist).value(idx)!;
+            info.diff[dist] = Cif.Column.value(distanceDiffColumn(this.stepParamsTable, dist), idx)!;
         }
         for (const key in info.reference) {
             const dist = key as keyof DistanceInfo['reference'];
@@ -270,7 +270,7 @@ export class StepTorsions extends View<View.Props, State> {
         }
         for (const key in info.confal) {
             const dist = key as keyof DistanceInfo['confal'];
-            info.confal[dist] = distanceConfalColumn(this.stepParamsTable, dist).value(idx)!;
+            info.confal[dist] = Cif.Column.value(distanceConfalColumn(this.stepParamsTable, dist), idx)!;
         }
 
         return info;
@@ -309,15 +309,15 @@ export class StepTorsions extends View<View.Props, State> {
 
 
         return {
-            cartesianRmsd: cartesian_rmsd_closest_NtC_representative.value(index),
-            conformer: assigned_NtC.value(index)!,
-            p1: P_1.value(index)!,
-            tau1: tau_1.value(index)!,
-            pn1: Pn_1.value(index)!,
-            p2: P_2.value(index)!,
-            tau2: tau_2.value(index)!,
-            pn2: Pn_2.value(index)!,
-            details: details.value(index)!,
+            cartesianRmsd: Cif.Column.value(cartesian_rmsd_closest_NtC_representative, index),
+            conformer: Cif.Column.value(assigned_NtC, index)!,
+            p1: Cif.Column.value(P_1, index)!,
+            tau1: Cif.Column.value(tau_1, index)!,
+            pn1: Cif.Column.value(Pn_1, index)!,
+            p2: Cif.Column.value(P_2, index)!,
+            tau2: Cif.Column.value(tau_2, index)!,
+            pn2: Cif.Column.value(Pn_2, index)!,
+            details: Cif.Column.value(details, index)!,
         };
     }
 
@@ -343,11 +343,11 @@ export class StepTorsions extends View<View.Props, State> {
         const info = TorsionInfo();
         for (const key in info.actual) {
             const tor = key as keyof TorsionInfo['actual'];
-            info.actual[tor] = torsionColumn(this.stepParamsTable, tor).value(idx)!;
+            info.actual[tor] = Cif.Column.value(torsionColumn(this.stepParamsTable, tor), idx)!;
         }
         for (const key in info.diff) {
             const tor = key as keyof TorsionInfo['diff'];
-            info.diff[tor] = torsionDiffColumn(this.stepParamsTable, tor).value(idx)!;
+            info.diff[tor] = Cif.Column.value(torsionDiffColumn(this.stepParamsTable, tor), idx)!;
         }
         for (const key in info.reference) {
             const tor = key as keyof TorsionInfo['reference'];
@@ -355,7 +355,7 @@ export class StepTorsions extends View<View.Props, State> {
         }
         for (const key in info.confal) {
             const tor = key as keyof TorsionInfo['confal'];
-            info.confal[tor] = torsionConfalColumn(this.stepParamsTable, tor).value(idx)!;
+            info.confal[tor] = Cif.Column.value(torsionConfalColumn(this.stepParamsTable, tor), idx)!;
         }
 
         return info;

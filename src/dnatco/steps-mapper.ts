@@ -9,20 +9,20 @@ export namespace StepsMapper {
         // First assume that summaries are ordered by step_id that begins with 1
         const startFrom = id - 1 >= 0 ? id - 1 : 0;
         for (let row = startFrom; row < summaries._rowCount; row++) {
-            if (summaries.step_id.value(row) === id) {
+            if (Cif.Column.value(summaries.step_id, row) === id) {
                 return {
-                    assigned: summaries.assigned_NtC.value(row)!,
-                    closest: summaries.closest_NtC.value(row)!,
+                    assigned: Cif.Column.value(summaries.assigned_NtC, row)!,
+                    closest: Cif.Column.value(summaries.closest_NtC, row)!,
                 };
             }
         }
 
         // Initial assumption failed, do an exhaustive search
         for (let row = 0; row < summaries._rowCount; row++) {
-            if (summaries.step_id.value(row) === id) {
+            if (Cif.Column.value(summaries.step_id, row) === id) {
                 return {
-                    assigned: summaries.assigned_NtC.value(row)!,
-                    closest: summaries.closest_NtC.value(row)!,
+                    assigned: Cif.Column.value(summaries.assigned_NtC, row)!,
+                    closest: Cif.Column.value(summaries.closest_NtC, row)!,
                 };
             }
         }
@@ -55,14 +55,14 @@ export namespace StepsMapper {
         if (steps._rowCount < 1)
             return Mapping();
 
-        let firstId = steps.id.value(0)!;
-        let firstModel = steps.PDB_model_number.value(0)!;
+        let firstId = Cif.Column.value(steps.id, 0)!;
+        let firstModel = Cif.Column.value(steps.PDB_model_number, 0)!;
         for (let row = 1; row < steps._rowCount; row++) {
-            const id = steps.id.value(row)!;
+            const id = Cif.Column.value(steps.id, row)!;
             if (id < firstId)
                 firstId = id;
 
-            const model = steps.PDB_model_number.value(row)!;
+            const model = Cif.Column.value(steps.PDB_model_number, row)!;
             if (model < firstModel)
                 firstModel = model;
         }
@@ -71,12 +71,12 @@ export namespace StepsMapper {
         const names = new Map<string, number>();
 
         for (let row = 0; row < steps._rowCount; row++) {
-            const id = steps.id.value(row)!;
+            const id = Cif.Column.value(steps.id, row)!;
             const idx = id - firstId;
-            const name = steps.name.value(row)!;
+            const name = Cif.Column.value(steps.name, row)!;
 
-            const chain1 = steps.label_asym_id_1.value(row);
-            const chain2 = steps.label_asym_id_2.value(row);
+            const chain1 = Cif.Column.value(steps.label_asym_id_1, row);
+            const chain2 = Cif.Column.value(steps.label_asym_id_2, row);
             if (chain1 !== chain2)
                 throw new Error(`Steps are not allowed to span across chains but step ${id} does that`);
 
@@ -85,13 +85,13 @@ export namespace StepsMapper {
                 id,
                 name,
                 chain: chain1!,
-                resNo1: steps.label_seq_id_1.value(row)!,
-                base1: steps.label_comp_id_1.value(row) as NucleicBase,
-                altPos1: steps.label_alt_id_1.value(row) ?? '',
-                resNo2: steps.label_seq_id_2.value(row)!,
-                base2: steps.label_comp_id_2.value(row) as NucleicBase,
-                altPos2: steps.label_alt_id_2.value(row) ?? '',
-                model: steps.PDB_model_number.value(row)!,
+                resNo1: Cif.Column.value(steps.label_seq_id_1, row)!,
+                base1: Cif.Column.value(steps.label_comp_id_1, row) as NucleicBase,
+                altPos1: Cif.Column.value(steps.label_alt_id_1, row) ?? '',
+                resNo2: Cif.Column.value(steps.label_seq_id_2, row)!,
+                base2: Cif.Column.value(steps.label_comp_id_2, row) as NucleicBase,
+                altPos2: Cif.Column.value(steps.label_alt_id_2, row) ?? '',
+                model: Cif.Column.value(steps.PDB_model_number, row)!,
                 NtC: assigned,
                 closestNtC: closest,
             };
@@ -156,53 +156,53 @@ export namespace StepsMapper {
     }
 
     export function byId(d: Dnatcofication, id: number) {
-        return d._steps.steps[id - d._steps.firstId];
+        return d.data.steps.steps[id - d.data.steps.firstId];
     }
 
     export function byName(d: Dnatcofication, name: string) {
-        const idx = d._steps.names.get(name);
-        return idx !== undefined ? d._steps.steps[idx] : undefined;
+        const idx = d.data.steps.names.get(name);
+        return idx !== undefined ? d.data.steps.steps[idx] : undefined;
     }
 
     export function idToIndex(d: Dnatcofication, id: number) {
-        return id - d._steps.firstId;
+        return id - d.data.steps.firstId;
     }
 
     export function nameToIndex(d: Dnatcofication, name: string) {
-        return d._steps.names.get(name);
+        return d.data.steps.names.get(name);
     }
 
     export function previousNextById(d: Dnatcofication, id: number): { previous: number, next: number } {
-        const idx = id - d._steps.firstId;
-        const offset = d._steps.firstId;
-        const previous = d._steps.previous[idx] !== -1 ? d._steps.previous[idx] + offset : -1;
-        const next = d._steps.next[idx] !== -1 ? d._steps.next[idx] + offset : -1;
+        const idx = id - d.data.steps.firstId;
+        const offset = d.data.steps.firstId;
+        const previous = d.data.steps.previous[idx] !== -1 ? d.data.steps.previous[idx] + offset : -1;
+        const next = d.data.steps.next[idx] !== -1 ? d.data.steps.next[idx] + offset : -1;
 
         return { previous, next };
     }
 
     export function segment(d: Dnatcofication, model?: number, chain?: string) {
         if (model === undefined)
-            return d._steps.steps;
+            return d.data.steps.steps;
         else {
             const steps = new Array<NtC.Step>();
 
             if (chain === undefined) {
-                const fromIdx = d._steps.models[model - 1];
-                const first = d._steps.steps[fromIdx];
-                for (let idx = fromIdx; idx < d._steps.steps.length; idx++) {
-                    const s = d._steps.steps[idx];
+                const fromIdx = d.data.steps.models[model - 1];
+                const first = d.data.steps.steps[fromIdx];
+                for (let idx = fromIdx; idx < d.data.steps.steps.length; idx++) {
+                    const s = d.data.steps.steps[idx];
                     if (s.model !== first.model)
                         break;
                     steps.push(s);
                 }
             } else {
-                const fromIdx = d._steps.chains[model - 1].get(chain);
+                const fromIdx = d.data.steps.chains[model - 1].get(chain);
                 if (fromIdx === undefined)
                     throw new Error(`Invalid chain ${chain}`);
-                const first = d._steps.steps[fromIdx];
-                for (let idx = fromIdx; idx < d._steps.steps.length; idx++) {
-                    const s = d._steps.steps[idx];
+                const first = d.data.steps.steps[fromIdx];
+                for (let idx = fromIdx; idx < d.data.steps.steps.length; idx++) {
+                    const s = d.data.steps.steps[idx];
                     if (s.chain !== first.chain)
                         break;
                     steps.push(s);

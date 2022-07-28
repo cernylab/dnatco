@@ -1,7 +1,7 @@
 import * as jsLLKA from 'jsLLKA';
+import { ClassificationResources } from './classification-resources';
+import { DnatcoficationTaskContext } from './dnatcofication';
 import { M } from '../util/math';
-
-let ClassificationContext: jsLLKA.LLKAClassificationContext|undefined = undefined;
 
 const ClassificationLimits: jsLLKA.LLKAClassificationLimits = {
     minimumNearestNeighbors: 7,
@@ -14,51 +14,15 @@ const ClassificationLimits: jsLLKA.LLKAClassificationLimits = {
 };
 
 export namespace Dnatcofier {
-    async function loadClassificationDefinitions(): Promise<{ clusters: string, confals: string, goldenSteps: string, nuAngles: string }> {
-        let clusters = '';
-        let confals = '';
-        let goldenSteps = '';
-        let nuAngles = '';
-
-        const clustersResp = fetch('classification/clusters.csv');
-        const confalsResp = fetch('classification/confals.csv');
-        const goldenStepsResp = fetch('classification/golden_steps.csv');
-        const nuAnglesResp = fetch('classification/nu_angles.csv');
-
-        let r = await clustersResp;
-        if (!r.ok)
-            throw new Error(`Failed to download clusters definitions: ${r.status} ${r.statusText}`);
-        clusters = await r.text();
-
-        r = await confalsResp;
-        if (!r.ok)
-            throw new Error(`Failed to download confals definitions: ${r.status} ${r.statusText}`);
-        confals = await r.text();
-
-        r = await goldenStepsResp;
-        if (!r.ok)
-            throw new Error(`Failed to download golden steps definitions: ${r.status} ${r.statusText}`);
-        goldenSteps = await r.text();
-
-        r = await nuAnglesResp;
-        if (!r.ok)
-            throw new Error(`Failed to download average Nu angles definitions: ${r.status} ${r.statusText}`);
-        nuAngles = await r.text();
-        return { clusters, confals, goldenSteps, nuAngles };
-
-    }
-
-    async function initializeClassificationContext() {
-        const { clusters, confals, goldenSteps, nuAngles } = await loadClassificationDefinitions();
-
-        const resClusters = jsLLKA.LLKA.loadClusters(clusters);
+    function initializeClassificationContext(data: ClassificationResources.Data) {
+        const resClusters = jsLLKA.LLKA.loadClusters(data.clusters);
         if (!resClusters.isSuccess()) {
             const fail = resClusters.failure();
             resClusters.delete();
             throw new Error(`Failed to load clusters definition: ${jsLLKA.LLKA.errorToString(fail)}`);
         }
 
-        const resConfals = jsLLKA.LLKA.loadConfals(confals);
+        const resConfals = jsLLKA.LLKA.loadConfals(data.confals);
         if (!resConfals.isSuccess()) {
             const fail = resConfals.failure();
             resClusters.delete();
@@ -66,7 +30,7 @@ export namespace Dnatcofier {
             throw new Error(`Failed to load confals definitions: ${jsLLKA.LLKA.errorToString(fail)}`);
         }
 
-        const resGoldenSteps = jsLLKA.LLKA.loadGoldenSteps(goldenSteps);
+        const resGoldenSteps = jsLLKA.LLKA.loadGoldenSteps(data.goldenSteps);
         if (!resGoldenSteps.isSuccess()) {
             const fail = resGoldenSteps.failure();
             resClusters.delete();
@@ -75,7 +39,7 @@ export namespace Dnatcofier {
             throw new Error(`Failed to load golden steps definitions: ${jsLLKA.LLKA.errorToString(fail)}`);
         }
 
-        const resNus = jsLLKA.LLKA.loadAverageNuAngles(nuAngles);
+        const resNus = jsLLKA.LLKA.loadAverageNuAngles(data.nuAngles);
         if (!resNus.isSuccess()) {
             const fail = resNus.failure();
             resClusters.delete();
@@ -102,71 +66,75 @@ export namespace Dnatcofier {
             throw new Error(`Failed to initialize classification context: ${jsLLKA.LLKA.errorToString(fail)}`);
         }
 
-        ClassificationContext = resCtx.success();
+        const clsfCtx = resCtx.success();
 
         resClusters.delete();
         resConfals.delete();
         resGoldenSteps.delete();
         resNus.delete();
         resCtx.delete();
+
+        return clsfCtx;
     }
 
-    export function dnatcoify(cif: string) {
+    export function dnatcoify(cif: string, clsfCtxData: ClassificationResources.Data, bgCtx: DnatcoficationTaskContext) {
+        const clsfCtx = initializeClassificationContext(clsfCtxData);
+
+        bgCtx.status = 'Reading CIF data';
         const res = jsLLKA.cifToStructure(cif, jsLLKA.MINICIF_GET_CIFDATA);
         if (!res.isSuccess()) {
+            clsfCtx.delete();
             const fail = res.failure();
             res.delete();
             throw new Error(`Failed to process CIF: ${jsLLKA.LLKA.errorToString(fail.tRet)} ${fail.error ?? ''}`);
         }
-        console.log('CIF parsed');
 
         const importedStru = res.success();
         const cifData = importedStru.cifData;
         res.delete();
 
+        bgCtx.status = 'Splitting structrure to dinucletide steps';
         const res2 = jsLLKA.splitStructureToDinucleotideSteps(importedStru.structure);
         if (!res2.isSuccess()) {
+            clsfCtx.delete();
             const fail = res2.failure();
             res2.delete();
             throw new Error(`Failed to split structure into dinucleotide steps: ${jsLLKA.LLKA.errorToString(fail)}`);
         }
-        console.log('Structure splitted to dinucleotides');
 
         const steps = res2.success();
         res2.delete();
 
-        const res3 = jsLLKA.classifySteps(steps, ClassificationContext!);
+        bgCtx.status = 'Classifying dinucleotide steps';
+        const res3 = jsLLKA.classifySteps(steps, clsfCtx);
         if (!res3.isSuccess()) {
+            clsfCtx.delete();
             const fail = res3.failure();
             res3.delete();
             throw new Error(`Failed to classify steps: ${jsLLKA.LLKA.errorToString(fail)}`);
         }
-        console.log('Steps classified');
 
         const attemptedSteps = res3.success();
         res3.delete();
 
+        bgCtx.status = 'Adding DNATCO categories to CIF';
         const cifDataDNATCO = jsLLKA.addDNATCOCategoriesToCif(cifData, attemptedSteps, steps, importedStru.id, false);
         steps.delete();
         attemptedSteps.delete();
-        console.log('Classification data added to CifData');
+        clsfCtx.delete();
 
+        bgCtx.status = 'Writing out extended CIF file';
         const res4 = jsLLKA.cifDataToString(cifDataDNATCO, true);
         if (!res4.isSuccess()) {
             const fail = res4.failure();
             res4.delete();
             throw new Error(`Failed to write out extended CIF: ${jsLLKA.LLKA.errorToString(fail)}`);
         }
-        console.log('Extended CIF written out');
 
         const extendedCif = res4.success();
         res4.delete();
 
         return extendedCif;
-    }
-
-    export async function initialize() {
-        await initializeClassificationContext();
     }
 }
 

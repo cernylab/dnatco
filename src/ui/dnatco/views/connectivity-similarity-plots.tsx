@@ -54,8 +54,8 @@ export class ConnectivitySimilarityPlots extends View<View.Props, State> {
         const colors = [];
         const tags = [];
 
-        const back = this.props.dnatcofication._connectivities.backward[stepIdx];
-        const fwd = this.props.dnatcofication._connectivities.forward[stepIdx];
+        const back = this.props.dnatcofication.data.connectivities.backward[stepIdx];
+        const fwd = this.props.dnatcofication.data.connectivities.forward[stepIdx];
 
         if (back) {
             for (const ntc in back) {
@@ -112,7 +112,7 @@ export class ConnectivitySimilarityPlots extends View<View.Props, State> {
         const colors = [];
         const tags = [];
 
-        const similarities = this.props.dnatcofication._similarities[stepIdx];
+        const similarities = this.props.dnatcofication.data.similarities[stepIdx];
         for (const ntc in similarities) {
             const simil = similarities[ntc];
             x.push(simil.rmsd);

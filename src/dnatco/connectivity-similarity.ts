@@ -89,8 +89,8 @@ function gatherStepAtoms(step: NtC.Step, atoms: Cif.Table<AtomSite_Schema>) {
     return gathered;
 }
 
-export function getStepsAtoms(steps: NtC.Step[], cif: Cif.Cif) {
-    const atoms = cif.table(AtomSite, 0);
+export function getStepsAtoms(steps: NtC.Step[], cif: Cif.Data) {
+    const atoms = Cif.File.table(cif, AtomSite, 0);
     const gatheredAtoms = jsLLKA.CLLKAStructures();
 
     for (const step of steps)

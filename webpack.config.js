@@ -44,7 +44,7 @@ const sharedConfig = {
                         },
                     },
                 ],
-            }
+            },
         ],
     },
     plugins: [

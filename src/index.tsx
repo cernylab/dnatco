@@ -1,10 +1,8 @@
 import React from 'react';
 import * as RDC from 'react-dom/client';
 import { GlobalConfig } from './global-config';
-import { Result, isError, isOk } from './dnatco';
-import { Engine } from './dnatco/engine';
-import { Dnatcofication } from './dnatco/dnatcofication';
-import { Dnatcofier } from './dnatco/dnatcofier';
+import { ClassificationResources } from './dnatco/classification-resources';
+import { Dnatcofication, DnatcoficationData } from './dnatco/dnatcofication';
 import { AboutTab } from './ui/about-tab';
 import { DnatcoViewerTab } from './ui/dnatco-viewer-tab';
 import { NavigationBar } from './ui/navigation-bar';
@@ -13,8 +11,12 @@ import { Popup } from './ui/common/popup';
 import { InProgress } from './ui/common/in-progress';
 import { WithSubscriptions } from './ui/service/with-subscriptions';
 import { MainScreen } from './ui/dnatco/main-screen';
+import { BackgroundWorker, WorkerMessage } from './tasks/worker';
+import { Task } from './tasks/task';
 import '../assets/index.html';
 import '../assets/rednatco.css';
+
+let clsfResData: ClassificationResources.Data;
 
 interface State {
     haveStructure: boolean;
@@ -42,51 +44,77 @@ export class App extends WithSubscriptions<Partial<App.Props>, State> {
         };
     }
 
-    private async fromCustomStructure(coordsFile: File, densityMapFile: File|null) {
-        const result = await Engine.dnatcoifyCustom(coordsFile, densityMapFile);
-        this.tryIngestCif(result);
+    private fromCustomStructure(coordsFile: File, densityMapFile: File|null) {
+        const task: Task<{ coordsFile: File, densityMapFile: File|null, clsfResData: ClassificationResources.Data }> = {
+            taskFunc: 'dnatco-from-custom-structure',
+            payload: { coordsFile, densityMapFile, clsfResData },
+            initialStatus: ''
+        };
+
+        this.loadStructure(task);
     }
 
-    private async fromPdbId(pdbId: string) {
-        const result = await Engine.dnatcoifyPdbId(pdbId);
-        this.tryIngestCif(result);
+    private fromPdbId(pdbId: string) {
+        const task: Task<{ pdbId: string, clsfResData: ClassificationResources.Data }> = {
+            taskFunc: 'dnatco-from-pdb-id',
+            payload: { pdbId, clsfResData },
+            initialStatus: ''
+        };
+
+        this.loadStructure(task);
     }
 
     private async fromRawLink(link: string) {
-        const result = await Engine.dnatcoifyLink(link);
-        this.tryIngestCif(result);
+        const task: Task<{ link: string, clsfResData: ClassificationResources.Data }> = {
+            taskFunc: 'dnatco-from-raw-link',
+            payload: { link, clsfResData },
+            initialStatus: ''
+        };
+
+        this.loadStructure(task);
     }
 
-    private async loadStructure(ingestor: () => Promise<void>) {
+    private async loadStructure<P>(task: Task<P>) {
         if (this.ingestionInProgress)
             return void 0;
 
         this.ingestionInProgress = true;
 
-        const inProgressDlg = await InProgress.create('Doing a thing...');
+        const inProgressDlg = await InProgress.create('Processing custom structure', '', true);
+        const worker = BackgroundWorker<DnatcoficationData, P>();
 
-        try {
-            await ingestor();
-            this.ingestionInProgress = false;
-            InProgress.dismiss(inProgressDlg);
+        worker.onmessage = (ev: MessageEvent<WorkerMessage.Out<DnatcoficationData>>) => {
+            const data = ev.data;
 
-            return undefined;
-        } catch (e) {
-            this.ingestionInProgress = false;
-            InProgress.dismiss(inProgressDlg);
+            if (data.type === 'worker-ready') {
+                InProgress.bindAbort(inProgressDlg, () => {
+                    worker.terminate();
+                    InProgress.dismiss(inProgressDlg);
+                    this.ingestionInProgress = false;
+                });
 
-            console.log(e); // @nocheckin
+                worker.postMessage({ type: 'start-task', task });
+            } else if (data.type === 'status-changed') {
+                InProgress.update(inProgressDlg, 'Processing custom structure', data.status);
+                this.ingestionInProgress = false;
+            } else if (data.type === 'finished') {
+                InProgress.dismiss(inProgressDlg);
+                this.ingestionInProgress = false;
 
-            return (e as Error).toString();
+                if (data.finished.state === 'failed') {
+                    Popup.create(
+                        <>
+                            <div className='rdo-error-text'>Cannot process custom structure</div>
+                            <div className='rdo-error-text'>{data.finished.message ?? 'Unknown error'}</div>
+                         </>
+                    );
+                } else if (data.finished.state === 'succeeded')
+                    this.dnatcofication.setData(data.finished.data!);
+                else if (data.finished.state === 'aborted')
+                    worker.terminate();
+            }
         }
-    }
 
-    private tryIngestCif(result: Result<string>) {
-        if (isOk(result)) {
-            this.dnatcofication.ingest(result.data);
-        } else if (isError(result)) {
-            console.error(result.message);
-        }
     }
 
     private renderTab() {
@@ -94,9 +122,9 @@ export class App extends WithSubscriptions<Partial<App.Props>, State> {
         case 'start':
             return (
                 <StartTab
-                    onDoCustomStructure={(coordsFile, densityMapFile) => this.loadStructure(async () => await this.fromCustomStructure(coordsFile, densityMapFile))}
-                    onDoPdbId={pdbId => this.loadStructure(async () => await this.fromPdbId(pdbId))}
-                    onDoRawLink={link => this.loadStructure(async () => await this.fromRawLink(link))}
+                    onDoCustomStructure={(coordsFile, densityMapFile) => this.fromCustomStructure(coordsFile, densityMapFile)}
+                    onDoPdbId={pdbId => this.fromPdbId(pdbId)}
+                    onDoRawLink={link => this.fromRawLink(link)}
                     dnatcofierReady={this.state.dnatcofierReady}
                 />
             );
@@ -145,7 +173,13 @@ export class App extends WithSubscriptions<Partial<App.Props>, State> {
             }
         );
 
-        Dnatcofier.initialize().then(() => {
+        ClassificationResources.load(
+            './classification/clusters.csv',
+            './classification/confals.csv',
+            './classification/golden_steps.csv',
+            './classification/nu_angles.csv'
+        ).then((data) => {
+            clsfResData = data;
             this.setState({ ...this.state, dnatcofierReady: true });
         }).catch(e => {
             Popup.create(

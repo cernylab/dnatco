@@ -161,18 +161,8 @@ export class StartTab extends React.Component<StartTab.Props, State> {
                                         caption='Proceed'
                                         enabled={this.state.coordsFile !== null && this.props.dnatcofierReady}
                                         onClick={() => {
-                                            if (this.state.coordsFile) {
-                                                this.props.onDoCustomStructure(this.state.coordsFile, this.state.densityMapFile).then(error => {
-                                                    if (error !== undefined) {
-                                                        Popup.create(
-                                                            <>
-                                                                <div className='rdo-error-text'>Cannot process custom structure</div>
-                                                                <div className='rdo-error-text'>{error}</div>
-                                                             </>
-                                                        );
-                                                    }
-                                                });
-                                            }
+                                            if (this.state.coordsFile)
+                                                this.props.onDoCustomStructure(this.state.coordsFile, this.state.densityMapFile);
                                         }}
                                     />
                                 </div>
@@ -228,9 +218,9 @@ export class StartTab extends React.Component<StartTab.Props, State> {
 
 export namespace StartTab {
     export interface Props {
-        onDoPdbId: (pdbId: string) => Promise<string|undefined>;
-        onDoCustomStructure: (coordsFile: File, densityMapFile: File|null) => Promise<string|undefined>;
-        onDoRawLink: (link: string) => Promise<string|undefined>;
+        onDoPdbId: (pdbId: string) => void,
+        onDoCustomStructure: (coordsFile: File, densityMapFile: File|null) => void,
+        onDoRawLink: (link: string) => void,
         dnatcofierReady: boolean;
     }
 }

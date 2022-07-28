@@ -16,23 +16,33 @@ function toArray<T>(list: (string|null)[], conv: (v: string) => T) {
 }
 
 export namespace Cif {
+    export type Data = {
+        blocks: Block[],
+        raw: string,
+    };
+
     export type Block = {
         name: string;
         tables: Map<string, Table<any>>;
     }
 
-    export class Column<T> {
-        constructor(readonly values: T[]|null, readonly cifType: Schema.CifType) {
+    export type Column<T> = {
+        values: T[]|null,
+        cifType: Schema.CifType,
+    }
+    export function Column<T>(values: T[]|null, cifType: Schema.CifType): Column<T> {
+        return { values, cifType };
+    }
+
+    export namespace Column {
+        export function hasValues<T>(c: Column<T>) {
+            return c.values !== null;
         }
 
-        hasValues() {
-            return this.values !== null;
-        }
-
-        value(row: number): T|null {
-            if (this.values === null)
+        export function value<T>(c: Column<T>, row: number): T|null {
+            if (c.values === null)
                 throw new Error('Column has no values');
-            return this.values[row];
+            return c.values[row];
         }
     }
 
@@ -46,7 +56,7 @@ export namespace Cif {
 
         for (const key in schema) {
             const col = table[key];
-            r[key as keyof Row<S>] = col.hasValues() ? col.value(row) : null;
+            r[key as keyof Row<S>] = Column.hasValues(col) ? Column.value(col, row) : null;
         }
 
         return r as Row<S>;
@@ -90,28 +100,28 @@ export namespace Cif {
                 if (col.mandatory)
                     throw new Error(`Column ${column} is mandatory but not present in ${name}`);
                 else
-                    accum[column] = new Column(null, col);
+                    accum[column] = Column(null, col);
             } else {
                 const list = data[columnLwr];
 
                 try {
                     if (Schema.isDate(col)) {
-                        accum[column] = new Column(toArray(list, Schema.toDate), col);
+                        accum[column] = Column(toArray(list, Schema.toDate), col);
                     } else if (Schema.isEnum(col)) {
-                        accum[column] = new Column(toArray(list, x => Schema.toEnum(x, col)), col);
+                        accum[column] = Column(toArray(list, x => Schema.toEnum(x, col)), col);
                     } else {
                         switch (col.cifType) {
                         case 'float':
-                            accum[column] = new Column(toArray(list, Schema.toFloat), col);
+                            accum[column] = Column(toArray(list, Schema.toFloat), col);
                             break;
                         case 'int':
-                            accum[column] = new Column(toArray(list, Schema.toInt), col);
+                            accum[column] = Column(toArray(list, Schema.toInt), col);
                             break;
                         case 'str':
-                            accum[column] = new Column(toArray(list, Schema.toStr), col);
+                            accum[column] = Column(toArray(list, Schema.toStr), col);
                             break;
                         case 'time':
-                            accum[column] = new Column(toArray(list, Schema.toTime), col);
+                            accum[column] = Column(toArray(list, Schema.toTime), col);
                             break;
                         }
                     }
@@ -124,27 +134,24 @@ export namespace Cif {
         return { _rowCount: rowCount, ...accum } as Table<S>;
     }
 
-    export class Cif {
-        constructor(private readonly blocks: Block[], readonly raw: string) {
+    export namespace File {
+        export function blockCount(data: Data) {
+            return data.blocks.length;
         }
 
-        get blockCount() {
-            return this.blocks.length;
+        export function hasTable<S extends Schema.Schema>(data: Data, category: Category<S>, block = 0) {
+            return data.blocks[block].tables.has(category.name.toLowerCase());
         }
 
-        hasTable<S extends Schema.Schema>(category: Category<S>, block = 0) {
-            return this.blocks[block].tables.has(category.name.toLowerCase());
-        }
-
-        table<S extends Schema.Schema>(category: Category<S>, block = 0): Table<S> {
-            const tbl = this.blocks[block].tables.get(category.name.toLowerCase());
+        export function table<S extends Schema.Schema>(data: Data, category: Category<S>, block = 0): Table<S> {
+            const tbl = data.blocks[block].tables.get(category.name.toLowerCase());
             if (!tbl)
                 throw new Error(`No table ${category.name} in cif file`);
             return tbl as Table<S>;
         }
     }
 
-    export function read(data: string) {
+    export function read(data: string): Data {
         const cif = Parser.parse(data);
 
         const blocks = new Array<Block>();
@@ -165,6 +172,6 @@ export namespace Cif {
             blocks.push({ name: block.name, tables });
         }
 
-        return new Cif(blocks, data);
+        return { blocks, raw: data };
     }
 }

@@ -4,6 +4,7 @@ import { ViewerApi } from '../viewer-api';
 import { ComboBox } from '../../common/combo-box';
 import { DynamicTable } from '../../common/dynamic-table';
 import { NamedList } from '../../common/named-list';
+import { Cif } from '../../../cif';
 import { NdbStructNtcOverall, NdbStructNtcStep, NdbStructNtcStepSummary } from '../../../cif/categories/ndb-struct-ntc';
 import { Dnatcofication } from '../../../dnatco/dnatcofication';
 import { StepsMapper } from '../../../dnatco/steps-mapper';
@@ -24,7 +25,7 @@ export class AssignedNtCs extends View<View.Props, State> {
     renderAnalyzedSteps() {
         const overall = this.props.dnatcofication.table(NdbStructNtcOverall);
         return (
-            <div>Classified: {overall.num_classified.value(0)}, Unclassified: {overall.num_unclassified.value(0)}</div>
+            <div>Classified: {Cif.Column.value(overall.num_classified, 0)}, Unclassified: {Cif.Column.value(overall.num_unclassified, 0)}</div>
         );
     }
 
@@ -72,13 +73,13 @@ export class AssignedNtCs extends View<View.Props, State> {
         const onlyModelNum = this.state.modelIndex === '' ? undefined : parseInt(this.state.modelIndex);
 
         for (let row = 0; row < steps._rowCount; row++) {
-            const modelNum = PDB_model_number.value(row)!;
+            const modelNum = Cif.Column.value(PDB_model_number, row)!;
             if (onlyModelNum === undefined || (onlyModelNum && onlyModelNum === modelNum)) {
                 modelColumn.values.push(modelNum);
-                chainColumn.values.push(label_asym_id_1.value(row)!);
-                stepColumn.values.push(name.value(row)!);
-                ntcColumn.values.push(assigned_NtC.value(row)!);
-                canaColumn.values.push(assigned_CANA.value(row)!);
+                chainColumn.values.push(Cif.Column.value(label_asym_id_1, row)!);
+                stepColumn.values.push(Cif.Column.value(name, row)!);
+                ntcColumn.values.push(Cif.Column.value(assigned_NtC, row)!);
+                canaColumn.values.push(Cif.Column.value(assigned_CANA, row)!);
             }
         }
 

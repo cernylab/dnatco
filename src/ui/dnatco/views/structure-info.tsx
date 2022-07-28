@@ -2,6 +2,7 @@ import * as React from 'react';
 import { View } from './view';
 import { CollapsibleVertical } from '../../common/collapsible-vertical';
 import { NamedList } from '../../common/named-list';
+import { Cif } from '../../../cif';
 import { Citation } from '../../../cif/categories/citation';
 import { Category, Schema } from '../../../cif/categories';
 import { CitationAuthor } from '../../../cif/categories/citation-author';
@@ -23,8 +24,8 @@ function formatDate(date?: Schema.CifDate) {
 function getIfAvail<S extends Schema.Schema, K extends keyof S>(d: Dnatcofication, category: Category<S>, column: K, row = 0): S[K]['T'] {
     if (d.hasTable(category)) {
         const col = d.table(category)[column];
-        if (col.hasValues())
-            return col.value(row);
+        if (Cif.Column.hasValues(col))
+            return Cif.Column.value(col, row);
         return undefined;
     } else
         return undefined;
@@ -37,7 +38,7 @@ function listAuthors(d: Dnatcofication) {
     const authors = [];
     const { name, _rowCount } = d.table(CitationAuthor);
     for (let idx = 0; idx < _rowCount; idx++) {
-        const n = name.value(idx);
+        const n = Cif.Column.value(name, idx);
         if (n)
             authors.push(n);
     }
@@ -57,9 +58,9 @@ function primaryPublication(d: Dnatcofication) {
         priIdx = 0;
 
     return {
-        title: title.value(priIdx),
-        pdbx_database_id_PubMed: pdbx_database_id_PubMed.value(priIdx),
-        pdbx_database_id_DOI: pdbx_database_id_DOI.value(priIdx),
+        title: Cif.Column.value(title, priIdx),
+        pdbx_database_id_PubMed: Cif.Column.value(pdbx_database_id_PubMed, priIdx),
+        pdbx_database_id_DOI: Cif.Column.value(pdbx_database_id_DOI, priIdx),
     }
 }
 
