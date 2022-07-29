@@ -1,74 +1,81 @@
 const path = require('path');
 const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const TerserPlugin = require('terser-webpack-plugin');
 
-const sharedConfig = {
-    module: {
-        rules: [
-            {
-                test: /molstar.js/,
-                use: [{
-                    loader: 'file-loader',
-                    options: {
-                        name: '[name].[ext]',
-                        sourceMap: false
-                    },
-                }],
-            },
-            {
-                test: /\.(html|php)$/,
-                use: [{
-                    loader: 'file-loader',
-                    options: { name: '[name].[ext]' },
-                }],
-            },
-            {
-                test: /\.(svg|png|jpe?g)$/,
-                use: [{
-                    loader: 'file-loader',
-                    options: {
-                        outputPath: 'imgs',
-                        name: '[name].[ext]',
-                        sourceMap: false
-                    },
-                }],
-            },
-            {
-                test: /\.(s*)css$/,
-                use: [
-                    MiniCssExtractPlugin.loader,
-                    {
-                        loader: 'css-loader',
+function sharedConfig(productionBuild) {
+    console.log(`Is production build: ${productionBuild}`);
+
+    return {
+        module: {
+            rules: [
+                {
+                    test: /molstar.js/,
+                    use: [{
+                        loader: 'file-loader',
                         options: {
+                            name: '[name].[ext]',
                             sourceMap: false
                         },
-                    },
-                ],
-            },
-        ],
-    },
-    plugins: [
-        new CssMinimizerPlugin(),
-        new MiniCssExtractPlugin({ filename: 'rednatco.css' }),
-    ],
-    optimization: {
-        minimizer: [
+                    }],
+                },
+                {
+                    test: /\.(html|php)$/,
+                    use: [{
+                        loader: 'file-loader',
+                        options: { name: '[name].[ext]' },
+                    }],
+                },
+                {
+                    test: /\.(svg|png|jpe?g)$/,
+                    use: [{
+                        loader: 'file-loader',
+                        options: {
+                            outputPath: 'imgs',
+                            name: '[name].[ext]',
+                            sourceMap: false
+                        },
+                    }],
+                },
+                {
+                    test: /\.(s*)css$/,
+                    use: [
+                        MiniCssExtractPlugin.loader,
+                        {
+                            loader: 'css-loader',
+                            options: {
+                                sourceMap: false
+                            },
+                        },
+                    ],
+                },
+            ],
+        },
+        plugins: [
             new CssMinimizerPlugin(),
+            new MiniCssExtractPlugin({ filename: 'rednatco.css' }),
         ],
-    },
-    resolve: {
-        modules: [
-            'node_modules',
-            path.resolve(__dirname, 'jsLLKA/'),
-            path.resolve(__dirname, 'lib/'),
-        ],
-    },
-    experiments: {
-        topLevelAwait: true,
-    }
+        optimization: {
+            minimize: productionBuild,
+            minimizer: [
+                new CssMinimizerPlugin(),
+                new TerserPlugin(),
+            ],
+        },
+        resolve: {
+            modules: [
+                'node_modules',
+                path.resolve(__dirname, 'jsLLKA/'),
+                path.resolve(__dirname, 'lib/'),
+            ],
+        },
+        experiments: {
+            topLevelAwait: true,
+        }
+    };
 };
 
-function createApp(name) {
+function createApp(name, productionBuild) {
     return {
         node: false,
         target: 'web',
@@ -79,10 +86,12 @@ function createApp(name) {
             filename: `${name}.js`,
             path: path.resolve(__dirname, 'dist')
         },
-        ...sharedConfig,
+        ...sharedConfig(productionBuild),
     };
 }
 
-module.exports = [
-    createApp('index'),
-];
+module.exports = (env, argv) => {
+    const productionBuild = argv.mode === 'production';
+
+    return createApp('index', productionBuild);
+};
