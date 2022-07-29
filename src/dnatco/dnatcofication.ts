@@ -120,7 +120,7 @@ export namespace Dnatcofication {
             const stepsAtoms = ConnSimil.getStepsAtoms(steps.steps, cifData);
             const connectivities = ConnSimil.getConnectivities(steps.steps, stepsAtoms, steps.previous, steps.next);
 
-            ctx.status = 'Calculataing similarities';
+            ctx.status = 'Calculating similarities';
             const similarities = ConnSimil.getSimilarities(steps.steps, stepsAtoms);
             stepsAtoms.delete();
 
