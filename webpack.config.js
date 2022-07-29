@@ -4,8 +4,6 @@ const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
 
 function sharedConfig(productionBuild) {
-    console.log(`Is production build: ${productionBuild}`);
-
     return {
         module: {
             rules: [
