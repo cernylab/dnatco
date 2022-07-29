@@ -237,6 +237,13 @@ th.rdo-data-table {
     grid-column-gap: var(--h-gap);
 }
 
+.rdo-named-list-centered {
+    display: grid;
+    grid-template-columns: 1fr auto auto 1fr;
+    grid-column-gap: var(--h-gap);
+    margin: auto;
+}
+
 .rdo-named-list-name {
     font-weight: bold;
 }
@@ -322,6 +329,14 @@ th.rdo-data-table {
     color: var(--color-a);
     font-weight: bold;
     font-family: sans-serif;
+}
+
+.rdo-primary-caption {
+    font-size: var(--font-xxlarge);
+    font-weight: bold;
+    margin-bottom: var(--v-gap);
+    padding: calc(var(--x-gap) / 2);
+    text-align: center;
 }
 
 .rdo-scroll-vertically {
@@ -441,7 +456,7 @@ th.rdo-data-table {
 }
 
 .rdo-tooltip {
-    display: flex;
+    display: inline-flex;
     position: relative;
 }
 
@@ -457,14 +472,6 @@ th.rdo-data-table {
 
 .rdo-tooltip-text-faded {
     opacity: 0;
-}
-
-.rdo-view-caption {
-    font-size: var(--font-xxlarge);
-    font-weight: bold;
-    margin-bottom: var(--v-gap);
-    padding: calc(var(--x-gap) / 2);
-    text-align: center;
 }
 
 .rdo-view-visualizer-container {

@@ -116,7 +116,7 @@ export class MainScreen extends WithSubscriptions<MainScreen.Props, State> {
                     selected={this.selectedView()}
                 />
                 <div style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-                    <div className='rdo-view-caption'>{AvailableViews[this.selectedView()].caption}</div>
+                    <div className='rdo-primary-caption'>{AvailableViews[this.selectedView()].caption}</div>
                     <div className={`rdo-view-visualizer-container ${AvailableViews[this.selectedView()].visualizer ? 'rdo-view-visualizer-container-with-visualizer' : 'rdo-view-visualizer-container-without-visualizer'}`}>
                         <div className='rdo-offset' style={{ overflow: 'hidden' }}>
                             <div className='rdo-scroll-vertically'>
