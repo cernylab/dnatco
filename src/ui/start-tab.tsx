@@ -49,6 +49,20 @@ export class StartTab extends React.Component<StartTab.Props, State> {
         };
     }
 
+    private actionPdbId() {
+        if (isPdbId(this.state.pdbId))
+            this.props.onDoPdbId(this.state.pdbId, this.state.database);
+        else if (this.state.pdbId.length === 0) {
+            Popup.create(
+                <div className='rdo-error-text'>Please enter a valid PDB ID</div>
+            );
+        } else {
+            Popup.create(
+                <div className='rdo-error-text'>{`${this.state.pdbId} is not a valid PDB ID`}</div>
+            );
+        }
+    }
+
     render() {
         return (
             <div className='rdo-section-column'>
@@ -80,6 +94,12 @@ export class StartTab extends React.Component<StartTab.Props, State> {
                                             if (v.length < 5)
                                                 this.setState({ ...this.state, pdbId: v });
                                         }}
+                                        onKeyDown={e => {
+                                            if (e.code === 'Enter') {
+                                                e.currentTarget.blur();
+                                                this.actionPdbId();
+                                            }
+                                        }}
                                     />
                                     <ComboBox
                                         options={DatabaseOptions}
@@ -88,19 +108,7 @@ export class StartTab extends React.Component<StartTab.Props, State> {
                                     />
                                     <PushButton
                                         caption='Proceed'
-                                        onClick={() => {
-                                            if (isPdbId(this.state.pdbId))
-                                                this.props.onDoPdbId(this.state.pdbId, this.state.database);
-                                            else if (this.state.pdbId.length === 0) {
-                                                Popup.create(
-                                                    <div className='rdo-error-text'>Please enter a valid PDB ID</div>
-                                                );
-                                            } else {
-                                                Popup.create(
-                                                    <div className='rdo-error-text'>{`${this.state.pdbId} is not a valid PDB ID`}</div>
-                                                );
-                                            }
-                                        }}
+                                        onClick={() => this.actionPdbId()}
                                         enabled={this.props.dnatcofierReady}
                                     />
                                     <div></div>
