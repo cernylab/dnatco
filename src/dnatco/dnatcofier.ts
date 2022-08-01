@@ -120,7 +120,7 @@ export namespace Dnatcofier {
         res3.delete();
 
         ctx.status = 'Adding DNATCO categories to CIF';
-        const cifDataDNATCO = jsLLKA.addDNATCOCategoriesToCif(cifData, attemptedSteps, steps, importedStru.id, false);
+        const cifDataDNATCO = jsLLKA.addDNATCOCategoriesToCif(cifData, attemptedSteps, steps, importedStru.id);
         steps.delete();
         attemptedSteps.delete();
         clsfCtx.delete();
