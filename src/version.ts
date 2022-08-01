@@ -5,6 +5,6 @@ export namespace Version {
     export const Minor = 1;
 
     export function tag() {
-        return `${Major}.${Minor}${GlobalConfig.get('isDevel') ? '-devel' : ''}`;
+        return `${Major}.${Minor}${GlobalConfig.data().isDevel ? '-devel' : ''}`;
     }
 }

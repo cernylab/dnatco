@@ -16,8 +16,8 @@ export const Tasks = {
         const result = await Reader.fromFile(payload.coordsFile, payload.densityMapFile);
         tryIngestCif(result, payload.clsfResData, ctx);
     },
-    'dnatco-from-pdb-id': async function(ctx: DnatcoficationTaskContext, payload: { pdbId: string, db: Reader.SupportedDatabases, clsfResData: ClassificationResources.Data }) {
-        const result = await Reader.fromPdbId(payload.pdbId, payload.db);
+    'dnatco-from-pdb-id': async function(ctx: DnatcoficationTaskContext, payload: { pdbId: string, db: Reader.SupportedDatabases, localDbUrl: string, localDbGzipped: boolean, clsfResData: ClassificationResources.Data }) {
+        const result = await Reader.fromPdbId(payload.pdbId, payload.db, payload.localDbUrl, payload.localDbGzipped);
         tryIngestCif(result, payload.clsfResData, ctx);
     },
     'dnatco-from-raw-link': async function(ctx: DnatcoficationTaskContext, payload: { link: string, clsfResData: ClassificationResources.Data } ) {

@@ -39,7 +39,7 @@ export class SpinBox extends React.Component<SpinBox.Props> {
     }
 
     render() {
-        const pathPrefix = GlobalConfig.get('pathPrefix');
+        const pathPrefix = GlobalConfig.data().pathPrefix;
 
         return (
             <div className='rdo-spinbox-container'>

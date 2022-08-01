@@ -24,19 +24,13 @@ interface State {
     selectedTab: NavigationBar.Tabs;
     dnatcofierReady: boolean;
 }
-export class App extends WithSubscriptions<Partial<App.Props>, State> {
+export class App extends WithSubscriptions<{}, State> {
     private dnatcofication = new Dnatcofication();
     private ingestionInProgress = false;
 
     constructor(props: Partial<App.Props>) {
         super(props);
 
-        GlobalConfig.initialize(
-            {
-                isDevel: props.isDevel ?? false,
-                pathPrefix: props.pathPrefix ?? '',
-            }
-        );
 
         this.state = {
             haveStructure: false,
@@ -56,9 +50,9 @@ export class App extends WithSubscriptions<Partial<App.Props>, State> {
     }
 
     private fromPdbId(pdbId: string, db: Reader.SupportedDatabases) {
-        const task: Task<{ pdbId: string, db: Reader.SupportedDatabases, clsfResData: ClassificationResources.Data }> = {
+        const task: Task<{ pdbId: string, db: Reader.SupportedDatabases, localDbUrl: string, localDbGzipped: boolean, clsfResData: ClassificationResources.Data }> = {
             taskFunc: 'dnatco-from-pdb-id',
-            payload: { pdbId, db, clsfResData },
+            payload: { pdbId, db, localDbUrl: GlobalConfig.data().localDbUrl, localDbGzipped: GlobalConfig.data().localDbGzipped, clsfResData },
             initialStatus: ''
         };
 
@@ -224,7 +218,7 @@ export namespace App {
     }
 }
 
-async function getConfig(): Promise<Partial<App.Props>> {
+async function getConfig(): Promise<Record<string, any>> {
     try {
         return await (await fetch('./config.json')).json();
     } catch (e) {
@@ -234,6 +228,8 @@ async function getConfig(): Promise<Partial<App.Props>> {
 
 async function bootstrap() {
     const config = await getConfig();
+
+    GlobalConfig.initialize(config);
 
     const root = RDC.createRoot(document.getElementById('app')!);
     root.render(<App {...config} />);

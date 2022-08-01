@@ -1,30 +1,31 @@
-/** TODO */
-
-export type GlobalConfigOptions = {
+export type GlobalConfigData = {
     isDevel: boolean;
     pathPrefix: string;
+    localDbUrl: string;
+    localDbGzipped: boolean;
+}
+const GlobalConfigData: GlobalConfigData = {
+    isDevel: false,
+    pathPrefix: '',
+    localDbUrl: '',
+    localDbGzipped: false,
 }
 
-class GlobalConfigKeeper {
-    readonly data: GlobalConfigOptions;
-
-    constructor(data: Partial<GlobalConfigOptions>) {
-        this.data = {
-            isDevel: false,
-            pathPrefix: '',
-            ...data,
-        };
-    }
+function checkAndSet<K extends keyof GlobalConfigData>(data: Record<string, any>, key: K) {
+    if (data[key] !== undefined && (typeof data[key] === typeof GlobalConfigData[key]))
+        GlobalConfigData[key] = data[key];
 }
-let config = new GlobalConfigKeeper({});
 
 export namespace GlobalConfig {
-    export function get(item: keyof GlobalConfigOptions) {
-        return config.data[item];
+    export function data() {
+        return GlobalConfigData;
     }
 
-    export function initialize(data: Partial<GlobalConfigOptions>) {
-        config = new GlobalConfigKeeper(data);
+    export function initialize(data: Record<string, any>) {
+        for (const prop in GlobalConfigData)
+            checkAndSet(data, prop as keyof GlobalConfigData);
+
+        console.log(GlobalConfigData);
     }
 }
 

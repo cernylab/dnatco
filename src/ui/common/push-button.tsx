@@ -80,7 +80,7 @@ export class IconButton extends React.Component<IconButton.Props> {
                 <div style={{ display: 'flex', height: '100%', justifyContent: 'center', width: '100%' }}>
                     <img
                         style={{ margin: '0.25em' }}
-                        src={`${GlobalConfig.get('pathPrefix')}${this.props.src}`}
+                        src={`${GlobalConfig.data().pathPrefix}${this.props.src}`}
                     />
                 </div>
             </BasePushButton>

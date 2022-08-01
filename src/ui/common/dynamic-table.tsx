@@ -106,7 +106,7 @@ export class DynamicTable extends React.Component<DynamicTable.Props, State> {
     }
 
     private renderHeader() {
-        const prefix = GlobalConfig.get('pathPrefix');
+        const prefix = GlobalConfig.data().pathPrefix;
         const headers = new Array<JSX.Element>();
 
         for (let idx = 0; idx < this.props.columns.length; idx++) {

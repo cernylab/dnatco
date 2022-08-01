@@ -29,26 +29,44 @@ export namespace Reader {
         }
     }
 
-    export async function fromPdbId(pdbId: string, db: SupportedDatabases) {
-        const [ url, gzipped ] = (() => {
-            if (db === 'rcsb')
-                return [ `https://files.rcsb.org/download/${pdbId.toUpperCase()}.cif.gz`, true ];
-            else if (db === 'redo') {
+    export async function fromPdbId(pdbId: string, db: SupportedDatabases, localDbUrl: string, localDbGzipped: boolean) {
+        const resources = (()  => {
+            const resources = new Array<{ url: string, gzipped: boolean }>();
+
+            if (localDbUrl.length > 0) {
+                const url = localDbUrl.replace('${db}', db).replace('${pdbId}', pdbId.toLowerCase());
+                resources.push({ url, gzipped: true });
+            }
+
+            if (db === 'rcsb') {
+                resources.push(
+                    { url: `https://files.rcsb.org/download/${pdbId.toUpperCase()}.cif.gz`, gzipped: localDbGzipped }
+                );
+            } else if (db === 'redo') {
                 const id = pdbId.toLowerCase();
-                return [ `https://pdb-redo.eu/db/${id}/${id}_final.cif`, false ];
+                resources.push({ url: `https://pdb-redo.eu/db/${id}/${id}_final.cif`, gzipped: false });
             } else
                 throw new Error('Unsupported database');
+
+            return resources;
         })();
 
-        try {
-            const req = await fetch(url);
-            if (!req.ok)
-                return ErrorResult(`Cannot load data: ${req.statusText}`);
-            const cif = await blobToText(await req.arrayBuffer(), gzipped);
-            return OkResult(cif);
-        } catch (e) {
-            return ErrorResult(`Cannot load data ${e}`);
+        for (const res of resources) {
+            try {
+                const req = await fetch(res.url);
+                if (!req.ok) {
+                    console.warn(`Data not available at ${res.url}, error ${req.status}`);
+                    continue;
+                }
+
+                const cif = await blobToText(await req.arrayBuffer(), res.gzipped);
+                return OkResult(cif);
+            } catch (e) {
+                console.warn(`Cannot fetch data from resource ${res.url}: ` + e);
+            }
         }
+
+        return ErrorResult(`Cannot load data from any source`);
     }
 
     export async function fromLink(link: string) {
