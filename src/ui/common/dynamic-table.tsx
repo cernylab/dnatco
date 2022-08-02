@@ -36,10 +36,10 @@ export class DynamicTable extends React.Component<DynamicTable.Props, State> {
     }
 
     private getRows() {
-        const rows = new Array<(string|number)[]>();
+        const rows = new Array<DynamicTable.CellValue<any>[]>();
 
         for (let idx = 0; idx < this.props.columns[0].values.length; idx++) {
-            const row = new Array<string|number>();
+            const row = new Array<DynamicTable.CellValue<any>>();
             for (const col of this.props.columns)
                 row.push(col.values[idx]);
             rows.push(row);
@@ -55,15 +55,15 @@ export class DynamicTable extends React.Component<DynamicTable.Props, State> {
                 ?
                 mainColumn.comparator
                 :
-                typeof mainColumn.values[0] === 'number'
+                typeof mainColumn.values[0].data === 'number'
                     ?
                     (a: number, b: number) => a - b
                     :
                     (a: string, b: string) => a.localeCompare(b);
 
             rows.sort((a, b) => {
-                const eA = a[sortIdx];
-                const eB = b[sortIdx];
+                const eA = a[sortIdx].data;
+                const eB = b[sortIdx].data;
                 const invert = order === 'asc' ? 1 : -1;
                 return invert * (comparator as Comparator<typeof eA>)(eA, eB);
             });
@@ -78,23 +78,24 @@ export class DynamicTable extends React.Component<DynamicTable.Props, State> {
 
         for (let idx = 0; idx < rows.length; idx++) {
             const row = rows[idx];
+            const tag = row[0].tag;
             rowElems.push(
                 <tr key={idx}>
                     {
                         row.map((item, jdx) =>
                             <td
-                                className='rdo-data-table'
+                                className={`rdo-data-table ${(this.props.highlightedTag && this.props.highlightedTag === tag) ? 'rdo-data-table-selected' : ''}`}
                                 key={jdx}
                                 style={{
-                                    ...getCellStyle(item, this.props.columns[jdx].cellStyle),
+                                    ...getCellStyle(item.data, this.props.columns[jdx].cellStyle),
                                     textAlign: this.props.columns[jdx].alignment ?? 'left',
                                 }}
                                 onClick={() => {
                                     if (this.props.onCellClicked)
-                                        this.props.onCellClicked(idx, this.props.columns[jdx].name, item.toString());
+                                        this.props.onCellClicked(idx, this.props.columns[jdx].name, item.data.toString());
                                 }}
                             >
-                                {item}
+                                {item.data}
                             </td>
                         )
                     }
@@ -140,6 +141,8 @@ export class DynamicTable extends React.Component<DynamicTable.Props, State> {
     componentDidUpdate(prevProps: DynamicTable.Props) {
         if (this.props.columns !== prevProps.columns)
             this.setState({ ...this.state, sortBy: -1, sortOrder: 'asc' });
+
+        console.log(this.props.highlightedTag);
     }
 
     render() {
@@ -160,9 +163,10 @@ export class DynamicTable extends React.Component<DynamicTable.Props, State> {
 }
 
 export namespace DynamicTable {
+    export type CellValue<T extends string|number> = { data: T, tag?: string };
     export type Column<T extends string|number> = {
         name: string;
-        values: T[];
+        values: CellValue<T>[];
         alignment?: 'left'|'center'|'right';
         comparator?: (a: T, b: T) => number;
         cellStyle?: (v: T) => React.CSSProperties;
@@ -171,5 +175,6 @@ export namespace DynamicTable {
     export interface Props {
         columns: Column<any>[];
         onCellClicked?: (row: number, column: string, value: string) => void;
+        highlightedTag?: string;
     }
 }

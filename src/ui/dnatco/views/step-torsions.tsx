@@ -1,6 +1,6 @@
 import React from 'react';
 import { View } from './view';
-import { ViewerApi } from '../viewer-api';
+import { ReDNATCOMspApi as ViewerApi } from '../viewer-api';
 import { Common as C } from '../common';
 import { ComboBox } from '../../common/combo-box';
 import { NamedList } from '../../common/named-list';
@@ -433,8 +433,8 @@ export class StepTorsions extends View<View.Props, State> {
                                         const stepId = parseInt(v);
                                         const step = StepsMapper.byId(this.props.dnatcofication, stepId);
                                         const { previous, next } = StepsMapper.previousNextById(this.props.dnatcofication, stepId);
-                                        const prevStepName = previous === -1 ? null : StepsMapper.byId(this.props.dnatcofication, previous).name;
-                                        const nextStepName = next === -1 ? null : StepsMapper.byId(this.props.dnatcofication, next).name;
+                                        const prevStepName = previous === -1 ? undefined : StepsMapper.byId(this.props.dnatcofication, previous).name;
+                                        const nextStepName = next === -1 ? undefined : StepsMapper.byId(this.props.dnatcofication, next).name;
 
                                         this.props.viewerApi.command(ViewerApi.Commands.SelectStep(step.name, prevStepName, nextStepName));
                                         this.setState({ ...this.state, stepId });

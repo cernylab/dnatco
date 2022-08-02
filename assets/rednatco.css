@@ -179,6 +179,10 @@ td.rdo-data-table {
     padding: 0.2em;
 }
 
+td.rdo-data-table-selected {
+    background-color: yellow;
+}
+
 td.rdo-numeric-table {
     border: var(--thickness-border) solid var(--color-a);
     font-family: monospace, monospace;

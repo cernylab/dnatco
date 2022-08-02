@@ -1,9 +1,12 @@
 import * as React from 'react';
+import { makeStepSelection } from './util';
+import { ViewerEvents } from './views/view';
 import { ViewsList } from './views-list';
-import { ViewerApi } from './viewer-api';
+import { ReDNATCOMspApi as ViewerApi } from './viewer-api';
 import { Register } from './views/register';
 import { WithSubscriptions } from '../service/with-subscriptions';
 import { Dnatcofication } from '../../dnatco/dnatcofication';
+import { EventsKeeper } from '../../util/events-keeper';
 import '../../../assets/molstar.js';
 import '../../../assets/molstar.css';
 
@@ -38,7 +41,13 @@ interface State {
     refinementView: 'empty'
 }
 export class MainScreen extends WithSubscriptions<MainScreen.Props, State> {
-    private viewerApi: ViewerApi.Api|undefined = undefined;
+    private ek = new EventsKeeper();
+    private viewerApi: ViewerApi.Object|undefined = undefined;
+
+    readonly viewerEvents: ViewerEvents = {
+        stepDeselected: this.ek.subject<void>(),
+        stepSelected: this.ek.subject<{ name: string, rmsd?: number }>(),
+    };
 
     constructor(props: MainScreen.Props) {
         super(props);
@@ -56,9 +65,9 @@ export class MainScreen extends WithSubscriptions<MainScreen.Props, State> {
 
         switch (this.props.masterMode) {
         case 'annotation':
-            return Register.Views[this.state.annotationView]({ dnatcofication: this.props.dnatcofication, viewerApi: this.viewerApi });
+            return Register.Views[this.state.annotationView]({ dnatcofication: this.props.dnatcofication, viewerApi: this.viewerApi, viewerEvents: this.viewerEvents });
         case 'validation':
-            return Register.Views[this.state.validationView]({ dnatcofication: this.props.dnatcofication, viewerApi: this.viewerApi });
+            return Register.Views[this.state.validationView]({ dnatcofication: this.props.dnatcofication, viewerApi: this.viewerApi, viewerEvents: this.viewerEvents });
         case 'refinement':
             return <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '48pt', height: '80%' }}>&lt; Emoji of a fish with a hopeful face &gt;</div>;
         }
@@ -77,7 +86,23 @@ export class MainScreen extends WithSubscriptions<MainScreen.Props, State> {
 
     componentDidMount() {
         //@ts-ignore
-        this.viewerApi = molstar.ReDNATCOMspApi.init('rdo-id-molstar-container', () => molstar.ReDNATCOMspApi.loadStructure(this.props.dnatcofication.rawCif()));
+        this.viewerApi = molstar.ReDNATCOMspApi.init(
+            'rdo-id-molstar-container',
+            (evt: ViewerApi.Event) => {
+                if (evt.type === 'step-selected') {
+                    if (evt.success)
+                        this.viewerEvents.stepSelected.next({ name: evt.name, rmsd: evt.rmsd });
+                } else if (evt.type === 'step-deselected')
+                    this.viewerEvents.stepDeselected.next();
+                else if (evt.type === 'step-requested') {
+                    const selection = makeStepSelection(this.props.dnatcofication, evt.name);
+                    if (selection)
+                        this.viewerApi!.command(ViewerApi.Commands.SelectStep(selection.current, selection.prev, selection.next));
+                }
+            },
+            //@ts-ignore
+            () => molstar.ReDNATCOMspApi.loadStructure(this.props.dnatcofication.rawCif())
+        );
 
         this.subscribe(this.props.dnatcofication.events.structureChanged, () => this.forceUpdate());
 

@@ -1,10 +1,11 @@
 import * as React from 'react';
 import { View } from './view';
-import { ViewerApi } from '../viewer-api';
+import { ReDNATCOMspApi as ViewerApi } from '../viewer-api';
 import { rmsdToSemaphore } from '../util';
 import { ComboBox } from '../../common/combo-box';
 import { DynamicTable } from '../../common/dynamic-table';
 import { NamedList } from '../../common/named-list';
+import { WithSubscriptions } from '../../service/with-subscriptions';
 import { Cif } from '../../../cif';
 import { NdbStructNtcOverall, NdbStructNtcStep, NdbStructNtcStepSummary } from '../../../cif/categories/ndb-struct-ntc';
 import { Dnatcofication } from '../../../dnatco/dnatcofication';
@@ -18,8 +19,9 @@ function rmsdToColor(rmsd: number): React.CSSProperties  {
 
 interface State {
     modelIndex: string;
+    selectedStepName?: string;
 }
-export class ConfalsRmsds extends View<View.Props, State> {
+export class ConfalsRmsds extends WithSubscriptions<View.Props, State> {
     constructor(props: View.Props) {
         super(props);
 
@@ -42,22 +44,23 @@ export class ConfalsRmsds extends View<View.Props, State> {
         const { PDB_model_number, name } = steps;
         const { assigned_NtC, assigned_CANA, confal_score, cartesian_rmsd_closest_NtC_representative } = summary;
 
-        const stepColumn: DynamicTable.Column<string> = { name: 'Step', values: new Array<string>(), alignment: 'center', };
-        const ntcColumn: DynamicTable.Column<string> = { name: 'NtC', values: new Array<string>(), alignment: 'center' };
-        const canaColumn: DynamicTable.Column<string> = { name: 'CANA', values: new Array<string>(), alignment: 'center' };
-        const confalColumn: DynamicTable.Column<number> = { name: 'Confal', values: new Array<number>(), alignment: 'center' };
-        const rmsdColumn: DynamicTable.Column<number> = { name: 'RMSD', values: new Array<number>(), alignment: 'center', cellStyle: rmsdToColor };
+        const stepColumn: DynamicTable.Column<string> = { name: 'Step', values: new Array<DynamicTable.CellValue<string>>(), alignment: 'center', };
+        const ntcColumn: DynamicTable.Column<string> = { name: 'NtC', values: new Array<DynamicTable.CellValue<string>>(), alignment: 'center' };
+        const canaColumn: DynamicTable.Column<string> = { name: 'CANA', values: new Array<DynamicTable.CellValue<string>>(), alignment: 'center' };
+        const confalColumn: DynamicTable.Column<number> = { name: 'Confal', values: new Array<DynamicTable.CellValue<number>>(), alignment: 'center' };
+        const rmsdColumn: DynamicTable.Column<number> = { name: 'RMSD', values: new Array<DynamicTable.CellValue<number>>(), alignment: 'center', cellStyle: rmsdToColor };
 
         const onlyModelNum = this.state.modelIndex === '' ? undefined : parseInt(this.state.modelIndex);
 
         for (let row = 0; row < steps._rowCount; row++) {
             const modelNum = Cif.Column.value(PDB_model_number, row);
+            const tag = Cif.Column.value(name, row)!;
             if (onlyModelNum === undefined || (onlyModelNum && onlyModelNum === modelNum)) {
-                stepColumn.values.push(Cif.Column.value(name, row)!);
-                ntcColumn.values.push(Cif.Column.value(assigned_NtC, row)!);
-                canaColumn.values.push(Cif.Column.value(assigned_CANA, row)!);
-                confalColumn.values.push(Cif.Column.value(confal_score, row)!);
-                rmsdColumn.values.push(Cif.Column.value(cartesian_rmsd_closest_NtC_representative, row)!);
+                stepColumn.values.push({ data: Cif.Column.value(name, row)!, tag });
+                ntcColumn.values.push({ data: Cif.Column.value(assigned_NtC, row)!, tag });
+                canaColumn.values.push({ data: Cif.Column.value(assigned_CANA, row)!, tag });
+                confalColumn.values.push({ data: Cif.Column.value(confal_score, row)!, tag });
+                rmsdColumn.values.push({ data: Cif.Column.value(cartesian_rmsd_closest_NtC_representative, row)!, tag });
             }
         }
 
@@ -69,14 +72,38 @@ export class ConfalsRmsds extends View<View.Props, State> {
                         const stepId = StepsMapper.byName(this.props.dnatcofication, item)?.id ?? -1;
                         if (stepId !== -1) {
                             const { previous, next } = StepsMapper.previousNextById(this.props.dnatcofication, stepId);
-                            const prevStepName = previous === -1 ? null : StepsMapper.byId(this.props.dnatcofication, previous).name;
-                            const nextStepName = next === -1 ? null : StepsMapper.byId(this.props.dnatcofication, next).name;
+                            const prevStepName = previous === -1 ? undefined : StepsMapper.byId(this.props.dnatcofication, previous).name;
+                            const nextStepName = next === -1 ? undefined : StepsMapper.byId(this.props.dnatcofication, next).name;
                             this.props.viewerApi.command(ViewerApi.Commands.SelectStep(item, prevStepName, nextStepName));
                         }
                     }
                 }}
+                highlightedTag={this.state.selectedStepName}
             />
         );
+    }
+
+    componentDidMount() {
+        this.subscribe(
+            this.props.viewerEvents.stepDeselected,
+            () => this.setState({ ...this.state, selectedStepName: undefined })
+        );
+        this.subscribe(
+            this.props.viewerEvents.stepSelected,
+            (sel) => {
+                this.setState({ ...this.state, selectedStepName: sel.name});
+            }
+        );
+
+        if (this.props.viewerApi.isReady()) {
+            const step = this.props.viewerApi.query('selected-step');
+            if (step.name !== '')
+                this.setState({ ...this.state, selectedStepName: step.name });
+        }
+    }
+
+    componentWillUnmount() {
+        this.unsubscribeAll();
     }
 
     render() {
