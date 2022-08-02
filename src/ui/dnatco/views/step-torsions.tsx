@@ -132,6 +132,17 @@ function torsionDiffColumn(table: Cif.Table<NdbStructNtcStepParameters_Schema>, 
     }
 }
 
+function toComboBoxOptions(opts: StepOption[]) {
+    const cbOpts: ComboBox.Option[] = [{ caption: '-', value: '' }];
+
+    for (const o of opts) {
+        const co = { caption: o.caption, value: JSON.stringify(o.value) };
+        cbOpts.push(co);
+    }
+
+    return cbOpts;
+}
+
 type DistanceInfo = {
     actual: Record<NtC.Distance, number>,
     confal: Record<NtC.Distance, number>,
@@ -157,6 +168,11 @@ const StepInfo = {
     tau2: 0,
     pn2: C.NA,
     details: ''
+};
+type StepValue = { name: string, id: number };
+type StepOption = {
+    caption: string;
+    value: StepValue;
 };
 
 type TorsionInfo = {
@@ -325,9 +341,9 @@ export class StepTorsions extends View<View.Props, State> {
         const model = this.state.model !== '' ? parseInt(this.state.model) : void 0;
         const chain = this.state.chain !== '' ? this.state.chain : void 0;
 
-        const opts: { caption: string, value: string }[] = [];
+        const opts: StepOption[] = [];
         for (const s of StepsMapper.segment(this.props.dnatcofication, model, chain))
-            opts.push({ caption: s.name, value: s.id.toString() });
+            opts.push({ caption: s.name, value: { name: s.name, id: s.id } });
 
         return opts;
     }
@@ -368,18 +384,38 @@ export class StepTorsions extends View<View.Props, State> {
             this.sugarStepParamsTable = this.props.dnatcofication.hasTable(NdbStructSugarStepParameters) ? this.props.dnatcofication.table(NdbStructSugarStepParameters) : null;
         });
 
-        const steps = this.stepsOptions();
-        if (steps.length > 0)
-            this.setState({ ...this.state, stepId: parseInt(steps[0].value) });
+        this.subscribe(
+            this.props.viewerEvents.stepDeselected,
+            () => this.setState({ ...this.state, stepId: -1 })
+        );
+        this.subscribe(
+            this.props.viewerEvents.stepSelected,
+            (sel) => {
+                const steps = this.stepsOptions();
+                const s = steps.find(x => x.value.name === sel.name);
+                if (s)
+                    this.setState({ ...this.state, stepId: s?.value.id});
+            }
+        );
+
+        if (this.props.viewerApi.isReady()) {
+            const steps = this.stepsOptions();
+            const step = this.props.viewerApi.query('selected-step');
+            if (step.name !== '' && steps.length > 0) {
+                const s = steps.find(x => x.value.name === step.name);
+                if (s)
+                    this.setState({ ...this.state, stepId: s?.value.id });
+            }
+        }
     }
 
     componentDidUpdate(_prevProps: View.Props, prevState: State) {
         if (this.state.model !== prevState.model) {
             const steps = this.stepsOptions();
-            this.setState({ ...this.state, chain: '', stepId: parseInt(steps[0]?.value) ?? -1 });
+            this.setState({ ...this.state, chain: '', stepId: steps[0]?.value.id ?? -1 });
         } else if (this.state.chain !== prevState.chain) {
             const steps = this.stepsOptions();
-            this.setState({ ...this.state, stepId: parseInt(steps[0]?.value) ?? -1 });
+            this.setState({ ...this.state, stepId: steps[0]?.value.id ?? -1 });
         }
     }
 
@@ -391,6 +427,11 @@ export class StepTorsions extends View<View.Props, State> {
         const torsionInfo = this.torsionInfo(this.state.stepId);
         const distanceInfo = this.distanceInfo(this.state.stepId);
         const stepInfo = this.stepInfo(this.state.stepId);
+        const stepsOptions = this.stepsOptions();
+        const stepOpt = stepsOptions.find(x => x.value.id ===  this.state.stepId);
+        const cbValue = stepOpt ? JSON.stringify(stepOpt.value) : '';
+
+        console.log(cbValue);
 
         return (
             <div>
@@ -427,17 +468,22 @@ export class StepTorsions extends View<View.Props, State> {
                             name: 'Step',
                             value:
                                 <ComboBox
-                                    value={this.state.stepId?.toString()}
-                                    options={this.stepsOptions()}
+                                    value={cbValue}
+                                    options={toComboBoxOptions(stepsOptions)}
                                     onChange={v => {
-                                        const stepId = parseInt(v);
-                                        const step = StepsMapper.byId(this.props.dnatcofication, stepId);
-                                        const { previous, next } = StepsMapper.previousNextById(this.props.dnatcofication, stepId);
-                                        const prevStepName = previous === -1 ? undefined : StepsMapper.byId(this.props.dnatcofication, previous).name;
-                                        const nextStepName = next === -1 ? undefined : StepsMapper.byId(this.props.dnatcofication, next).name;
+                                        try {
+                                            const value = JSON.parse(v) as StepValue;
+                                            const stepId = value.id;
+                                            const step = StepsMapper.byId(this.props.dnatcofication, stepId);
+                                            const { previous, next } = StepsMapper.previousNextById(this.props.dnatcofication, stepId);
+                                            const prevStepName = previous === -1 ? undefined : StepsMapper.byId(this.props.dnatcofication, previous).name;
+                                            const nextStepName = next === -1 ? undefined : StepsMapper.byId(this.props.dnatcofication, next).name;
 
-                                        this.props.viewerApi.command(ViewerApi.Commands.SelectStep(step.name, prevStepName, nextStepName));
-                                        this.setState({ ...this.state, stepId });
+                                            this.props.viewerApi.command(ViewerApi.Commands.SelectStep(step.name, prevStepName, nextStepName));
+                                            this.setState({ ...this.state, stepId });
+                                        } catch (e) {
+                                            console.warn(`Failed to parse StepValue: ${e}`);
+                                        }
                                     }}
                                 />
                         },
