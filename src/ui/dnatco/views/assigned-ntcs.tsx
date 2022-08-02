@@ -4,7 +4,6 @@ import { ReDNATCOMspApi as ViewerApi } from '../viewer-api';
 import { ComboBox } from '../../common/combo-box';
 import { DynamicTable } from '../../common/dynamic-table';
 import { NamedList } from '../../common/named-list';
-import { WithSubscriptions } from '../../service/with-subscriptions';
 import { Cif } from '../../../cif';
 import { NdbStructNtcOverall, NdbStructNtcStep, NdbStructNtcStepSummary } from '../../../cif/categories/ndb-struct-ntc';
 import { Dnatcofication } from '../../../dnatco/dnatcofication';
@@ -15,7 +14,7 @@ interface State {
     modelIndex: string;
     selectedStepName?: string;
 }
-export class AssignedNtCs extends WithSubscriptions<View.Props, State> {
+export class AssignedNtCs extends View<View.Props, State> {
     constructor(props: View.Props) {
         super(props);
 
