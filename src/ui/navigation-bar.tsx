@@ -3,10 +3,13 @@ import { BasePushButton, IconButton } from './common/push-button';
 import { GlobalConfig }  from '../global-config';
 import { Net } from '../util/net';
 import '../../assets/imgs/elixir.png';
-import '../../assets/imgs/home.svg';
+import '../../assets/imgs/media-play.svg';
 import '../../assets/imgs/ibt.png';
 import '../../assets/imgs/info.svg';
 import '../../assets/imgs/question-mark.svg';
+import '../../assets/imgs/list.svg';
+import '../../assets/imgs/task.svg';
+import '../../assets/imgs/loop.svg';
 
 interface TabButtonProps {
     onClick: () => void;
@@ -49,28 +52,28 @@ export class NavigationBar extends React.Component<NavigationBar.Props> {
                     onClick={() => Net.openLink('https://www.ibt.cas.cz/', true)}
                 />
                 <TabButton
-                    icon='imgs/home.svg'
+                    icon='imgs/media-play.svg'
                     caption='Start'
                     onClick={() => this.props.onTabSwitched('start')}
                     selected={this.props.selected === 'start'}
                 />
                 <TabButton
                     disabled={this.props.disabled.includes('annotation')}
-                    icon='imgs/question-mark.svg'
+                    icon='imgs/list.svg'
                     caption='Annotation'
                     onClick={() => this.props.onTabSwitched('annotation')}
                     selected={this.props.selected === 'annotation'}
                 />
                 <TabButton
                     disabled={this.props.disabled.includes('validation')}
-                    icon='imgs/question-mark.svg'
+                    icon='imgs/task.svg'
                     caption='Validation'
                     onClick={() => this.props.onTabSwitched('validation')}
                     selected={this.props.selected === 'validation'}
                 />
                 <TabButton
                     disabled={this.props.disabled.includes('refinement')}
-                    icon='imgs/question-mark.svg'
+                    icon='imgs/loop.svg'
                     caption='Refinement'
                     onClick={() => this.props.onTabSwitched('refinement')}
                     selected={this.props.selected === 'refinement'}
