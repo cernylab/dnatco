@@ -196,7 +196,7 @@ export class App extends WithSubscriptions<{}, State> {
                 <NavigationBar
                     onTabSwitched={tab => this.tabSwitched(tab)}
                     selected={this.state.selectedTab}
-                    disabled={this.state.haveStructure ? [] : ['annotation', 'validation', 'refinement']}
+                    shown={this.state.haveStructure ? ['start', 'annotation', 'validation', 'refinement', 'about'] : ['start', 'about']}
                 />
                 <div className='rdo-tab-content-container'>
                     {this.renderTab()}
