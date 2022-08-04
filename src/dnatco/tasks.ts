@@ -13,14 +13,17 @@ function tryIngestCif(result: Result<string>, clsfResData: ClassificationResourc
 
 export const Tasks = {
     'dnatco-from-custom-structure': async function (ctx: DnatcoficationTaskContext, payload: { coordsFile: File, densityMapFile: File|null, clsfResData: ClassificationResources.Data }) {
+        ctx.status = 'Reading file';
         const result = await Reader.fromFile(payload.coordsFile, payload.densityMapFile);
         tryIngestCif(result, payload.clsfResData, ctx);
     },
     'dnatco-from-pdb-id': async function(ctx: DnatcoficationTaskContext, payload: { pdbId: string, db: Reader.SupportedDatabases, localDbUrl: string, localDbGzipped: boolean, clsfResData: ClassificationResources.Data }) {
+        ctx.status = 'Downloading file';
         const result = await Reader.fromPdbId(payload.pdbId, payload.db, payload.localDbUrl, payload.localDbGzipped);
         tryIngestCif(result, payload.clsfResData, ctx);
     },
     'dnatco-from-raw-link': async function(ctx: DnatcoficationTaskContext, payload: { link: string, clsfResData: ClassificationResources.Data } ) {
+        ctx.status = 'Downloading file';
         const result = await Reader.fromLink(payload.link);
         tryIngestCif(result, payload.clsfResData, ctx);
     }

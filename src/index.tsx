@@ -104,7 +104,7 @@ export class App extends WithSubscriptions<{}, State> {
 
                 worker.postMessage({ type: 'start-task', task });
             } else if (data.type === 'status-changed') {
-                InProgress.update(inProgressDlg, 'Processing custom structure', data.status);
+                InProgress.update(inProgressDlg, 'Processing structure', data.status);
                 this.ingestionInProgress = false;
             } else if (data.type === 'finished') {
                 InProgress.dismiss(inProgressDlg);
