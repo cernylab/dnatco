@@ -1,6 +1,7 @@
 import React from 'react';
 import Plot from 'react-plotly.js';
 import { View } from './view';
+import { makeStepSelection } from '../util';
 import { ViewerApi } from '../../../viewer/viewer-interop';
 import { ComboBox } from '../../common/combo-box';
 import { NamedList } from '../../common/named-list';
@@ -137,21 +138,50 @@ export class ConnectivitySimilarityPlots extends View<View.Props, State> {
         const model = this.state.model !== '' ? parseInt(this.state.model) : void 0;
         const chain = this.state.chain !== '' ? this.state.chain : void 0;
 
-        const opts: { caption: string, value: string }[] = [];
+        const opts: { caption: string, value: string }[] = [{ caption: '-', value: '' }];
         for (const s of StepsMapper.segment(this.props.dnatcofication, model, chain))
             opts.push({ caption: s.name, value: s.id.toString() });
 
         return opts;
     }
 
+    private switchStep(stepName: string) {
+        const selection = makeStepSelection(this.props.dnatcofication, stepName);
+        if (selection)
+            this.props.viewerInterop.api.command(ViewerApi.Commands.SelectStep(selection.current, selection.prev, selection.next));
+    }
+
     componentDidMount() {
         this.subscribe(this.props.dnatcofication.events.structureChanged, () => this.forceUpdate());
 
-        const steps = this.stepsOptions();
-        const stepId = parseInt(steps[0].value);
-        const { previous, next } = StepsMapper.previousNextById(this.props.dnatcofication, stepId);
-        if (steps.length > 0)
-            this.setState({ ...this.state, stepId, previousStepId: previous, nextStepId: next });
+        this.subscribe(
+            this.props.viewerInterop.events.stepDeselected,
+            () => {
+                this.setState({
+                    ...this.state,
+                    connectivityPlotData: PlotData,
+                    similarityPlotData: PlotData,
+                    stepId: -1,
+                })
+            }
+        );
+        this.subscribe(
+            this.props.viewerInterop.events.stepSelected,
+            sel => {
+                const step = StepsMapper.byName(this.props.dnatcofication, sel.name);
+                if (step)
+                    this.setState({ ...this.state, stepId: step.id });
+            }
+        );
+
+        if (this.props.viewerInterop.ready()) {
+            const sel = this.props.viewerInterop.api.query('selected-step');
+            if (sel.name !== '') {
+                const step = StepsMapper.byName(this.props.dnatcofication, sel.name);
+                if (step)
+                    this.setState({ ...this.state, stepId: step.id });
+            }
+        }
     }
 
     componentDidUpdate(_prevProps: View.Props, prevState: State) {
@@ -159,7 +189,7 @@ export class ConnectivitySimilarityPlots extends View<View.Props, State> {
             this.fullDisplayUpdate(true);
         else if (this.state.chain !== prevState.chain)
             this.fullDisplayUpdate(false);
-        else if (this.state.stepId !== prevState.stepId) {
+        else if (this.state.stepId !== prevState.stepId && this.state.stepId !== -1) {
             const stepIdx = StepsMapper.idToIndex(this.props.dnatcofication, this.state.stepId);
             const { previous, next } = StepsMapper.previousNextById(this.props.dnatcofication, this.state.stepId);
 
@@ -213,16 +243,13 @@ export class ConnectivitySimilarityPlots extends View<View.Props, State> {
                             name: 'Step',
                             value:
                                 <ComboBox
-                                    value={this.state.stepId?.toString()}
+                                    value={this.state.stepId === -1 ? '' : this.state.stepId.toString()}
                                     options={this.stepsOptions()}
                                     onChange={v => {
+                                        if (v === '') return;
                                         const stepId = parseInt(v);
                                         const step = StepsMapper.byId(this.props.dnatcofication, stepId);
-                                        const { previous, next } = StepsMapper.previousNextById(this.props.dnatcofication, stepId);
-                                        const prevStepName = previous === -1 ? undefined : StepsMapper.byId(this.props.dnatcofication, previous).name;
-                                        const nextStepName = next === -1 ? undefined : StepsMapper.byId(this.props.dnatcofication, next).name;
-
-                                        this.props.viewerInterop.api.command(ViewerApi.Commands.SelectStep(step.name, prevStepName, nextStepName));
+                                        this.switchStep(step.name);
                                         this.setState({ ...this.state, stepId });
                                     }}
                                 />

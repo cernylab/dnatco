@@ -15,7 +15,7 @@ const AvailableViews = {
     'assigned-ntcs': { caption: 'Assigned NtCs', visualizer: true },
     'structure-info': { caption: 'Structure Info', visualizer: false },
     'confals-rmsds':  { caption: 'Confals & RMSDs', visualizer: true },
-    'connectivity-similarity-plots': { caption: 'Connectivity & Similarity plots', visualizer: false },
+    'connectivity-similarity-plots': { caption: 'Connectivity & Similarity plots', visualizer: true },
     'downloads': { caption: 'Downloads', visualizer: false },
     'step-torsions': { caption: 'Step torsions', visualizer: true },
     'empty': { caption: 'Empty', visualizer: false },
