@@ -1,3 +1,4 @@
+import type { StandardLonghandProperties } from 'csstype';
 import React from 'react';
 import Plot from 'react-plotly.js';
 import { View } from './view';
@@ -5,6 +6,7 @@ import { makeStepSelection } from '../util';
 import { ViewerApi } from '../../../viewer/viewer-interop';
 import { ComboBox } from '../../common/combo-box';
 import { NamedList } from '../../common/named-list';
+import { BasePushButton } from '../../common/push-button';
 import { Dnatcofication } from '../../../dnatco/dnatcofication';
 import { StepsMapper } from '../../../dnatco/steps-mapper';
 import { sequence } from '../../../util';
@@ -126,12 +128,19 @@ export class ConnectivitySimilarityPlots extends View<View.Props, State> {
         return { x, y, colors, tags };
     }
 
-    private stepDescription(stepId: number) {
-        if (stepId === -1)
-            return (<span>(None)</span>);
+    private stepDescription(stepId: number, color: StandardLonghandProperties['color']) {
+        if (stepId === -1) {
+            return [
+                <div style={{ color }}>(None)</div>,
+                <div style={{ color }}>(-)</div>
+            ];
+        }
 
         const step = StepsMapper.byId(this.props.dnatcofication, stepId);
-        return (<span>{step.name} ({step.NtC})</span>);
+        return [
+            <div style={{ color }}>{step.name}</div>,
+            <div style={{ color }}>({step.NtC})</div>
+        ];
     }
 
     private stepsOptions() {
@@ -162,6 +171,8 @@ export class ConnectivitySimilarityPlots extends View<View.Props, State> {
                     connectivityPlotData: PlotData,
                     similarityPlotData: PlotData,
                     stepId: -1,
+                    previousStepId: -1,
+                    nextStepId: -1,
                 })
             }
         );
@@ -271,6 +282,7 @@ export class ConnectivitySimilarityPlots extends View<View.Props, State> {
                                 },
                             ]}
                             layout={{
+                                autosize: true,
                                 dragmode: 'pan',
                                 hovermode: 'closest',
                                 xaxis: { range: SimilarityXRange, title: 'Cartesian RMSD [Å]' },
@@ -282,19 +294,44 @@ export class ConnectivitySimilarityPlots extends View<View.Props, State> {
                         />
                     </div>
 
-                    <div className='rdo-plot-container'>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'auto auto auto' }}>
-                            <div style={{ fontWeight: 'bold', backgroundColor: PrevColor, color: 'white' }}>Previous step</div><div>Current step</div><div style={{ fontWeight: 'bold', backgroundColor: NextColor, color: 'black' }}>Next step</div>
-                            <div>
-                                {this.stepDescription(this.state.previousStepId)}
+                    <div>
+                        <div style={{ display: 'flex', margin: 'auto', maxWidth: '40em' }}>
+                            <BasePushButton
+                                className='rdo-prevcurrnext rdo-prevstep-bgcolor'
+                                onClick={() => {
+                                    if (this.state.previousStepId !== -1) {
+                                        const step = StepsMapper.byId(this.props.dnatcofication, this.state.previousStepId);
+                                        this.switchStep(step.name);
+                                    }
+                                }}
+                                onMouseEnter={e => e.currentTarget.classList.add('rdo-prevnext-active')}
+                                onMouseLeave={e => e.currentTarget.classList.remove('rdo-prevnext-active')}
+                            >
+                                <span style={{ fontWeight: 'bold', color: 'white' }}>Previous step</span>
+                                {this.stepDescription(this.state.previousStepId, 'white')}
+                            </BasePushButton>
+                            <div className='rdo-prevcurrnext'>
+                                <span style={{ fontWeight: 'bold' }}>Current step</span>
+                                {this.stepDescription(this.state.stepId, 'black')}
                             </div>
-                            <div>
-                                {this.stepDescription(this.state.stepId)}
-                            </div>
-                            <div>
-                                {this.stepDescription(this.state.nextStepId)}
-                            </div>
+                            <BasePushButton
+                                className='rdo-prevcurrnext rdo-nextstep-bgcolor'
+                                onClick={() => {
+                                    if (this.state.nextStepId !== -1) {
+                                        const step = StepsMapper.byId(this.props.dnatcofication, this.state.nextStepId);
+                                        this.switchStep(step.name);
+                                    }
+                                }}
+                                onMouseEnter={e => e.currentTarget.classList.add('rdo-prevnext-active')}
+                                onMouseLeave={e => e.currentTarget.classList.remove('rdo-prevnext-active')}
+                            >
+                                <span style={{ fontWeight: 'bold' }}>Next step</span>
+                                {this.stepDescription(this.state.nextStepId, 'black')}
+                            </BasePushButton>
                         </div>
+                    </div>
+
+                    <div className='rdo-plot-container'>
                         <Plot
                             data={[
                                 {
@@ -308,6 +345,7 @@ export class ConnectivitySimilarityPlots extends View<View.Props, State> {
                                 },
                             ]}
                             layout={{
+                                autosize: true,
                                 dragmode: 'pan',
                                 hovermode: 'closest',
                                 xaxis: { range: ConnectivityXRange, title: 'C5 distance [Å]' },

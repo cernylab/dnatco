@@ -273,6 +273,10 @@ th.rdo-data-table {
     background-color: var(--color-d);
 }
 
+.rdo-nextstep-bgcolor {
+    background-color: cyan;
+}
+
 .rdo-offset {
     height: calc(100% - 2*var(--x-gap));
     margin: var(--x-gap);
@@ -305,6 +309,26 @@ th.rdo-data-table {
     padding: var(--x-gap);
     position: relative;
     top: 50%;
+}
+
+.rdo-prevcurrnext {
+    align-content: center;
+    align-items: center;
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    padding: 0.2em;
+    border: var(--thickness-border) solid transparent;
+
+    transition: border-color var(--anim-speed);
+}
+
+.rdo-prevnext-active {
+    border-color: var(--color-b);
+}
+
+.rdo-prevstep-bgcolor {
+    background-color: blue;
 }
 
 .rdo-pushbutton {
