@@ -35,12 +35,12 @@ export namespace Reader {
 
             if (localDbUrl.length > 0) {
                 const url = localDbUrl.replace('${db}', db).replace('${pdbId}', pdbId.toLowerCase());
-                resources.push({ url, gzipped: true });
+                resources.push({ url, gzipped: localDbGzipped });
             }
 
             if (db === 'rcsb') {
                 resources.push(
-                    { url: `https://files.rcsb.org/download/${pdbId.toUpperCase()}.cif.gz`, gzipped: localDbGzipped }
+                    { url: `https://files.rcsb.org/download/${pdbId.toUpperCase()}.cif.gz`, gzipped: true }
                 );
             } else if (db === 'redo') {
                 const id = pdbId.toLowerCase();

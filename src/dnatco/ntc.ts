@@ -1,5 +1,3 @@
-import { NucleicBase } from './';
-
 export namespace NtC {
     export const Conformers = [
         //AA
@@ -110,20 +108,4 @@ export namespace NtC {
 
     export type Torsion = 'delta1'|'epsilon1'|'zeta1'|'alpha2'|'beta2'|'gamma2'|'delta2'|'chi1'|'chi2'|'nccn';
     export type Distance = 'cc'|'nn';
-
-    export const Step = {
-        id: 0,
-        name: '',
-        chain: '',
-        model: 0,
-        resNo1: 0,
-        base1: 'A' as NucleicBase,
-        altPos1: '',
-        resNo2: 0,
-        base2: 'A' as NucleicBase,
-        altPos2: '',
-        NtC: 'NANT' as Conformer,
-        closestNtC: 'NANT' as Conformer,
-    };
-    export type Step = typeof Step;
 }

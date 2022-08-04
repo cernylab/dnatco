@@ -1,13 +1,13 @@
 import * as React from 'react';
 import { View } from './view';
-import { ReDNATCOMspApi as ViewerApi } from '../viewer-api';
+import { makeStepSelection } from '../util';
+import { ViewerApi } from '../../../viewer/viewer-interop';
 import { ComboBox } from '../../common/combo-box';
 import { DynamicTable } from '../../common/dynamic-table';
 import { NamedList } from '../../common/named-list';
 import { Cif } from '../../../cif';
 import { NdbStructNtcOverall, NdbStructNtcStep, NdbStructNtcStepSummary } from '../../../cif/categories/ndb-struct-ntc';
 import { Dnatcofication } from '../../../dnatco/dnatcofication';
-import { StepsMapper } from '../../../dnatco/steps-mapper';
 import { sequence } from '../../../util';
 
 interface State {
@@ -90,13 +90,9 @@ export class AssignedNtCs extends View<View.Props, State> {
                 columns={[modelColumn, chainColumn, stepColumn, ntcColumn, canaColumn]}
                 onCellClicked={(row, col, item) => {
                     if (col === 'Step') {
-                        const stepId = StepsMapper.byName(this.props.dnatcofication, item)?.id ?? -1;
-                        if (stepId !== -1) {
-                            const { previous, next } = StepsMapper.previousNextById(this.props.dnatcofication, stepId);
-                            const prevStepName = previous === -1 ? undefined : StepsMapper.byId(this.props.dnatcofication, previous).name;
-                            const nextStepName = next === -1 ? undefined : StepsMapper.byId(this.props.dnatcofication, next).name;
-                            this.props.viewerApi.command(ViewerApi.Commands.SelectStep(item, prevStepName, nextStepName));
-                        }
+                        const selection = makeStepSelection(this.props.dnatcofication, item);
+                        if (selection)
+                            this.props.viewerInterop.api.command(ViewerApi.Commands.SelectStep(selection.current, selection.prev, selection.next));
                     }
                 }}
                 highlightedTag={this.state.selectedStepName}
@@ -106,18 +102,18 @@ export class AssignedNtCs extends View<View.Props, State> {
 
     componentDidMount() {
         this.subscribe(
-            this.props.viewerEvents.stepDeselected,
+            this.props.viewerInterop.events.stepDeselected,
             () => this.setState({ ...this.state, selectedStepName: undefined })
         );
         this.subscribe(
-            this.props.viewerEvents.stepSelected,
+            this.props.viewerInterop.events.stepSelected,
             (sel) => {
                 this.setState({ ...this.state, selectedStepName: sel.name});
             }
         );
 
-        if (this.props.viewerApi.isReady()) {
-            const step = this.props.viewerApi.query('selected-step');
+        if (this.props.viewerInterop.ready()) {
+            const step = this.props.viewerInterop.api.query('selected-step');
             if (step.name !== '')
                 this.setState({ ...this.state, selectedStepName: step.name });
         }
@@ -151,7 +147,7 @@ export class AssignedNtCs extends View<View.Props, State> {
                                 ]}
                                 value={this.state.modelIndex}
                                 onChange={v => {
-                                    this.props.viewerApi.command(ViewerApi.Commands.SwitchModel(parseInt(v)));
+                                    this.props.viewerInterop.api.command(ViewerApi.Commands.SwitchModel(parseInt(v)));
                                     this.setState({ ...this.state, modelIndex: v });
                                 }}
                             />

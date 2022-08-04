@@ -39,7 +39,12 @@ export namespace ReDNATCOMspApi {
         Commands.SwitchModel;
 
     export namespace Events {
-        export type Type = 'step-deselected'|'step-requested'|'step-selected';
+        export type Type = 'ready'|'step-deselected'|'step-requested'|'step-selected'|'structure-loaded';
+
+        export type Ready = { type: 'ready' }
+        export function Ready(): Ready {
+            return { type: 'ready' };
+        }
 
         export type StepDeselected = { type: 'step-deselected' }
         export function StepDeselected(): StepDeselected {
@@ -59,11 +64,17 @@ export namespace ReDNATCOMspApi {
             return { type: 'step-selected', success: false, name: '' };
         }
 
+        export type StructureLoaded = { type: 'structure-loaded' }
+        export function StructureLoaded(): StructureLoaded {
+            return { type: 'structure-loaded' };
+        }
     }
     export type Event =
+        Events.Ready |
         Events.StepDeselected |
         Events.StepRequested |
-        Events.StepSelected;
+        Events.StepSelected |
+        Events.StructureLoaded;
 
     export namespace Queries {
         export type Type = 'selected-step';
@@ -78,7 +89,7 @@ export namespace ReDNATCOMspApi {
     export interface Object {
         command: (cmd: Command) => void;
         event: (evt: Event) => void;
-        init: (elemId: string, onEvent?: (evt: Event) => void, onInited?: () => void) => void;
+        init: (elemId: string, onEvent?: (evt: Event) => void) => void;
         isReady: () => boolean;
         loadStructure: (data: string, type: 'cif'|'pdb') => void;
         query: (type: Queries.Type) => Response;

@@ -1,6 +1,7 @@
 import { NucleicBase } from './';
 import { Dnatcofication } from './dnatcofication';
 import { NtC } from './ntc';
+import { Step } from './step';
 import { Cif } from '../cif';
 import { NdbStructNtcStep_Schema, NdbStructNtcStepSummary_Schema } from '../cif/categories/ndb-struct-ntc';
 
@@ -35,7 +36,7 @@ export namespace StepsMapper {
         readonly firstId: number;
         readonly models: number[];               // Models indexed from zero
         readonly names: Map<string, number>;
-        readonly steps: NtC.Step[];
+        readonly steps: Step[];
         readonly previous: Array<number>;
         readonly next: Array<number>;
     };
@@ -67,7 +68,7 @@ export namespace StepsMapper {
                 firstModel = model;
         }
 
-        const orderedSteps = new Array<NtC.Step>(steps._rowCount);
+        const orderedSteps = new Array<Step>(steps._rowCount);
         const names = new Map<string, number>();
 
         for (let row = 0; row < steps._rowCount; row++) {
@@ -185,7 +186,7 @@ export namespace StepsMapper {
         if (model === undefined)
             return d.data.steps.steps;
         else {
-            const steps = new Array<NtC.Step>();
+            const steps = new Array<Step>();
 
             if (chain === undefined) {
                 const fromIdx = d.data.steps.models[model - 1];

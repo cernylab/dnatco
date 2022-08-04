@@ -6,7 +6,7 @@ import '../../assets/imgs/elixir.png';
 import '../../assets/imgs/media-play.svg';
 import '../../assets/imgs/ibt.png';
 import '../../assets/imgs/info.svg';
-import '../../assets/imgs/question-mark.svg';
+import '../../assets/imgs/magnifying-glass.svg';
 import '../../assets/imgs/list.svg';
 import '../../assets/imgs/task.svg';
 import '../../assets/imgs/loop.svg';
@@ -17,7 +17,7 @@ const Tabs = {
         caption: 'Start'
     },
     'browse': {
-        icon: 'imos/question-mark.svg',
+        icon: 'imgs/magnifying-glass.svg',
         caption: 'Browse',
     },
     'annotation': {

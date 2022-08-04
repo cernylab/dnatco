@@ -2,6 +2,7 @@ import * as jsLLKA from 'jsLLKA';
 import { Cif } from '../cif';
 import { AtomSite, AtomSite_Schema } from '../cif/categories/atom-site';
 import { NtC } from './ntc';
+import { Step } from './step';
 
 export type Connectivity = {
     C5PrimeDistance: number;
@@ -24,7 +25,7 @@ const NumNtCs = NtCsVector.size();
 
 const NtCNames = Array.from(jsLLKA.IterateVector(NtCsVector)).map(ntc => jsLLKA.LLKA.NtCToName(ntc));
 
-function gatherStepAtoms(step: NtC.Step, atoms: Cif.Table<AtomSite_Schema>) {
+function gatherStepAtoms(step: Step, atoms: Cif.Table<AtomSite_Schema>) {
     const gathered = jsLLKA.CLLKAStructure();
 
     const pdbx_PDB_model_num = atoms.pdbx_PDB_model_num.values!;
@@ -89,7 +90,7 @@ function gatherStepAtoms(step: NtC.Step, atoms: Cif.Table<AtomSite_Schema>) {
     return gathered;
 }
 
-export function getStepsAtoms(steps: NtC.Step[], cif: Cif.Data) {
+export function getStepsAtoms(steps: Step[], cif: Cif.Data) {
     const atoms = Cif.File.table(cif, AtomSite, 0);
     const gatheredAtoms = jsLLKA.CLLKAStructures();
 
@@ -99,7 +100,7 @@ export function getStepsAtoms(steps: NtC.Step[], cif: Cif.Data) {
     return gatheredAtoms;
 }
 
-export function getConnectivities(steps: NtC.Step[], stepsAtoms: jsLLKA.LLKAStructures, previous: number[], next: number[]): AllConnectivities {
+export function getConnectivities(steps: Step[], stepsAtoms: jsLLKA.LLKAStructures, previous: number[], next: number[]): AllConnectivities {
     if (steps.length !== stepsAtoms.size())
         throw new Error(`Mismatching number of steps ${steps.length} and step atoms ${stepsAtoms.size()}`);
 
@@ -170,7 +171,7 @@ export function getConnectivities(steps: NtC.Step[], stepsAtoms: jsLLKA.LLKAStru
     return { backward, forward };
 }
 
-export function getSimilarities(steps: NtC.Step[], stepsAtoms: jsLLKA.LLKAStructures) {
+export function getSimilarities(steps: Step[], stepsAtoms: jsLLKA.LLKAStructures) {
     if (steps.length !== stepsAtoms.size())
         throw new Error(`Mismatching number of steps ${steps.length} and step atoms ${stepsAtoms.size()}`);
 

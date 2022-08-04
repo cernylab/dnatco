@@ -1,10 +1,11 @@
 import React from 'react';
 import { View } from './view';
-import { ReDNATCOMspApi as ViewerApi } from '../viewer-api';
 import { Common as C } from '../common';
 import { ComboBox } from '../../common/combo-box';
 import { NamedList } from '../../common/named-list';
 import { Tooltip } from '../../common/tooltip';
+import { makeStepSelection } from '../util';
+import { ViewerApi } from '../../../viewer/viewer-interop';
 import { Cif } from '../../../cif';
 import {
     NdbStructNtcStepParameters, NdbStructNtcStepParameters_Schema,
@@ -385,11 +386,11 @@ export class StepTorsions extends View<View.Props, State> {
         });
 
         this.subscribe(
-            this.props.viewerEvents.stepDeselected,
+            this.props.viewerInterop.events.stepDeselected,
             () => this.setState({ ...this.state, stepId: -1 })
         );
         this.subscribe(
-            this.props.viewerEvents.stepSelected,
+            this.props.viewerInterop.events.stepSelected,
             (sel) => {
                 const steps = this.stepsOptions();
                 const s = steps.find(x => x.value.name === sel.name);
@@ -398,9 +399,9 @@ export class StepTorsions extends View<View.Props, State> {
             }
         );
 
-        if (this.props.viewerApi.isReady()) {
+        if (this.props.viewerInterop.ready()) {
             const steps = this.stepsOptions();
-            const step = this.props.viewerApi.query('selected-step');
+            const step = this.props.viewerInterop.api.query('selected-step');
             if (step.name !== '' && steps.length > 0) {
                 const s = steps.find(x => x.value.name === step.name);
                 if (s)
@@ -431,8 +432,6 @@ export class StepTorsions extends View<View.Props, State> {
         const stepOpt = stepsOptions.find(x => x.value.id ===  this.state.stepId);
         const cbValue = stepOpt ? JSON.stringify(stepOpt.value) : '';
 
-        console.log(cbValue);
-
         return (
             <div>
                 <NamedList
@@ -450,7 +449,7 @@ export class StepTorsions extends View<View.Props, State> {
                                         })
                                     ]}
                                     onChange={v => {
-                                        this.props.viewerApi.command(ViewerApi.Commands.SwitchModel(parseInt(v)));
+                                        this.props.viewerInterop.api!.command(ViewerApi.Commands.SwitchModel(parseInt(v)));
                                         this.setState({ ...this.state, model: v });
                                     }}
                                 />
@@ -475,11 +474,11 @@ export class StepTorsions extends View<View.Props, State> {
                                             const value = JSON.parse(v) as StepValue;
                                             const stepId = value.id;
                                             const step = StepsMapper.byId(this.props.dnatcofication, stepId);
-                                            const { previous, next } = StepsMapper.previousNextById(this.props.dnatcofication, stepId);
-                                            const prevStepName = previous === -1 ? undefined : StepsMapper.byId(this.props.dnatcofication, previous).name;
-                                            const nextStepName = next === -1 ? undefined : StepsMapper.byId(this.props.dnatcofication, next).name;
 
-                                            this.props.viewerApi.command(ViewerApi.Commands.SelectStep(step.name, prevStepName, nextStepName));
+                                            const selection = makeStepSelection(this.props.dnatcofication, step.name);
+                                            if (selection)
+                                                this.props.viewerInterop.api.command(ViewerApi.Commands.SelectStep(selection.current, selection.prev, selection.next));
+
                                             this.setState({ ...this.state, stepId });
                                         } catch (e) {
                                             console.warn(`Failed to parse StepValue: ${e}`);

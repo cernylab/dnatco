@@ -1,7 +1,7 @@
 import React from 'react';
 import Plot from 'react-plotly.js';
 import { View } from './view';
-import { ReDNATCOMspApi as ViewerApi } from '../viewer-api';
+import { ViewerApi } from '../../../viewer/viewer-interop';
 import { ComboBox } from '../../common/combo-box';
 import { NamedList } from '../../common/named-list';
 import { Dnatcofication } from '../../../dnatco/dnatcofication';
@@ -195,7 +195,7 @@ export class ConnectivitySimilarityPlots extends View<View.Props, State> {
                                         })
                                     ]}
                                     onChange={v => {
-                                        this.props.viewerApi.command(ViewerApi.Commands.SwitchModel(parseInt(v)));
+                                        this.props.viewerInterop.api.command(ViewerApi.Commands.SwitchModel(parseInt(v)));
                                         this.setState({ ...this.state, model: v });
                                     }}
                                 />
@@ -222,7 +222,7 @@ export class ConnectivitySimilarityPlots extends View<View.Props, State> {
                                         const prevStepName = previous === -1 ? undefined : StepsMapper.byId(this.props.dnatcofication, previous).name;
                                         const nextStepName = next === -1 ? undefined : StepsMapper.byId(this.props.dnatcofication, next).name;
 
-                                        this.props.viewerApi.command(ViewerApi.Commands.SelectStep(step.name, prevStepName, nextStepName));
+                                        this.props.viewerInterop.api.command(ViewerApi.Commands.SelectStep(step.name, prevStepName, nextStepName));
                                         this.setState({ ...this.state, stepId });
                                     }}
                                 />

@@ -4,7 +4,9 @@ import { GlobalConfig } from './global-config';
 import { ClassificationResources } from './dnatco/classification-resources';
 import { Dnatcofication, DnatcoficationData } from './dnatco/dnatcofication';
 import { Reader } from './dnatco/reader';
+import { Step } from './dnatco/step';
 import { AboutTab } from './ui/about-tab';
+import { BrowseConformersTab } from './ui/browse-conformers-tab';
 import { DnatcoViewerTab } from './ui/dnatco-viewer-tab';
 import { NavigationBar } from './ui/navigation-bar';
 import { StartTab } from './ui/start-tab';
@@ -12,64 +14,76 @@ import { Popup } from './ui/common/popup';
 import { InProgress } from './ui/common/in-progress';
 import { WithSubscriptions } from './ui/service/with-subscriptions';
 import { MainScreen } from './ui/dnatco/main-screen';
+import { makeStepSelection } from './ui/dnatco/util';
+import { Search } from './search/search';
 import { BackgroundWorker, WorkerMessage } from './tasks/worker';
+import { ViewerApi, ViewerInterop } from './viewer/viewer-interop';
 import { Task } from './tasks/task';
-import '../assets/index.html';
+import '../assets/index.php';
 import '../assets/rednatco.css';
 
 let clsfResData: ClassificationResources.Data;
 
+type Mode = 'nothing'|'structure'|'browse';
+
+const ModeTabs: Record<Mode, NavigationBar.Tabs[]> = {
+    'nothing': ['start', 'about'],
+    'structure': ['start', 'annotation', 'validation', 'refinement', 'about'],
+    'browse': ['start', 'browse', 'annotation', 'about'],
+}
+
 interface State {
-    haveStructure: boolean;
+    mode: Mode;
     selectedTab: NavigationBar.Tabs;
     dnatcofierReady: boolean;
 }
 export class App extends WithSubscriptions<{}, State> {
     private dnatcofication = new Dnatcofication();
+    private search = new Search();
     private ingestionInProgress = false;
+    private viewerInterop = new ViewerInterop();
 
     constructor(props: Partial<App.Props>) {
         super(props);
 
-
         this.state = {
-            haveStructure: false,
+            mode: 'nothing',
             selectedTab: 'start',
             dnatcofierReady: false,
         };
     }
 
-    private fromCustomStructure(coordsFile: File, densityMapFile: File|null) {
+    private fromCustomStructure(coordsFile: File, densityMapFile: File|null, onSuccess: () => void) {
         const task: Task<{ coordsFile: File, densityMapFile: File|null, clsfResData: ClassificationResources.Data }> = {
             taskFunc: 'dnatco-from-custom-structure',
             payload: { coordsFile, densityMapFile, clsfResData },
             initialStatus: ''
         };
 
-        this.loadStructure(task);
+        this.loadStructure(task, onSuccess);
     }
 
-    private fromPdbId(pdbId: string, db: Reader.SupportedDatabases) {
+    private fromPdbId(pdbId: string, db: Reader.SupportedDatabases, onSuccess: () => void) {
         const task: Task<{ pdbId: string, db: Reader.SupportedDatabases, localDbUrl: string, localDbGzipped: boolean, clsfResData: ClassificationResources.Data }> = {
             taskFunc: 'dnatco-from-pdb-id',
             payload: { pdbId, db, localDbUrl: GlobalConfig.data().localDbUrl, localDbGzipped: GlobalConfig.data().localDbGzipped, clsfResData },
             initialStatus: ''
         };
 
-        this.loadStructure(task);
+        this.loadStructure(task, onSuccess);
     }
 
-    private async fromRawLink(link: string) {
+    private async fromRawLink(link: string, onSuccess: () => void) {
         const task: Task<{ link: string, clsfResData: ClassificationResources.Data }> = {
             taskFunc: 'dnatco-from-raw-link',
             payload: { link, clsfResData },
             initialStatus: ''
         };
 
-        this.loadStructure(task);
+        this.loadStructure(task, onSuccess);
     }
 
-    private async loadStructure<P>(task: Task<P>) {
+    private async loadStructure<P>(task: Task<P>, onSuccess: () => void) {
         if (this.ingestionInProgress)
             return void 0;
 
@@ -103,13 +117,13 @@ export class App extends WithSubscriptions<{}, State> {
                             <div className='rdo-error-text'>{data.finished.message ?? 'Unknown error'}</div>
                          </>
                     );
-                } else if (data.finished.state === 'succeeded')
+                } else if (data.finished.state === 'succeeded') {
                     this.dnatcofication.setData(data.finished.data!);
-                else if (data.finished.state === 'aborted')
+                    onSuccess();
+                } else if (data.finished.state === 'aborted')
                     worker.terminate();
             }
         }
-
     }
 
     private renderTab() {
@@ -117,10 +131,35 @@ export class App extends WithSubscriptions<{}, State> {
         case 'start':
             return (
                 <StartTab
-                    onDoCustomStructure={(coordsFile, densityMapFile) => this.fromCustomStructure(coordsFile, densityMapFile)}
-                    onDoPdbId={(pdbId, db) => this.fromPdbId(pdbId, db)}
-                    onDoRawLink={link => this.fromRawLink(link)}
+                    onDoCustomStructure={(coordsFile, densityMapFile) => {
+                        this.fromCustomStructure(
+                            coordsFile,
+                            densityMapFile,
+                            () => this.setState({ ...this.state, mode: 'structure', selectedTab: 'annotation' })
+                        )
+                    }}
+                    onDoPdbId={(pdbId, db) => {
+                        this.fromPdbId(
+                            pdbId,
+                            db,
+                            () => this.setState({ ...this.state, mode: 'structure', selectedTab: 'annotation' })
+                        )
+                    }}
+                    onDoRawLink={link => {
+                        this.fromRawLink(
+                            link,
+                            () => this.setState({ ...this.state, mode: 'structure', selectedTab: 'annotation' })
+                        )
+                    }}
+                    onDoSearchConformers={(NtC, maxCount, redundant, large) => this.searchConformers(NtC, maxCount, redundant, large)}
                     dnatcofierReady={this.state.dnatcofierReady}
+                />
+            );
+        case 'browse':
+            return (
+                <BrowseConformersTab
+                    onStepSelected={(stepName) => this.showSearchResult(stepName)}
+                    steps={this.search.results}
                 />
             );
         case 'annotation':
@@ -129,6 +168,7 @@ export class App extends WithSubscriptions<{}, State> {
                     <MainScreen
                         dnatcofication={this.dnatcofication}
                         masterMode='annotation'
+                        viewerInterop={this.viewerInterop}
                     />
                 </DnatcoViewerTab>
             );
@@ -138,6 +178,7 @@ export class App extends WithSubscriptions<{}, State> {
                     <MainScreen
                         dnatcofication={this.dnatcofication}
                         masterMode='validation'
+                        viewerInterop={this.viewerInterop}
                     />
                 </DnatcoViewerTab>
             );
@@ -147,6 +188,7 @@ export class App extends WithSubscriptions<{}, State> {
                     <MainScreen
                         dnatcofication={this.dnatcofication}
                         masterMode='refinement'
+                        viewerInterop={this.viewerInterop}
                     />
                 </DnatcoViewerTab>
             );
@@ -159,15 +201,58 @@ export class App extends WithSubscriptions<{}, State> {
         this.setState({ ...this.state, selectedTab: tab });
     }
 
-    componentDidMount() {
-        this.subscribe(
-            this.dnatcofication.events.structureChanged,
-            (have: boolean) => {
-                if (have)
-                    this.setState({ ...this.state, haveStructure: have, selectedTab: have ? 'annotation' : 'start' });
-            }
-        );
+    private async searchConformers(NtC: string, maxCount: number, redundant: boolean, large: boolean) {
+        const inProgressDlg = await InProgress.create('Searching...', '', true);
+        const p = Search.requestSearch(NtC, maxCount, redundant, large);
 
+        InProgress.bindAbort(inProgressDlg, () => p.aborter.abort());
+
+        const resp = await Search.resolveSearch(p);
+
+        InProgress.dismiss(inProgressDlg);
+
+        if (resp.success === false) {
+            Popup.create(
+                <div className='rdo-error-text'>
+                    {resp.message ?? 'Search failed'}
+                </div>
+            );
+        } else {
+            this.search.results = resp.payload;
+            if (this.search.haveResults())
+                this.showSearchResult(this.search.results[0].name)
+        }
+    }
+
+    private showSearchResult(stepName: string) {
+        try {
+            const pdbId = Step.nameToPdbId(stepName);
+
+            const sub = this.viewerInterop.events.structureLoaded.subscribe(() => {
+                sub.unsubscribe();
+
+                const selection = makeStepSelection(this.dnatcofication, stepName);
+                if (selection) {
+                    // Use an arbitrary delay to give Molstar some time to settle
+                    // Not doing this may result in broken rendering
+                    setTimeout(
+                        () => this.viewerInterop.api.command(ViewerApi.Commands.SelectStep(selection.current, selection.prev, selection.next)),
+                        200
+                    );
+                }
+            });
+
+            this.fromPdbId(
+                pdbId,
+                'rcsb',
+                () => this.setState({ ...this.state, mode: 'browse', selectedTab: 'annotation' })
+            );
+        } catch (e) {
+            console.warn(`${stepName} is not a valid step name`);
+        }
+    }
+
+    componentDidMount() {
         ClassificationResources.load(
             './classification/clusters.csv',
             './classification/confals.csv',
@@ -180,7 +265,7 @@ export class App extends WithSubscriptions<{}, State> {
             Popup.create(
                 <div className='rdo-error-text'>
                     <div>{e.toString()}</div>
-                    <div>ReDNATCO cannon function when its engine fails to initialize. Try to refresh the page...</div>
+                    <div>ReDNATCO cannot function when its engine fails to initialize. Try to refresh the page...</div>
                  </div>
             );
         });
@@ -196,7 +281,7 @@ export class App extends WithSubscriptions<{}, State> {
                 <NavigationBar
                     onTabSwitched={tab => this.tabSwitched(tab)}
                     selected={this.state.selectedTab}
-                    shown={this.state.haveStructure ? ['start', 'annotation', 'validation', 'refinement', 'about'] : ['start', 'about']}
+                    shown={ModeTabs[this.state.mode]}
                 />
                 <div className='rdo-tab-content-container'>
                     {this.renderTab()}

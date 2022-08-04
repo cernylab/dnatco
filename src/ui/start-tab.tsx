@@ -30,7 +30,7 @@ interface State {
     searchLargeStructures: boolean;
     searchLimit: number;
     searchNtC: NtC.Conformer;
-    searchRedundany: SearchRedundacy;
+    searchRedundancy: SearchRedundacy;
 }
 
 export class StartTab extends React.Component<StartTab.Props, State> {
@@ -45,7 +45,7 @@ export class StartTab extends React.Component<StartTab.Props, State> {
             searchLimit: 200,
             searchLargeStructures: false,
             searchNtC: 'AA00',
-            searchRedundany: 'non-redundant',
+            searchRedundancy: 'non-redundant',
         };
     }
 
@@ -195,8 +195,8 @@ export class StartTab extends React.Component<StartTab.Props, State> {
                                 in{'\u00A0'}
                                 <ComboBox
                                     options={SearchRedundancyOptions}
-                                    value={this.state.searchRedundany}
-                                    onChange={v => this.setState({ ...this.state, searchRedundany: v as SearchRedundacy })}
+                                    value={this.state.searchRedundancy}
+                                    onChange={v => this.setState({ ...this.state, searchRedundancy: v as SearchRedundacy })}
                                 />{'\u00A0'}
                                 PDB structures
                                 (<input
@@ -210,7 +210,9 @@ export class StartTab extends React.Component<StartTab.Props, State> {
                                 {'\u00A0'}
                                 <PushButton
                                     caption='Search'
-                                    onClick={() => {}}
+                                    onClick={() => {
+                                        this.props.onDoSearchConformers(this.state.searchNtC, this.state.searchLimit, this.state.searchRedundancy === 'all', this.state.searchLargeStructures);
+                                    }}
                                 />
                             </div>
                         </ShadowedBox>
@@ -226,6 +228,7 @@ export namespace StartTab {
         onDoPdbId: (pdbId: string, db: Reader.SupportedDatabases) => void,
         onDoCustomStructure: (coordsFile: File, densityMapFile: File|null) => void,
         onDoRawLink: (link: string) => void,
+        onDoSearchConformers: (NtC: string, maxCount: number, redundant: boolean, large: boolean) => void,
         dnatcofierReady: boolean;
     }
 }

@@ -1,12 +1,10 @@
 import * as React from 'react';
 import { makeStepSelection } from './util';
-import { ViewerEvents } from './views/view';
 import { ViewsList } from './views-list';
-import { ReDNATCOMspApi as ViewerApi } from './viewer-api';
 import { Register } from './views/register';
 import { WithSubscriptions } from '../service/with-subscriptions';
+import { ViewerInterop, ViewerApi } from '../../viewer/viewer-interop';
 import { Dnatcofication } from '../../dnatco/dnatcofication';
-import { EventsKeeper } from '../../util/events-keeper';
 import '../../../assets/molstar.js';
 import '../../../assets/molstar.css';
 
@@ -41,14 +39,6 @@ interface State {
     refinementView: 'empty'
 }
 export class MainScreen extends WithSubscriptions<MainScreen.Props, State> {
-    private ek = new EventsKeeper();
-    private viewerApi: ViewerApi.Object|undefined = undefined;
-
-    readonly viewerEvents: ViewerEvents = {
-        stepDeselected: this.ek.subject<void>(),
-        stepSelected: this.ek.subject<{ name: string, rmsd?: number }>(),
-    };
-
     constructor(props: MainScreen.Props) {
         super(props);
 
@@ -60,14 +50,11 @@ export class MainScreen extends WithSubscriptions<MainScreen.Props, State> {
     }
 
     private renderView() {
-        if (!this.viewerApi)
-            return <div />;
-
         switch (this.props.masterMode) {
         case 'annotation':
-            return Register.Views[this.state.annotationView]({ dnatcofication: this.props.dnatcofication, viewerApi: this.viewerApi, viewerEvents: this.viewerEvents });
+            return Register.Views[this.state.annotationView]({ dnatcofication: this.props.dnatcofication, viewerInterop: this.props.viewerInterop });
         case 'validation':
-            return Register.Views[this.state.validationView]({ dnatcofication: this.props.dnatcofication, viewerApi: this.viewerApi, viewerEvents: this.viewerEvents });
+            return Register.Views[this.state.validationView]({ dnatcofication: this.props.dnatcofication, viewerInterop: this.props.viewerInterop });
         case 'refinement':
             return <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '48pt', height: '80%' }}>&lt; Emoji of a fish with a hopeful face &gt;</div>;
         }
@@ -85,39 +72,33 @@ export class MainScreen extends WithSubscriptions<MainScreen.Props, State> {
     }
 
     componentDidMount() {
-        //@ts-ignore
-        this.viewerApi = molstar.ReDNATCOMspApi.init(
-            'rdo-id-molstar-container',
-            (evt: ViewerApi.Event) => {
-                if (evt.type === 'step-selected') {
-                    if (evt.success)
-                        this.viewerEvents.stepSelected.next({ name: evt.name, rmsd: evt.rmsd });
-                } else if (evt.type === 'step-deselected')
-                    this.viewerEvents.stepDeselected.next();
-                else if (evt.type === 'step-requested') {
-                    const selection = makeStepSelection(this.props.dnatcofication, evt.name);
-                    if (selection)
-                        this.viewerApi!.command(ViewerApi.Commands.SelectStep(selection.current, selection.prev, selection.next));
-                }
-            },
-            //@ts-ignore
-            () => molstar.ReDNATCOMspApi.loadStructure(this.props.dnatcofication.rawCif())
+        this.subscribe(this.props.dnatcofication.events.structureChanged, () => this.forceUpdate());
+        this.subscribe(
+            this.props.viewerInterop.events.stepRequested,
+            (name) => {
+                const selection = makeStepSelection(this.props.dnatcofication, name);
+                if (selection)
+                    this.props.viewerInterop.api.command(ViewerApi.Commands.SelectStep(selection.current, selection.prev, selection.next));
+            }
+        );
+        this.subscribe(
+            this.props.viewerInterop.events.ready,
+            () => this.props.viewerInterop.loadStructure(this.props.dnatcofication.rawCif())
         );
 
-        this.subscribe(this.props.dnatcofication.events.structureChanged, () => this.forceUpdate());
-
-        this.forceUpdate(); // Views are not displayed without the viewerApi object
+        this.props.viewerInterop.bind('rdo-id-molstar-container');
     }
 
     componentDidUpdate(prevProps: MainScreen.Props) {
-        if (this.viewerApi) {
+        if (this.props.viewerInterop.ready()) {
             if (this.props.masterMode !== prevProps.masterMode)
-                this.viewerApi.command(ViewerApi.Commands.Redraw());
+                this.props.viewerInterop.api.command(ViewerApi.Commands.Redraw());
         }
     }
 
     componentWillUnmount() {
         this.unsubscribeAll();
+        this.props.viewerInterop.unbind();
     }
 
     render() {
@@ -162,5 +143,6 @@ export namespace MainScreen {
     export interface Props {
         dnatcofication: Dnatcofication;
         masterMode: MasterMode;
+        viewerInterop: ViewerInterop;
     }
 }
