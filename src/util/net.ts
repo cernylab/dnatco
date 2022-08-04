@@ -23,4 +23,18 @@ export namespace Net {
             window.open(url, '_blank')?.focus();
         }
     }
+
+    export function serveFile(mimeType: string, data: string, filename: string) {
+        const enc = encodeURIComponent(data);
+        const payload = `data:${mimeType},${enc}`;
+
+        const e = document.createElement('a');
+        e.setAttribute('href', payload);
+        e.setAttribute('download', filename);
+        e.style.display = 'none';
+
+        document.body.appendChild(e);
+        e.click();
+        document.body.removeChild(e);
+    }
 }

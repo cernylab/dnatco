@@ -16,10 +16,11 @@ const AvailableViews = {
     'structure-info': { caption: 'Structure Info', visualizer: false },
     'confals-rmsds':  { caption: 'Confals & RMSDs', visualizer: true },
     'connectivity-similarity-plots': { caption: 'Connectivity & Similarity plots', visualizer: false },
+    'downloads': { caption: 'Downloads', visualizer: false },
     'step-torsions': { caption: 'Step torsions', visualizer: true },
     'empty': { caption: 'Empty', visualizer: false },
 };
-const AnnotationViews: ViewType[] = ['assigned-ntcs', 'structure-info'];
+const AnnotationViews: ViewType[] = ['assigned-ntcs', 'structure-info', 'downloads'];
 const ValidationViews: ViewType[] = ['confals-rmsds', 'step-torsions', 'connectivity-similarity-plots'];
 
 function masterModeViews(mode: MasterMode): { id: ViewType, caption: string }[] {

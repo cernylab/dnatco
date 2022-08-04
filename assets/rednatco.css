@@ -236,12 +236,14 @@ th.rdo-data-table {
 }
 
 .rdo-named-list {
+    align-items: center;
     display: grid;
     grid-template-columns: auto 1fr;
     grid-column-gap: var(--h-gap);
 }
 
 .rdo-named-list-centered {
+    align-items: center;
     display: grid;
     grid-template-columns: 1fr auto auto 1fr;
     grid-column-gap: var(--h-gap);
