@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { DynamicTable } from './common/dynamic-table';
-import { ShadowedBox } from './common/shadowed-box';
 import { Search } from '../search/search';
+import { SearchConformers } from './search-conformers';
 
 export class BrowseConformersTab extends React.Component<BrowseConformersTab.Props> {
     private renderStepsTable() {
@@ -34,11 +34,15 @@ export class BrowseConformersTab extends React.Component<BrowseConformersTab.Pro
     render() {
         return (
             <div className='rdo-offset'>
-                <ShadowedBox>
-                    <div className='rdo-scroll-vertically'>
-                        {this.renderStepsTable()}
+                <div style={{ display: 'flex', flexDirection: 'column', height: '100%', gap: 'var(--v-gap)' }}>
+                    <div className='rdo-primary-caption'>{`List of ${this.props.steps.length} randomly selected steps with NtC class ${this.props.criteria.NtC}`}</div>
+                    <SearchConformers onDoSearch={this.props.onSearch} initial={this.props.criteria} />
+                    <div style={{ height: '100%', overflow: 'hidden' }}>
+                        <div className='rdo-scroll-vertically'>
+                            {this.renderStepsTable()}
+                        </div>
                     </div>
-                </ShadowedBox>
+                </div>
             </div>
         );
     }
@@ -46,6 +50,8 @@ export class BrowseConformersTab extends React.Component<BrowseConformersTab.Pro
 
 export namespace BrowseConformersTab {
     export interface Props {
+        criteria: Search.Criteria;
+        onSearch: (criteria: Search.Criteria) => void;
         onStepSelected: (name: string) => void;
         steps: Search.FoundStep[];
     }

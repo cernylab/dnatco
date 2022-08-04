@@ -151,13 +151,15 @@ export class App extends WithSubscriptions<{}, State> {
                             () => this.setState({ ...this.state, mode: 'structure', selectedTab: 'annotation' })
                         )
                     }}
-                    onDoSearchConformers={(NtC, maxCount, redundant, large) => this.searchConformers(NtC, maxCount, redundant, large)}
+                    onDoSearchConformers={(options) => this.searchConformers(options)}
                     dnatcofierReady={this.state.dnatcofierReady}
                 />
             );
         case 'browse':
             return (
                 <BrowseConformersTab
+                    criteria={this.search.criteria}
+                    onSearch={(criteria) => this.searchConformers(criteria)}
                     onStepSelected={(stepName) => this.showSearchResult(stepName)}
                     steps={this.search.results}
                 />
@@ -201,9 +203,9 @@ export class App extends WithSubscriptions<{}, State> {
         this.setState({ ...this.state, selectedTab: tab });
     }
 
-    private async searchConformers(NtC: string, maxCount: number, redundant: boolean, large: boolean) {
+    private async searchConformers(criteria: Search.Criteria) {
         const inProgressDlg = await InProgress.create('Searching...', '', true);
-        const p = Search.requestSearch(NtC, maxCount, redundant, large);
+        const p = Search.requestSearch(criteria.NtC, criteria.maxCount, criteria.redundant, criteria.largeStructures);
 
         InProgress.bindAbort(inProgressDlg, () => p.aborter.abort());
 
@@ -218,7 +220,7 @@ export class App extends WithSubscriptions<{}, State> {
                 </div>
             );
         } else {
-            this.search.results = resp.payload;
+            this.search.setResults(resp.payload, criteria);
             if (this.search.haveResults())
                 this.showSearchResult(this.search.results[0].name)
         }

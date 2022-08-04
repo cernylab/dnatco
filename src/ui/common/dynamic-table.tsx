@@ -141,8 +141,6 @@ export class DynamicTable extends React.Component<DynamicTable.Props, State> {
     componentDidUpdate(prevProps: DynamicTable.Props) {
         if (this.props.columns !== prevProps.columns)
             this.setState({ ...this.state, sortBy: -1, sortOrder: 'asc' });
-
-        console.log(this.props.highlightedTag);
     }
 
     render() {

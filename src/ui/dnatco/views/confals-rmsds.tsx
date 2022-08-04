@@ -20,6 +20,8 @@ interface State {
     selectedStepName?: string;
 }
 export class ConfalsRmsds extends View<View.Props, State> {
+    private stepsTable: DynamicTable.Column<any>[] = [];
+
     constructor(props: View.Props) {
         super(props);
 
@@ -28,14 +30,7 @@ export class ConfalsRmsds extends View<View.Props, State> {
         };
     }
 
-    renderAnalyzedSteps() {
-        const overall = this.props.dnatcofication.table(NdbStructNtcOverall);
-        return (
-            <div>Classified: {Cif.Column.value(overall.num_classified, 0)}, Unclassified: {Cif.Column.value(overall.num_unclassified, 0)}</div>
-        );
-    }
-
-    renderStepsTable() {
+    private makeStepsTable() {
         const steps = this.props.dnatcofication.table(NdbStructNtcStep);
         const summary = this.props.dnatcofication.table(NdbStructNtcStepSummary);
 
@@ -62,9 +57,23 @@ export class ConfalsRmsds extends View<View.Props, State> {
             }
         }
 
+        return [stepColumn, ntcColumn, canaColumn, confalColumn, rmsdColumn];
+    }
+
+    renderAnalyzedSteps() {
+        const overall = this.props.dnatcofication.table(NdbStructNtcOverall);
+        return (
+            <div>Classified: {Cif.Column.value(overall.num_classified, 0)}, Unclassified: {Cif.Column.value(overall.num_unclassified, 0)}</div>
+        );
+    }
+
+    renderStepsTable() {
+        if (this.stepsTable.length === 0)
+            this.stepsTable = this.makeStepsTable();
+
         return (
             <DynamicTable
-                columns={[stepColumn, ntcColumn, canaColumn, confalColumn, rmsdColumn]}
+                columns={this.stepsTable}
                 onCellClicked={(row, col, item) => {
                     if (col === 'Step') {
                         const selection = makeStepSelection(this.props.dnatcofication, item);
@@ -88,6 +97,7 @@ export class ConfalsRmsds extends View<View.Props, State> {
                 this.setState({ ...this.state, selectedStepName: sel.name});
             }
         );
+        this.subscribe(this.props.dnatcofication.events.structureChanged, () => this.stepsTable.length === 0);
 
         if (this.props.viewerInterop.ready()) {
             const step = this.props.viewerInterop.api.query('selected-step');

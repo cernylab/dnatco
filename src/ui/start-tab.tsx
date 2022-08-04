@@ -1,25 +1,17 @@
 import * as React from 'react';
 import { BigLogo } from './big-logo';
+import { SearchConformers } from './search-conformers';
 import { ComboBox } from './common/combo-box';
 import { Popup } from './common/popup';
 import { DummyButton, PushButton } from './common/push-button';
 import { ShadowedBox } from './common/shadowed-box';
-import { SpinBox } from './common/spin-box';
-import { NtC } from '../dnatco/ntc';
 import { Reader } from '../dnatco/reader';
+import { Search } from '../search/search';
 import { isPdbId } from '../util';
-
-type SearchRedundacy = 'non-redundant' | 'all';
 
 const DatabaseOptions = [
     { value: 'rcsb', caption: 'RSCB-PDB' },
     { value: 'redo', caption: 'PDB-REDO' },
-];
-const NtCOptions = NtC.Conformers.map(cfrm => { return { value: cfrm, caption: cfrm } });
-const SearchLimitHard = 500;
-const SearchRedundancyOptions = [
-    { value: 'non-redundant', caption: 'Non-redundant' },
-    { value: 'all', caption: 'All' },
 ];
 
 interface State {
@@ -27,10 +19,6 @@ interface State {
     densityMapFile: File|null;
     database: Reader.SupportedDatabases;
     pdbId: string;
-    searchLargeStructures: boolean;
-    searchLimit: number;
-    searchNtC: NtC.Conformer;
-    searchRedundancy: SearchRedundacy;
 }
 
 export class StartTab extends React.Component<StartTab.Props, State> {
@@ -42,10 +30,6 @@ export class StartTab extends React.Component<StartTab.Props, State> {
             database: 'rcsb',
             densityMapFile: null,
             pdbId: '',
-            searchLimit: 200,
-            searchLargeStructures: false,
-            searchNtC: 'AA00',
-            searchRedundancy: 'non-redundant',
         };
     }
 
@@ -174,49 +158,7 @@ export class StartTab extends React.Component<StartTab.Props, State> {
                             </div>
                         </ShadowedBox>
                     </div>
-                    <div style={{ display: 'flex' }}>
-                        <ShadowedBox>
-                            <div className='rdo-offset' style={{ alignItems: 'center', display: 'flex', justifyContent: 'center' }}>
-                                Return up to{'\u00A0'}
-                                <SpinBox
-                                    min={1}
-                                    max={SearchLimitHard}
-                                    step={1}
-                                    onChange={v => this.setState({ ...this.state, searchLimit: v })}
-                                    value={this.state.searchLimit}
-                                />{'\u00A0'}
-                                random{'\u00A0'}
-                                <ComboBox
-                                    options={NtCOptions}
-                                    value={this.state.searchNtC}
-                                    onChange={v => this.setState({ ...this.state, searchNtC: v })}
-                                />{'\u00A0'}
-                                steps
-                                in{'\u00A0'}
-                                <ComboBox
-                                    options={SearchRedundancyOptions}
-                                    value={this.state.searchRedundancy}
-                                    onChange={v => this.setState({ ...this.state, searchRedundancy: v as SearchRedundacy })}
-                                />{'\u00A0'}
-                                PDB structures
-                                (<input
-                                    id='search-large-structures'
-                                    className='rdo-input-checkbox'
-                                    type='checkbox'
-                                    checked={this.state.searchLargeStructures}
-                                    onChange={e => this.setState({ ...this.state, searchLargeStructures: e.currentTarget.checked })}
-                                 />
-                                 <label htmlFor='search-large-structures'>include large structures</label>)
-                                {'\u00A0'}
-                                <PushButton
-                                    caption='Search'
-                                    onClick={() => {
-                                        this.props.onDoSearchConformers(this.state.searchNtC, this.state.searchLimit, this.state.searchRedundancy === 'all', this.state.searchLargeStructures);
-                                    }}
-                                />
-                            </div>
-                        </ShadowedBox>
-                    </div>
+                    <SearchConformers onDoSearch={this.props.onDoSearchConformers} />
                 </div>
             </div>
         );
@@ -228,7 +170,7 @@ export namespace StartTab {
         onDoPdbId: (pdbId: string, db: Reader.SupportedDatabases) => void,
         onDoCustomStructure: (coordsFile: File, densityMapFile: File|null) => void,
         onDoRawLink: (link: string) => void,
-        onDoSearchConformers: (NtC: string, maxCount: number, redundant: boolean, large: boolean) => void,
+        onDoSearchConformers: (options: Search.Criteria) => void,
         dnatcofierReady: boolean;
     }
 }

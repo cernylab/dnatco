@@ -7,6 +7,7 @@ import '../../assets/search.php';
 export class Search {
     private ek = new EventsKeeper();
     private _results: Search.FoundStep[] = [];
+    private _criteria = Search.Criteria;
 
     readonly events = {
         resultsChanged: this.ek.subject<Search.FoundStep[]>(),
@@ -14,12 +15,19 @@ export class Search {
 
     haveResults() { return this._results.length > 0; }
 
+    get criteria() {
+        if (!this.haveResults())
+            return Search.Criteria;
+        return this._criteria;
+    }
+
     get results() {
         return this._results;
     }
 
-    set results(results: Search.FoundStep[]) {
+    setResults(results: Search.FoundStep[], criteria: Search.Criteria) {
         this._results = results;
+        this._criteria = criteria;
         this.events.resultsChanged.next(this._results);
     }
 }
@@ -45,6 +53,14 @@ export namespace Search {
         rmsd: 0,
     }
     export type FoundStep = typeof FoundStep;
+
+    export const Criteria = {
+        NtC: 'AA00',
+        maxCount: 200,
+        redundant: false,
+        largeStructures: false,
+    }
+    export type Criteria = typeof Criteria;
 
     function isFoundStep(obj: any): obj is FoundStep {
         if (obj === null || obj === undefined || typeof obj !== 'object')

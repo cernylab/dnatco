@@ -146,8 +146,8 @@ function _run_db_search(string $NtC, int $maxCount, bool $redundant, bool $large
 
             $found[] = $step;
 
-            if (count($found) === $count) {
-                break;
+            if (count($found) === $maxCount) {
+                return $found;
             }
         }
 
