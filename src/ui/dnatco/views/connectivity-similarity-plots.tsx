@@ -295,7 +295,7 @@ export class ConnectivitySimilarityPlots extends View<View.Props, State> {
                     </div>
 
                     <div>
-                        <div style={{ display: 'flex', margin: 'auto', maxWidth: '40em' }}>
+                        <div style={{ display: 'flex', marginRight: 'auto', maxWidth: '40em' }}>
                             <BasePushButton
                                 className='rdo-prevcurrnext rdo-prevstep-bgcolor'
                                 onClick={() => {
