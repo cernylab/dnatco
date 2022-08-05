@@ -109,7 +109,7 @@ export class DynamicTable extends React.Component<DynamicTable.Props, State> {
                                         this.props.onCellClicked(rowIdx, this.props.columns[colIdx].name, item.data.toString());
                                 }}
                             >
-                                {item.data}
+                                {item.tooltip ? item.tooltip : item.data}
                             </td>
                         )
                     }
@@ -185,7 +185,7 @@ export class DynamicTable extends React.Component<DynamicTable.Props, State> {
 }
 
 export namespace DynamicTable {
-    export type CellValue<T extends string|number> = { data: T, tag?: string };
+    export type CellValue<T extends string|number> = { data: T, tag?: string, tooltip?: React.ReactNode };
     export type Column<T extends string|number> = {
         name: string;
         values: CellValue<T>[];

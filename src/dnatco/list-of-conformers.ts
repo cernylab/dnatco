@@ -25,12 +25,13 @@ export type ConformerInfo = {
     highlight: boolean;
 }
 
-function parseList(text: string) {
+function parseList(text: string): { list: ConformerInfo[], mapping: Map<NtC.Class, number> } {
     const lines = text.split('\n');
 
     const get = <T>(e: string, f: (v: string) => T) => { return f(e); };
 
     const list = new Array<ConformerInfo>();
+    const mapping = new Map<NtC.Class, number>();
 
     // Skip the first line because it is the header and ignore any lines past line 98
     for (let idx = 1; idx < 98; idx++) {
@@ -86,14 +87,16 @@ function parseList(text: string) {
         };
 
         list.push(info);
+        mapping.set(info.NtC, list.length - 1);
     }
 
-    return list;
+    return { list, mapping };
 }
 
 export class _ListOfConformers {
     private _fail = '';
     private _list = new Array<ConformerInfo>();
+    private _mapping = new Map<NtC.Class, number>();
 
     get fail() { return this._fail; }
     failed() { return this._fail.length > 0; }
@@ -108,7 +111,9 @@ export class _ListOfConformers {
             const text = await resp.text();
 
             try {
-                this._list = parseList(text);
+                const { list, mapping } = parseList(text);
+                this._list = list;
+                this._mapping = mapping;
             } catch (e) {
                 console.warn(`Cannot parse list of conformers: ${e}`);
                 this._fail = (e as Error).message;
@@ -117,6 +122,10 @@ export class _ListOfConformers {
     }
 
     get list() { return this._list; }
+    stepByName(ntc: NtC.Class) {
+        const idx = this._mapping.get(ntc);
+        return idx !== undefined ? this._list[idx] : undefined;
+    }
 }
 
 export const ListOfConformers = new _ListOfConformers();

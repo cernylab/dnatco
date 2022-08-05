@@ -1,12 +1,17 @@
 import * as React from 'react';
 import { View } from './view';
+import { SingleStepInfo } from '../single-step-info';
 import { makeStepSelection } from '../util';
 import { ViewerApi } from '../../../viewer/viewer-interop';
 import { ComboBox } from '../../common/combo-box';
 import { DynamicTable } from '../../common/dynamic-table';
 import { NamedList } from '../../common/named-list';
+import { Tooltip } from '../../common/tooltip';
 import { Cif } from '../../../cif';
-import { NdbStructNtcOverall, NdbStructNtcStep, NdbStructNtcStepSummary } from '../../../cif/categories/ndb-struct-ntc';
+import {
+    NdbStructNtcOverall, NdbStructNtcStep, NdbStructNtcStepSummary,
+    NdbStructNtcStepParameters
+} from '../../../cif/categories/ndb-struct-ntc';
 import { Dnatcofication } from '../../../dnatco/dnatcofication';
 import { sequence } from '../../../util';
 
@@ -28,9 +33,16 @@ export class AssignedNtCs extends View<View.Props, State> {
     makeStepsTable() {
         const steps = this.props.dnatcofication.table(NdbStructNtcStep);
         const summary = this.props.dnatcofication.table(NdbStructNtcStepSummary);
+        const params = this.props.dnatcofication.table(NdbStructNtcStepParameters);
 
         const { PDB_model_number, label_asym_id_1, name } = steps;
         const { assigned_NtC, assigned_CANA } = summary;
+        const {
+            tor_delta_1, tor_epsilon_1, tor_zeta_1,
+            tor_alpha_2, tor_beta_2, tor_gamma_2,
+            tor_delta_2, tor_chi_1, tor_chi_2,
+            tor_NCCN, dist_CC, dist_NN
+        } = params;
 
         const modelColumn: DynamicTable.Column<number> = { name: 'Model', values: new Array<DynamicTable.CellValue<number>>(), alignment: 'center' };
         const chainColumn: DynamicTable.Column<string> = { name: 'Chain', values: new Array<DynamicTable.CellValue<string>>(), alignment: 'center' };
@@ -43,12 +55,56 @@ export class AssignedNtCs extends View<View.Props, State> {
         for (let row = 0; row < steps._rowCount; row++) {
             const modelNum = Cif.Column.value(PDB_model_number, row)!;
             const tag = Cif.Column.value(name, row)!;
+            const NtC = Cif.Column.value(assigned_NtC, row)!;
+
             if (onlyModelNum === undefined || (onlyModelNum && onlyModelNum === modelNum)) {
                 modelColumn.values.push({ data: modelNum, tag });
                 chainColumn.values.push({ data: Cif.Column.value(label_asym_id_1, row)!, tag });
                 stepColumn.values.push({ data: tag, tag });
-                ntcColumn.values.push({ data: Cif.Column.value(assigned_NtC, row)!, tag });
-                canaColumn.values.push({ data: Cif.Column.value(assigned_CANA, row)!, tag });
+                ntcColumn.values.push({
+                    data: Cif.Column.value(assigned_NtC, row)!,
+                    tag,
+                    tooltip:
+                        <Tooltip tag={Cif.Column.value(assigned_NtC, row)!}>
+                            <SingleStepInfo
+                                NtC={NtC}
+                                delta1={Cif.Column.value(tor_delta_1, row)!}
+                                epsilon1={Cif.Column.value(tor_epsilon_1, row)!}
+                                zeta1={Cif.Column.value(tor_zeta_1, row)!}
+                                alpha2={Cif.Column.value(tor_alpha_2, row)!}
+                                beta2={Cif.Column.value(tor_beta_2, row)!}
+                                gamma2={Cif.Column.value(tor_gamma_2, row)!}
+                                delta2={Cif.Column.value(tor_delta_2, row)!}
+                                chi1={Cif.Column.value(tor_chi_1, row)!}
+                                chi2={Cif.Column.value(tor_chi_2, row)!}
+                                mu={Cif.Column.value(tor_NCCN, row)!}
+                                CC={Cif.Column.value(dist_CC, row)!}
+                                NN={Cif.Column.value(dist_NN, row)!}
+                            />
+                        </Tooltip>,
+                });
+                canaColumn.values.push({
+                    data: Cif.Column.value(assigned_CANA, row)!,
+                    tag,
+                    tooltip:
+                        <Tooltip tag={Cif.Column.value(assigned_CANA, row)!}>
+                            <SingleStepInfo
+                                NtC={NtC}
+                                delta1={Cif.Column.value(tor_delta_1, row)!}
+                                epsilon1={Cif.Column.value(tor_epsilon_1, row)!}
+                                zeta1={Cif.Column.value(tor_zeta_1, row)!}
+                                alpha2={Cif.Column.value(tor_alpha_2, row)!}
+                                beta2={Cif.Column.value(tor_beta_2, row)!}
+                                gamma2={Cif.Column.value(tor_gamma_2, row)!}
+                                delta2={Cif.Column.value(tor_delta_2, row)!}
+                                chi1={Cif.Column.value(tor_chi_1, row)!}
+                                chi2={Cif.Column.value(tor_chi_2, row)!}
+                                mu={Cif.Column.value(tor_NCCN, row)!}
+                                CC={Cif.Column.value(dist_CC, row)!}
+                                NN={Cif.Column.value(dist_NN, row)!}
+                            />
+                        </Tooltip>,
+                });
             }
         }
 
