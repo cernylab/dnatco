@@ -13,12 +13,12 @@ const RedundancyOptions = [
     { value: 'non-redundant', caption: 'Non-redundant' },
     { value: 'all', caption: 'All' },
 ];
-const NtCOptions = NtC.Conformers.map(cfrm => { return { value: cfrm, caption: cfrm } });
+const NtCOptions = NtC.Classes.map(cls => { return { value: cls, caption: cls } });
 
 interface State {
     largeStructures: boolean;
     maxCount: number;
-    NtC: NtC.Conformer;
+    NtC: NtC.Class;
     redundancy: Redundacy;
 }
 export class SearchConformers extends React.Component<SearchConformers.Props, State> {

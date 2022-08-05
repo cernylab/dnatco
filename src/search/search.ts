@@ -76,9 +76,9 @@ export namespace Search {
         }
 
         const tObj = obj as FoundStep;
-        if (!NtC.Conformers.includes(tObj.NtC))
+        if (!NtC.Classes.includes(tObj.NtC))
             return false;
-        if (!NtC.Conformers.includes(tObj.nearestNtC))
+        if (!NtC.Classes.includes(tObj.nearestNtC))
             return false;
         if (!CANA.Classes.includes(tObj.CANA))
             return false;

@@ -12,12 +12,12 @@ import {
     NdbStructNtcStepSummary, NdbStructNtcStepSummary_Schema,
     NdbStructSugarStepParameters, NdbStructSugarStepParameters_Schema,
 } from '../../../cif/categories/ndb-struct-ntc';
-import { NtC } from  '../../../dnatco/ntc';
 import { Dnatcofication } from '../../../dnatco/dnatcofication';
+import { Step } from '../../../dnatco/step';
 import { StepsMapper } from '../../../dnatco/steps-mapper';
 import { sequence, toFixed } from '../../../util';
 
-const TorsionsDisplayOrder: NtC.Torsion[] = ['delta1', 'epsilon1', 'zeta1', 'alpha2', 'beta2', 'gamma2', 'delta2', 'chi1', 'chi2'];
+const TorsionsDisplayOrder: Step.Torsion[] = ['delta1', 'epsilon1', 'zeta1', 'alpha2', 'beta2', 'gamma2', 'delta2', 'chi1', 'chi2'];
 const TorsionsCaptions = {
     delta1: 'δ1',
     epsilon1: 'ε1',
@@ -31,34 +31,34 @@ const TorsionsCaptions = {
     nccn: 'μ',
 };
 
-const DistancesDisplayOrder: NtC.Distance[] = ['nn', 'cc'];
+const DistancesDisplayOrder: Step.Distance[] = ['nn', 'cc'];
 const DistancesCaptions = {
     cc: 'CC',
     nn: 'NN',
 };
 
-function distanceColumn(table: Cif.Table<NdbStructNtcStepParameters_Schema>, dist: NtC.Distance) {
+function distanceColumn(table: Cif.Table<NdbStructNtcStepParameters_Schema>, dist: Step.Distance) {
     switch (dist) {
     case 'cc': return table.dist_CC;
     case 'nn': return table.dist_NN
     }
 }
 
-function distanceConfalColumn(table: Cif.Table<NdbStructNtcStepParameters_Schema>, dist: NtC.Distance) {
+function distanceConfalColumn(table: Cif.Table<NdbStructNtcStepParameters_Schema>, dist: Step.Distance) {
     switch (dist) {
     case 'cc': return table.confal_dist_CC;
     case 'nn': return table.confal_dist_NN
     }
 }
 
-function distanceDiffColumn(table: Cif.Table<NdbStructNtcStepParameters_Schema>, dist: NtC.Distance) {
+function distanceDiffColumn(table: Cif.Table<NdbStructNtcStepParameters_Schema>, dist: Step.Distance) {
     switch (dist) {
     case 'cc': return table.diff_dist_CC;
     case 'nn': return table.diff_dist_NN
     }
 }
 
-function torsionColumn(table: Cif.Table<NdbStructNtcStepParameters_Schema>, torsion: NtC.Torsion) {
+function torsionColumn(table: Cif.Table<NdbStructNtcStepParameters_Schema>, torsion: Step.Torsion) {
     switch (torsion) {
     case 'delta1':
         return table.tor_delta_1;
@@ -83,7 +83,7 @@ function torsionColumn(table: Cif.Table<NdbStructNtcStepParameters_Schema>, tors
     }
 }
 
-function torsionConfalColumn(table: Cif.Table<NdbStructNtcStepParameters_Schema>, torsion: NtC.Torsion) {
+function torsionConfalColumn(table: Cif.Table<NdbStructNtcStepParameters_Schema>, torsion: Step.Torsion) {
     switch (torsion) {
     case 'delta1':
         return table.confal_tor_delta_1;
@@ -108,7 +108,7 @@ function torsionConfalColumn(table: Cif.Table<NdbStructNtcStepParameters_Schema>
     }
 }
 
-function torsionDiffColumn(table: Cif.Table<NdbStructNtcStepParameters_Schema>, torsion: NtC.Torsion) {
+function torsionDiffColumn(table: Cif.Table<NdbStructNtcStepParameters_Schema>, torsion: Step.Torsion) {
     switch (torsion) {
     case 'delta1':
         return table.diff_tor_delta_1;
@@ -145,10 +145,10 @@ function toComboBoxOptions(opts: StepOption[]) {
 }
 
 type DistanceInfo = {
-    actual: Record<NtC.Distance, number>,
-    confal: Record<NtC.Distance, number>,
-    diff: Record<NtC.Distance, number>,
-    reference: Record<NtC.Distance, number>,
+    actual: Record<Step.Distance, number>,
+    confal: Record<Step.Distance, number>,
+    diff: Record<Step.Distance, number>,
+    reference: Record<Step.Distance, number>,
 }
 function DistanceInfo(): DistanceInfo {
     return {
@@ -177,10 +177,10 @@ type StepOption = {
 };
 
 type TorsionInfo = {
-    actual: Record<NtC.Torsion, number>,
-    confal: Record<NtC.Torsion, number>,
-    diff: Record<NtC.Torsion, number>,
-    reference: Record<NtC.Torsion, number>,
+    actual: Record<Step.Torsion, number>,
+    confal: Record<Step.Torsion, number>,
+    diff: Record<Step.Torsion, number>,
+    reference: Record<Step.Torsion, number>,
 }
 function TorsionInfo(): TorsionInfo {
     return {

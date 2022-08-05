@@ -10,8 +10,14 @@ import '../../assets/imgs/magnifying-glass.svg';
 import '../../assets/imgs/list.svg';
 import '../../assets/imgs/task.svg';
 import '../../assets/imgs/loop.svg';
+import '../../assets/imgs/document.svg';
 
-const Tabs = {
+type Tab = {
+    icon: string,
+    caption: string,
+    noCaps?: boolean
+};
+const Tabs ={
     'start': {
         icon: 'imgs/media-play.svg',
         caption: 'Start'
@@ -32,9 +38,13 @@ const Tabs = {
         icon: 'imgs/loop.svg',
         caption: 'Refinement',
     },
+    'list-of-conformers': {
+        icon: 'imgs/document.svg',
+        caption: 'Conformers',
+    },
     'about': {
         icon: 'imgs/info.svg',
-        caption: 'About'
+        caption: 'About',
     }
 };
 
@@ -43,6 +53,7 @@ interface TabButtonProps {
     caption: string;
     icon: string;
     selected: boolean;
+    noCaps: boolean;
 }
 class TabButton extends React.Component<TabButtonProps> {
     render() {
@@ -56,7 +67,7 @@ class TabButton extends React.Component<TabButtonProps> {
                     className='rdo-tab-button-icon'
                     src={`${GlobalConfig.data().pathPrefix}${this.props.icon}`}
                 />
-                <div className='rdo-tab-button-text'>{this.props.caption}</div>
+                <div className={this.props.noCaps ? 'rdo-tab-button-text-no-caps' : 'rdo-tab-button-text'}>{this.props.caption}</div>
             </BasePushButton>
         );
     }
@@ -67,13 +78,15 @@ export class NavigationBar extends React.Component<NavigationBar.Props> {
         const list = new Array<JSX.Element>();
 
         for (const tab of tabs) {
+            const t = Tabs[tab] as Tab;
             list.push(
                 <TabButton
                     key={tab}
-                    icon={Tabs[tab].icon}
-                    caption={Tabs[tab].caption}
+                    icon={t.icon}
+                    caption={t.caption}
                     onClick={() => this.props.onTabSwitched(tab)}
                     selected={this.props.selected === tab}
+                    noCaps={t.noCaps ?? false}
                 />
             );
         }

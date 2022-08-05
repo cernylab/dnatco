@@ -235,6 +235,39 @@ th.rdo-data-table {
     height: 1em;
 }
 
+table.rdo-list-of-conformers {
+    border-collapse: collapse;
+    margin: auto;
+}
+
+table.rdo-list-of-conformers td, table.rdo-list-of-conformers th {
+    padding: 0.2em;
+}
+
+td.rdo-list-of-conformers-bb , th.rdo-list-of-conformers-bb {
+    border-bottom: var(--thickness-border) solid black;
+}
+
+td.rdo-list-of-conformers-rb , th.rdo-list-of-conformers-rb {
+    border-right: var(--thickness-border) solid black;
+}
+
+td.rdo-list-of-conformers-tb , th.rdo-list-of-conformers-tb {
+    border-top: var(--thickness-border) solid black;
+}
+
+tr.rdo-list-of-conformers-alternate-clr {
+    background-color: #eeeeee;
+}
+
+.rdo-list-of-conformers-highlighted-col {
+    background-color: #fffdef;
+}
+
+.rdo-list-of-conformers-highlighted-row {
+    background-color: #eeffde;
+}
+
 .rdo-named-list {
     align-items: center;
     display: grid;
@@ -257,8 +290,6 @@ th.rdo-data-table {
 .rdo-navigation-bar {
     background-color: var(--color-b);
     display: flex;
-    font-size: var(--font-large);
-    text-transform: uppercase;
 }
 
 .rdo-navigation-bar-padder {
@@ -464,9 +495,27 @@ th.rdo-data-table {
     height: 1em;
 }
 
+.rdo-tab-button-text {
+    font-size: var(--font-large);
+    text-transform: uppercase;
+}
+
+.rdo-tab-button-text-nocaps {
+    font-size: var(--font-large);
+    text-transform: none;
+}
+
 .rdo-tab-content-container {
     flex: 1;
     overflow: hidden;
+}
+
+.rdo-talgn-center {
+    text-align: center;
+}
+
+.rdo-talgn-right {
+    text-align: right;
 }
 
 .rdo-text-large {

@@ -1,19 +1,21 @@
 import { NucleicBase } from './';
 import { Dnatcofication } from './dnatcofication';
+import { CANA } from './cana';
 import { NtC } from './ntc';
 import { Step } from './step';
 import { Cif } from '../cif';
 import { NdbStructNtcStep_Schema, NdbStructNtcStepSummary_Schema } from '../cif/categories/ndb-struct-ntc';
 
 export namespace StepsMapper {
-    function findNtC(id: number, summaries: Cif.Table<NdbStructNtcStepSummary_Schema>): { assigned: NtC.Conformer, closest: NtC.Conformer } {
+    function findNtC(id: number, summaries: Cif.Table<NdbStructNtcStepSummary_Schema>): { assignedNtC: NtC.Class, closestNtC: NtC.Class, CANA: CANA.Class } {
         // First assume that summaries are ordered by step_id that begins with 1
         const startFrom = id - 1 >= 0 ? id - 1 : 0;
         for (let row = startFrom; row < summaries._rowCount; row++) {
             if (Cif.Column.value(summaries.step_id, row) === id) {
                 return {
-                    assigned: Cif.Column.value(summaries.assigned_NtC, row)!,
-                    closest: Cif.Column.value(summaries.closest_NtC, row)!,
+                    assignedNtC: Cif.Column.value(summaries.assigned_NtC, row)!,
+                    closestNtC: Cif.Column.value(summaries.closest_NtC, row)!,
+                    CANA: Cif.Column.value(summaries.assigned_CANA, row)!,
                 };
             }
         }
@@ -22,8 +24,9 @@ export namespace StepsMapper {
         for (let row = 0; row < summaries._rowCount; row++) {
             if (Cif.Column.value(summaries.step_id, row) === id) {
                 return {
-                    assigned: Cif.Column.value(summaries.assigned_NtC, row)!,
-                    closest: Cif.Column.value(summaries.closest_NtC, row)!,
+                    assignedNtC: Cif.Column.value(summaries.assigned_NtC, row)!,
+                    closestNtC: Cif.Column.value(summaries.closest_NtC, row)!,
+                    CANA: Cif.Column.value(summaries.assigned_CANA, row)!,
                 };
             }
         }
@@ -81,7 +84,7 @@ export namespace StepsMapper {
             if (chain1 !== chain2)
                 throw new Error(`Steps are not allowed to span across chains but step ${id} does that`);
 
-            const { assigned, closest } = findNtC(id, summaries);
+            const { assignedNtC, closestNtC, CANA } = findNtC(id, summaries);
             orderedSteps[idx] = {
                 id,
                 name,
@@ -93,8 +96,9 @@ export namespace StepsMapper {
                 base2: Cif.Column.value(steps.label_comp_id_2, row) as NucleicBase,
                 altPos2: Cif.Column.value(steps.label_alt_id_2, row) ?? '',
                 model: Cif.Column.value(steps.PDB_model_number, row)!,
-                NtC: assigned,
-                closestNtC: closest,
+                NtC: assignedNtC,
+                closestNtC: closestNtC,
+                CANA,
             };
 
             names.set(name, idx);

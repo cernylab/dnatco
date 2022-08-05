@@ -1,5 +1,5 @@
 export namespace NtC {
-    export const Conformers = [
+    export const Classes = [
         //AA
         'AA00',
         'AA01',
@@ -104,8 +104,5 @@ export namespace NtC {
         'ZZS1',
         'ZZS2',
     ];
-    export type Conformer = typeof Conformers[number] | 'NANT';
-
-    export type Torsion = 'delta1'|'epsilon1'|'zeta1'|'alpha2'|'beta2'|'gamma2'|'delta2'|'chi1'|'chi2'|'nccn';
-    export type Distance = 'cc'|'nn';
+    export type Class = typeof Classes[number] | 'NANT';
 }

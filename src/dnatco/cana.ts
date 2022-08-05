@@ -16,4 +16,5 @@ export namespace CANA {
         'ZZZ',
         'NAN'
     ];
+    export type Class = typeof Classes[number] | 'NANT';
 }

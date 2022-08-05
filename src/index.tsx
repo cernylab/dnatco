@@ -3,11 +3,13 @@ import * as RDC from 'react-dom/client';
 import { GlobalConfig } from './global-config';
 import { ClassificationResources } from './dnatco/classification-resources';
 import { Dnatcofication, DnatcoficationData } from './dnatco/dnatcofication';
+import { ListOfConformers } from './dnatco/list-of-conformers';
 import { Reader } from './dnatco/reader';
 import { Step } from './dnatco/step';
 import { AboutTab } from './ui/about-tab';
 import { BrowseConformersTab } from './ui/browse-conformers-tab';
 import { DnatcoViewerTab } from './ui/dnatco-viewer-tab';
+import { ListOfConformersTab } from './ui/list-of-conformers-tab';
 import { NavigationBar } from './ui/navigation-bar';
 import { StartTab } from './ui/start-tab';
 import { Popup } from './ui/common/popup';
@@ -27,9 +29,9 @@ let clsfResData: ClassificationResources.Data;
 type Mode = 'nothing'|'structure'|'browse';
 
 const ModeTabs: Record<Mode, NavigationBar.Tabs[]> = {
-    'nothing': ['start', 'about'],
-    'structure': ['start', 'annotation', 'validation', 'refinement', 'about'],
-    'browse': ['start', 'browse', 'annotation', 'about'],
+    'nothing': ['start', 'list-of-conformers', 'about'],
+    'structure': ['start', 'annotation', 'validation', 'refinement', 'list-of-conformers', 'about'],
+    'browse': ['start', 'browse', 'annotation', 'list-of-conformers', 'about'],
 }
 
 interface State {
@@ -194,6 +196,8 @@ export class App extends WithSubscriptions<{}, State> {
                     />
                 </DnatcoViewerTab>
             );
+        case 'list-of-conformers':
+            return <ListOfConformersTab />;
         default:
             return <AboutTab />
         }
@@ -271,6 +275,8 @@ export class App extends WithSubscriptions<{}, State> {
                  </div>
             );
         });
+
+        ListOfConformers.load('./conformers.csv');
     }
 
     componentWillUnmount() {

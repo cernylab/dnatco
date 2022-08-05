@@ -8,14 +8,14 @@ export type Connectivity = {
     C5PrimeDistance: number;
     O3PrimeDistance: number;
 }
-export type Connectivities = Record<NtC.Conformer, Connectivity>;
+export type Connectivities = Record<NtC.Class, Connectivity>;
 export type AllConnectivities = { backward: Array<Connectivities|null>, forward: Array<Connectivities|null> };
 
 export type Similarity = {
     rmsd: number;
     euclideanDistance: number;
 }
-export type Similarities = Record<NtC.Conformer, Similarity>;
+export type Similarities = Record<NtC.Class, Similarity>;
 export type AllSimilarities = Array<Similarities|null>;
 
 const NtCsVector = jsLLKA.LLKA.makeStdVectorNtC();

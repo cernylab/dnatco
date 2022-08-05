@@ -1,7 +1,8 @@
+import { CANA } from './cana';
 import { NtC } from './ntc';
 import { NucleicBase } from './';
 
-export const CStep = {
+export const StepObj = {
     id: 0,
     name: '',
     chain: '',
@@ -12,12 +13,15 @@ export const CStep = {
     resNo2: 0,
     base2: 'A' as NucleicBase,
     altPos2: '',
-    NtC: 'NANT' as NtC.Conformer,
-    closestNtC: 'NANT' as NtC.Conformer,
+    NtC: 'NANT' as NtC.Class,
+    closestNtC: 'NANT' as NtC.Class,
+    CANA:  'NAN' as CANA.Class
 };
-export type Step = typeof CStep;
+export type Step = typeof StepObj;
 
 export namespace Step {
+    export type Torsion = 'delta1'|'epsilon1'|'zeta1'|'alpha2'|'beta2'|'gamma2'|'delta2'|'chi1'|'chi2'|'nccn';
+    export type Distance = 'cc'|'nn';
 
     export function nameToPdbId(name: string) {
         const toks = name.split('_');

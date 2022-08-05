@@ -1,0 +1,98 @@
+description;CANA;NtC;N_DNA;percent_DNA;N_RNA;percent_RNA;N_GS;delta_1;epsilon_1;zeta_1;alpha_2;beta_2;gamma_2;delta_2;chi_1;chi_2;mu;NN;CC;highlight
+the most frequent, canonical A form;AAA;AA00;1805;3.1;21177;37.1;291;82;206;288;293;173;55;82;199;200;18;4.8;5.5;y
+A-DNA with B like χ;AAA;AA02;595;1.0;80;0.1;170;88;202;274;293;161;54;88;245;246;18;4.7;5.2;n
+A like, similar to AA00, high α;AAA;AA03;32;0.1;806;1.4;64;80;223;264;337;155;27;80;192;202;16;4.9;5.7;n
+A like, similar to AA00, low α;AAA;AA04;148;0.3;1830;3.2;65;80;202;299;259;175;85;80;199;193;19;4.7;5.4;n
+A form variant;AAA;AA08;150;0.3;8527;15.0;436;82;233;275;306;153;55;80;189;197;23;4.6;5.4;n
+A form variant;AAA;AA09;22;0.0;230;0.4;27;87;232;272;302;154;52;85;217;233;24;4.7;5.4;n
+A like, α/ɣ switch (150/180);AAw;AA01;284;0.5;1859;3.3;159;81;197;291;149;192;182;85;204;188;14;4.7;5.3;n
+A like, α/ɣ switch (130/180);AAw;AA05;7;0.0;385;0.7;51;82;214;291;140;225;182;85;209;184;57;4.3;4.8;n
+A like, α/ɣ switch (130/180);AAw;AA06;18;0.0;513;0.9;32;80;214;256;135;229;180;82;196;180;16;4.6;5.2;n
+A like, α/ɣ switch (210/140);AAw;AA10;15;0.0;488;0.9;151;79;203;313;210;154;143;80;199;183;13;4.8;5.4;n
+A like, α/ɣ switch (90/190);AAw;AA11;6;0.0;240;0.4;34;81;261;226;91;257;192;83;189;179;11;4.6;5.0;n
+A form with distant bases, low ζ;AAu;AA07;1;0.0;95;0.2;41;83;243;216;296;144;53;82;203;203;345;6.8;6.8;n
+A like backbone, bases can be intercalated;AAu;AA12;7;0.0;616;1.1;78;82;198;261;298;176;50;81;201;197;354;6.2;6.4;n
+A form with distant bases, low ζ;AAu;AA13;0;0.0;105;0.2;31;83;190;241;307;174;50;83;200;192;343;7.3;6.9;n
+A-B: δ1 C3'-endo, δ2 C2'-endo, χ1/χ2 have A-B pattern;A-B;AB01;1438;2.5;43;0.1;67;86;186;281;301;179;54;142;223;256;18;4.7;5.3;n
+A-B: δ1 O4'-endo, extremely low ε, χ1/χ2 are B like;A-B;AB02;120;0.2;0;0.0;22;94;59;56;208;188;66;131;239;250;23;4.4;4.8;n
+A-B: similar to AB01 with high α and low ζ, β, ɣ;A-B;AB03;627;1.1;0;0.0;28;103;195;255;321;162;40;136;228;256;23;4.6;5.1;n
+A-B: δ1 C3'-endo, δ2 C2'-endo, χ1/χ2 have A/B pattern, C'C' high;A-B;AB04;247;0.4;189;0.3;28;87;215;297;280;209;55;139;194;233;8;5.6;6.6;n
+A-B: δ1 C3'-endo, δ2 C2'-endo, χ1/χ2 have A/B pattern;A-B;AB05;549;1.0;1024;1.8;50;83;214;287;303;176;58;145;196;239;17;4.8;5.7;n
+BI-A complex conformer with δ2 from C3' to C4'-exo, χ1/χ2 are B like;B-A;BA01;735;1.3;4;0.0;36;136;189;255;300;161;53;88;254;225;29;4.2;4.7;n
+BI-A complex conformer with δ2 from C3' to C4'-exo, χ1/χ2 are B like;B-A;BA05;2001;3.5;0;0.0;70;131;184;269;296;169;52;104;251;235;24;4.1;4.6;n
+BI-A: extremely low β~60, α/ɣ switch (260/170), χ2 A like;B-A;BA08;668;1.2;23;0.0;39;139;208;213;301;141;49;89;263;215;33;4.4;4.9;n
+B-A: low β;B-A;BA09;143;0.2;6;0.0;25;134;200;287;256;68;172;90;265;186;23;3.8;4.0;n
+B-A with α~90, ɣ~180, χ1 A like;B-A;BA10;129;0.2;13;0.0;37;136;200;236;95;219;205;90;254;200;28;4.0;4.4;n
+B-A with α~90, ɣ~180, χ1 A like;B-A;BA13;158;0.3;31;0.1;38;142;220;200;81;231;196;88;265;197;31;4.2;4.6;n
+BII-A: χ2 A like;B-A;BA16;66;0.1;54;0.1;59;146;246;190;61;229;199;85;266;199;29;4.4;4.8;n
+BII-A: δ2~O4'-endo, β~130;B-A;BA17;143;0.2;3;0.0;30;149;253;177;295;131;44;98;271;233;38;4.5;4.9;n
+the most frequent DNA conformer, canonical B form, also called BI;BBB;BB00;19360;33.6;8;0.0;1872;138;183;258;304;180;44;138;253;258;26;4.4;4.9;y
+less populated variant of the BI form;BBB;BB01;3558;6.2;0;0.0;134;131;181;266;301;176;49;120;248;244;26;4.3;4.9;n
+less populated variant of BI form, very low ε, α, β;BBw;BB17;191;0.3;1;0.0;22;129;145;275;230;241;79;136;245;270;24;4.6;5.2;n
+BI with α/ɣ switch (30/300);BBw;BB02;2362;4.1;0;0.0;108;141;194;246;31;195;297;150;252;253;22;4.5;5.1;n
+BI form with α/ɣ switch (160/170);BBw;BB03;331;0.6;0;0.0;24;145;175;274;163;166;175;146;241;233;27;4.5;5.2;n
+B form with α/ɣ switch (120/190) and low ε and ζ;BBw;BB11;250;0.4;1;0.0;23;145;199;200;123;227;187;144;256;223;29;4.6;5.1;n
+B like conformer, χ2 A like;BBw;BB16;636;1.1;2;0.0;51;138;221;282;284;173;48;140;204;270;33;4.9;5.5;n
+Conformer bridging BI and BII forms;B12;BB04;3584;6.2;3;0.0;235;140;201;214;315;153;46;140;63;253;29;4.6;5.1;n
+Conformer bridging BI and BII forms with α/ɣ switch (70/220), χ2 A like;B12;BB05;104;0.2;0;0.0;16;142;220;197;76;233;213;129;266;208;29;4.2;4.7;n
+BII form, typical by ε/ζ switch compared to BI;BB2;BB07;2774;4.8;17;0.0;324;144;247;169;297;141;46;141;271;260;46;5.0;5.2;n
+BII form variant with α/ɣ switch (70/210);BB2;BB08;92;0.2;6;0.0;17;147;249;181;66;225;209;148;270;235;30;4.7;5.1;n
+B form with extremely low values of α, β, ɣ, and low ε and ζ;miB;BB10;901;1.6;0;0.0;50;138;196;192;22;106;19;129;257;258;26;4.4;4.9;n
+BI like with α/ɣ switch (260/170), low β 70, χ2 A like;miB;BB12;456;0.8;0;0.0;90;140;196;280;257;76;171;140;269;205;24;3.9;4.2;n
+BI like with α/ɣ switch (220/160), low β 70, χ2 A like;miB;BB13;242;0.4;0;0.0;30;143;187;293;219;98;161;146;253;219;25;4.4;4.9;n
+B like with extremely low ε, high β;miB;BB14;161;0.3;0;0.0;33;110;104;305;220;255;83;133;259;265;29;4.3;4.9;n
+BI like with high α (340) and ɣ near 0;miB;BB15;520;0.9;2;0.0;37;144;189;257;345;189;350;148;250;262;22;4.4;5.0;n
+B like pucker, χ2 A like, unusual combination of ε, ζ, α, ɣ, χ2;miB;BB20;23;0.0;0;0.0;12;143;294;110;150;199;54;152;261;185;277;5.5;5.2;n
+A-B backbone, parallel distant bases can be intercalated;ICL;IC01;16;0.0;211;0.4;49;83;220;290;297;223;54;145;203;283;11;7.2;7.5;n
+A-B backbone, parallel distant bases can be intercalated;ICL;IC02;6;0.0;86;0.2;36;82;222;279;299;225;52;143;201;244;2;7.7;7.8;n
+A-B backbone, parallel distant bases can be intercalated, α/ɣ switch (70/300), χ2 B like;ICL;IC03;1;0.0;30;0.1;17;81;239;256;69;178;302;145;200;265;359;7.5;7.8;n
+A-B backbone, parallel distant bases can be intercalated, α/ɣ switch (190/180), χ1 B like;ICL;IC04;10;0.0;34;0.1;25;85;206;287;194;181;183;149;212;244;25;7.0;7.2;n
+BII backbone, parallel distant bases can be intercalated;ICL;IC05;29;0.1;7;0.0;22;141;255;174;289;178;50;147;273;275;46;7.3;7.1;n
+B like, parallel distant bases can be intercalated, χ A like;ICL;IC06;63;0.1;13;0.0;33;137;236;280;288;174;47;142;207;269;40;6.2;6.2;n
+A-like intercalated;ICL;IC07;0;0.0;27;0.0;16;84;209;291;176;127;177;83;218;204;333;7.5;7.4;n
+A pucker and χ torsions, unusual combination of backbone torsions, bases distant, parallel, low rise;OPN;OP01;0;0.0;89;0.2;35;83;221;122;279;145;45;82;205;194;195;8.3;7.4;n
+A pucker and χ torsions, unusual combination of backbone torsions, bases distant, angled;OPN;OP02;0;0.0;39;0.1;12;83;226;156;292;159;43;86;207;176;259;9.0;8.3;n
+A pucker and χ torsions, unusual combination of backbone torsions, bases angled, can be intercalated;OPN;OP03;0;0.0;224;0.4;61;78;226;300;175;138;51;84;199;195;202;7.5;7.5;n
+A pucker and χ torsions, unusual combination of backbone torsions, bases angled, can be intercalated;OPN;OP04;0;0.0;299;0.5;63;80;221;285;166;171;52;85;206;194;206;7.2;7.1;n
+A pucker and χ torsions, unusual combination of backbone torsions, bases distant, perpendicular;OPN;OP05;0;0.0;31;0.1;12;78;204;50;69;126;45;84;201;187;264;9.1;8.9;n
+A pucker and χ torsions, unusual combination of ε, ζ, α, β, bases distant, low rise;OPN;OP06;0;0.0;45;0.1;25;82;213;143;301;172;48;81;204;201;243;10.1;9.0;n
+A pucker and χ torsions, unusual combination of ε, ζ, α, β, low rise;OPN;OP07;0;0.0;67;0.1;22;82;247;194;293;149;44;81;196;188;324;7.8;7.5;n
+A pucker and χ torsions, unusual combination of ε, ζ, α, β, bases parallel, low rise;OPN;OP08;0;0.0;106;0.2;33;80;203;278;252;83;167;84;201;177;318;7.2;5.9;n
+A-B pucker and χ torsions, unusual combination of ε, ζ, α, β, bases distant, angled;OPN;OP09;0;0.0;75;0.1;38;82;198;269;203;146;51;148;203;250;163;7.8;6.7;n
+B-A pucker and χ torsions, unusual combination of ε, ζ, α, β, bases distant, parallel;OPN;OP10;2;0.0;83;0.1;24;147;218;152;289;175;40;87;248;186;36;7.8;7.3;n
+B-A pucker and χ torsions, unusual combination of ε, ζ, α, β, bases distant, perpendicular;OPN;OP11;6;0.0;281;0.5;37;147;267;301;297;187;57;84;235;197;110;8.9;7.8;n
+B-A pucker and χ torsions, unusual combination of ε, ζ, α, β, bases distant, angled;OPN;OP12;8;0.0;238;0.4;37;141;257;285;275;184;43;83;237;191;73;7.5;7.3;n
+B-A pucker and χ torsions, unusual combination of ε, ζ, α, β, bases distant, perpendicular;OPN;OP13;0;0.0;51;0.1;30;146;268;248;62;153;47;86;239;186;189;10.5;8.9;n
+B-A pucker and χ torsions, unusual combination of ε, ζ, α, β, bases distant, angled;OPN;OP14;0;0.0;57;0.1;27;148;270;227;58;196;61;88;259;176;229;9.6;8.2;n
+B-A pucker and χ torsions, unusual combination of ε, ζ, α, β, bases can pair with each other;OPN;OP15;12;0.0;169;0.3;45;149;201;151;292;149;41;86;265;188;22;6.9;6.6;n
+B-A pucker and χ torsions, unusual combination of ε, ζ, α, β, bases distant, perpendicular;OPN;OP16;0;0.0;33;0.1;21;147;268;150;309;178;47;80;229;195;101;8.9;7.4;n
+B-A pucker and χ torsions, unusual combination of ε, ζ, α, β, bases distant, angled;OPN;OP17;0;0.0;24;0.0;12;145;267;294;291;138;177;84;234;195;191;10.1;7.9;n
+B pucker and χ torsions, unusual combination of ε, ζ, α, β, bases distant, angled. Similar to OPS1;OPN;OP18;1;0.0;49;0.1;34;149;291;106;66;198;55;147;225;242;230;8.6;6.5;n
+B pucker and χ torsions, unusual combination of ε, ζ, α, β, bases distant;OPN;OP19;18;0.0;2;0.0;15;145;225;64;74;186;188;126;250;255;20;8.0;7.3;n
+B pucker and χ torsions, unusual combination of ε, ζ, α, β, bases distant in 4-way junction;OPN;OP20;39;0.1;78;0.1;22;140;271;283;298;190;56;148;260;217;67;8.6;7.8;n
+B pucker and χ torsions, unusual combination of ε, ζ, α, β, bases distant in 5'-end dsDNA;OPN;OP21;26;0.0;58;0.1;21;149;242;80;67;177;62;144;228;244;245;10.3;8.2;n
+B pucker and χ torsions, unusual combination of ε, ζ, α, β, bases distant angled;OPN;OP22;44;0.1;64;0.1;36;147;245;126;286;162;49;142;233;231;44;6.9;6.4;n
+B-like open, parallel bases;OPN;OP23;0;0.0;56;0.1;21;147;260;168;272;80;175;149;221;259;60;7.0;5.5;n
+B-like open, low χ2, perpendicular bases;OPN;OP24;1;0.0;92;0.2;53;148;284;96;82;248;190;85;242;185;91;5.2;4.0;n
+B-A open, perpendicular bases;OPN;OP25;0;0.0;28;0.0;21;145;261;178;95;209;63;86;283;192;260;8.1;7.2;n
+B-A pucker and χ torsions, unusual combination of ε, ζ, α, β, bases can pair with each other;OPN;OP26;1;0.0;63;0.1;16;145;265;161;211;166;50;81;240;191;16;7.0;6.9;n
+B-A pucker, A-like χ torsions, unusual combination of ε, ζ, α, β, bases distant, angled;OPN;OP27;0;0.0;19;0.0;12;157;260;71;93;162;170;82;211;195;4;8.1;7.5;n
+A-B pucker, A-like χ torsions, unusual combination of ε, ζ, α, β, bases distant, angled;OPN;OP28;0;0.0;37;0.1;10;82;226;166;292;159;43;145;196;233;235;8.6;7.9;n
+A pucker and χ torsions, unusual combination of backbone torsions, bases distant;OPN;OP29;0;0.0;40;0.1;19;82;243;254;72;186;59;86;207;185;144;9.6;8.6;n
+A pucker and χ torsions, unusual combination of backbone torsions, bases distant, parallel;OPN;OP30;0;0.0;14;0.0;10;82;244;196;76;171;49;89;197;181;81;10.5;9.7;n
+A pucker and χ torsions, unusual combination of ε, ζ, α, β, bases distant angled;OPN;OP31;0;0.0;38;0.1;23;83;214;64;67;104;185;82;210;186;56;9.6;9.3;n
+B-A pucker, unusual combination of ε, ζ, α, β, bases perpendicular, first base syn;OPN;OPS1;5;0.0;78;0.1;23;146;263;289;283;184;53;82;63;192;94;8.2;7.5;n
+B pucker, unusual combination of ε, ζ, α, β, bases angled, second base syn;OPN;OP1S;26;0.0;0;0.0;12;144;207;60;82;203;191;147;242;68;65;7.6;7.0;n
+A like with first base in syn orientation;SYN;AAS1;2;0.0;125;0.2;52;79;221;301;291;171;59;81;15;196;45;4.4;5.3;n
+A-B, second base syn;SYN;AB1S;15;0.0;0;0.0;15;90;214;280;295;176;56;139;239;68;1;5.4;6.1;n
+A-B, second base syn;SYN;AB2S;4;0.0;66;0.1;36;84;220;287;307;171;53;140;203;69;11;4.8;5.7;n
+BI like, unusual β and ɣ, second base syn;SYN;BB1S;29;0.1;0;0.0;24;139;199;281;306;258;308;151;237;66;357;6.5;6.6;n
+BI like, α 50, ɣ 290,second base syn;SYN;BB2S;53;0.1;1;0.0;20;134;194;223;46;180;290;146;251;66;358;6.0;6.2;n
+BI like, first base syn;SYN;BBS1;307;0.5;0;0.0;38;146;187;274;296;172;52;135;64;260;45;3.9;4.5;n
+Z like conformer similar to ZZS2, both bases anti;ZZZ;ZZ01;4;0.0;303;0.5;237;81;210;49;166;150;49;147;208;226;306;4.6;6.0;n
+Z like conformer similar to ZZ1S with α/ɣ switch (230/60), both bases anti;ZZZ;ZZ02;0;0.0;16;0.0;9;144;269;78;229;175;55;86;232;277;61;6.2;6.2;n
+Z form, Y-R step;ZZZ;ZZ1S;139;0.2;16;0.0;24;147;263;76;66;186;178;96;207;61;359;6.4;6.3;n
+Z form, Y-R step, δ2 C2'-endo;ZZZ;ZZ2S;67;0.1;6;0.0;43;141;263;71;78;180;185;147;208;77;356;6.4;6.2;n
+ZI form, R-Y step;ZZZ;ZZS1;100;0.2;0;0.0;40;97;243;293;210;231;56;144;63;206;332;5.7;6.8;n
+ZII form, R-Y step;ZZZ;ZZS2;22;0.0;0;0.0;15;95;187;64;169;162;44;143;56;213;329;5.7;6.7;n
+Unassigned conformations;NAN;NANT;10919;18.9;15062;26.4;0;;;;;;;;;;;;;n
