@@ -3,6 +3,8 @@ import { ShadowedBox } from './common/shadowed-box';
 import { ListOfConformers } from '../dnatco/list-of-conformers';
 
 function fmtInt(n: number) {
+    if (isNaN(n))
+        return '-';
     let ns = n.toFixed(0);
     const L = ns.length;
     let rs = ns[L - 1];
@@ -16,6 +18,8 @@ function fmtInt(n: number) {
 }
 
 function fmtFlt(f: number, n = 1) {
+    if (isNaN(f))
+        return '-';
     return f.toFixed(n);
 }
 
