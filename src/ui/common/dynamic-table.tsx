@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { scrollIntoViewIfNeeded } from '../util';
 import { GlobalConfig } from '../../global-config';
 import '../../../assets/imgs/sort.svg';
 import '../../../assets/imgs/sorted-ascending.svg';
@@ -33,6 +34,19 @@ export class DynamicTable extends React.Component<DynamicTable.Props, State> {
             this.setState({ ...this.state, sortOrder });
         } else
             this.setState({ ...this.state, sortBy: columnIdx, sortOrder: 'asc' });
+    }
+
+    private findFirstTaggedCellId(tag: string) {
+        for (let colIdx = 0; colIdx < this.props.columns.length; colIdx++) {
+            const col = this.props.columns[colIdx];
+            for (let rowIdx = 0; rowIdx < col.values.length; rowIdx++) {
+                const cell = col.values[rowIdx];
+                if (cell.tag && cell.tag.startsWith(tag))
+                    return `${cell.tag}-${rowIdx}-${colIdx}`;
+            }
+        }
+
+        return undefined;
     }
 
     private getRows() {
@@ -76,23 +90,23 @@ export class DynamicTable extends React.Component<DynamicTable.Props, State> {
         const rows = this.getRows();
         const rowElems = new Array<JSX.Element>();
 
-        for (let idx = 0; idx < rows.length; idx++) {
-            const row = rows[idx];
-            const tag = row[0].tag;
+        for (let rowIdx = 0; rowIdx < rows.length; rowIdx++) {
+            const row = rows[rowIdx];
             rowElems.push(
-                <tr key={idx}>
+                <tr key={rowIdx}>
                     {
-                        row.map((item, jdx) =>
+                        row.map((item, colIdx) =>
                             <td
-                                className={`rdo-data-table ${(this.props.highlightedTag && this.props.highlightedTag === tag) ? 'rdo-data-table-selected' : ''}`}
-                                key={jdx}
+                                className={`rdo-data-table ${(this.props.highlightedTag && this.props.highlightedTag === item.tag) ? 'rdo-data-table-selected' : ''}`}
+                                key={colIdx}
+                                id={item.tag ? `${item.tag}-${rowIdx}-${colIdx}` : undefined}
                                 style={{
-                                    ...getCellStyle(item.data, this.props.columns[jdx].cellStyle),
-                                    textAlign: this.props.columns[jdx].alignment ?? 'left',
+                                    ...getCellStyle(item.data, this.props.columns[colIdx].cellStyle),
+                                    textAlign: this.props.columns[colIdx].alignment ?? 'left',
                                 }}
                                 onClick={() => {
                                     if (this.props.onCellClicked)
-                                        this.props.onCellClicked(idx, this.props.columns[jdx].name, item.data.toString());
+                                        this.props.onCellClicked(rowIdx, this.props.columns[colIdx].name, item.data.toString());
                                 }}
                             >
                                 {item.data}
@@ -141,6 +155,12 @@ export class DynamicTable extends React.Component<DynamicTable.Props, State> {
     componentDidUpdate(prevProps: DynamicTable.Props) {
         if (this.props.columns !== prevProps.columns)
             this.setState({ ...this.state, sortBy: -1, sortOrder: 'asc' });
+
+        if (this.props.scrollTainerId && this.props.highlightedTag && this.props.highlightedTag !== prevProps.highlightedTag) {
+            const cellId = this.findFirstTaggedCellId(this.props.highlightedTag);
+            if (cellId && parent)
+                scrollIntoViewIfNeeded(cellId, this.props.scrollTainerId);
+        }
     }
 
     render() {
@@ -174,5 +194,6 @@ export namespace DynamicTable {
         columns: Column<any>[];
         onCellClicked?: (row: number, column: string, value: string) => void;
         highlightedTag?: string;
+        scrollTainerId?: string; // This needs to be se to a reasonable element to make autoscrolling work reliably
     }
 }

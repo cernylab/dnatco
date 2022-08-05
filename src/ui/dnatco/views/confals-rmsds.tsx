@@ -82,6 +82,7 @@ export class ConfalsRmsds extends View<View.Props, State> {
                     }
                 }}
                 highlightedTag={this.state.selectedStepName}
+                scrollTainerId='rdo-main-screen-data-container'
             />
         );
     }

@@ -285,7 +285,7 @@ export class App extends WithSubscriptions<{}, State> {
                     selected={this.state.selectedTab}
                     shown={ModeTabs[this.state.mode]}
                 />
-                <div className='rdo-tab-content-container'>
+                <div className='rdo-tab-content-container' id='rdo-tab-content-container'>
                     {this.renderTab()}
                 </div>
 
