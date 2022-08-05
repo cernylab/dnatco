@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { scrollIntoViewIfNeeded } from '../util';
+import { deselectText, scrollIntoViewIfNeeded } from '../util';
 import { GlobalConfig } from '../../global-config';
 import '../../../assets/imgs/sort.svg';
 import '../../../assets/imgs/sorted-ascending.svg';
@@ -137,6 +137,10 @@ export class DynamicTable extends React.Component<DynamicTable.Props, State> {
                 <th
                     className='rdo-data-table'
                     key={idx}
+                    onDoubleClick={() => {
+                        this.setState({ ...this.state, sortBy: -1, sortOrder: 'asc' });
+                        deselectText();
+                    }}
                 >
                     {col.name}
                     {'\u00A0'}
