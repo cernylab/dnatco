@@ -16,8 +16,6 @@ function maxNumLen(props: SingleStepInfo.Props) {
             len = _len;
     }
 
-    console.log(keys, len);
-
     return len;
 }
 

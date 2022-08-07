@@ -273,18 +273,20 @@ tr.rdo-list-of-conformers-alternate-clr {
 }
 
 .rdo-named-list {
-    align-items: center;
     display: grid;
     grid-template-columns: auto 1fr;
     grid-column-gap: var(--h-gap);
 }
 
 .rdo-named-list-centered {
-    align-items: center;
     display: grid;
     grid-template-columns: 1fr auto auto 1fr;
     grid-column-gap: var(--h-gap);
     margin: auto;
+}
+
+.rdo-named-list-vcentered {
+    align-items: center;
 }
 
 .rdo-named-list-name {

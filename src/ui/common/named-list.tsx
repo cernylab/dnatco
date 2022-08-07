@@ -17,7 +17,7 @@ export class NamedList extends React.Component<NamedList.Props> {
 
     private renderLeft() {
         return (
-            <div className='rdo-named-list'>
+            <div className={`rdo-named-list ${this.props.vcentered ? 'rdo-named-list-vcentered' : ''}`}>
                 {this.props.items.map((item, index) =>
                     <React.Fragment key={index}>
                         <div className='rdo-named-list-name'>{item.name}</div><div className='rdo-named-list-value'>{item.value}</div>
@@ -36,5 +36,6 @@ export namespace NamedList {
     export interface Props {
         items: { name: string; value: JSX.Element|JSX.Element[]|string }[];
         style?: 'centered' | 'left';
+        vcentered?: boolean;
     }
 }

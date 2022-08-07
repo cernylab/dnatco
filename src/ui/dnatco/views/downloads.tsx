@@ -36,6 +36,7 @@ export class Downloads extends View {
                                 </div>
                         }
                     ]}
+                    vcentered={true}
                 />
             </div>
         );

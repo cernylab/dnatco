@@ -10,7 +10,7 @@ function fmtInt(n: number) {
     let rs = ns[L - 1];
     for (let idx = 1; idx < L; idx++) {
         if (idx % 3 === 0)
-            rs = ' ' + rs;
+            rs = '\u00A0' + rs;
         rs = ns[L - idx - 1] + rs;
     }
 
