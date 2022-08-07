@@ -95,23 +95,31 @@ export class DynamicTable extends React.Component<DynamicTable.Props, State> {
             rowElems.push(
                 <tr key={rowIdx}>
                     {
-                        row.map((item, colIdx) =>
-                            <td
-                                className={`rdo-data-table ${(this.props.highlightedTag && this.props.highlightedTag === item.tag) ? 'rdo-data-table-selected' : ''}`}
-                                key={colIdx}
-                                id={item.tag ? `${item.tag}-${rowIdx}-${colIdx}` : undefined}
-                                style={{
-                                    ...getCellStyle(item.data, this.props.columns[colIdx].cellStyle),
-                                    textAlign: this.props.columns[colIdx].alignment ?? 'left',
-                                }}
-                                onClick={() => {
-                                    if (this.props.onCellClicked)
-                                        this.props.onCellClicked(rowIdx, this.props.columns[colIdx].name, item.data.toString());
-                                }}
-                            >
-                                {item.tooltip ? item.tooltip : item.data}
-                            </td>
-                        )
+                        row.map((item, colIdx) => {
+                            const col = this.props.columns[colIdx];
+                            return (
+                                <td
+                                    className={`rdo-data-table ${(this.props.highlightedTag && this.props.highlightedTag === item.tag) ? 'rdo-data-table-selected' : ''}`}
+                                    key={colIdx}
+                                    id={item.tag ? `${item.tag}-${rowIdx}-${colIdx}` : undefined}
+                                    style={{
+                                        ...getCellStyle(item.data, col.cellStyle),
+                                        textAlign: this.props.columns[colIdx].alignment ?? 'left',
+                                    }}
+                                    onClick={() => {
+                                        if (this.props.onCellClicked)
+                                            this.props.onCellClicked(rowIdx, col.name, item.data.toString());
+                                    }}
+                                >
+                                    {item.tooltip
+                                        ? item.tooltip
+                                        : col.contentFormatter !== undefined
+                                            ? col.contentFormatter(item.data)
+                                            : item.data
+                                    }
+                                </td>
+                            )
+                        })
                     }
                 </tr>
             );
@@ -192,6 +200,7 @@ export namespace DynamicTable {
         alignment?: 'left'|'center'|'right';
         comparator?: (a: T, b: T) => number;
         cellStyle?: (v: T) => React.CSSProperties;
+        contentFormatter?: (v: T) => string;
     }
     export type Style = 'normal' | 'wide';
 

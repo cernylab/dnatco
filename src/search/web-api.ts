@@ -15,7 +15,7 @@ function isErrorResponse(v: unknown): v is WebApi.ErrorResponse {
     if (vo['message'] && typeof vo['message'] !== 'string')
         return false;
 
-    return true;
+    return vo['success'] === false;
 }
 
 function isOkResponse<T>(v: unknown, checker: (v: unknown) => v is T): v is WebApi.OkResponse<T> {
@@ -98,7 +98,7 @@ export namespace WebApi {
                 return json;
             else if (isOkResponse<T>(json, payloadChecker))
                 return json;
-            return ErrorResponse('Unknown response');
+            return ErrorResponse('Malformed response');
         } catch (e) {
             return ErrorResponse((e as Error).message);
         }

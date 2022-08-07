@@ -139,7 +139,8 @@ function _run_db_search(string $NtC, int $maxCount, bool $redundant, bool $large
                 'delta2' => $row['d2'],
                 'chi1' => $row['ch1'],
                 'chi2' => $row['ch2'],
-                'resolution' => $row['resolution'],
+                // Hack to work around inappropriate database schema
+                'resolution' => floatval($row['resolution']),
                 'numsteps' => $row['numsteps'],
                 'rmsd' => $row['rmsd']
             ];

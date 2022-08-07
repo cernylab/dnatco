@@ -71,8 +71,10 @@ export namespace Search {
             if (!keys.includes(prop))
                 return false;
 
-            if (typeof obj[prop] !== typeof FoundStep[prop as keyof FoundStep])
+            if (typeof obj[prop] !== typeof FoundStep[prop as keyof FoundStep]) {
+                console.log(prop, typeof obj[prop], typeof  FoundStep[prop as keyof FoundStep])
                 return false;
+            }
         }
 
         const tObj = obj as FoundStep;
