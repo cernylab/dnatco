@@ -32,6 +32,7 @@ export interface BackroundWorker<T, P> {
     onmessage: ((this: Worker, ev: MessageEvent<WorkerMessage.Out<T>>) => any) | null,
     postMessage: (msg: WorkerMessage.In<P>) => void,
     terminate: () => void,
+    onerror: ((this: AbstractWorker, ev: ErrorEvent) => void) | null,
 }
 export function BackgroundWorker<T, P>(): BackroundWorker<T, P> {
     return new Worker(new URL('./background-worker-impl.js', import.meta.url));

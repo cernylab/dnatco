@@ -13,7 +13,9 @@ function startTask<T, P>(task: Task<P>) {
         globalObject.postMessage({ type: 'finished', finished });
     });
 
-    Register[task.taskFunc](ctx as TaskContext<any>, task.payload as any);
+    Register[task.taskFunc](ctx as TaskContext<any>, task.payload as any).finally(() => {
+        globalObject.close();
+    });
 }
 
 globalObject.onmessage = function<T, P>(ev: MessageEvent<WorkerMessage.In<P>>) {

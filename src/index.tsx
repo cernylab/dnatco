@@ -113,6 +113,18 @@ export class App extends WithSubscriptions<{}, State> {
 
         const inProgressDlg = await InProgress.create('Processing structure', 'Preparing', true);
         const worker = BackgroundWorker<DnatcoficationData, P>();
+        worker.onerror = (ev) => {
+            worker.terminate();
+            InProgress.dismiss(inProgressDlg);
+            this.ingestionInProgress = false;
+
+            Popup.create(
+                <>
+                    <div className='rdo-error-text'>Cannot process structure</div>
+                    <div className='rdo-error-text'>{`Internal error: ${ev.error?.message ?? 'Unspecified error'}`}</div>
+                 </>
+            );
+        }
 
         worker.onmessage = (ev: MessageEvent<WorkerMessage.Out<DnatcoficationData>>) => {
             const data = ev.data;
