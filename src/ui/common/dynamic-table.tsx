@@ -172,7 +172,7 @@ export class DynamicTable extends React.Component<DynamicTable.Props, State> {
             return <div></div>;
 
         return (
-            <table className='rdo-data-table'>
+            <table className={`rdo-data-table ${this.props.style === 'wide' ? 'rdo-data-table-wide' : ''}`}>
                 <thead>
                     <tr>{this.renderHeader()}</tr>
                 </thead>
@@ -193,11 +193,13 @@ export namespace DynamicTable {
         comparator?: (a: T, b: T) => number;
         cellStyle?: (v: T) => React.CSSProperties;
     }
+    export type Style = 'normal' | 'wide';
 
     export interface Props {
         columns: Column<any>[];
         onCellClicked?: (row: number, column: string, value: string) => void;
         highlightedTag?: string;
         scrollTainerId?: string; // This needs to be se to a reasonable element to make autoscrolling work reliably
+        style?: Style;
     }
 }

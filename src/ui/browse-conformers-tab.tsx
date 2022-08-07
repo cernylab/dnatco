@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { DynamicTable } from './common/dynamic-table';
+import { ShadowedBox } from './common/shadowed-box';
 import { Search } from '../search/search';
 import { SearchConformers } from './search-conformers';
 
@@ -27,6 +28,7 @@ export class BrowseConformersTab extends React.Component<BrowseConformersTab.Pro
             <DynamicTable
                 onCellClicked={(row, column, value) => this.props.onStepSelected(value)}
                 columns={[names, CANAs, NtCs, confals, rmsds, resolutions, haveMaps]}
+                style='wide'
             />
         );
     }
@@ -34,15 +36,19 @@ export class BrowseConformersTab extends React.Component<BrowseConformersTab.Pro
     render() {
         return (
             <div className='rdo-offset'>
-                <div style={{ display: 'flex', flexDirection: 'column', height: '100%', gap: 'var(--v-gap)' }}>
-                    <div className='rdo-primary-caption'>{`List of ${this.props.steps.length} randomly selected steps with NtC class ${this.props.criteria.NtC}`}</div>
-                    <SearchConformers onDoSearch={this.props.onSearch} initial={this.props.criteria} />
-                    <div style={{ height: '100%', overflow: 'hidden' }}>
-                        <div className='rdo-scroll-vertically'>
-                            {this.renderStepsTable()}
+                <ShadowedBox>
+                    <div className='rdo-width-limiter'>
+                        <div style={{ display: 'grid', height: '100%', gridTemplateRows: 'auto auto 1fr', gridTemplateColumns: 'auto', rowGap: 'var(--x-gap)', columnGap: 'var(--x-gap)' }}>
+                            <div className='rdo-primary-caption'>{`List of ${this.props.steps.length} randomly selected steps with NtC class ${this.props.criteria.NtC}`}</div>
+                            <SearchConformers onDoSearch={this.props.onSearch} initial={this.props.criteria} />
+                            <div style={{ overflow: 'hidden' }}>
+                                <div className='rdo-scroll-vertically'>
+                                    {this.renderStepsTable()}
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
+                </ShadowedBox>
             </div>
         );
     }

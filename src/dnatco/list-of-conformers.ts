@@ -97,6 +97,7 @@ export class _ListOfConformers {
     private _fail = '';
     private _list = new Array<ConformerInfo>();
     private _mapping = new Map<NtC.Class, number>();
+    private _raw = '';
 
     get fail() { return this._fail; }
     failed() { return this._fail.length > 0; }
@@ -114,6 +115,7 @@ export class _ListOfConformers {
                 const { list, mapping } = parseList(text);
                 this._list = list;
                 this._mapping = mapping;
+                this._raw = text;
             } catch (e) {
                 console.warn(`Cannot parse list of conformers: ${e}`);
                 this._fail = (e as Error).message;
@@ -126,6 +128,7 @@ export class _ListOfConformers {
         const idx = this._mapping.get(ntc);
         return idx !== undefined ? this._list[idx] : undefined;
     }
+    get raw() { return this._raw; }
 }
 
 export const ListOfConformers = new _ListOfConformers();

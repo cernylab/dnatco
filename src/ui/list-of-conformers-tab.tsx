@@ -1,6 +1,9 @@
 import * as React from 'react';
 import { ShadowedBox } from './common/shadowed-box';
+import { NamedList } from './common/named-list';
+import { PushButton } from './common/push-button';
 import { ListOfConformers } from '../dnatco/list-of-conformers';
+import { Net } from '../util/net';
 
 function fmtInt(n: number) {
     if (isNaN(n))
@@ -36,7 +39,7 @@ export class ListOfConformersTab extends React.Component {
         let totalGSCount = 0;
 
         return (
-            <table className='rdo-list-of-conformers'>
+            <table className='rdo-list-of-conformers rdo-data-table-wide'>
                 <thead>
                     <tr>
                         <th className='rdo-list-of-conformers-rb rdo-list-of-conformers-bb'>Annotation</th>
@@ -159,12 +162,34 @@ export class ListOfConformersTab extends React.Component {
         return (
             <div className='rdo-offset'>
                 <ShadowedBox>
-                    <div style={{ height: '100%', overflow: 'hidden' }}>
-                        <div className='rdo-primary-caption'>List of conformers</div>
-                        <div style={{ height: 'calc(100% - 72pt)', overflow: 'hidden' }}>
-                            <div className='rdo-scroll-vertically'>
-                                {this.renderList()}
+                    <div className='rdo-width-limiter'>
+                        <div style={{ display: 'grid', height: '100%', gridTemplateRows: 'auto 1fr auto', gridTemplateColumns: 'auto', rowGap: 'var(--x-gap)', columnGap: 'var(--x-gap)' }}>
+                            <div className='rdo-primary-caption'>List of conformers</div>
+                            <div style={{ overflow: 'hidden' }}>
+                                <div className='rdo-scroll-vertically'>
+                                    {this.renderList()}
+                                </div>
                             </div>
+                            {ListOfConformers.has()
+                                ?
+                                <NamedList
+                                    items={[
+                                        {
+                                            name: 'Download list',
+                                            value:
+                                                <div style={{ maxWidth: '6em' }}>
+                                                    <PushButton
+                                                        caption='CSV'
+                                                        onClick={() => Net.serveFile('text/plain', ListOfConformers.raw, 'conformers.csv')}
+                                                    />
+                                                </div>
+                                        }
+                                    ]}
+                                    vcentered={true}
+                                />
+                                :
+                                <div />
+                            }
                         </div>
                     </div>
                 </ShadowedBox>
