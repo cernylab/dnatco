@@ -1,6 +1,8 @@
 import React from 'react';
 import * as RDC from 'react-dom/client';
 import { GlobalConfig } from './global-config';
+import { isPdbId } from './util';
+import { Net } from './util/net';
 import { ClassificationResources } from './dnatco/classification-resources';
 import { Dnatcofication, DnatcoficationData } from './dnatco/dnatcofication';
 import { ListOfConformers } from './dnatco/list-of-conformers';
@@ -24,6 +26,11 @@ import { Task } from './tasks/task';
 import '../assets/index.php';
 import '../assets/rednatco.css';
 
+const Params = {
+    cifcode: '',
+    stepName: '',
+};
+
 let clsfResData: ClassificationResources.Data;
 
 type Mode = 'nothing'|'structure'|'browse';
@@ -44,6 +51,7 @@ export class App extends WithSubscriptions<{}, State> {
     private search = new Search();
     private ingestionInProgress = false;
     private viewerInterop = new ViewerInterop();
+    private initialSearchDone = false;
 
     constructor(props: Partial<App.Props>) {
         super(props);
@@ -53,6 +61,18 @@ export class App extends WithSubscriptions<{}, State> {
             selectedTab: 'start',
             dnatcofierReady: false,
         };
+    }
+
+    private goToStep(stepName: string) {
+        const selection = makeStepSelection(this.dnatcofication, stepName);
+        if (selection) {
+            // Use an arbitrary delay to give Molstar some time to settle
+            // Not doing this may result in broken rendering
+            setTimeout(
+                () => this.viewerInterop.api.command(ViewerApi.Commands.SelectStep(selection.current, selection.prev, selection.next)),
+                200
+            );
+        }
     }
 
     private fromCustomStructure(coordsFile: File, densityMapFile: File|null, onSuccess: () => void) {
@@ -233,19 +253,14 @@ export class App extends WithSubscriptions<{}, State> {
     private showSearchResult(stepName: string) {
         try {
             const pdbId = Step.nameToPdbId(stepName);
+            if (!pdbId) {
+                console.warn(`${stepName} contains invalid PDB ID`);
+                return;
+            }
 
             const sub = this.viewerInterop.events.structureLoaded.subscribe(() => {
                 sub.unsubscribe();
-
-                const selection = makeStepSelection(this.dnatcofication, stepName);
-                if (selection) {
-                    // Use an arbitrary delay to give Molstar some time to settle
-                    // Not doing this may result in broken rendering
-                    setTimeout(
-                        () => this.viewerInterop.api.command(ViewerApi.Commands.SelectStep(selection.current, selection.prev, selection.next)),
-                        200
-                    );
-                }
+                this.goToStep(stepName);
             });
 
             this.fromPdbId(
@@ -281,6 +296,35 @@ export class App extends WithSubscriptions<{}, State> {
 
     componentWillUnmount() {
         this.unsubscribeAll();
+    }
+
+    componentDidUpdate() {
+        if (this.state.dnatcofierReady && !this.initialSearchDone) {
+            // Make sure that we don't do this again no matter how the search goes
+            this.initialSearchDone = true;
+
+            const params = Net.paramsFromUrl(Params);
+            if (params.cifcode) {
+                if (!isPdbId(params.cifcode)) {
+                    console.warn(`${params.cifcode} is not a valid PDB ID`);
+                    return;
+                }
+
+                if (params.stepName) {
+                    const name = params.stepName;
+                    const sub = this.viewerInterop.events.structureLoaded.subscribe(() => {
+                        sub.unsubscribe();
+                        this.goToStep(name);
+                    });
+                }
+
+                this.fromPdbId(
+                    params.cifcode,
+                    'rcsb',
+                    () => this.setState({ ...this.state, mode: 'structure', selectedTab: 'annotation' })
+                );
+            }
+        }
     }
 
     render() {

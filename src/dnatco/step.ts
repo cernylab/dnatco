@@ -1,6 +1,7 @@
 import { CANA } from './cana';
 import { NtC } from './ntc';
 import { NucleicBase } from './';
+import { isPdbId } from '../util';
 
 export const StepObj = {
     id: 0,
@@ -29,6 +30,7 @@ export namespace Step {
             throw new Error('Invalid step name');
 
         // TODO: Check that the result is a valid PDB ID?
-        return toks[0].substring(0, 4);
+        const candidate = toks[0].substring(0, 4);
+        return isPdbId(candidate) ? candidate : void 0;
     }
 }

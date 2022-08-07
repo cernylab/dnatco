@@ -24,6 +24,19 @@ export namespace Net {
         }
     }
 
+    export function paramsFromUrl<K extends string, T extends Record<K, string>>(schema: T): Partial<T> {
+        const urlParams = new URLSearchParams(window.location.search);
+
+        const params: Partial<T> = {};
+        for (const prop in schema) {
+            const v = urlParams.get(prop);
+            if (v !== null)
+                (params[prop] as string) = v;
+        }
+
+        return params;
+    }
+
     export function serveFile(mimeType: string, data: string, filename: string) {
         const enc = encodeURIComponent(data);
         const payload = `data:${mimeType},${enc}`;
