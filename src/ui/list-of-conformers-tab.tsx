@@ -42,26 +42,29 @@ export class ListOfConformersTab extends React.Component {
             <table className='rdo-list-of-conformers rdo-data-table-wide'>
                 <thead>
                     <tr>
-                        <th className='rdo-list-of-conformers-rb rdo-list-of-conformers-bb'>Annotation</th>
-                        <th className='rdo-list-of-conformers-bb'>CANA</th>
-                        <th className='rdo-list-of-conformers-rb rdo-list-of-conformers-bb'>NtC</th>
-                        <th className='rdo-list-of-conformers-bb'>N DNA</th>
-                        <th className='rdo-list-of-conformers-bb'>% DNA</th>
-                        <th className='rdo-list-of-conformers-bb'>N RNA</th>
-                        <th className='rdo-list-of-conformers-rb rdo-list-of-conformers-bb'>% RNA</th>
-                        <th className='rdo-list-of-conformers-rb rdo-list-of-conformers-bb'>N GS</th>
-                        <th className='rdo-list-of-conformers-bb rdo-list-of-conformers-highlighted-col'>δ1</th>
-                        <th className='rdo-list-of-conformers-bb'>ε1</th>
-                        <th className='rdo-list-of-conformers-bb'>ζ1</th>
-                        <th className='rdo-list-of-conformers-bb'>α2</th>
-                        <th className='rdo-list-of-conformers-bb'>β2</th>
-                        <th className='rdo-list-of-conformers-bb'>γ2</th>
-                        <th className='rdo-list-of-conformers-bb rdo-list-of-conformers-highlighted-col'>δ2</th>
-                        <th className='rdo-list-of-conformers-bb'>χ1</th>
-                        <th className='rdo-list-of-conformers-bb'>χ2</th>
-                        <th className='rdo-list-of-conformers-bb'>μ</th>
-                        <th className='rdo-list-of-conformers-bb'>NN</th>
-                        <th className='rdo-list-of-conformers-bb'>C'C'</th>
+                        <th className='rdo-list-of-conformers-bb rdo-list-of-conformers-rb' rowSpan={2}>Annotation</th>
+                        <th className='rdo-list-of-conformers-bb' rowSpan={2}>CANA</th>
+                        <th className='rdo-list-of-conformers-bb rdo-list-of-conformers-rb' rowSpan={2}>NtC</th>
+                        <th className='rdo-list-of-conformers-rb' colSpan={5}>Number of steps in</th>
+                        <th className='rdo-list-of-conformers-bb rdo-list-of-conformers-highlighted-col' rowSpan={2}>δ1</th>
+                        <th className='rdo-list-of-conformers-bb' rowSpan={2}>ε1</th>
+                        <th className='rdo-list-of-conformers-bb' rowSpan={2}>ζ1</th>
+                        <th className='rdo-list-of-conformers-bb' rowSpan={2}>α2</th>
+                        <th className='rdo-list-of-conformers-bb' rowSpan={2}>β2</th>
+                        <th className='rdo-list-of-conformers-bb' rowSpan={2}>γ2</th>
+                        <th className='rdo-list-of-conformers-bb rdo-list-of-conformers-highlighted-col' rowSpan={2}>δ2</th>
+                        <th className='rdo-list-of-conformers-bb' rowSpan={2}>χ1</th>
+                        <th className='rdo-list-of-conformers-bb' rowSpan={2}>χ2</th>
+                        <th className='rdo-list-of-conformers-bb' rowSpan={2}>μ</th>
+                        <th className='rdo-list-of-conformers-bb' rowSpan={2}>NN</th>
+                        <th className='rdo-list-of-conformers-bb' rowSpan={2}>C'C'</th>
+                    </tr>
+                    <tr>
+                        <th className='rdo-list-of-conformers-bb'>{'N\u00A0DNA'}</th>
+                        <th className='rdo-list-of-conformers-bb'>{'%\u00A0DNA'}</th>
+                        <th className='rdo-list-of-conformers-bb'>{'N\u00A0RNA'}</th>
+                        <th className='rdo-list-of-conformers-rb rdo-list-of-conformers-bb'>{'%\u00A0RNA'}</th>
+                        <th className='rdo-list-of-conformers-rb rdo-list-of-conformers-bb'>{'N\u00A0GS'}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -132,26 +135,29 @@ export class ListOfConformersTab extends React.Component {
                 </tbody>
                 <thead>
                     <tr>
-                        <th className='rdo-list-of-conformers-rb'>Annotation</th>
-                        <th>CANA</th>
-                        <th className='rdo-list-of-conformers-rb'>NtC</th>
-                        <th className='rdo-list-of-conformers-tb'>N DNA</th>
-                        <th className='rdo-list-of-conformers-tb'>% DNA</th>
-                        <th className='rdo-list-of-conformers-tb'>N RNA</th>
-                        <th className='rdo-list-of-conformers-rb rdo-list-of-conformers-tb'>% RNA</th>
-                        <th className='rdo-list-of-conformers-rb rdo-list-of-conformers-tb'>N GS</th>
-                        <th className='rdo-list-of-conformers-highlighted-col'>δ1</th>
-                        <th>ε1</th>
-                        <th>ζ1</th>
-                        <th>α2</th>
-                        <th>β2</th>
-                        <th>γ2</th>
-                        <th className='rdo-list-of-conformers-highlighted-col'>δ2</th>
-                        <th>χ1</th>
-                        <th>χ2</th>
-                        <th>μ</th>
-                        <th>NN</th>
-                        <th>C'C'</th>
+                        <th className='rdo-list-of-conformers-bb rdo-list-of-conformers-rb' rowSpan={2}>Annotation</th>
+                        <th className='rdo-list-of-conformers-bb' rowSpan={2}>CANA</th>
+                        <th className='rdo-list-of-conformers-bb rdo-list-of-conformers-rb' rowSpan={2}>NtC</th>
+                        <th className='rdo-list-of-conformers-tb '>{'N\u00A0DNA'}</th>
+                        <th className='rdo-list-of-conformers-tb'>{'%\u00A0DNA'}</th>
+                        <th className='rdo-list-of-conformers-tb'>{'N\u00A0RNA'}</th>
+                        <th className='rdo-list-of-conformers-tb'>{'%\u00A0RNA'}</th>
+                        <th className='rdo-list-of-conformers-tb rdo-list-of-conformers-rb'>{'N\u00A0GS'}</th>
+                        <th className='rdo-list-of-conformers-bb rdo-list-of-conformers-highlighted-col' rowSpan={2}>δ1</th>
+                        <th className='rdo-list-of-conformers-bb' rowSpan={2}>ε1</th>
+                        <th className='rdo-list-of-conformers-bb' rowSpan={2}>ζ1</th>
+                        <th className='rdo-list-of-conformers-bb' rowSpan={2}>α2</th>
+                        <th className='rdo-list-of-conformers-bb' rowSpan={2}>β2</th>
+                        <th className='rdo-list-of-conformers-bb' rowSpan={2}>γ2</th>
+                        <th className='rdo-list-of-conformers-bb rdo-list-of-conformers-highlighted-col' rowSpan={2}>δ2</th>
+                        <th className='rdo-list-of-conformers-bb' rowSpan={2}>χ1</th>
+                        <th className='rdo-list-of-conformers-bb' rowSpan={2}>χ2</th>
+                        <th className='rdo-list-of-conformers-bb' rowSpan={2}>μ</th>
+                        <th className='rdo-list-of-conformers-bb' rowSpan={2}>NN</th>
+                        <th className='rdo-list-of-conformers-bb' rowSpan={2}>C'C'</th>
+                    </tr>
+                    <tr>
+                        <th className='rdo-list-of-conformers-rb' colSpan={5}>Number of steps in</th>
                     </tr>
                 </thead>
             </table>
