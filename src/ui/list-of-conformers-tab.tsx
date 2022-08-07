@@ -183,10 +183,14 @@ export class ListOfConformersTab extends React.Component {
                                         {
                                             name: 'Download list',
                                             value:
-                                                <div style={{ maxWidth: '6em' }}>
+                                                <div style={{ display: 'grid', gridTemplateColumns: '6em 6em', columnGap: 'var(--h-gap)' }}>
                                                     <PushButton
                                                         caption='CSV'
                                                         onClick={() => Net.serveFile('text/plain', ListOfConformers.raw, 'conformers.csv')}
+                                                    />
+                                                    <PushButton
+                                                        caption='JSON'
+                                                        onClick={() => Net.serveFile('application/json', JSON.stringify(ListOfConformers.list), 'conformers.json')}
                                                     />
                                                 </div>
                                         }
