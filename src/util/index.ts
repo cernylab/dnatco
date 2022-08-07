@@ -8,6 +8,10 @@ const FloatRegex = new RegExp('[0-9eE+.,-]');
 const PdbIdRegex = new RegExp('[0-9]{1}[a-zA-Z0-9]{3}');
 const ZeroCode = '0'.charCodeAt(0);
 
+export function capitalize(s: string) {
+    return s.substring(0, 1).toUpperCase() + s.substring(1);
+}
+
 export function dequote(s: string) {
     const last = s.length - 1;
 
@@ -22,6 +26,16 @@ export function dequote(s: string) {
 export function isDigit(s: string) {
     const diff = ZeroCode - s.charCodeAt(0);
     return diff >= 0 && diff <= 9;
+}
+
+export function objKeys<T extends object>(obj: T, exclude: (keyof T)[] = []) {
+    const keys = new Array<keyof T>();
+    for (const k in obj) {
+        if (!exclude.includes(k))
+            keys.push(k);
+    }
+
+    return keys;
 }
 
 export function toFixed(num: number, decimals: number, prefix?: { char: string, length: number }) {
