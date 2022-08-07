@@ -17,7 +17,7 @@ export class Downloads extends View {
 
     private serveMmCif() {
         const filename = this.mmCifFilename();
-        Net.serveFile('text/plain', this.props.dnatcofication.rawCif(), filename);
+        Net.serveFile('chemical/x-mmcif', this.props.dnatcofication.rawCif(), filename);
     }
 
     render() {
