@@ -60,7 +60,7 @@ export class StartTab extends React.Component<StartTab.Props, State> {
                         <ShadowedBox>
                             <div className='rdo-offset'>
                                 <div className='rdo-section-caption'>
-                                    Enter PDB ID (e. g. 1bna)
+                                Enter PDB ID (e. g. <span style={{ textDecoration: 'underline', cursor: 'pointer' }} onClick={() => this.props.onDoPdbId('1bna', 'rcsb')}>1bna</span>)
                                 </div>
                                 <div style={{
                                     columnGap: 'var(--h-gap)',
