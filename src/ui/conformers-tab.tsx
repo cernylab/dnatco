@@ -2,8 +2,18 @@ import * as React from 'react';
 import { ShadowedBox } from './common/shadowed-box';
 import { NamedList } from './common/named-list';
 import { PushButton } from './common/push-button';
+import { SideSwitchingPanel } from './common/side-switching-panel';
 import { ListOfConformers } from '../dnatco/list-of-conformers';
 import { Net } from '../util/net';
+
+const Tabs = {
+    'table-of-conformers': 'Table of conformers'
+};
+type TabId = keyof typeof Tabs;
+
+const TabsOrder: TabId[] = [
+    'table-of-conformers'
+];
 
 function fmtInt(n: number) {
     if (isNaN(n))
@@ -26,7 +36,7 @@ function fmtFlt(f: number, n = 1) {
     return f.toFixed(n);
 }
 
-export class ListOfConformersTab extends React.Component {
+class TableOfConformers extends React.Component {
     private renderList() {
         if (!ListOfConformers.has()) {
             if (ListOfConformers.failed())
@@ -166,40 +176,78 @@ export class ListOfConformersTab extends React.Component {
 
     render() {
         return (
+            <div className='rdo-width-limiter' style={{ overflow: 'hidden', flex: 1 }}>
+                <div style={{ display: 'grid', height: '100%', gridTemplateRows: '1fr auto', gridTemplateColumns: 'auto', rowGap: 'var(--x-gap)', columnGap: 'var(--x-gap)' }}>
+                    <div style={{ overflow: 'hidden' }}>
+                        <div className='rdo-scroll-vertically'>
+                            {this.renderList()}
+                        </div>
+                    </div>
+                    {ListOfConformers.has()
+                        ?
+                        <NamedList
+                            items={[
+                                {
+                                    name: 'Download list',
+                                    value:
+                                        <div style={{ display: 'grid', gridTemplateColumns: '6em 6em', columnGap: 'var(--h-gap)' }}>
+                                            <PushButton
+                                                caption='CSV'
+                                                onClick={() => Net.serveFile('text/plain', ListOfConformers.raw, 'conformers.csv')}
+                                            />
+                                            <PushButton
+                                                caption='JSON'
+                                                onClick={() => Net.serveFile('application/json', JSON.stringify(ListOfConformers.list), 'conformers.json')}
+                                            />
+                                        </div>
+                                }
+                            ]}
+                            vcentered={true}
+                        />
+                        :
+                        <div />
+                    }
+                </div>
+            </div>
+        );
+    }
+}
+
+interface State {
+    selected: TabId;
+}
+export class ConformersTab extends React.Component<{}, State> {
+    constructor(props: {}) {
+        super(props);
+
+        this.state = {
+            selected: 'table-of-conformers',
+        };
+    }
+
+    private renderTab() {
+        switch (this.state.selected) {
+        case 'table-of-conformers': return <TableOfConformers />;
+        }
+    }
+
+    render() {
+        return (
             <div className='rdo-offset'>
                 <ShadowedBox>
-                    <div className='rdo-width-limiter'>
-                        <div style={{ display: 'grid', height: '100%', gridTemplateRows: 'auto 1fr auto', gridTemplateColumns: 'auto', rowGap: 'var(--x-gap)', columnGap: 'var(--x-gap)' }}>
-                            <div className='rdo-primary-caption'>List of conformers</div>
-                            <div style={{ overflow: 'hidden' }}>
-                                <div className='rdo-scroll-vertically'>
-                                    {this.renderList()}
-                                </div>
+                    <div className='rdo-screen-with-side-panel' style={{ overflow: 'hidden' }}>
+                        <SideSwitchingPanel
+                            items={TabsOrder.map(id => ({ id: id, caption: Tabs[id] }))}
+                            selectedItem={this.state.selected}
+                            onSwitched={id => this.setState({ ...this.state, selected: id as TabId })}
+                        />
+                        <div style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+                            <div className='rdo-primary-caption'>
+                                {Tabs[this.state.selected]}
                             </div>
-                            {ListOfConformers.has()
-                                ?
-                                <NamedList
-                                    items={[
-                                        {
-                                            name: 'Download list',
-                                            value:
-                                                <div style={{ display: 'grid', gridTemplateColumns: '6em 6em', columnGap: 'var(--h-gap)' }}>
-                                                    <PushButton
-                                                        caption='CSV'
-                                                        onClick={() => Net.serveFile('text/plain', ListOfConformers.raw, 'conformers.csv')}
-                                                    />
-                                                    <PushButton
-                                                        caption='JSON'
-                                                        onClick={() => Net.serveFile('application/json', JSON.stringify(ListOfConformers.list), 'conformers.json')}
-                                                    />
-                                                </div>
-                                        }
-                                    ]}
-                                    vcentered={true}
-                                />
-                                :
-                                <div />
-                            }
+                            <div className='rdo-offset' style={{ overflow: 'hidden' }}>
+                                {this.renderTab()}
+                            </div>
                         </div>
                     </div>
                 </ShadowedBox>

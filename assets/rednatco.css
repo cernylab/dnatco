@@ -418,6 +418,13 @@ tr.rdo-list-of-conformers-alternate-clr {
     text-align: center;
 }
 
+.rdo-screen-with-side-panel {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    height: 100%;
+    width: 100%;
+}
+
 .rdo-scroll-vertically {
     height: 100%;
     overflow-y: scroll;
@@ -451,6 +458,44 @@ tr.rdo-list-of-conformers-alternate-clr {
     box-shadow: 0 2px 5px 0 rgba(0,0,0,.16),0 2px 10px 0 rgba(0,0,0,.12);
     height: 100%;
     width: 100%;
+}
+
+.rdo-side-switching-panel {
+    display: flex;
+    flex-direction: column;
+}
+
+.rdo-side-switching-panel-item {
+    align-items: center;
+    display: flex;
+    padding: var(--x-gap);
+    transition: background-color var(--anim-speed), color var(--anim-speed);
+}
+
+.rdo-side-switching-panel-item-not-last {
+    border-bottom: 2px solid var(--color-c);
+}
+
+.rdo-side-switching-panel-item-deselected {
+    background-color: var(--color-f);
+    color: var(--color-c);
+}
+.rdo-side-switching-panel-item-deselected:hover {
+    background-color: var(--color-c);
+    color: black;
+}
+
+.rdo-side-switching-panel-item-selected {
+    background-color: var(--color-c);
+}
+
+.rdo-side-switching-panel-item-text {
+    font-weight: bold;
+}
+
+.rdo-side-switching-panel-padder {
+    background-color: var(--color-f);
+    flex: 1;
 }
 
 .rdo-spinbox-container {
@@ -588,44 +633,6 @@ tr.rdo-list-of-conformers-alternate-clr {
 }
 .rdo-view-visualizer-container-without-visualizer {
     grid-template-columns: 100% 0%;
-}
-
-.rdo-views-list {
-    display: flex;
-    flex-direction: column;
-}
-
-.rdo-views-list-item {
-    align-items: center;
-    display: flex;
-    padding: var(--x-gap);
-    transition: background-color var(--anim-speed), color var(--anim-speed);
-}
-
-.rdo-views-list-item-not-last {
-    border-bottom: 2px solid var(--color-c);
-}
-
-.rdo-views-list-item-deselected {
-    background-color: var(--color-f);
-    color: var(--color-c);
-}
-.rdo-views-list-item-deselected:hover {
-    background-color: var(--color-c);
-    color: black;
-}
-
-.rdo-views-list-item-selected {
-    background-color: var(--color-c);
-}
-
-.rdo-views-list-item-text {
-    font-weight: bold;
-}
-
-.rdo-views-list-padder {
-    background-color: var(--color-f);
-    flex: 1;
 }
 
 .rdo-width-limiter {

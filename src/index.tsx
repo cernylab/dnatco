@@ -12,7 +12,7 @@ import { AboutTab } from './ui/about-tab';
 import { BrowseConformersTab } from './ui/browse-conformers-tab';
 import { DnatcoViewerTab } from './ui/dnatco-viewer-tab';
 import { Footer } from './ui/footer';
-import { ListOfConformersTab } from './ui/list-of-conformers-tab';
+import { ConformersTab } from './ui/conformers-tab';
 import { NavigationBar } from './ui/navigation-bar';
 import { StartTab } from './ui/start-tab';
 import { Popup } from './ui/common/popup';
@@ -340,7 +340,7 @@ export class App extends WithSubscriptions<{}, State> {
                 </DnatcoViewerTab>
             );
         case 'list-of-conformers':
-            return <ListOfConformersTab />;
+            return <ConformersTab />;
         default:
             return <AboutTab />
         }
