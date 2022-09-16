@@ -41,7 +41,7 @@ export class ConfalsRmsds extends View<View.Props, State> {
         };
     }
 
-    private makeStepsTable() {
+    private makeStepsTable(selectedModelNum: number|undefined) {
         const steps = this.props.dnatcofication.table(NdbStructNtcStep);
         const summary = this.props.dnatcofication.table(NdbStructNtcStepSummary);
         const params = this.props.dnatcofication.table(NdbStructNtcStepParameters);
@@ -61,62 +61,61 @@ export class ConfalsRmsds extends View<View.Props, State> {
         const confalColumn: DynamicTable.Column<number> = { name: 'Confal', values: new Array<DynamicTable.CellValue<number>>(), alignment: 'center', cellStyle: confalToColor };
         const rmsdColumn: DynamicTable.Column<number> = { name: 'RMSD', values: new Array<DynamicTable.CellValue<number>>(), alignment: 'center', cellStyle: rmsdToColor };
 
-        const onlyModelNum = this.state.modelIndex === '' ? undefined : parseInt(this.state.modelIndex);
-
         for (let row = 0; row < steps._rowCount; row++) {
             const modelNum = Cif.Column.value(PDB_model_number, row);
+            if (selectedModelNum !== undefined && selectedModelNum !== modelNum)
+                continue;
+
             const tag = Cif.Column.value(name, row)!;
             const NtC = Cif.Column.value(assigned_NtC, row)!;
 
-            if (onlyModelNum === undefined || (onlyModelNum && onlyModelNum === modelNum)) {
-                stepColumn.values.push({ data: Cif.Column.value(name, row)!, tag });
-                ntcColumn.values.push({
-                    data: Cif.Column.value(assigned_NtC, row)!,
-                    tag,
-                    tooltip:
-                        <Tooltip tag={Cif.Column.value(assigned_NtC, row)!}>
-                            <SingleStepInfo
-                                NtC={NtC}
-                                delta1={Cif.Column.value(tor_delta_1, row)!}
-                                epsilon1={Cif.Column.value(tor_epsilon_1, row)!}
-                                zeta1={Cif.Column.value(tor_zeta_1, row)!}
-                                alpha2={Cif.Column.value(tor_alpha_2, row)!}
-                                beta2={Cif.Column.value(tor_beta_2, row)!}
-                                gamma2={Cif.Column.value(tor_gamma_2, row)!}
-                                delta2={Cif.Column.value(tor_delta_2, row)!}
-                                chi1={Cif.Column.value(tor_chi_1, row)!}
-                                chi2={Cif.Column.value(tor_chi_2, row)!}
-                                mu={Cif.Column.value(tor_NCCN, row)!}
-                                CC={Cif.Column.value(dist_CC, row)!}
-                                NN={Cif.Column.value(dist_NN, row)!}
-                            />
-                        </Tooltip>,
-                });
-                canaColumn.values.push({
-                    data: Cif.Column.value(assigned_CANA, row)!,
-                    tag,
-                    tooltip:
-                        <Tooltip tag={Cif.Column.value(assigned_NtC, row)!}>
-                            <SingleStepInfo
-                                NtC={NtC}
-                                delta1={Cif.Column.value(tor_delta_1, row)!}
-                                epsilon1={Cif.Column.value(tor_epsilon_1, row)!}
-                                zeta1={Cif.Column.value(tor_zeta_1, row)!}
-                                alpha2={Cif.Column.value(tor_alpha_2, row)!}
-                                beta2={Cif.Column.value(tor_beta_2, row)!}
-                                gamma2={Cif.Column.value(tor_gamma_2, row)!}
-                                delta2={Cif.Column.value(tor_delta_2, row)!}
-                                chi1={Cif.Column.value(tor_chi_1, row)!}
-                                chi2={Cif.Column.value(tor_chi_2, row)!}
-                                mu={Cif.Column.value(tor_NCCN, row)!}
-                                CC={Cif.Column.value(dist_CC, row)!}
-                                NN={Cif.Column.value(dist_NN, row)!}
-                            />
-                        </Tooltip>,
-                });
-                confalColumn.values.push({ data: Cif.Column.value(confal_score, row)!, tag });
-                rmsdColumn.values.push({ data: Cif.Column.value(cartesian_rmsd_closest_NtC_representative, row)!, tag });
-            }
+            stepColumn.values.push({ data: Cif.Column.value(name, row)!, tag });
+            ntcColumn.values.push({
+                data: Cif.Column.value(assigned_NtC, row)!,
+                tag,
+                tooltip:
+                    <Tooltip tag={Cif.Column.value(assigned_NtC, row)!}>
+                        <SingleStepInfo
+                            NtC={NtC}
+                            delta1={Cif.Column.value(tor_delta_1, row)!}
+                            epsilon1={Cif.Column.value(tor_epsilon_1, row)!}
+                            zeta1={Cif.Column.value(tor_zeta_1, row)!}
+                            alpha2={Cif.Column.value(tor_alpha_2, row)!}
+                            beta2={Cif.Column.value(tor_beta_2, row)!}
+                            gamma2={Cif.Column.value(tor_gamma_2, row)!}
+                            delta2={Cif.Column.value(tor_delta_2, row)!}
+                            chi1={Cif.Column.value(tor_chi_1, row)!}
+                            chi2={Cif.Column.value(tor_chi_2, row)!}
+                            mu={Cif.Column.value(tor_NCCN, row)!}
+                            CC={Cif.Column.value(dist_CC, row)!}
+                            NN={Cif.Column.value(dist_NN, row)!}
+                        />
+                    </Tooltip>,
+            });
+            canaColumn.values.push({
+                data: Cif.Column.value(assigned_CANA, row)!,
+                tag,
+                tooltip:
+                    <Tooltip tag={Cif.Column.value(assigned_NtC, row)!}>
+                        <SingleStepInfo
+                            NtC={NtC}
+                            delta1={Cif.Column.value(tor_delta_1, row)!}
+                            epsilon1={Cif.Column.value(tor_epsilon_1, row)!}
+                            zeta1={Cif.Column.value(tor_zeta_1, row)!}
+                            alpha2={Cif.Column.value(tor_alpha_2, row)!}
+                            beta2={Cif.Column.value(tor_beta_2, row)!}
+                            gamma2={Cif.Column.value(tor_gamma_2, row)!}
+                            delta2={Cif.Column.value(tor_delta_2, row)!}
+                            chi1={Cif.Column.value(tor_chi_1, row)!}
+                            chi2={Cif.Column.value(tor_chi_2, row)!}
+                            mu={Cif.Column.value(tor_NCCN, row)!}
+                            CC={Cif.Column.value(dist_CC, row)!}
+                            NN={Cif.Column.value(dist_NN, row)!}
+                        />
+                    </Tooltip>,
+            });
+            confalColumn.values.push({ data: Cif.Column.value(confal_score, row)!, tag });
+            rmsdColumn.values.push({ data: Cif.Column.value(cartesian_rmsd_closest_NtC_representative, row)!, tag });
         }
 
         return [stepColumn, ntcColumn, canaColumn, confalColumn, rmsdColumn];
@@ -130,8 +129,11 @@ export class ConfalsRmsds extends View<View.Props, State> {
     }
 
     renderStepsTable() {
-        if (this.stepsTable.length === 0)
-            this.stepsTable = this.makeStepsTable();
+        if (this.stepsTable.length === 0) {
+            // Make sure we have steps to draw
+            const modelNum = this.state.modelIndex === '' ? undefined : parseInt(this.state.modelIndex);
+            this.stepsTable = this.makeStepsTable(modelNum);
+        }
 
         return (
             <DynamicTable
@@ -169,6 +171,15 @@ export class ConfalsRmsds extends View<View.Props, State> {
         }
     }
 
+    componentDidUpdate(prevProps: View.Props, prevState: State) {
+        if (prevState.modelIndex !== this.state.modelIndex) {
+            const modelNum = this.state.modelIndex === '' ? undefined : parseInt(this.state.modelIndex);
+            this.stepsTable = this.makeStepsTable(modelNum);
+
+            this.forceUpdate(); // Redraw steps table
+        }
+    }
+
     componentWillUnmount() {
         this.unsubscribeAll();
     }
@@ -195,9 +206,11 @@ export class ConfalsRmsds extends View<View.Props, State> {
                                     })
                                 ]}
                                 value={this.state.modelIndex}
-                                onChange={v => {
-                                    this.props.viewerInterop.api!.command(ViewerApi.Commands.SwitchModel(parseInt(v)));
-                                    this.setState({ ...this.state, modelIndex: v })
+                            onChange={v => {
+                                    const n = parseInt(v);
+                                    if (!isNaN(n))
+                                        this.props.viewerInterop.api.command(ViewerApi.Commands.SwitchModel(n));
+                                    this.setState({ ...this.state, modelIndex: v });
                                 }}
                             />
                         }
