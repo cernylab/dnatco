@@ -12,6 +12,7 @@ import {
     NdbStructNtcOverall, NdbStructNtcStepParameters, NdbStructNtcStepSummary,
     NdbStructNtcStep, NdbStructSugarStepParameters,
 } from '../cif/categories/ndb-struct-ntc';
+import { Struct } from '../cif/categories/struct';
 import { EventsKeeper } from '../util/events-keeper';
 
 const RequiredDnatcoCategories: Category<any>[] = [
@@ -28,6 +29,7 @@ export const DnatcoficationData = {
     steps: StepsMapper.Mapping(),
     structures: new Array<_Structure>(),
     cifData: null as (Cif.Data|null),
+    sourceFileName: null as (string|null),
 }
 export type DnatcoficationData = typeof DnatcoficationData;
 
@@ -40,6 +42,25 @@ export class Dnatcofication {
     };
 
     constructor() {
+    }
+
+    get identifyingName() {
+        if (this.data.sourceFileName)
+            return this.data.sourceFileName;
+
+        if (!this.data.cifData)
+            return void 0;
+
+        const struct = Cif.File.table(this.data.cifData, Struct);
+        return struct.entry_id.values ? struct.entry_id.values[0] : void 0;
+    }
+
+    get identifyingTitle() {
+        if (!this.data.cifData || !this.hasTable(Struct))
+            return undefined;
+
+        const struct = Cif.File.table(this.data.cifData, Struct);
+        return struct.title.values ? struct.title.values[0] : void 0;
     }
 
     haveStructure() {
@@ -84,7 +105,7 @@ export namespace Dnatcofication {
         }
     }
 
-    export function ingest(cifContent: string, clsfResData: ClassificationResources.Data, ctx: DnatcoficationTaskContext) {
+    export function ingest(cifContent: string, sourceFileName: string|null, clsfResData: ClassificationResources.Data, ctx: DnatcoficationTaskContext) {
         const tStart = performance.now();
 
         try {
@@ -134,7 +155,8 @@ export namespace Dnatcofication {
                 similarities,
                 steps,
                 structures,
-                cifData
+                cifData,
+                sourceFileName,
             };
 
             ctx.events.finished.next({ state: 'succeeded', data });

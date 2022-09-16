@@ -414,7 +414,6 @@ tr.rdo-list-of-conformers-alternate-clr {
 .rdo-primary-caption {
     font-size: var(--font-xxlarge);
     font-weight: bold;
-    margin-bottom: var(--v-gap);
     padding: calc(var(--x-gap) / 2);
     text-align: center;
 }
@@ -422,6 +421,13 @@ tr.rdo-list-of-conformers-alternate-clr {
 .rdo-scroll-vertically {
     height: 100%;
     overflow-y: scroll;
+}
+
+.rdo-secondary-caption {
+    font-size: var(--font-large);
+    font-weight: bold;
+    padding: calc(var(--x-gap) / 2);
+    text-align: center;
 }
 
 .rdo-section-caption {
