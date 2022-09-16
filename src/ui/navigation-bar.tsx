@@ -12,56 +12,23 @@ import '../../assets/imgs/task.svg';
 import '../../assets/imgs/loop.svg';
 import '../../assets/imgs/document.svg';
 
-type Tab = {
-    icon: string,
-    caption: string,
-    noCaps?: boolean
-};
-const Tabs ={
-    'start': {
-        icon: 'imgs/media-play.svg',
-        caption: 'Start'
-    },
-    'browse': {
-        icon: 'imgs/magnifying-glass.svg',
-        caption: 'Browse',
-    },
-    'annotation': {
-        icon: 'imgs/list.svg',
-        caption: 'Annotation',
-    },
-    'validation': {
-        icon: 'imgs/task.svg',
-        caption: 'Validation',
-    },
-    'refinement': {
-        icon: 'imgs/loop.svg',
-        caption: 'Refinement',
-    },
-    'list-of-conformers': {
-        icon: 'imgs/document.svg',
-        caption: 'Conformers',
-    },
-    'about': {
-        icon: 'imgs/info.svg',
-        caption: 'About',
-    }
-};
 
 interface TabButtonProps {
     onClick: () => void;
     caption: string;
     icon: string;
     selected: boolean;
+    enabled: boolean;
     noCaps: boolean;
 }
 class TabButton extends React.Component<TabButtonProps> {
     render() {
         return (
             <BasePushButton
-                className={`rdo-tab-button ${this.props.selected ? 'rdo-tab-button-selected' : ''}`}
-                classNameDisabled='rdo-tab-button-disabled'
+                className={`rdo-tab-button rdo-tab-button-enabled ${this.props.selected ? 'rdo-tab-button-selected' : ''}`}
+                classNameDisabled='rdo-tab-button rdo-tab-button-disabled'
                 onClick={this.props.onClick}
+                enabled={this.props.enabled}
             >
                 <img
                     className='rdo-tab-button-icon'
@@ -74,19 +41,24 @@ class TabButton extends React.Component<TabButtonProps> {
 }
 
 export class NavigationBar extends React.Component<NavigationBar.Props> {
-    private makeTabs(tabs: NavigationBar.Tabs[]) {
+    private makeTabs(tabs: NavigationBar.Tabs) {
         const list = new Array<JSX.Element>();
 
-        for (const tab of tabs) {
-            const t = Tabs[tab] as Tab;
+        for (const tk in tabs) {
+            const tab = tabs[tk];
+            const enabled = tab.enabled;
             list.push(
                 <TabButton
-                    key={tab}
-                    icon={t.icon}
-                    caption={t.caption}
-                    onClick={() => this.props.onTabSwitched(tab)}
-                    selected={this.props.selected === tab}
-                    noCaps={t.noCaps ?? false}
+                    key={tk}
+                    icon={tab.icon}
+                    caption={tab.caption}
+                    onClick={() => {
+                        if (enabled)
+                            this.props.onTabSwitched(tk);
+                    }}
+                    selected={this.props.selectedTab === tk}
+                    enabled={tab.enabled}
+                    noCaps={tab.noCaps ?? false}
                 />
             );
         }
@@ -103,7 +75,7 @@ export class NavigationBar extends React.Component<NavigationBar.Props> {
                     src='imgs/ibt.png'
                     onClick={() => Net.openLink('https://www.ibt.cas.cz/', true)}
                 />
-                {this.makeTabs(this.props.shown)}
+                {this.makeTabs(this.props.tabs)}
                 <IconButton
                     className='rdo-navigation-icon-button'
                     src='imgs/elixir.png'
@@ -116,11 +88,18 @@ export class NavigationBar extends React.Component<NavigationBar.Props> {
 }
 
 export namespace NavigationBar {
-    export type Tabs = keyof typeof Tabs;
+    export type Tab = {
+        icon: string,
+        caption: string,
+        enabled: boolean,
+        noCaps?: boolean
+    };
+
+    export type Tabs = Record<string, Tab>;
 
     export interface Props {
-        onTabSwitched: (tab: Tabs) => void;
-        shown: Tabs[];
-        selected: Tabs;
+        onTabSwitched: (tk: string) => void;
+        tabs: Tabs;
+        selectedTab: keyof Tabs;
     }
 }

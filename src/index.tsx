@@ -33,17 +33,116 @@ const Params = {
 
 let clsfResData: ClassificationResources.Data;
 
-type Mode = 'nothing'|'structure'|'browse';
+const TabsForModes = {
+    nothing: {
+        start: {
+            icon: 'imgs/media-play.svg',
+            caption: 'Start',
+            enabled: true,
+        },
+        browse: {
+            icon: 'imgs/magnifying-glass.svg',
+            caption: 'Browse',
+            enabled: true,
+        },
+        annotation: {
+            icon: 'imgs/list.svg',
+            caption: 'Annotation',
+            enabled: false,
+        },
+        validation: {
+            icon: 'imgs/task.svg',
+            enabled: false,
+            caption: 'Validation',
+        },
+        refinement: {
+            icon: 'imgs/loop.svg',
+            caption: 'Refinement',
+            enabled: false,
+        },
+        'list-of-conformers': {
+            icon: 'imgs/document.svg',
+            caption: 'Conformers',
+            enabled: true,
+        },
+        about: {
+            icon: 'imgs/info.svg',
+            caption: 'About',
+            enabled: true,
+        }
+    },
+    structure: {
+        start: {
+            icon: 'imgs/media-play.svg',
+            caption: 'Start',
+            enabled: true,
+        },
+        browse: {
+            icon: 'imgs/magnifying-glass.svg',
+            caption: 'Browse',
+            enabled: true,
+        },
+        annotation: {
+            icon: 'imgs/list.svg',
+            caption: 'Annotation',
+            enabled: true,
+        },
+        validation: {
+            icon: 'imgs/task.svg',
+            enabled: true,
+            caption: 'Validation',
+        },
+        refinement: {
+            icon: 'imgs/loop.svg',
+            caption: 'Refinement',
+            enabled: true,
+        },
+        'list-of-conformers': {
+            icon: 'imgs/document.svg',
+            caption: 'Conformers',
+            enabled: true,
+        },
+        about: {
+            icon: 'imgs/info.svg',
+            caption: 'About',
+            enabled: true,
+        }
+    },
+    browse: {
+        start: {
+            icon: 'imgs/media-play.svg',
+            caption: 'Start',
+            enabled: true,
+        },
+        browse: {
+            icon: 'imgs/magnifying-glass.svg',
+            caption: 'Browse',
+            enabled: true,
+        },
+        annotation: {
+            icon: 'imgs/list.svg',
+            caption: 'Annotation',
+            enabled: false,
+        },
+        'list-of-conformers': {
+            icon: 'imgs/document.svg',
+            caption: 'Conformers',
+            enabled: true,
+        },
+        about: {
+            icon: 'imgs/info.svg',
+            caption: 'About',
+            enabled: true,
+        }
+    },
 
-const ModeTabs: Record<Mode, NavigationBar.Tabs[]> = {
-    'nothing': ['start', 'list-of-conformers', 'about'],
-    'structure': ['start', 'annotation', 'validation', 'refinement', 'list-of-conformers', 'about'],
-    'browse': ['start', 'browse', 'annotation', 'list-of-conformers', 'about'],
-}
+};
+
+type TabKeys = ((keyof (typeof TabsForModes)['nothing']) | (keyof (typeof TabsForModes['structure'])) | (keyof (typeof TabsForModes['browse'])));
 
 interface State {
-    mode: Mode;
-    selectedTab: NavigationBar.Tabs;
+    mode: keyof typeof TabsForModes;
+    selectedTab: TabKeys;
     dnatcofierReady: boolean;
 }
 export class App extends WithSubscriptions<{}, State> {
@@ -235,8 +334,8 @@ export class App extends WithSubscriptions<{}, State> {
         }
     }
 
-    private tabSwitched(tab: NavigationBar.Tabs) {
-        this.setState({ ...this.state, selectedTab: tab });
+    private tabSwitched(tk: TabKeys) {
+        this.setState({ ...this.state, selectedTab: tk });
     }
 
     private async searchConformers(criteria: Search.Criteria) {
@@ -343,9 +442,9 @@ export class App extends WithSubscriptions<{}, State> {
         return (
             <div id='rdo-app'>
                 <NavigationBar
-                    onTabSwitched={tab => this.tabSwitched(tab)}
-                    selected={this.state.selectedTab}
-                    shown={ModeTabs[this.state.mode]}
+                    onTabSwitched={tab => this.tabSwitched(tab as TabKeys)}
+                    tabs={TabsForModes[this.state.mode]}
+                    selectedTab={this.state.selectedTab}
                 />
                 <div className='rdo-tab-content-container' id='rdo-tab-content-container'>
                     {this.renderTab()}

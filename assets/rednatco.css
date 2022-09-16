@@ -482,7 +482,7 @@ tr.rdo-list-of-conformers-alternate-clr {
     padding: 0.5em;
     transition: background-color var(--anim-speed);
 }
-.rdo-tab-button:hover {
+.rdo-tab-button-enabled:hover {
     background-color: var(--color-d);
 }
 .rdo-tab-button-disabled {
