@@ -2,7 +2,8 @@ import * as React from 'react';
 import { View } from './view';
 import { SingleStepInfo } from '../single-step-info';
 import { ViewerApi } from '../../../viewer/viewer-interop';
-import { makeStepSelection, rmsdToSemaphore } from '../util';
+import { Constants } from '../constants';
+import { makeStepSelection, valueToSemaphore } from '../util';
 import { ComboBox } from '../../common/combo-box';
 import { DynamicTable } from '../../common/dynamic-table';
 import { NamedList } from '../../common/named-list';
@@ -15,8 +16,13 @@ import {
 import { Dnatcofication } from '../../../dnatco/dnatcofication';
 import { sequence } from '../../../util';
 
+function confalToColor(rmsd: number): React.CSSProperties  {
+    const clr = valueToSemaphore(rmsd, Constants.GreenConfal, Constants.GreenRMSD);
+    return { backgroundColor: `rgb(${clr.r},${clr.g},${clr.b})` };
+}
+
 function rmsdToColor(rmsd: number): React.CSSProperties  {
-    const clr = rmsdToSemaphore(rmsd);
+    const clr = valueToSemaphore(rmsd, Constants.GreenRMSD, Constants.RedRMSD);
     return { backgroundColor: `rgb(${clr.r},${clr.g},${clr.b})` };
 }
 
@@ -52,7 +58,7 @@ export class ConfalsRmsds extends View<View.Props, State> {
         const stepColumn: DynamicTable.Column<string> = { name: 'Step', values: new Array<DynamicTable.CellValue<string>>(), alignment: 'center', };
         const ntcColumn: DynamicTable.Column<string> = { name: 'NtC', values: new Array<DynamicTable.CellValue<string>>(), alignment: 'center' };
         const canaColumn: DynamicTable.Column<string> = { name: 'CANA', values: new Array<DynamicTable.CellValue<string>>(), alignment: 'center' };
-        const confalColumn: DynamicTable.Column<number> = { name: 'Confal', values: new Array<DynamicTable.CellValue<number>>(), alignment: 'center' };
+        const confalColumn: DynamicTable.Column<number> = { name: 'Confal', values: new Array<DynamicTable.CellValue<number>>(), alignment: 'center', cellStyle: confalToColor };
         const rmsdColumn: DynamicTable.Column<number> = { name: 'RMSD', values: new Array<DynamicTable.CellValue<number>>(), alignment: 'center', cellStyle: rmsdToColor };
 
         const onlyModelNum = this.state.modelIndex === '' ? undefined : parseInt(this.state.modelIndex);

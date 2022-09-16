@@ -10,7 +10,8 @@ import { BasePushButton } from '../../common/push-button';
 import { Dnatcofication } from '../../../dnatco/dnatcofication';
 import { StepsMapper } from '../../../dnatco/steps-mapper';
 import { sequence } from '../../../util';
-import { rgbToHex, rmsdToSemaphore } from '../../dnatco/util';
+import { Constants } from '../../dnatco/constants';
+import { rgbToHex, valueToSemaphore } from '../../dnatco/util';
 
 const ConnectivityXRange = [0, 0.5];
 const ConnectivityYRange = [0, 0.5];
@@ -120,7 +121,7 @@ export class ConnectivitySimilarityPlots extends View<View.Props, State> {
             const simil = similarities[ntc];
             x.push(simil.rmsd);
             y.push(simil.euclideanDistance);
-            const clr = rmsdToSemaphore(simil.rmsd);
+            const clr = valueToSemaphore(simil.rmsd, Constants.GreenRMSD, Constants.RedRMSD);
             colors.push(rgbToHex(clr));
             tags.push(ntc);
         }
