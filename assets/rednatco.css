@@ -207,16 +207,34 @@ th.rdo-data-table {
     width: 100%;
 }
 
+.rdo-email {
+    text-decoration: none;
+}
+
 .rdo-error-text {
     color: red;
 }
 
 .rdo-footer {
     background-color: var(--color-y);
-    display: flex;
     height: 3em;
+}
+
+.rdo-footer-content {
+    display: flex;
+    gap: 1em;
     align-items: center;
     justify-content: center;
+    margin-left: 2em;
+    margin-right: 2em;
+}
+
+.rdo-footer-icon-button {
+    height: 3em;
+    transition: background-color var(--anim-speed);
+}
+.rdo-footer-icon-button:hover {
+    background-color: var(--color-d);
 }
 
 .rdo-footer-gutter {
@@ -303,14 +321,6 @@ tr.rdo-list-of-conformers-alternate-clr {
 
 .rdo-navigation-bar-padder {
     flex: 5;
-}
-
-.rdo-navigation-icon-button {
-    max-height: 3em;
-    transition: background-color var(--anim-speed);
-}
-.rdo-navigation-icon-button:hover {
-    background-color: var(--color-d);
 }
 
 .rdo-nextstep-bgcolor {

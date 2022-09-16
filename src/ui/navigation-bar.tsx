@@ -1,7 +1,6 @@
 import * as React from 'react';
-import { BasePushButton, IconButton } from './common/push-button';
+import { BasePushButton } from './common/push-button';
 import { GlobalConfig }  from '../global-config';
-import { Net } from '../util/net';
 
 interface TabButtonProps {
     onClick: () => void;
@@ -61,17 +60,7 @@ export class NavigationBar extends React.Component<NavigationBar.Props> {
         return (
             <div className='rdo-navigation-bar'>
                 <div className='rdo-navigation-bar-padder' />
-                <IconButton
-                    className='rdo-navigation-icon-button'
-                    src='imgs/ibt.png'
-                    onClick={() => Net.openLink('https://www.ibt.cas.cz/', true)}
-                />
                 {this.makeTabs(this.props.tabs)}
-                <IconButton
-                    className='rdo-navigation-icon-button'
-                    src='imgs/elixir.png'
-                    onClick={() => Net.openLink('https://www.elixir-czech.cz/', true)}
-                />
                 <div className='rdo-navigation-bar-padder' />
             </div>
         );

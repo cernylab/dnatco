@@ -11,6 +11,7 @@ import { Step } from './dnatco/step';
 import { AboutTab } from './ui/about-tab';
 import { BrowseConformersTab } from './ui/browse-conformers-tab';
 import { DnatcoViewerTab } from './ui/dnatco-viewer-tab';
+import { Footer } from './ui/footer';
 import { ListOfConformersTab } from './ui/list-of-conformers-tab';
 import { NavigationBar } from './ui/navigation-bar';
 import { StartTab } from './ui/start-tab';
@@ -467,11 +468,7 @@ export class App extends WithSubscriptions<{}, State> {
                 <div className='rdo-tab-content-container' id='rdo-tab-content-container'>
                     {this.renderTab()}
                 </div>
-
-                <div className='rdo-footer-gutter' />
-                <div className='rdo-footer'>
-                    <div className='rdo-footer-text'>© &lt; TBD &gt;</div>
-                </div>
+                <Footer />
             </div>
         );
     }
