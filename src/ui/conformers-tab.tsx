@@ -7,12 +7,16 @@ import { ListOfConformers } from '../dnatco/list-of-conformers';
 import { Net } from '../util/net';
 
 const Tabs = {
-    'table-of-conformers': 'Table of conformers'
+    'about-ntcs': 'About NtCs',
+    'table-of-conformers': 'Table of conformers',
+    'browse': 'Browse',
 };
 type TabId = keyof typeof Tabs;
 
 const TabsOrder: TabId[] = [
-    'table-of-conformers'
+    'about-ntcs',
+    'table-of-conformers',
+    'browse',
 ];
 
 function fmtInt(n: number) {
@@ -34,6 +38,18 @@ function fmtFlt(f: number, n = 1) {
     if (isNaN(f))
         return '-';
     return f.toFixed(n);
+}
+
+class AboutNtCs extends React.Component {
+    render() {
+        return <div>...</div>
+    }
+}
+
+class Browse extends React.Component {
+    render() {
+        return <div>...</div>
+    }
 }
 
 class TableOfConformers extends React.Component {
@@ -227,6 +243,8 @@ export class ConformersTab extends React.Component<{}, State> {
 
     private renderTab() {
         switch (this.state.selected) {
+        case 'about-ntcs': return <AboutNtCs />;
+        case 'browse': return <Browse />;
         case 'table-of-conformers': return <TableOfConformers />;
         }
     }
