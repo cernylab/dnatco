@@ -2,16 +2,6 @@ import * as React from 'react';
 import { BasePushButton, IconButton } from './common/push-button';
 import { GlobalConfig }  from '../global-config';
 import { Net } from '../util/net';
-import '../../assets/imgs/elixir.png';
-import '../../assets/imgs/media-play.svg';
-import '../../assets/imgs/ibt.png';
-import '../../assets/imgs/info.svg';
-import '../../assets/imgs/magnifying-glass.svg';
-import '../../assets/imgs/list.svg';
-import '../../assets/imgs/task.svg';
-import '../../assets/imgs/loop.svg';
-import '../../assets/imgs/document.svg';
-
 
 interface TabButtonProps {
     onClick: () => void;

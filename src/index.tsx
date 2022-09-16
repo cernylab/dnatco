@@ -23,6 +23,17 @@ import { Search } from './search/search';
 import { BackgroundWorker, WorkerMessage } from './tasks/worker';
 import { ViewerApi, ViewerInterop } from './viewer/viewer-interop';
 import { Task } from './tasks/task';
+// Image assets
+import '../assets/imgs/elixir.png';
+import '../assets/imgs/home.svg';
+import '../assets/imgs/ibt.png';
+import '../assets/imgs/info.svg';
+import '../assets/imgs/magnifying-glass.svg';
+import '../assets/imgs/list.svg';
+import '../assets/imgs/task.svg';
+import '../assets/imgs/loop.svg';
+import '../assets/imgs/document.svg';
+// Base assets
 import '../assets/index.php';
 import '../assets/rednatco.css';
 
@@ -36,8 +47,8 @@ let clsfResData: ClassificationResources.Data;
 const TabsForModes = {
     nothing: {
         start: {
-            icon: 'imgs/media-play.svg',
-            caption: 'Start',
+            icon: 'imgs/home.svg',
+            caption: 'Home',
             enabled: true,
         },
         browse: {
@@ -73,8 +84,8 @@ const TabsForModes = {
     },
     structure: {
         start: {
-            icon: 'imgs/media-play.svg',
-            caption: 'Start',
+            icon: 'imgs/home.svg',
+            caption: 'Home',
             enabled: true,
         },
         browse: {
@@ -110,8 +121,8 @@ const TabsForModes = {
     },
     browse: {
         start: {
-            icon: 'imgs/media-play.svg',
-            caption: 'Start',
+            icon: 'imgs/home.svg',
+            caption: 'Home',
             enabled: true,
         },
         browse: {
