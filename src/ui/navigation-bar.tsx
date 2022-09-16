@@ -12,13 +12,18 @@ interface TabButtonProps {
     noCaps: boolean;
 }
 class TabButton extends React.Component<TabButtonProps> {
+    private getCls() {
+        if (this.props.enabled)
+            return `rdo-tab-button rdo-tab-button-enabled ${this.props.selected ? 'rdo-tab-button-selected' : ''}`;
+        return 'rdo-tab-button rdo-tab-button-disabled';
+    }
+
     render() {
         return (
             <BasePushButton
-                className={`rdo-tab-button rdo-tab-button-enabled ${this.props.selected ? 'rdo-tab-button-selected' : ''}`}
+                className={this.getCls()}
                 classNameDisabled='rdo-tab-button rdo-tab-button-disabled'
                 onClick={this.props.onClick}
-                enabled={this.props.enabled}
             >
                 <img
                     className='rdo-tab-button-icon'
@@ -36,16 +41,12 @@ export class NavigationBar extends React.Component<NavigationBar.Props> {
 
         for (const tk in tabs) {
             const tab = tabs[tk];
-            const enabled = tab.enabled;
             list.push(
                 <TabButton
                     key={tk}
                     icon={tab.icon}
                     caption={tab.caption}
-                    onClick={() => {
-                        if (enabled)
-                            this.props.onTabSwitched(tk);
-                    }}
+                    onClick={() => this.props.onTabSwitched(tk)}
                     selected={this.props.selectedTab === tk}
                     enabled={tab.enabled}
                     noCaps={tab.noCaps ?? false}

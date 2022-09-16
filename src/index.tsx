@@ -232,7 +232,7 @@ export class App extends WithSubscriptions<{}, State> {
                 <>
                     <div className='rdo-error-text'>Cannot process structure</div>
                     <div className='rdo-error-text'>{`Internal error: ${ev.error?.message ?? 'Unspecified error'}`}</div>
-                 </>
+                </>
             );
         }
 
@@ -346,7 +346,14 @@ export class App extends WithSubscriptions<{}, State> {
     }
 
     private tabSwitched(tk: TabKeys) {
-        this.setState({ ...this.state, selectedTab: tk });
+        if (this.state.mode === 'nothing' && ['annotation', 'validation', 'refinement'].includes(tk)) {
+            Popup.create(
+                <div>
+                    No structure is loaded. Please load a structure on the <i>Home</i> tab to activate these tabs.
+                </div>
+            );
+        } else
+            this.setState({ ...this.state, selectedTab: tk });
     }
 
     private async searchConformers(criteria: Search.Criteria) {
