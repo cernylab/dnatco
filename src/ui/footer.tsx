@@ -13,11 +13,13 @@ export class Footer extends React.Component {
                         <div style={{ color: 'var(--color-c)' }}>Supported by</div>
                         <IconButton
                             className='rdo-footer-icon-button'
+                            iconClassName='rdo-footer-icon-button-image'
                             src='imgs/ibt.png'
                             onClick={() => Net.openLink('https://www.ibt.cas.cz/', true)}
                         />
                         <IconButton
                             className='rdo-footer-icon-button'
+                            iconClassName='rdo-footer-icon-button-image'
                             src='imgs/elixir.png'
                             onClick={() => Net.openLink('https://www.elixir-czech.cz/', true)}
                         />

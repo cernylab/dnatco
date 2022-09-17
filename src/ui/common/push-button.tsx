@@ -79,7 +79,7 @@ export class IconButton extends React.Component<IconButton.Props> {
             >
                 <div style={{ display: 'flex', height: '100%', justifyContent: 'center', width: '100%' }}>
                     <img
-                        style={{ margin: '0.25em' }}
+                        className={this.props.iconClassName ?? 'rdo-icon-button-image'}
                         src={`${GlobalConfig.data().pathPrefix}${this.props.src}`}
                     />
                 </div>
@@ -148,6 +148,7 @@ export namespace BasePushButton {
 export namespace IconButton {
     export interface Props extends BasePushButton.Props {
         src: string;
+        iconClassName?: string;
     }
 }
 

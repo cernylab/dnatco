@@ -9,7 +9,6 @@ import { ListOfConformers } from './dnatco/list-of-conformers';
 import { Reader } from './dnatco/reader';
 import { Step } from './dnatco/step';
 import { AboutTab } from './ui/about-tab';
-import { BrowseConformersTab } from './ui/browse-conformers-tab';
 import { DnatcoViewerTab } from './ui/dnatco-viewer-tab';
 import { Footer } from './ui/footer';
 import { ConformersTab } from './ui/conformers-tab';
@@ -52,11 +51,6 @@ const TabsForModes = {
             caption: 'Home',
             enabled: true,
         },
-        browse: {
-            icon: 'imgs/magnifying-glass.svg',
-            caption: 'Browse',
-            enabled: true,
-        },
         annotation: {
             icon: 'imgs/list.svg',
             caption: 'Annotation',
@@ -87,11 +81,6 @@ const TabsForModes = {
         start: {
             icon: 'imgs/home.svg',
             caption: 'Home',
-            enabled: true,
-        },
-        browse: {
-            icon: 'imgs/magnifying-glass.svg',
-            caption: 'Browse',
             enabled: true,
         },
         annotation: {
@@ -126,15 +115,10 @@ const TabsForModes = {
             caption: 'Home',
             enabled: true,
         },
-        browse: {
-            icon: 'imgs/magnifying-glass.svg',
-            caption: 'Browse',
-            enabled: true,
-        },
         annotation: {
             icon: 'imgs/list.svg',
             caption: 'Annotation',
-            enabled: false,
+            enabled: true,
         },
         'list-of-conformers': {
             icon: 'imgs/document.svg',
@@ -300,15 +284,6 @@ export class App extends WithSubscriptions<{}, State> {
                     dnatcofierReady={this.state.dnatcofierReady}
                 />
             );
-        case 'browse':
-            return (
-                <BrowseConformersTab
-                    criteria={this.search.criteria}
-                    onSearch={(criteria) => this.searchConformers(criteria)}
-                    onStepSelected={(stepName) => this.showSearchResult(stepName)}
-                    steps={this.search.results}
-                />
-            );
         case 'annotation':
             return (
                 <DnatcoViewerTab>
@@ -340,7 +315,14 @@ export class App extends WithSubscriptions<{}, State> {
                 </DnatcoViewerTab>
             );
         case 'list-of-conformers':
-            return <ConformersTab />;
+            return (
+                <ConformersTab
+                    criteria={this.search.criteria}
+                    onSearch={(criteria) => this.searchConformers(criteria)}
+                    onStepSelected={(stepName) => this.showSearchResult(stepName)}
+                    steps={this.search.results}
+                />
+            );
         default:
             return <AboutTab />
         }

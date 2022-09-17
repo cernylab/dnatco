@@ -1,6 +1,5 @@
 import * as React from 'react';
 import { BigLogo } from './big-logo';
-import { SearchConformers } from './search-conformers';
 import { ComboBox } from './common/combo-box';
 import { Popup } from './common/popup';
 import { DummyButton, PushButton } from './common/push-button';
@@ -158,7 +157,6 @@ export class StartTab extends React.Component<StartTab.Props, State> {
                             </div>
                         </ShadowedBox>
                     </div>
-                    <SearchConformers onDoSearch={this.props.onDoSearchConformers} />
                 </div>
             </div>
         );

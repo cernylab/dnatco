@@ -1,22 +1,25 @@
 import * as React from 'react';
+import { SearchConformers } from './search-conformers';
+import { DynamicTable } from './common/dynamic-table';
 import { ShadowedBox } from './common/shadowed-box';
 import { NamedList } from './common/named-list';
 import { PushButton } from './common/push-button';
 import { SideSwitchingPanel } from './common/side-switching-panel';
 import { ListOfConformers } from '../dnatco/list-of-conformers';
+import { Search } from '../search/search';
 import { Net } from '../util/net';
 
 const Tabs = {
     'about-ntcs': 'About NtCs',
     'table-of-conformers': 'Table of conformers',
-    'browse': 'Browse',
+    'browse-conformers': 'Browse',
 };
 type TabId = keyof typeof Tabs;
 
 const TabsOrder: TabId[] = [
     'about-ntcs',
     'table-of-conformers',
-    'browse',
+    'browse-conformers',
 ];
 
 function fmtInt(n: number) {
@@ -46,9 +49,57 @@ class AboutNtCs extends React.Component {
     }
 }
 
-class Browse extends React.Component {
+export interface BrowseConformersProps {
+    criteria: Search.Criteria;
+    onSearch: (criteria: Search.Criteria) => void;
+    onStepSelected: (name: string) => void;
+    steps: Search.FoundStep[];
+}
+class BrowseConformers extends React.Component<BrowseConformersProps> {
+    private renderStepsTable() {
+        const names: DynamicTable.Column<string> = { name: 'Name', values: new Array<DynamicTable.CellValue<string>>() };
+        const CANAs: DynamicTable.Column<string> = { name: 'CANA', values: new Array<DynamicTable.CellValue<string>>() };
+        const NtCs: DynamicTable.Column<string> = { name: 'NtC', values: new Array<DynamicTable.CellValue<string>>() };
+        const confals: DynamicTable.Column<number> = { name: 'Confal', values: new Array<DynamicTable.CellValue<number>>() };
+        const rmsds: DynamicTable.Column<number> = { name: 'RMSD', values: new Array<DynamicTable.CellValue<number>>(), contentFormatter: (n) => n.toFixed(2) };
+        const resolutions: DynamicTable.Column<number> = { name: 'Resolution [Å]', values: new Array<DynamicTable.CellValue<number>>(), contentFormatter: (n) => n.toFixed(4) };
+        const haveMaps: DynamicTable.Column<string> = { name: 'Map', values: new Array<DynamicTable.CellValue<string>>() };
+
+        for (const step of this.props.steps) {
+            names.values.push({ data: step.name });
+            CANAs.values.push({ data: step.CANA });
+            NtCs.values.push({ data: step.NtC });
+            confals.values.push({ data: step.confal });
+            rmsds.values.push({ data: step.rmsd });
+            resolutions.values.push({ data: step.resolution });
+            haveMaps.values.push({ data: 'N' });
+        }
+
+        return (
+            <DynamicTable
+                onCellClicked={(row, column, value) => this.props.onStepSelected(value)}
+                columns={[names, CANAs, NtCs, confals, rmsds, resolutions, haveMaps]}
+                style='wide'
+            />
+        );
+    }
+
     render() {
-        return <div>...</div>
+        return (
+            <div className='rdo-offset'>
+                <div className='rdo-width-limiter'>
+                    <div style={{ display: 'grid', height: '100%', gridTemplateRows: 'auto auto 1fr', gridTemplateColumns: 'auto', rowGap: 'var(--x-gap)', columnGap: 'var(--x-gap)' }}>
+                        <div className='rdo-primary-caption'>{`List of ${this.props.steps.length} randomly selected steps with NtC class ${this.props.criteria.NtC}`}</div>
+                        <SearchConformers onDoSearch={this.props.onSearch} initial={this.props.criteria} />
+                        <div style={{ overflow: 'hidden' }}>
+                            <div className='rdo-scroll-vertically'>
+                                {this.renderStepsTable()}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
     }
 }
 
@@ -232,8 +283,8 @@ class TableOfConformers extends React.Component {
 interface State {
     selected: TabId;
 }
-export class ConformersTab extends React.Component<{}, State> {
-    constructor(props: {}) {
+export class ConformersTab extends React.Component<ConformersTab.Props, State> {
+    constructor(props: ConformersTab.Props) {
         super(props);
 
         this.state = {
@@ -244,7 +295,15 @@ export class ConformersTab extends React.Component<{}, State> {
     private renderTab() {
         switch (this.state.selected) {
         case 'about-ntcs': return <AboutNtCs />;
-        case 'browse': return <Browse />;
+        case 'browse-conformers':
+            return (
+                <BrowseConformers
+                    criteria={this.props.criteria}
+                    onSearch={this.props.onSearch}
+                    onStepSelected={this.props.onStepSelected}
+                    steps={this.props.steps}
+                />
+            );
         case 'table-of-conformers': return <TableOfConformers />;
         }
     }
@@ -274,3 +333,11 @@ export class ConformersTab extends React.Component<{}, State> {
     }
 }
 
+export namespace ConformersTab {
+    export interface Props {
+        criteria: Search.Criteria;
+        onSearch: (criteria: Search.Criteria) => void;
+        onStepSelected: (name: string) => void;
+        steps: Search.FoundStep[];
+    }
+}

@@ -237,6 +237,10 @@ th.rdo-data-table {
     background-color: var(--color-d);
 }
 
+.rdo-footer-icon-button-image {
+    padding: 0.5em;
+}
+
 .rdo-footer-gutter {
     background-color: var(--color-x);
     height: 0.5em;
@@ -251,6 +255,10 @@ th.rdo-data-table {
 .rdo-icon-button {
     flex: 1;
     object-fit: contain;
+}
+
+.rdo-icon-button-image {
+    margin: 0.25em;
 }
 
 .rdo-line-spacer {
