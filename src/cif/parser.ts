@@ -33,6 +33,7 @@ export class Block {
 
 const TabCharCode         =  9;
 const NLCharCode          = 10;
+const CRCharCode          = 13;
 const SpaceCharCode       = 32;
 const DoubleQuoteCharCode = 34;
 const HashCharCode        = 35;
@@ -89,7 +90,7 @@ class Stream {
         for (; idx < this.length; idx++) {
             charCode = this.stream.charCodeAt(idx);
             if (quote) {
-                if (charCode == NLCharCode)
+                if (charCode === NLCharCode || charCode === CRCharCode)
                     throw new Error(`Quoted token that begins on line ${this.lineCounter} contains a new line`);
                 else if (charCode === quote) {
                     // Jump one character ahead to get past the ending quote
@@ -101,7 +102,8 @@ class Stream {
             } else if (
                 charCode === SpaceCharCode ||
                 charCode === TabCharCode ||
-                charCode === NLCharCode
+                charCode === NLCharCode ||
+                charCode === CRCharCode
             )
                 break;
         }
@@ -117,7 +119,8 @@ class Stream {
             const whiteSpace =
                 charCode === NLCharCode ||
                 charCode === SpaceCharCode ||
-                charCode === TabCharCode;
+                charCode === TabCharCode ||
+                charCode === CRCharCode;
             if (!whiteSpace)
                 return false;
         }
@@ -129,13 +132,31 @@ class Stream {
         return this.primingState.isPrimed === true && this.primingState.quotesIgnored === ignoreQuotes;
     }
 
+    private skipWhiteSpaces() {
+        while (this.cursor < this.length) {
+            const charCode = this.stream.charCodeAt(this.cursor);
+            const isNewLine = charCode === NLCharCode;
+
+            const isWhiteSpace = (charCode === SpaceCharCode) || (charCode === TabCharCode) || (charCode == CRCharCode) || isNewLine;
+            if (!isWhiteSpace)
+                break;
+
+            this.lineCounter += isNewLine ? 1 : 0;
+            this.cursor++;
+        }
+    }
+
     private tokenKind(text: string) {
         const charCode = text.charCodeAt(0);
 
         const kind =
-            ((charCode == UnderscoreCharCode ? 1 : 0) << 0) |
-            ((charCode == HashCharCode ? 1 : 0)       << 1) |
-            (((charCode == SemicolonCharCode && (this.cursor === 0 || this.stream.charCodeAt(this.cursor - 1)) === NLCharCode) ? 1 : 0) << 2);
+            ((charCode === UnderscoreCharCode ? 1 : 0) << 0) |
+            ((charCode === HashCharCode ? 1 : 0)       << 1) |
+            (((charCode === SemicolonCharCode && (
+                (this.cursor === 0) ||
+                (this.stream.charCodeAt(this.cursor - 1) === NLCharCode) ||
+                (this.stream.charCodeAt(this.cursor - 1) === CRCharCode)
+            )) ? 1 : 0) << 2);
 
         if (kind !== 0)
             return kind;
@@ -171,17 +192,7 @@ class Stream {
 
         // Move to the beginning of the next token
         this.cursor += token.text.length;
-        while (this.cursor < this.length) {
-            const charCode = this.stream.charCodeAt(this.cursor);
-            const isNewLine = charCode === NLCharCode;
-
-            const isWhiteSpace = (charCode === SpaceCharCode) || (charCode === TabCharCode) || isNewLine;
-            if (!isWhiteSpace)
-                break;
-
-            this.lineCounter += isNewLine ? 1 : 0;
-            this.cursor++;
-        }
+        this.skipWhiteSpaces();
 
         return token;
     }
@@ -213,6 +224,10 @@ class Stream {
     peekKind(ignoreQuotes: boolean = false): number {
         if (this.isPrimed(ignoreQuotes))
             return this.primedKind;
+
+        this.skipWhiteSpaces();
+        if (this.exhausted())
+            return TokenKind.Empty;
 
         this.primedText = this.getCifToken(ignoreQuotes);
         this.primedKind = this.tokenKind(this.primedText);
@@ -313,8 +328,13 @@ function doMultiline(text: string, stream: Stream) {
             return multiline.substring(0, multiline.length - 1);
         } else if (kind === TokenKind.Comment)
             stream.eatLine();
-        else
-            multiline += stream.eatLine();
+        else {
+            const line = stream.eatLine();
+            if (line.length > 0 && line.charCodeAt(line.length - 1) === CRCharCode)
+                multiline += line.substring(0, line.length - 1);
+            else
+                multiline += line;
+        }
     }
 
     throw new Error('Unterminated multiline entry');
