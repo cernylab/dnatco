@@ -29,9 +29,9 @@ export class RefmacRestraints extends View<View.Props, State> {
         }
 
         return (
-            <div style={{ overflow: 'hidden', height: '100%' }}>
+            <div style={{ overflow: 'hidden', height: '100%', display: 'flex', flexDirection: 'column' }}>
                 <div>
-                    <div className='rdo-secondary-caption'>Restrains for REFMAC</div>
+                    <div className='rdo-secondary-caption'>Restraints for REFMAC</div>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 'var(--h-gap)' }}>
                         Maximum allowed RMSD:
                         <SpinBox
@@ -51,7 +51,7 @@ export class RefmacRestraints extends View<View.Props, State> {
                         />
                     </div>
                 </div>
-                <div className='rdo-offset' style={{ overflow: 'scroll' }}>
+                <div className='rdo-offset' style={{ overflow: 'scroll', flex: 1 }}>
                     {elems}
                 </div>
             </div>
