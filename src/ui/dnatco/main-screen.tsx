@@ -18,10 +18,11 @@ const AvailableViews = {
     'connectivity-similarity-plots': { caption: 'Connectivity & Similarity plots', visualizer: true },
     'downloads': { caption: 'Downloads', visualizer: false },
     'step-torsions': { caption: 'Step torsions', visualizer: true },
-    'empty': { caption: 'Empty', visualizer: false },
+    'refmac-restraints': { caption: 'REFMAC restraints', visualizer: false },
 };
 const AnnotationViews: ViewType[] = ['assigned-ntcs', 'structure-info', 'downloads'];
 const ValidationViews: ViewType[] = ['confals-rmsds', 'step-torsions', 'connectivity-similarity-plots'];
+const RefinementViews: ViewType[] = ['refmac-restraints'];
 
 function masterModeViews(mode: MasterMode): { id: ViewType, caption: string }[] {
     switch (mode) {
@@ -37,7 +38,7 @@ function masterModeViews(mode: MasterMode): { id: ViewType, caption: string }[] 
 interface State {
     annotationView: typeof AnnotationViews[number];
     validationView: typeof ValidationViews[number];
-    refinementView: 'empty'
+    refinementView: typeof RefinementViews[number];
 }
 export class MainScreen extends WithSubscriptions<MainScreen.Props, State> {
     constructor(props: MainScreen.Props) {
@@ -46,7 +47,7 @@ export class MainScreen extends WithSubscriptions<MainScreen.Props, State> {
         this.state = {
             annotationView: 'assigned-ntcs',
             validationView: 'confals-rmsds',
-            refinementView: 'empty',
+            refinementView: 'refmac-restraints',
         }
     }
 
@@ -57,7 +58,7 @@ export class MainScreen extends WithSubscriptions<MainScreen.Props, State> {
         case 'validation':
             return Register.Views[this.state.validationView]({ dnatcofication: this.props.dnatcofication, viewerInterop: this.props.viewerInterop });
         case 'refinement':
-            return <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '48pt', height: '80%' }}>&lt; Emoji of a fish with a hopeful face &gt;</div>;
+            return Register.Views[this.state.refinementView]({ dnatcofication: this.props.dnatcofication, viewerInterop: this.props.viewerInterop });
         }
     }
 
@@ -116,7 +117,7 @@ export class MainScreen extends WithSubscriptions<MainScreen.Props, State> {
                             this.setState({ ...this.state, validationView: id });
                             break;
                         case 'refinement':
-                            this.setState({ ...this.state, refinementView: 'empty' });
+                            this.setState({ ...this.state, refinementView: id });
                             break;
                         }
                     }}

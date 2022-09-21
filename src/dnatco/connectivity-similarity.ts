@@ -58,7 +58,7 @@ function gatherStepAtoms(step: Step, atoms: Cif.Table<AtomSite_Schema>) {
                     atom.label_seq_id!,
                     atom.auth_seq_id ? atom.auth_seq_id : atom.label_seq_id!,
                     atom.pdbx_PDB_model_num ?? 1,
-                    atom.pdbx_PDB_ins_code?.charCodeAt(0) ?? jsLLKA.NO_INSCODE,
+                    atom.pdbx_PDB_ins_code ?? jsLLKA.NO_INSCODE,
                     atom.label_alt_id?.charCodeAt(0) ?? jsLLKA.NO_ALTID
                 )
             );
@@ -80,7 +80,7 @@ function gatherStepAtoms(step: Step, atoms: Cif.Table<AtomSite_Schema>) {
                     atom.label_seq_id!,
                     atom.auth_seq_id ? atom.auth_seq_id : atom.label_seq_id!,
                     atom.pdbx_PDB_model_num ?? 1,
-                    atom.pdbx_PDB_ins_code?.charCodeAt(0) ?? jsLLKA.NO_INSCODE,
+                    atom.pdbx_PDB_ins_code ?? jsLLKA.NO_INSCODE,
                     atom.label_alt_id?.charCodeAt(0) ?? jsLLKA.NO_ALTID
                 )
             );

@@ -55,11 +55,23 @@ export namespace Schema {
         };
     }
 
-    export function toEnum<T extends string>(v: string, en: Enum<T>) {
+    export function toEnum<T>(v: string, en: Enum<T>) {
         let dv = v !== null ? dequote(v) : null;
-        if (!en.options.includes(dv as T))
-            throw new Error(`Expected enum of ${en.options.join(', ')}, got ${v === null ? '<null>' : dv}`);
-        return dv;
+
+        // Enum might in principle contain anything but what we get from the raw Cif is a string
+        // Convert enum options to string for proper comparison
+        for (const o of en.options) {
+            if (typeof o === 'string') {
+                if (o === dv)
+                    return o;
+            } else {
+                const so = (o as any).toString();
+                if (so === dv)
+                    return o;
+            }
+        }
+
+        throw new Error(`Expected enum of ${en.options.join(', ')}, got ${v === null ? '<null>' : dv}`);
     }
 
     export function toFloat(v: string) {

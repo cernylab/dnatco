@@ -3,6 +3,7 @@ import * as RDC from 'react-dom/client';
 import { GlobalConfig } from './global-config';
 import { isPdbId } from './util';
 import { Net } from './util/net';
+import { ClassificationContext } from './dnatco/classification-context';
 import { ClassificationResources } from './dnatco/classification-resources';
 import { Dnatcofication, DnatcoficationData } from './dnatco/dnatcofication';
 import { ListOfConformers } from './dnatco/list-of-conformers';
@@ -41,8 +42,6 @@ const Params = {
     cifcode: '',
     stepName: '',
 };
-
-let clsfResData: ClassificationResources.Data;
 
 const TabsForModes = {
     nothing: {
@@ -173,7 +172,7 @@ export class App extends WithSubscriptions<{}, State> {
     private fromCustomStructure(coordsFile: File, densityMapFile: File|null, onSuccess: () => void) {
         const task: Task<{ coordsFile: File, densityMapFile: File|null, clsfResData: ClassificationResources.Data }> = {
             taskFunc: 'dnatco-from-custom-structure',
-            payload: { coordsFile, densityMapFile, clsfResData },
+            payload: { coordsFile, densityMapFile, clsfResData: ClassificationContext.data() },
             initialStatus: ''
         };
 
@@ -183,7 +182,7 @@ export class App extends WithSubscriptions<{}, State> {
     private fromPdbId(pdbId: string, db: Reader.SupportedDatabases, onSuccess: () => void) {
         const task: Task<{ pdbId: string, db: Reader.SupportedDatabases, localDbUrl: string, localDbGzipped: boolean, clsfResData: ClassificationResources.Data }> = {
             taskFunc: 'dnatco-from-pdb-id',
-            payload: { pdbId, db, localDbUrl: GlobalConfig.data().localDbUrl, localDbGzipped: GlobalConfig.data().localDbGzipped, clsfResData },
+            payload: { pdbId, db, localDbUrl: GlobalConfig.data().localDbUrl, localDbGzipped: GlobalConfig.data().localDbGzipped, clsfResData: ClassificationContext.data() },
             initialStatus: ''
         };
 
@@ -193,7 +192,7 @@ export class App extends WithSubscriptions<{}, State> {
     private async fromRawLink(link: string, onSuccess: () => void) {
         const task: Task<{ link: string, clsfResData: ClassificationResources.Data }> = {
             taskFunc: 'dnatco-from-raw-link',
-            payload: { link, clsfResData },
+            payload: { link, clsfResData: ClassificationContext.data() },
             initialStatus: ''
         };
 
@@ -386,15 +385,24 @@ export class App extends WithSubscriptions<{}, State> {
     }
 
     componentDidMount() {
-        ClassificationResources.load(
+        ClassificationContext.initialize(
             './classification/clusters.csv',
             './classification/confals.csv',
             './classification/golden_steps.csv',
             './classification/nu_angles.csv'
-        ).then((data) => {
-            clsfResData = data;
-            this.setState({ ...this.state, dnatcofierReady: true });
+        ).then(retval => {
+            if (retval === undefined)
+                this.setState({ ...this.state, dnatcofierReady: true });
+            else {
+                Popup.create(
+                    <div className='rdo-error-text'>
+                        <div>{retval}</div>
+                        <div>ReDNATCO cannot function when its engine fails to initialize. Try to refresh the page...</div>
+                     </div>
+                );
+            }
         }).catch(e => {
+            // We should not really get here but let's catch just in case
             Popup.create(
                 <div className='rdo-error-text'>
                     <div>{e.toString()}</div>
