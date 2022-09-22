@@ -31,7 +31,7 @@ function masterModeViews(mode: MasterMode): { id: ViewType, caption: string }[] 
     case 'validation':
         return ValidationViews.map(view => { return { id: view, caption: AvailableViews[view].caption }; } );
     case 'refinement':
-        return [];
+        return RefinementViews.map(view => { return { id: view, caption: AvailableViews[view].caption }; } );
     }
 }
 
