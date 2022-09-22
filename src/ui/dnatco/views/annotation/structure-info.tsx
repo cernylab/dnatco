@@ -1,17 +1,17 @@
 import * as React from 'react';
-import { View } from './view';
-import { CollapsibleVertical } from '../../common/collapsible-vertical';
-import { NamedList } from '../../common/named-list';
-import { Cif } from '../../../cif';
-import { Citation } from '../../../cif/categories/citation';
-import { Category, Schema } from '../../../cif/categories';
-import { CitationAuthor } from '../../../cif/categories/citation-author';
-import { Exptl } from '../../../cif/categories/experimental';
-import { PdbxDatabaseStatus } from '../../../cif/categories/pdbx-database-status';
-import { Refine } from '../../../cif/categories/refine';
-import { Struct } from '../../../cif/categories/struct';
-import { Dnatcofication } from '../../../dnatco/dnatcofication';
-import { doiLink, pubmedLink } from '../../../util/resources';
+import { View } from '../view';
+import { CollapsibleVertical } from '../../../common/collapsible-vertical';
+import { NamedList } from '../../../common/named-list';
+import { Cif } from '../../../../cif';
+import { Citation } from '../../../../cif/categories/citation';
+import { Category, Schema } from '../../../../cif/categories';
+import { CitationAuthor } from '../../../../cif/categories/citation-author';
+import { Exptl } from '../../../../cif/categories/experimental';
+import { PdbxDatabaseStatus } from '../../../../cif/categories/pdbx-database-status';
+import { Refine } from '../../../../cif/categories/refine';
+import { Struct } from '../../../../cif/categories/struct';
+import { Dnatcofication } from '../../../../dnatco/dnatcofication';
+import { doiLink, pubmedLink } from '../../../../util/resources';
 
 const NA = 'N/A';
 

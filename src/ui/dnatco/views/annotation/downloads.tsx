@@ -1,10 +1,10 @@
 import * as React from 'react';
-import { View } from './view';
-import { NamedList } from '../../common/named-list';
-import { PushButton } from '../../common/push-button';
-import { Cif } from '../../../cif';
-import { Struct } from '../../../cif/categories/struct';
-import { Net } from '../../../util/net';
+import { View } from '../view';
+import { NamedList } from '../../../common/named-list';
+import { PushButton } from '../../../common/push-button';
+import { Cif } from '../../../../cif';
+import { Struct } from '../../../../cif/categories/struct';
+import { Net } from '../../../../util/net';
 
 export class Downloads extends View {
     private mmCifFilename() {

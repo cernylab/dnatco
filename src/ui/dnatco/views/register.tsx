@@ -1,12 +1,12 @@
 import React from 'react';
 import { View } from './view';
-import { AssignedNtCs } from './assigned-ntcs';
-import { ConfalsRmsds } from './confals-rmsds';
-import { ConnectivitySimilarityPlots } from './connectivity-similarity-plots';
-import { Downloads } from './downloads';
+import { AssignedNtCs } from './annotation/assigned-ntcs';
+import { Downloads } from './annotation/downloads';
+import { StructureInfo } from './annotation/structure-info';
 import { RefmacRestraints } from './refinement/refmac-restraints';
-import { StepTorsions } from './step-torsions';
-import { StructureInfo } from './structure-info';
+import { ConfalsRmsds } from './validation/confals-rmsds';
+import { ConnectivitySimilarityPlots } from './validation/connectivity-similarity-plots';
+import { StepTorsions } from './validation/step-torsions';
 
 export namespace Register {
     export const Views = {
