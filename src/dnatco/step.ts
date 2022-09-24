@@ -1,6 +1,5 @@
 import { CANA } from './cana';
 import { NtC } from './ntc';
-import { NucleicBase } from './';
 import { isPdbId } from '../util';
 
 export const StepObj = {
@@ -9,10 +8,10 @@ export const StepObj = {
     chain: '',
     model: 0,
     resNo1: 0,
-    base1: 'A' as NucleicBase,
+    base1: 'A',
     altPos1: '',
     resNo2: 0,
-    base2: 'A' as NucleicBase,
+    base2: 'A',
     altPos2: '',
     NtC: 'NANT' as NtC.Class,
     closestNtC: 'NANT' as NtC.Class,

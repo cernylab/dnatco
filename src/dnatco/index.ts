@@ -1,9 +1,3 @@
-export type NucleicBase = 'A'|'C'|'G'|'U'|'DA'|'DC'|'DG'|'DT';
-export const NucleicBase: string[] = ['A', 'C', 'G', 'U', 'DA', 'DC', 'DG', 'DT'];
-export function isNucleicBase(v: string): v is NucleicBase {
-    return NucleicBase.includes(v);
-}
-
 export type ErrorResult = {
     success: 'error',
     message: string;

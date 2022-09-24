@@ -9,7 +9,6 @@ export class Atom {
     readonly authAtomId: string;
     readonly bIso: number|null;
     readonly id: number;
-    readonly ins_code: string|null;
     readonly occupancy: number;
     readonly symbol: string;
 
@@ -23,7 +22,6 @@ export class Atom {
         this.authAtomId = (row.auth_atom_id ?? row.label_atom_id)!;
         this.bIso = row.B_iso_or_equiv;
         this.id = row.id!;
-        this.ins_code = row.pdbx_PDB_ins_code;
         this.occupancy = row.occupancy ?? AtomSite.schema.occupancy.T!;
         this.symbol = row.type_symbol!;
 
@@ -38,6 +36,7 @@ export class Residue {
     readonly authNum: number;
     readonly authCompound: string;
     readonly compound: string;
+    readonly insCode: string|null;
 
     constructor(readonly num: number, rows: AtomSiteRow[]) {
         const fr = rows[0];
@@ -45,6 +44,7 @@ export class Residue {
         this.compound = fr.label_comp_id!.trim();
         this.authNum = fr.auth_seq_id ?? fr.label_seq_id!;
         this.authCompound = (fr.auth_comp_id ?? fr.label_comp_id)!.trim();
+        this.insCode = fr.pdbx_PDB_ins_code;
 
         for (const row of rows)
             this.atoms.push(new Atom(row));
@@ -54,16 +54,20 @@ export class Residue {
 export class Chain {
     readonly residues = new Array<Residue>();
     readonly entityId: string;
+    readonly authName: string;
 
     constructor(readonly name: string, rows: AtomSiteRow[]) {
         const fr = rows[0];
         this.entityId = fr.label_entity_id!;
+        this.authName = fr.auth_asym_id ?? fr.label_asym_id!;
 
         const extracted = extractResidues(rows);
-        for (const num of sortedKeys(extracted)) {
+        for (const num of Array.from(extracted.keys())) {
             const residue = extracted.get(num)!;
             this.residues.push(new Residue(num, residue));
         }
+
+        this.residues = this.residues.sort((lhs, rhs) => lhs.num - rhs.num);
     }
 }
 

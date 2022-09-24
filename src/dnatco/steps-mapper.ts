@@ -1,4 +1,3 @@
-import { NucleicBase } from './';
 import { Dnatcofication } from './dnatcofication';
 import { CANA } from './cana';
 import { NtC } from './ntc';
@@ -90,10 +89,10 @@ export namespace StepsMapper {
                 name,
                 chain: chain1!,
                 resNo1: Cif.Column.value(steps.label_seq_id_1, row)!,
-                base1: Cif.Column.value(steps.label_comp_id_1, row) as NucleicBase,
+                base1: Cif.Column.value(steps.label_comp_id_1, row)!,
                 altPos1: Cif.Column.value(steps.label_alt_id_1, row) ?? '',
                 resNo2: Cif.Column.value(steps.label_seq_id_2, row)!,
-                base2: Cif.Column.value(steps.label_comp_id_2, row) as NucleicBase,
+                base2: Cif.Column.value(steps.label_comp_id_2, row)!,
                 altPos2: Cif.Column.value(steps.label_alt_id_2, row) ?? '',
                 model: Cif.Column.value(steps.PDB_model_number, row)!,
                 NtC: assignedNtC,

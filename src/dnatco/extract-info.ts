@@ -1,4 +1,4 @@
-import { isNucleicBase } from './';
+import { Residues } from './residues';
 import { Model } from './structure';
 
 export namespace ExtractInfo {
@@ -10,7 +10,7 @@ export namespace ExtractInfo {
             let idx = 0;
             while (isNaChain && idx < chain.residues.length) {
                 const res = chain.residues[idx++];
-                if (!isNucleicBase(res.compound))
+                if (!Residues.isNucleicResidue(res.compound))
                     isNaChain = false;
             }
 

@@ -19,10 +19,11 @@ const AvailableViews = {
     'downloads': { caption: 'Downloads', visualizer: false },
     'step-torsions': { caption: 'Step torsions', visualizer: true },
     'refmac-restraints': { caption: 'REFMAC restraints', visualizer: false },
+    'phenix-restraints': { caption: 'Phenix restraints', visualizer: false },
 };
 const AnnotationViews: ViewType[] = ['assigned-ntcs', 'structure-info', 'downloads'];
 const ValidationViews: ViewType[] = ['confals-rmsds', 'step-torsions', 'connectivity-similarity-plots'];
-const RefinementViews: ViewType[] = ['refmac-restraints'];
+const RefinementViews: ViewType[] = ['refmac-restraints', 'phenix-restraints'];
 
 function masterModeViews(mode: MasterMode): { id: ViewType, caption: string }[] {
     switch (mode) {
