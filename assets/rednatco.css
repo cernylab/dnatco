@@ -56,6 +56,15 @@ input.rdo-input-checkbox {
 input.rdo-input-checkbox:checked {
     background-color: var(--color-a);
 }
+input.rdo-input-checkbox-disabled {
+    background-color: var(--color-b);
+}
+
+.rdo-input-checkbox-tainer {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
 
 input.rdo-input-number {
     background: none;

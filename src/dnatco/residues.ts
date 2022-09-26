@@ -1,10 +1,21 @@
 export namespace Residues {
     export type ResdidueKind = 'purine' | 'pyrimidine' | 'non-standard';
 
+    export function isElementaryResidue(name: string) {
+        return ElementaryResidues.has(name);
+    }
+
     export function isNucleicResidue(name: string) {
         return StandardResidues.has(name);
         // TODO: Add non-standard residues
     }
+
+    export const ElementaryResidues = new Set<string>([
+        'A', 'DA',
+        'C', 'DC',
+        'G', 'DG',
+        'U', 'DT'
+    ]);
 
     export const StandardResidues = new Set<string>([
          '0A',
