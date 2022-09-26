@@ -136,10 +136,8 @@ export class DynamicTable extends React.Component<DynamicTable.Props, State> {
             const col = this.props.columns[idx];
 
             const imgSrc = this.state.sortBy === idx
-                ?
-                this.state.sortOrder === 'asc' ? `${prefix}imgs/sorted-ascending.svg` : `${prefix}imgs/sorted-descending.svg`
-                :
-                `${prefix}imgs/sort.svg`;
+                ? this.state.sortOrder === 'asc' ? `${prefix}imgs/sorted-ascending.svg` : `${prefix}imgs/sorted-descending.svg`
+                : `${prefix}imgs/sort.svg`;
 
             headers.push(
                 <th
@@ -152,11 +150,14 @@ export class DynamicTable extends React.Component<DynamicTable.Props, State> {
                 >
                     {col.name}
                     {'\u00A0'}
-                    <img
-                        className='column-sort-button'
-                        src={imgSrc}
-                        onClick={() => this.changeSort(idx)}
-                    />
+                    {col.notSortable
+                        ? undefined
+                        : <img
+                            className='column-sort-button'
+                            src={imgSrc}
+                            onClick={() => this.changeSort(idx)}
+                        />
+                    }
                 </th>
             );
         }
@@ -201,6 +202,7 @@ export namespace DynamicTable {
         comparator?: (a: T, b: T) => number;
         cellStyle?: (v: T) => React.CSSProperties;
         contentFormatter?: (v: T) => string;
+        notSortable?: boolean;
     }
     export type Style = 'normal' | 'wide';
 

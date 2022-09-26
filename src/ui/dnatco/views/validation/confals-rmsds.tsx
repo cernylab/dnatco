@@ -60,6 +60,7 @@ export class ConfalsRmsds extends View<View.Props, State> {
         const canaColumn: DynamicTable.Column<string> = { name: 'CANA', values: new Array<DynamicTable.CellValue<string>>(), alignment: 'center' };
         const confalColumn: DynamicTable.Column<number> = { name: 'Confal', values: new Array<DynamicTable.CellValue<number>>(), alignment: 'center', cellStyle: confalToColor };
         const rmsdColumn: DynamicTable.Column<number> = { name: 'RMSD', values: new Array<DynamicTable.CellValue<number>>(), alignment: 'center', cellStyle: rmsdToColor };
+        const torsionsColumn: DynamicTable.Column<string> = { name: '?', values: new Array<DynamicTable.CellValue<string>>(), alignment: 'center', notSortable: true };
 
         for (let row = 0; row < steps._rowCount; row++) {
             const modelNum = Cif.Column.value(PDB_model_number, row);
@@ -73,30 +74,18 @@ export class ConfalsRmsds extends View<View.Props, State> {
             ntcColumn.values.push({
                 data: Cif.Column.value(assigned_NtC, row)!,
                 tag,
-                tooltip:
-                    <Tooltip tag={Cif.Column.value(assigned_NtC, row)!}>
-                        <SingleStepInfo
-                            NtC={NtC}
-                            delta1={Cif.Column.value(tor_delta_1, row)!}
-                            epsilon1={Cif.Column.value(tor_epsilon_1, row)!}
-                            zeta1={Cif.Column.value(tor_zeta_1, row)!}
-                            alpha2={Cif.Column.value(tor_alpha_2, row)!}
-                            beta2={Cif.Column.value(tor_beta_2, row)!}
-                            gamma2={Cif.Column.value(tor_gamma_2, row)!}
-                            delta2={Cif.Column.value(tor_delta_2, row)!}
-                            chi1={Cif.Column.value(tor_chi_1, row)!}
-                            chi2={Cif.Column.value(tor_chi_2, row)!}
-                            mu={Cif.Column.value(tor_NCCN, row)!}
-                            CC={Cif.Column.value(dist_CC, row)!}
-                            NN={Cif.Column.value(dist_NN, row)!}
-                        />
-                    </Tooltip>,
             });
             canaColumn.values.push({
                 data: Cif.Column.value(assigned_CANA, row)!,
                 tag,
+            });
+            confalColumn.values.push({ data: Cif.Column.value(confal_score, row)!, tag });
+            rmsdColumn.values.push({ data: Cif.Column.value(cartesian_rmsd_closest_NtC_representative, row)!, tag });
+            torsionsColumn.values.push({
+                data: '',
+                tag,
                 tooltip:
-                    <Tooltip tag={Cif.Column.value(assigned_NtC, row)!}>
+                    <Tooltip tag='[?]'>
                         <SingleStepInfo
                             NtC={NtC}
                             delta1={Cif.Column.value(tor_delta_1, row)!}
@@ -114,11 +103,9 @@ export class ConfalsRmsds extends View<View.Props, State> {
                         />
                     </Tooltip>,
             });
-            confalColumn.values.push({ data: Cif.Column.value(confal_score, row)!, tag });
-            rmsdColumn.values.push({ data: Cif.Column.value(cartesian_rmsd_closest_NtC_representative, row)!, tag });
         }
 
-        return [stepColumn, ntcColumn, canaColumn, confalColumn, rmsdColumn];
+        return [stepColumn, ntcColumn, canaColumn, confalColumn, rmsdColumn, torsionsColumn];
     }
 
     renderAnalyzedSteps() {

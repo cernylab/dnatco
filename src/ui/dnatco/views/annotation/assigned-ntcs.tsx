@@ -48,6 +48,7 @@ export class AssignedNtCs extends View<View.Props, State> {
         const stepColumn: DynamicTable.Column<string> = { name: 'Step', values: new Array<DynamicTable.CellValue<string>>(), alignment: 'center', };
         const ntcColumn: DynamicTable.Column<string> = { name: 'NtC', values: new Array<DynamicTable.CellValue<string>>(), alignment: 'center' };
         const canaColumn: DynamicTable.Column<string> = { name: 'CANA', values: new Array<DynamicTable.CellValue<string>>(), alignment: 'center' };
+        const torsionsColumn: DynamicTable.Column<string> = { name: '?', values: new Array<DynamicTable.CellValue<string>>(), alignment: 'center', notSortable: true };
 
         for (let row = 0; row < steps._rowCount; row++) {
             const modelNum = Cif.Column.value(PDB_model_number, row)!;
@@ -61,31 +62,17 @@ export class AssignedNtCs extends View<View.Props, State> {
             stepColumn.values.push({ data: tag, tag });
             ntcColumn.values.push({
                 data: Cif.Column.value(assigned_NtC, row)!,
-                tag,
-                tooltip:
-                    <Tooltip tag={Cif.Column.value(assigned_NtC, row)!}>
-                        <SingleStepInfo
-                            NtC={NtC}
-                            delta1={Cif.Column.value(tor_delta_1, row)!}
-                            epsilon1={Cif.Column.value(tor_epsilon_1, row)!}
-                            zeta1={Cif.Column.value(tor_zeta_1, row)!}
-                            alpha2={Cif.Column.value(tor_alpha_2, row)!}
-                            beta2={Cif.Column.value(tor_beta_2, row)!}
-                            gamma2={Cif.Column.value(tor_gamma_2, row)!}
-                            delta2={Cif.Column.value(tor_delta_2, row)!}
-                            chi1={Cif.Column.value(tor_chi_1, row)!}
-                            chi2={Cif.Column.value(tor_chi_2, row)!}
-                            mu={Cif.Column.value(tor_NCCN, row)!}
-                            CC={Cif.Column.value(dist_CC, row)!}
-                            NN={Cif.Column.value(dist_NN, row)!}
-                        />
-                    </Tooltip>,
+                tag
             });
             canaColumn.values.push({
                 data: Cif.Column.value(assigned_CANA, row)!,
+                tag
+            });
+            torsionsColumn.values.push({
+                data: '',
                 tag,
                 tooltip:
-                    <Tooltip tag={Cif.Column.value(assigned_CANA, row)!}>
+                    <Tooltip tag='[?]'>
                         <SingleStepInfo
                             NtC={NtC}
                             delta1={Cif.Column.value(tor_delta_1, row)!}
@@ -105,7 +92,7 @@ export class AssignedNtCs extends View<View.Props, State> {
             });
         }
 
-        return [chainColumn, stepColumn, ntcColumn, canaColumn];
+        return [chainColumn, stepColumn, ntcColumn, canaColumn, torsionsColumn];
     }
 
     renderAnalyzedSteps() {
