@@ -7,6 +7,7 @@ import { listOfChains, makeStepSelection, valueToSemaphore } from '../../util';
 import { ComboBox } from '../../../common/combo-box';
 import { DynamicTable } from '../../../common/dynamic-table';
 import { NamedList } from '../../../common/named-list';
+import { IconTextButton } from '../../../common/push-button';
 import { Tooltip } from '../../../common/tooltip';
 import { Cif } from '../../../../cif';
 import {
@@ -15,6 +16,9 @@ import {
 } from '../../../../cif/categories/ndb-struct-ntc';
 import { Dnatcofication } from '../../../../dnatco/dnatcofication';
 import { sequence } from '../../../../util';
+import { Net } from '../../../../util/net';
+import { Serialization } from '../../../../util/serialization';
+import '../../../../../assets/imgs/data-transfer-download.svg';
 
 function confalToColor(rmsd: number): React.CSSProperties  {
     const clr = valueToSemaphore(rmsd, Constants.GreenConfal, Constants.GreenRMSD);
@@ -39,7 +43,7 @@ export class ConfalsRmsds extends View<View.Props, State> {
         this.state = {
             chain: '',
             model: '',
-            tableModel: new DynamicTable.Model(),
+            tableModel: this.makeTableModel(void 0, void 0),
         };
     }
 
@@ -62,7 +66,7 @@ export class ConfalsRmsds extends View<View.Props, State> {
         const canaColumn: DynamicTable.Column<string> = { name: 'CANA', values: new Array<DynamicTable.CellValue<string>>(), alignment: 'center' };
         const confalColumn: DynamicTable.Column<number> = { name: 'Confal', values: new Array<DynamicTable.CellValue<number>>(), alignment: 'center', cellStyle: confalToColor };
         const rmsdColumn: DynamicTable.Column<number> = { name: 'RMSD', values: new Array<DynamicTable.CellValue<number>>(), alignment: 'center', cellStyle: rmsdToColor };
-        const torsionsColumn: DynamicTable.Column<string> = { name: '?', values: new Array<DynamicTable.CellValue<string>>(), alignment: 'center', notSortable: true };
+        const torsionsColumn: DynamicTable.Column<string> = { name: '?', values: new Array<DynamicTable.CellValue<string>>(), alignment: 'center', notSortable: true, noData: true };
 
         for (let row = 0; row < steps._rowCount; row++) {
             const modelNum = Cif.Column.value(PDB_model_number, row);
@@ -123,18 +127,40 @@ export class ConfalsRmsds extends View<View.Props, State> {
 
     renderStepsTable() {
         return (
-            <DynamicTable
-                model={this.state.tableModel}
-                onCellClicked={(row, col, item) => {
-                    if (col === 'Step') {
-                        const selection = makeStepSelection(this.props.dnatcofication, item);
-                        if (selection)
-                            this.props.viewerInterop.api.command(ViewerApi.Commands.SelectStep(selection.current, selection.prev, selection.next));
-                    }
-                }}
-                highlightedTag={this.state.selectedStepName}
-                scrollTainerId='rdo-main-screen-data-container'
-            />
+            <div>
+                <div style={{ display: 'flex', flexDirection: 'row', gap: 'var(--v-gap)',  marginBottom: 'var(--v-gap)' }}>
+                    <IconTextButton
+                        caption='Csv'
+                        src='./imgs/data-transfer-download.svg'
+                        onClick={() => {
+                            const text = Serialization.dynamicTable(this.state.tableModel, 'csv');
+                            Net.serveFile('text/csv', text, `${this.props.dnatcofication.identifyingName}_confals_rmsds.csv`);
+                        }}
+                    />
+                    <IconTextButton
+                        caption='Json'
+                        src='./imgs/data-transfer-download.svg'
+                        onClick={() => {
+                            const text = Serialization.dynamicTable(this.state.tableModel, 'json');
+                            Net.serveFile('application/json', text, `${this.props.dnatcofication.identifyingName}_confals_rmsds.json`);
+                        }}
+                    />
+                    <div style={{ flex: 1 }}>{'\u00A0'}</div>
+                </div>
+
+                <DynamicTable
+                    model={this.state.tableModel}
+                    onCellClicked={(row, col, item) => {
+                        if (col === 'Step') {
+                            const selection = makeStepSelection(this.props.dnatcofication, item);
+                            if (selection)
+                                this.props.viewerInterop.api.command(ViewerApi.Commands.SelectStep(selection.current, selection.prev, selection.next));
+                        }
+                    }}
+                    highlightedTag={this.state.selectedStepName}
+                    scrollTainerId='rdo-main-screen-data-container'
+                />
+            </div>
         );
     }
 

@@ -6,6 +6,7 @@ import { ViewerApi } from '../../../../viewer/viewer-interop';
 import { ComboBox } from '../../../common/combo-box';
 import { DynamicTable } from '../../../common/dynamic-table';
 import { NamedList } from '../../../common/named-list';
+import { IconTextButton } from '../../../common/push-button';
 import { Tooltip } from '../../../common/tooltip';
 import { Cif } from '../../../../cif';
 import {
@@ -14,7 +15,9 @@ import {
 } from '../../../../cif/categories/ndb-struct-ntc';
 import { Dnatcofication } from '../../../../dnatco/dnatcofication';
 import { sequence } from '../../../../util';
-// import {PushButton} from 'src/ui/common/push-button';
+import { Net } from '../../../../util/net';
+import { Serialization } from '../../../../util/serialization';
+import '../../../../../assets/imgs/data-transfer-download.svg';
 
 interface State {
     model: string;
@@ -51,7 +54,7 @@ export class AssignedNtCs extends View<View.Props, State> {
         const stepColumn: DynamicTable.Column<string> = { name: 'Step', values: new Array<DynamicTable.CellValue<string>>(), alignment: 'center', };
         const ntcColumn: DynamicTable.Column<string> = { name: 'NtC', values: new Array<DynamicTable.CellValue<string>>(), alignment: 'center' };
         const canaColumn: DynamicTable.Column<string> = { name: 'CANA', values: new Array<DynamicTable.CellValue<string>>(), alignment: 'center' };
-        const torsionsColumn: DynamicTable.Column<string> = { name: '?', values: new Array<DynamicTable.CellValue<string>>(), alignment: 'center', notSortable: true };
+        const torsionsColumn: DynamicTable.Column<string> = { name: '?', values: new Array<DynamicTable.CellValue<string>>(), alignment: 'center', notSortable: true, noData: true };
 
         for (let row = 0; row < steps._rowCount; row++) {
             const modelNum = Cif.Column.value(PDB_model_number, row)!;
@@ -139,18 +142,40 @@ export class AssignedNtCs extends View<View.Props, State> {
 
     renderStepsTable() {
         return (
-            <DynamicTable
-                model={this.state.tableModel}
-                onCellClicked={(row, col, item) => {
-                    if (col === 'Step') {
-                        const selection = makeStepSelection(this.props.dnatcofication, item);
-                        if (selection)
-                            this.props.viewerInterop.api.command(ViewerApi.Commands.SelectStep(selection.current, selection.prev, selection.next));
-                    }
-                }}
-                highlightedTag={this.state.selectedStepName}
-                scrollTainerId='rdo-main-screen-data-container'
-            />
+            <div>
+                <div style={{ display: 'flex', flexDirection: 'row', gap: 'var(--v-gap)',  marginBottom: 'var(--v-gap)' }}>
+                    <IconTextButton
+                        caption='Csv'
+                        src='./imgs/data-transfer-download.svg'
+                        onClick={() => {
+                            const text = Serialization.dynamicTable(this.state.tableModel, 'csv');
+                            Net.serveFile('text/csv', text, `${this.props.dnatcofication.identifyingName}_assigned_ntcs.csv`);
+                        }}
+                    />
+                    <IconTextButton
+                        caption='Json'
+                        src='./imgs/data-transfer-download.svg'
+                        onClick={() => {
+                            const text = Serialization.dynamicTable(this.state.tableModel, 'json');
+                            Net.serveFile('application/json', text, `${this.props.dnatcofication.identifyingName}_assigned_ntcs.json`);
+                        }}
+                    />
+                    <div style={{ flex: 1 }}>{'\u00A0'}</div>
+                </div>
+
+                <DynamicTable
+                    model={this.state.tableModel}
+                    onCellClicked={(row, col, item) => {
+                        if (col === 'Step') {
+                            const selection = makeStepSelection(this.props.dnatcofication, item);
+                            if (selection)
+                                this.props.viewerInterop.api.command(ViewerApi.Commands.SelectStep(selection.current, selection.prev, selection.next));
+                        }
+                    }}
+                    highlightedTag={this.state.selectedStepName}
+                    scrollTainerId='rdo-main-screen-data-container'
+                />
+            </div>
         );
     }
 

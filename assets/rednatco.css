@@ -270,6 +270,21 @@ th.rdo-data-table {
     margin: 0.25em;
 }
 
+.rdo-icon-text-button {
+    border: var(--thickness-border) solid var(--color-b);
+    object-fit: contain;
+    transition: background-color var(--anim-speed);
+}
+.rdo-icon-text-button:hover {
+    background-color: var(--color-a);
+}
+
+.rdo-icon-text-button-disabled {
+    background-color: var(--color-b);
+    border: var(--thickness-border) solid var(--color-b);
+    object-fit: contain;
+}
+
 .rdo-line-spacer {
     height: 1em;
 }

@@ -88,6 +88,30 @@ export class IconButton extends React.Component<IconButton.Props> {
     }
 }
 
+export class IconTextButton extends React.Component<IconTextButton.Props> {
+    static defaultProps = {
+        enabled: true,
+    };
+
+    render() {
+        return (
+            <BasePushButton
+                {...this.props}
+                className={this.props.className ?? 'rdo-icon-text-button'}
+                classNameDisabled={this.props.classNameDisabled ?? 'rdo-icon-text-button-disabled'}
+            >
+                <div style={{ display: 'flex', height: '100%', justifyContent: 'center', width: '100%' }}>
+                    <img
+                        className={this.props.iconClassName ?? 'rdo-icon-button-image'}
+                        src={`${GlobalConfig.data().pathPrefix}${this.props.src}`}
+                    />
+                    <span style={{ flex: 1 }}>{this.props.caption}</span>
+                </div>
+            </BasePushButton>
+        );
+    }
+}
+
 export class PushButton extends BasePushButton<PushButton.Props> {
     static defaultProps = {
         enabled: true,
@@ -149,6 +173,14 @@ export namespace IconButton {
     export interface Props extends BasePushButton.Props {
         src: string;
         iconClassName?: string;
+    }
+}
+
+export namespace IconTextButton {
+    export interface Props extends BasePushButton.Props {
+        src: string;
+        iconClassName?: string;
+        caption: string;
     }
 }
 

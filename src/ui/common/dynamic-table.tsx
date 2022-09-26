@@ -155,7 +155,8 @@ export namespace DynamicTable {
         comparator?: (a: T, b: T) => number;
         cellStyle?: (v: T) => React.CSSProperties;
         contentFormatter?: (v: T) => string;
-        notSortable?: boolean;
+        notSortable?: boolean; // Do not allow to sort by this column
+        noData?: boolean;      // This is only a utility column with no actual data
     }
     export type Style = 'normal' | 'wide';
 
@@ -165,6 +166,10 @@ export namespace DynamicTable {
         sortOrder: SortOrder = 'asc';
 
         constructor(readonly columns: Column<any>[] = []) {
+        }
+
+        get columnNames() {
+            return this.columns.map(col => col.name);
         }
 
         get rows() {
