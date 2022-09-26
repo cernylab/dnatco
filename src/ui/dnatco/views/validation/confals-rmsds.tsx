@@ -65,7 +65,7 @@ export class ConfalsRmsds extends View<View.Props, State> {
         const ntcColumn: DynamicTable.Column<string> = { name: 'NtC', values: new Array<DynamicTable.CellValue<string>>(), alignment: 'center' };
         const canaColumn: DynamicTable.Column<string> = { name: 'CANA', values: new Array<DynamicTable.CellValue<string>>(), alignment: 'center' };
         const confalColumn: DynamicTable.Column<number> = { name: 'Confal', values: new Array<DynamicTable.CellValue<number>>(), alignment: 'center', cellStyle: confalToColor };
-        const rmsdColumn: DynamicTable.Column<number> = { name: 'RMSD', values: new Array<DynamicTable.CellValue<number>>(), alignment: 'center', cellStyle: rmsdToColor };
+        const rmsdColumn: DynamicTable.Column<number> = { name: 'RMSD', values: new Array<DynamicTable.CellValue<number>>(), alignment: 'center', cellStyle: rmsdToColor, contentFormatter: n => n.toFixed(3) };
         const torsionsColumn: DynamicTable.Column<string> = { name: '?', values: new Array<DynamicTable.CellValue<string>>(), alignment: 'center', notSortable: true, noData: true };
 
         for (let row = 0; row < steps._rowCount; row++) {
