@@ -6,7 +6,7 @@ export namespace ReDNATCOMspApi {
         export function Redraw(): Redraw { return { type: 'redraw' }; }
 
         export type DeselectStep = { type: 'deselect-step' }
-        export function DeselectStep() {
+        export function DeselectStep(): DeselectStep {
             return { type: 'deselect-step' };
         }
 

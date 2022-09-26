@@ -4,7 +4,7 @@ import { Common as C } from '../../common';
 import { ComboBox } from '../../../common/combo-box';
 import { NamedList } from '../../../common/named-list';
 import { Tooltip } from '../../../common/tooltip';
-import { makeStepSelection } from '../../util';
+import { listOfChains, makeStepSelection } from '../../util';
 import { ViewerApi } from '../../../../viewer/viewer-interop';
 import { Cif } from '../../../../cif';
 import {
@@ -294,15 +294,10 @@ export class StepTorsions extends View<View.Props, State> {
     }
 
     private naChainOptions() {
-        const opts = [{ caption: 'All', value: '' }];
-
-        if (this.state.model === '')
-            return opts;
-
-        for (const ch of Dnatcofication.Structure.nucleicAcidChains(this.props.dnatcofication, parseInt(this.state.model)))
-            opts.push({ caption: ch, value: ch });
-
-        return opts;
+        return [
+            { caption: 'All', value: '' },
+            ...listOfChains(this.state.model === '' ? undefined : parseInt(this.state.model), this.props.dnatcofication.data.structures[0]),
+        ];
     }
 
     private stepInfo(stepId: number) {

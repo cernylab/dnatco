@@ -3,7 +3,7 @@ import { View } from '../view';
 import { SingleStepInfo } from '../../single-step-info';
 import { ViewerApi } from '../../../../viewer/viewer-interop';
 import { Constants } from '../../constants';
-import { makeStepSelection, valueToSemaphore } from '../../util';
+import { listOfChains, makeStepSelection, valueToSemaphore } from '../../util';
 import { ComboBox } from '../../../common/combo-box';
 import { DynamicTable } from '../../../common/dynamic-table';
 import { NamedList } from '../../../common/named-list';
@@ -27,7 +27,8 @@ function rmsdToColor(rmsd: number): React.CSSProperties  {
 }
 
 interface State {
-    modelIndex: string;
+    chain: string;
+    model: string;
     selectedStepName?: string;
 }
 export class ConfalsRmsds extends View<View.Props, State> {
@@ -37,16 +38,17 @@ export class ConfalsRmsds extends View<View.Props, State> {
         super(props);
 
         this.state = {
-            modelIndex: '',
+            chain: '',
+            model: '',
         };
     }
 
-    private makeStepsTable(selectedModelNum: number|undefined) {
+    private makeStepsTable(selectedModelNum: number|undefined, selectedChain: string|undefined) {
         const steps = this.props.dnatcofication.table(NdbStructNtcStep);
         const summary = this.props.dnatcofication.table(NdbStructNtcStepSummary);
         const params = this.props.dnatcofication.table(NdbStructNtcStepParameters);
 
-        const { PDB_model_number, name } = steps;
+        const { PDB_model_number, label_asym_id_1, name } = steps;
         const { assigned_NtC, assigned_CANA, confal_score, cartesian_rmsd_closest_NtC_representative } = summary;
         const {
             tor_delta_1, tor_epsilon_1, tor_zeta_1,
@@ -65,6 +67,10 @@ export class ConfalsRmsds extends View<View.Props, State> {
         for (let row = 0; row < steps._rowCount; row++) {
             const modelNum = Cif.Column.value(PDB_model_number, row);
             if (selectedModelNum !== undefined && selectedModelNum !== modelNum)
+                continue;
+
+            const chain = Cif.Column.value(label_asym_id_1, row)!;
+            if (selectedChain !== undefined && selectedChain !== chain)
                 continue;
 
             const tag = Cif.Column.value(name, row)!;
@@ -118,8 +124,9 @@ export class ConfalsRmsds extends View<View.Props, State> {
     renderStepsTable() {
         if (this.stepsTable.length === 0) {
             // Make sure we have steps to draw
-            const modelNum = this.state.modelIndex === '' ? undefined : parseInt(this.state.modelIndex);
-            this.stepsTable = this.makeStepsTable(modelNum);
+            const modelNum = this.state.model === '' ? undefined : parseInt(this.state.model);
+            const chain = this.state.chain === '' ? undefined : this.state.chain;
+            this.stepsTable = this.makeStepsTable(modelNum, chain);
         }
 
         return (
@@ -159,11 +166,26 @@ export class ConfalsRmsds extends View<View.Props, State> {
     }
 
     componentDidUpdate(prevProps: View.Props, prevState: State) {
-        if (prevState.modelIndex !== this.state.modelIndex) {
-            const modelNum = this.state.modelIndex === '' ? undefined : parseInt(this.state.modelIndex);
-            this.stepsTable = this.makeStepsTable(modelNum);
+        const modelChanged = prevState.model !== this.state.model;
+        const chainChanged = prevState.chain !== this.state.chain;
+        if (modelChanged || chainChanged) {
+            const modelNum = this.state.model === '' ? undefined : parseInt(this.state.model);
+            const chain = this.state.chain === '' ? undefined : this.state.chain;
+            this.stepsTable = this.makeStepsTable(modelNum, chain);
 
-            this.forceUpdate(); // Redraw steps table
+            if (modelChanged) {
+                const n = parseInt(this.state.model);
+                if (!isNaN(n))
+                    this.props.viewerInterop.api.command(ViewerApi.Commands.SwitchModel(n));
+            } else {
+                if (this.state.chain !== '') {
+                    this.props.viewerInterop.api.command(ViewerApi.Commands.DeselectStep());
+                    // FIXME: We are not getting the "stepDeselected" event now.
+                    this.setState({ ...this.state, selectedStepName: undefined });
+                }
+            }
+
+            this.forceUpdate();
         }
     }
 
@@ -192,15 +214,31 @@ export class ConfalsRmsds extends View<View.Props, State> {
                                         return { value: s, caption: s };
                                     })
                                 ]}
-                                value={this.state.modelIndex}
+                                value={this.state.model}
                             onChange={v => {
                                     const n = parseInt(v);
                                     if (!isNaN(n))
                                         this.props.viewerInterop.api.command(ViewerApi.Commands.SwitchModel(n));
-                                    this.setState({ ...this.state, modelIndex: v });
+                                    this.setState({ ...this.state, model: v });
                                 }}
                             />
-                        }
+                        },
+                        {
+                            name: 'Chain',
+                            value:
+                                <ComboBox
+                                    options={[
+                                        { value: '', caption: 'All' },
+                                        ...listOfChains(this.state.model === '' ? undefined : parseInt(this.state.model), this.props.dnatcofication.data.structures[0]),
+                                    ]}
+                                    value={this.state.chain}
+                                    onChange={v => {
+                                        if (v === this.state.chain)
+                                            return;
+                                        this.setState({ ...this.state, chain: v });
+                                    }}
+                                />
+                        },
                     ]}
                 />
                 <div className='rdo-line-spacer' />

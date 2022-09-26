@@ -1,9 +1,32 @@
+import { ComboBox } from '../common/combo-box';
 import { Dnatcofication } from '../../dnatco/dnatcofication';
+import { Chain, Structure } from '../../dnatco/structure';
 import { StepsMapper } from '../../dnatco/steps-mapper';
 
 function componentToHex(c: number) {
-  var hex = c.toString(16);
-  return hex.length == 1 ? "0" + hex : hex;
+    const hex = c.toString(16);
+    return hex.length == 1 ? "0" + hex : hex;
+}
+
+export function listOfChains(modelNum: number|undefined, structure: Structure) {
+    let models;
+    if (modelNum === undefined)
+        models = structure.models;
+    else {
+        const m = structure.models.find(m => m.num === modelNum);
+        models = m ? [m] : [];
+    }
+
+    const seenChains = new Set<string>();
+    const options: ComboBox.Option[] = [];
+    for (const m of models) {
+        for (const chain of m.chains) {
+            if (Chain.isNAChain(chain) && !seenChains.has(chain.name))
+                options.push({ value: chain.name, caption: `Auth: ${chain.authName}, Cif: ${chain.name}` });
+        }
+    }
+
+    return options;
 }
 
 export function makeStepSelection(dnatcofication: Dnatcofication, stepName: string): { prev?: string, current: string, next?: string }|undefined {

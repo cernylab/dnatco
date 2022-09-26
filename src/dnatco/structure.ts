@@ -89,6 +89,11 @@ export class Chain {
         this.kind = guessChainKind(this.residues);
     }
 }
+export namespace Chain {
+    export function isNAChain(chain: Chain) {
+        return chain.kind === 'DNA' || chain.kind === 'RNA' || chain.kind === 'hybrid';
+    }
+}
 
 export class Model {
     readonly chains = new Array<Chain>();

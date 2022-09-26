@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { View } from '../view';
 import { SingleStepInfo } from '../../single-step-info';
-import { makeStepSelection } from '../../util';
+import { listOfChains, makeStepSelection } from '../../util';
 import { ViewerApi } from '../../../../viewer/viewer-interop';
 import { ComboBox } from '../../../common/combo-box';
 import { DynamicTable } from '../../../common/dynamic-table';
@@ -16,7 +16,8 @@ import { Dnatcofication } from '../../../../dnatco/dnatcofication';
 import { sequence } from '../../../../util';
 
 interface State {
-    modelIndex: string;
+    model: string;
+    chain: string;
     selectedStepName?: string;
 }
 export class AssignedNtCs extends View<View.Props, State> {
@@ -26,11 +27,12 @@ export class AssignedNtCs extends View<View.Props, State> {
         super(props);
 
         this.state = {
-            modelIndex: '',
+            model: '',
+            chain: '',
         };
     }
 
-    makeStepsTable(selectedModelNum: number|undefined) {
+    makeStepsTable(selectedModelNum: number|undefined, selectedChain: string|undefined) {
         const steps = this.props.dnatcofication.table(NdbStructNtcStep);
         const summary = this.props.dnatcofication.table(NdbStructNtcStepSummary);
         const params = this.props.dnatcofication.table(NdbStructNtcStepParameters);
@@ -55,10 +57,14 @@ export class AssignedNtCs extends View<View.Props, State> {
             if (selectedModelNum !== undefined && selectedModelNum !== modelNum)
                 continue;
 
+            const chain = Cif.Column.value(label_asym_id_1, row)!;
+            if (selectedChain !== undefined && selectedChain !== chain)
+                continue;
+
             const tag = Cif.Column.value(name, row)!;
             const NtC = Cif.Column.value(assigned_NtC, row)!;
 
-            chainColumn.values.push({ data: Cif.Column.value(label_asym_id_1, row)!, tag });
+            chainColumn.values.push({ data: chain, tag });
             stepColumn.values.push({ data: tag, tag });
             ntcColumn.values.push({
                 data: Cif.Column.value(assigned_NtC, row)!,
@@ -103,7 +109,7 @@ export class AssignedNtCs extends View<View.Props, State> {
     }
 
     renderNucleicAcidChains() {
-        if (this.state.modelIndex === '') {
+        if (this.state.model === '') {
             const list: JSX.Element[] = [];
             for (const index of sequence(1, Dnatcofication.Structure.numberOfModels(this.props.dnatcofication))) {
                 const chains = Dnatcofication.Structure.nucleicAcidChains(this.props.dnatcofication, index);
@@ -118,7 +124,7 @@ export class AssignedNtCs extends View<View.Props, State> {
 
             return list;
         } else {
-            const index = parseInt(this.state.modelIndex);
+            const index = parseInt(this.state.model);
             const chains = Dnatcofication.Structure.nucleicAcidChains(this.props.dnatcofication, index);
 
             return (
@@ -133,8 +139,9 @@ export class AssignedNtCs extends View<View.Props, State> {
     renderStepsTable() {
         if (this.stepsTable.length === 0) {
             // Make sure we have steps to draw
-            const modelNum = this.state.modelIndex === '' ? undefined : parseInt(this.state.modelIndex);
-            this.stepsTable = this.makeStepsTable(modelNum);
+            const modelNum = this.state.model === '' ? undefined : parseInt(this.state.model);
+            const chain = this.state.chain === '' ? undefined : this.state.chain;
+            this.stepsTable = this.makeStepsTable(modelNum, chain);
         }
 
         return (
@@ -174,11 +181,26 @@ export class AssignedNtCs extends View<View.Props, State> {
     }
 
     componentDidUpdate(prevProps: View.Props, prevState: State) {
-        if (prevState.modelIndex !== this.state.modelIndex) {
-            const modelNum = this.state.modelIndex === '' ? undefined : parseInt(this.state.modelIndex);
-            this.stepsTable = this.makeStepsTable(modelNum);
+        const modelChanged = prevState.model !== this.state.model;
+        const chainChanged = prevState.chain !== this.state.chain;
+        if (modelChanged || chainChanged) {
+            const modelNum = this.state.model === '' ? undefined : parseInt(this.state.model);
+            const chain = this.state.chain === '' ? undefined : this.state.chain;
+            this.stepsTable = this.makeStepsTable(modelNum, chain);
 
-            this.forceUpdate(); // Redraw steps table
+            if (modelChanged) {
+                const n = parseInt(this.state.model);
+                if (!isNaN(n))
+                    this.props.viewerInterop.api.command(ViewerApi.Commands.SwitchModel(n));
+            } else {
+                if (this.state.chain !== '') {
+                    this.props.viewerInterop.api.command(ViewerApi.Commands.DeselectStep());
+                    // FIXME: We are not getting the "stepDeselected" event now.
+                    this.setState({ ...this.state, selectedStepName: undefined });
+                }
+            }
+
+            this.forceUpdate();
         }
     }
 
@@ -208,15 +230,30 @@ export class AssignedNtCs extends View<View.Props, State> {
                                         return { value: s, caption: s };
                                     })
                                 ]}
-                                value={this.state.modelIndex}
+                                value={this.state.model}
                                 onChange={v => {
-                                    const n = parseInt(v);
-                                    if (!isNaN(n))
-                                        this.props.viewerInterop.api.command(ViewerApi.Commands.SwitchModel(n));
-                                    this.setState({ ...this.state, modelIndex: v });
+                                    if (v === this.state.model)
+                                        return;
+                                    this.setState({ ...this.state, model: v, chain: '' });
                                 }}
                             />
-                        }
+                        },
+                        {
+                            name: 'Chain',
+                            value:
+                                <ComboBox
+                                    options={[
+                                        { value: '', caption: 'All' },
+                                        ...listOfChains(this.state.model === '' ? undefined : parseInt(this.state.model), this.props.dnatcofication.data.structures[0]),
+                                    ]}
+                                    value={this.state.chain}
+                                    onChange={v => {
+                                        if (v === this.state.chain)
+                                            return;
+                                        this.setState({ ...this.state, chain: v });
+                                    }}
+                                />
+                        },
                     ]}
                 />
                 <div className='rdo-line-spacer' />
