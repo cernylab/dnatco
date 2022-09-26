@@ -15,16 +15,17 @@ const AvailableViews = {
     'assigned-ntcs': { caption: 'Assigned NtCs', visualizer: true },
     'structure-info': { caption: 'Structure Info', visualizer: false },
     'confals-rmsds':  { caption: 'Confals & RMSDs', visualizer: true },
-    'connectivity-similarity-plots': { caption: 'Connectivity & Similarity plots', visualizer: true },
+    'similarity-plot': { caption: 'Similarity plot', visualizer: true },
     'downloads': { caption: 'Downloads', visualizer: false },
     'step-torsions': { caption: 'Step torsions', visualizer: true },
     'refmac-restraints': { caption: 'REFMAC restraints', visualizer: false },
     'phenix-restraints': { caption: 'Phenix restraints', visualizer: false },
     'mmb-commands-file': { caption: 'MMB commands file', visualizer: false },
+    'connectivity-plot': { caption: 'Connectivity plot', visualizer: true },
 };
 const AnnotationViews: ViewType[] = ['assigned-ntcs', 'structure-info', 'downloads'];
-const ValidationViews: ViewType[] = ['confals-rmsds', 'step-torsions', 'connectivity-similarity-plots'];
-const RefinementViews: ViewType[] = ['refmac-restraints', 'phenix-restraints', 'mmb-commands-file'];
+const ValidationViews: ViewType[] = ['confals-rmsds', 'step-torsions', 'similarity-plot'];
+const RefinementViews: ViewType[] = ['connectivity-plot', 'refmac-restraints', 'phenix-restraints', 'mmb-commands-file'];
 
 function masterModeViews(mode: MasterMode): { id: ViewType, caption: string }[] {
     switch (mode) {
@@ -49,7 +50,7 @@ export class MainScreen extends WithSubscriptions<MainScreen.Props, State> {
         this.state = {
             annotationView: 'assigned-ntcs',
             validationView: 'confals-rmsds',
-            refinementView: 'refmac-restraints',
+            refinementView: 'connectivity-plot',
         }
     }
 
