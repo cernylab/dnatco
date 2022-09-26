@@ -33,13 +33,17 @@ export namespace Mmb {
     export function commands(d: Dnatcofication, includeSequences: boolean) {
         const model = d.data.structures.at(0)?.models[0];
         if (!model)
-            throw new Error('NO NO NO');
+            return [];
 
         const lines = new Array<string>();
 
         if (includeSequences) {
             for (const chain of model.chains) {
-                const seq = Sequence(chain.authName, chain.residues[0]?.authNum ?? 0, 'RNA'); // TODO: We need to know the type of NA... somehow
+                const kind = chain.kind;
+                if (!(kind === 'DNA' || kind === 'RNA'))
+                    continue;
+
+                const seq = Sequence(chain.authName, chain.residues[0]?.authNum ?? 0, kind);
 
                 for (const residue of chain.residues) {
                     const c = residue.compound;

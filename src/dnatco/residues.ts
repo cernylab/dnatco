@@ -2,7 +2,7 @@ export namespace Residues {
     export type ResdidueKind = 'purine' | 'pyrimidine' | 'non-standard';
 
     export function isElementaryResidue(name: string) {
-        return ElementaryResidues.has(name);
+        return ElementaryDNAResidues.has(name) || ElementaryRNAResidues.has(name);
     }
 
     export function isNucleicResidue(name: string) {
@@ -10,12 +10,16 @@ export namespace Residues {
         // TODO: Add non-standard residues
     }
 
-    export const ElementaryResidues = new Set<string>([
-        'A', 'DA',
-        'C', 'DC',
-        'G', 'DG',
-        'U', 'DT'
-    ]);
+    export function isDNAResidue(name: string) {
+        return ElementaryDNAResidues.has(name);
+    }
+
+    export function isRNAResidue(name: string) {
+        return ElementaryRNAResidues.has(name);
+    }
+
+    export const ElementaryDNAResidues = new Set<string>([ 'DA', 'DC', 'DG', 'DT' ]);
+    export const ElementaryRNAResidues = new Set<string>([ 'A', 'C', 'G', 'U' ]);
 
     export const StandardResidues = new Set<string>([
          '0A',
