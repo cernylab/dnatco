@@ -14,25 +14,26 @@ import {
 } from '../../../../cif/categories/ndb-struct-ntc';
 import { Dnatcofication } from '../../../../dnatco/dnatcofication';
 import { sequence } from '../../../../util';
+// import {PushButton} from 'src/ui/common/push-button';
 
 interface State {
     model: string;
     chain: string;
+    tableModel: DynamicTable.Model;
     selectedStepName?: string;
 }
 export class AssignedNtCs extends View<View.Props, State> {
-    private stepsTable: DynamicTable.Column<any>[] = [];
-
     constructor(props: View.Props) {
         super(props);
 
         this.state = {
             model: '',
             chain: '',
+            tableModel: this.makeTableModel(void 0, void 0),
         };
     }
 
-    makeStepsTable(selectedModelNum: number|undefined, selectedChain: string|undefined) {
+    makeTableModel(selectedModelNum: number|undefined, selectedChain: string|undefined) {
         const steps = this.props.dnatcofication.table(NdbStructNtcStep);
         const summary = this.props.dnatcofication.table(NdbStructNtcStepSummary);
         const params = this.props.dnatcofication.table(NdbStructNtcStepParameters);
@@ -98,7 +99,7 @@ export class AssignedNtCs extends View<View.Props, State> {
             });
         }
 
-        return [chainColumn, stepColumn, ntcColumn, canaColumn, torsionsColumn];
+        return new DynamicTable.Model([chainColumn, stepColumn, ntcColumn, canaColumn, torsionsColumn]);
     }
 
     renderAnalyzedSteps() {
@@ -137,16 +138,9 @@ export class AssignedNtCs extends View<View.Props, State> {
     }
 
     renderStepsTable() {
-        if (this.stepsTable.length === 0) {
-            // Make sure we have steps to draw
-            const modelNum = this.state.model === '' ? undefined : parseInt(this.state.model);
-            const chain = this.state.chain === '' ? undefined : this.state.chain;
-            this.stepsTable = this.makeStepsTable(modelNum, chain);
-        }
-
         return (
             <DynamicTable
-                columns={this.stepsTable}
+                model={this.state.tableModel}
                 onCellClicked={(row, col, item) => {
                     if (col === 'Step') {
                         const selection = makeStepSelection(this.props.dnatcofication, item);
@@ -171,7 +165,7 @@ export class AssignedNtCs extends View<View.Props, State> {
                 this.setState({ ...this.state, selectedStepName: sel.name});
             }
         );
-        this.subscribe(this.props.dnatcofication.events.structureChanged, () => this.stepsTable.length === 0);
+        this.subscribe(this.props.dnatcofication.events.structureChanged, () => this.setState({ ...this.state, model: '', chain: '', tableModel: this.makeTableModel(void 0, void 0) }))
 
         if (this.props.viewerInterop.ready()) {
             const step = this.props.viewerInterop.api.query('selected-step');
@@ -186,21 +180,19 @@ export class AssignedNtCs extends View<View.Props, State> {
         if (modelChanged || chainChanged) {
             const modelNum = this.state.model === '' ? undefined : parseInt(this.state.model);
             const chain = this.state.chain === '' ? undefined : this.state.chain;
-            this.stepsTable = this.makeStepsTable(modelNum, chain);
+            const tableModel = this.makeTableModel(modelNum, chain);
 
             if (modelChanged) {
                 const n = parseInt(this.state.model);
                 if (!isNaN(n))
                     this.props.viewerInterop.api.command(ViewerApi.Commands.SwitchModel(n));
             } else {
-                if (this.state.chain !== '') {
+                if (this.state.chain !== '')
                     this.props.viewerInterop.api.command(ViewerApi.Commands.DeselectStep());
-                    // FIXME: We are not getting the "stepDeselected" event now.
-                    this.setState({ ...this.state, selectedStepName: undefined });
-                }
             }
 
-            this.forceUpdate();
+            // NODE: Mind possible races between event handles and this setState()
+            this.setState({ ...this.state, selectedStepName: undefined, tableModel });
         }
     }
 

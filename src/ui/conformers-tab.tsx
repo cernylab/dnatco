@@ -77,8 +77,8 @@ class BrowseConformers extends React.Component<BrowseConformersProps> {
 
         return (
             <DynamicTable
+                model={new DynamicTable.Model([names, CANAs, NtCs, confals, rmsds, resolutions, haveMaps])}
                 onCellClicked={(row, column, value) => this.props.onStepSelected(value)}
-                columns={[names, CANAs, NtCs, confals, rmsds, resolutions, haveMaps]}
                 style='wide'
             />
         );

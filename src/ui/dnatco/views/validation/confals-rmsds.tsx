@@ -29,21 +29,21 @@ function rmsdToColor(rmsd: number): React.CSSProperties  {
 interface State {
     chain: string;
     model: string;
+    tableModel: DynamicTable.Model;
     selectedStepName?: string;
 }
 export class ConfalsRmsds extends View<View.Props, State> {
-    private stepsTable: DynamicTable.Column<any>[] = [];
-
     constructor(props: View.Props) {
         super(props);
 
         this.state = {
             chain: '',
             model: '',
+            tableModel: new DynamicTable.Model(),
         };
     }
 
-    private makeStepsTable(selectedModelNum: number|undefined, selectedChain: string|undefined) {
+    private makeTableModel(selectedModelNum: number|undefined, selectedChain: string|undefined) {
         const steps = this.props.dnatcofication.table(NdbStructNtcStep);
         const summary = this.props.dnatcofication.table(NdbStructNtcStepSummary);
         const params = this.props.dnatcofication.table(NdbStructNtcStepParameters);
@@ -111,7 +111,7 @@ export class ConfalsRmsds extends View<View.Props, State> {
             });
         }
 
-        return [stepColumn, ntcColumn, canaColumn, confalColumn, rmsdColumn, torsionsColumn];
+        return new DynamicTable.Model([stepColumn, ntcColumn, canaColumn, confalColumn, rmsdColumn, torsionsColumn]);
     }
 
     renderAnalyzedSteps() {
@@ -122,16 +122,9 @@ export class ConfalsRmsds extends View<View.Props, State> {
     }
 
     renderStepsTable() {
-        if (this.stepsTable.length === 0) {
-            // Make sure we have steps to draw
-            const modelNum = this.state.model === '' ? undefined : parseInt(this.state.model);
-            const chain = this.state.chain === '' ? undefined : this.state.chain;
-            this.stepsTable = this.makeStepsTable(modelNum, chain);
-        }
-
         return (
             <DynamicTable
-                columns={this.stepsTable}
+                model={this.state.tableModel}
                 onCellClicked={(row, col, item) => {
                     if (col === 'Step') {
                         const selection = makeStepSelection(this.props.dnatcofication, item);
@@ -156,7 +149,7 @@ export class ConfalsRmsds extends View<View.Props, State> {
                 this.setState({ ...this.state, selectedStepName: sel.name});
             }
         );
-        this.subscribe(this.props.dnatcofication.events.structureChanged, () => this.stepsTable.length === 0);
+        this.subscribe(this.props.dnatcofication.events.structureChanged, () => this.setState({ ...this.state, model: '', chain: '', tableModel: this.makeTableModel(void 0, void 0) }));
 
         if (this.props.viewerInterop.ready()) {
             const step = this.props.viewerInterop.api.query('selected-step');
@@ -171,7 +164,7 @@ export class ConfalsRmsds extends View<View.Props, State> {
         if (modelChanged || chainChanged) {
             const modelNum = this.state.model === '' ? undefined : parseInt(this.state.model);
             const chain = this.state.chain === '' ? undefined : this.state.chain;
-            this.stepsTable = this.makeStepsTable(modelNum, chain);
+            const tableModel = this.makeTableModel(modelNum, chain);
 
             if (modelChanged) {
                 const n = parseInt(this.state.model);
@@ -180,12 +173,11 @@ export class ConfalsRmsds extends View<View.Props, State> {
             } else {
                 if (this.state.chain !== '') {
                     this.props.viewerInterop.api.command(ViewerApi.Commands.DeselectStep());
-                    // FIXME: We are not getting the "stepDeselected" event now.
-                    this.setState({ ...this.state, selectedStepName: undefined });
                 }
             }
 
-            this.forceUpdate();
+            // NODE: Mind possible races between event handles and this setState()
+            this.setState({ ...this.state, selectedStepName: undefined, tableModel });
         }
     }
 
