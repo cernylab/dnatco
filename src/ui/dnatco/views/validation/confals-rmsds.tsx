@@ -113,7 +113,10 @@ export class ConfalsRmsds extends View<View.Props, State> {
                 data: '',
                 tag,
                 tooltip:
-                    <Tooltip tag='[?]'>
+                    <Tooltip
+                        tag='[?]'
+                        delayMsec={300}
+                    >
                         <SingleStepInfo
                             NtC={NtC}
                             delta1={Cif.Column.value(tor_delta_1, row)!}
