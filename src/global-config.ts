@@ -6,7 +6,7 @@ export type GlobalConfigData = {
 }
 const GlobalConfigData: GlobalConfigData = {
     isDevel: false,
-    pathPrefix: '',
+    pathPrefix: '.',
     localDbUrl: '',
     localDbGzipped: false,
 }
@@ -14,6 +14,10 @@ const GlobalConfigData: GlobalConfigData = {
 function checkAndSet<K extends keyof GlobalConfigData>(data: Record<string, any>, key: K) {
     if (data[key] !== undefined && (typeof data[key] === typeof GlobalConfigData[key]))
         GlobalConfigData[key] = data[key];
+
+    // Fixups
+    if (GlobalConfigData.pathPrefix === '')
+        GlobalConfigData.pathPrefix = '.';
 }
 
 export namespace GlobalConfig {

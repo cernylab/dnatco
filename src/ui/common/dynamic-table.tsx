@@ -108,8 +108,8 @@ export class DynamicTable extends React.Component<DynamicTable.Props> {
             const col = this.props.model.columns[idx];
 
             const imgSrc = sortedBy === idx
-                ? sortOrder === 'asc' ? `${prefix}imgs/sorted-ascending.svg` : `${prefix}imgs/sorted-descending.svg`
-                : `${prefix}imgs/sort.svg`;
+                ? sortOrder === 'asc' ? `${prefix}/imgs/sorted-ascending.svg` : `${prefix}/imgs/sorted-descending.svg`
+                : `${prefix}/imgs/sort.svg`;
 
             headers.push(
                 <th

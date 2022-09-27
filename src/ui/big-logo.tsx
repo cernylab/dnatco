@@ -23,7 +23,7 @@ export class BigLogo extends React.Component {
                 </div>
                 <span style={{ flex: 2, padding: '0.5em' }}>
                     <img
-                        src={`${GlobalConfig.data().pathPrefix}imgs/definition_new_trans2.png`}
+                        src={`${GlobalConfig.data().pathPrefix}/imgs/definition_new_trans2.png`}
                         style={{
                             height: '100%',
                             objectFit: 'contain',

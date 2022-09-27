@@ -34,7 +34,7 @@ export class ComboBox extends React.Component<ComboBox.Props> {
                     })}
                 </select>
                 <div className='rdo-combobox-arrow'>
-                    <img src={`${GlobalConfig.data().pathPrefix}imgs/down_arrow.svg`} />
+                    <img src={`${GlobalConfig.data().pathPrefix}/imgs/down_arrow.svg`} />
                 </div>
             </div>
         );

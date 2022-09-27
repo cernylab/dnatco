@@ -26,7 +26,7 @@ class TabButton extends React.Component<TabButtonProps> {
             >
                 <img
                     className='rdo-tab-button-icon'
-                    src={`${GlobalConfig.data().pathPrefix}${this.props.icon}`}
+                    src={`${GlobalConfig.data().pathPrefix}/${this.props.icon}`}
                 />
                 <div className={this.props.noCaps ? 'rdo-tab-button-text-no-caps' : 'rdo-tab-button-text'}>{this.props.caption}</div>
             </BasePushButton>

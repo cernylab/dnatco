@@ -69,11 +69,11 @@ export class SpinBox extends React.Component<SpinBox.Props> {
                 <div className='rdo-spinbox-buttons'>
                     <img
                         className='rdo-spinbox-button'
-                        src={`${pathPrefix}imgs/triangle-up.svg`} onClick={() => this.increase()}
+                        src={`${pathPrefix}/imgs/triangle-up.svg`} onClick={() => this.increase()}
                     />
                     <img
                         className='rdo-spinbox-button'
-                        src={`${pathPrefix}imgs/triangle-down.svg`} onClick={() => this.decrease()}
+                        src={`${pathPrefix}/imgs/triangle-down.svg`} onClick={() => this.decrease()}
                     />
                 </div>
             </div>
