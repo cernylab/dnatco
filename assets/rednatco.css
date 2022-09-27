@@ -660,15 +660,8 @@ tr.rdo-list-of-conformers-alternate-clr {
 }
 
 .rdo-view-visualizer-container {
-    display: grid;
     flex: 1;
     overflow: hidden;
-}
-.rdo-view-visualizer-container-with-visualizer {
-    grid-template-columns: 50% 50%;
-}
-.rdo-view-visualizer-container-without-visualizer {
-    grid-template-columns: 100% 0%;
 }
 
 .rdo-width-limiter {

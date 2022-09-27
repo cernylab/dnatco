@@ -2,6 +2,7 @@ import * as React from 'react';
 import { makeStepSelection } from './util';
 import { ViewsList } from './views-list';
 import { Register } from './views/register';
+import { DynamicSplitView } from '../common/dynamic-split-view';
 import { WithSubscriptions } from '../service/with-subscriptions';
 import { ViewerInterop, ViewerApi } from '../../viewer/viewer-interop';
 import { Dnatcofication } from '../../dnatco/dnatcofication';
@@ -135,16 +136,24 @@ export class MainScreen extends WithSubscriptions<MainScreen.Props, State> {
                            {this.props.dnatcofication.identifyingTitle}
                         </div>
                     </div>
-                    <div id='rdo-main-screen-data-container' className={`rdo-view-visualizer-container ${AvailableViews[this.selectedView()].visualizer ? 'rdo-view-visualizer-container-with-visualizer' : 'rdo-view-visualizer-container-without-visualizer'}`}>
-                        <div className='rdo-offset' style={{ overflow: 'hidden' }}>
-                            <div className='rdo-scroll-vertically'>
-                                {this.renderView()}
+                    <DynamicSplitView
+                        containerClass='rdo-view-visualizer-container'
+                        visible={AvailableViews[this.selectedView()].visualizer ? 'both' : 'first'}
+                        first={
+                            <div className='rdo-offset' style={{ overflow: 'hidden' }}>
+                                <div className='rdo-scroll-vertically'>
+                                    {this.renderView()}
+                                </div>
                             </div>
-                        </div>
-                        <div className='rdo-offset'>
-                            <div id='rdo-id-molstar-container' style={{ height: '100%', position: 'relative', visibility: AvailableViews[this.selectedView()].visualizer ? 'visible' : 'hidden' }} />
-                        </div>
-                    </div>
+                        }
+                        second={
+                            <div className='rdo-offset'>
+                                <div id='rdo-id-molstar-container' style={{ height: '100%', position: 'relative' }} />
+                            </div>
+                        }
+                        orientation='horizontal'
+                        onAdjustDone={() => this.props.viewerInterop.api.command(ViewerApi.Commands.Redraw())}
+                    />
                 </div>
             </div>
         );
