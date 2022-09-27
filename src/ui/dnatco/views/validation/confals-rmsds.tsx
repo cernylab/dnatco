@@ -18,6 +18,7 @@ import { Dnatcofication } from '../../../../dnatco/dnatcofication';
 import { sequence } from '../../../../util';
 import { Net } from '../../../../util/net';
 import { Serialization } from '../../../../util/serialization';
+import { GlobalConfig } from '../../../../global-config';
 import '../../../../../assets/imgs/data-transfer-download.svg';
 
 function confalToColor(rmsd: number): React.CSSProperties  {
@@ -147,12 +148,14 @@ export class ConfalsRmsds extends View<View.Props, State> {
     }
 
     renderStepsTable() {
+        const prefix = GlobalConfig.data().pathPrefix;
+
         return (
             <div>
                 <div style={{ display: 'flex', flexDirection: 'row', gap: 'var(--v-gap)',  marginBottom: 'var(--v-gap)' }}>
                     <IconTextButton
                         caption='CSV'
-                        src='./imgs/data-transfer-download.svg'
+                        src={`${prefix}/imgs/data-transfer-download.svg`}
                         onClick={() => {
                             const text = Serialization.dynamicTable(this.state.tableModel, 'csv');
                             Net.serveFile('text/csv', text, `${this.props.dnatcofication.identifyingName}_confals_rmsds.csv`);
@@ -160,7 +163,7 @@ export class ConfalsRmsds extends View<View.Props, State> {
                     />
                     <IconTextButton
                         caption='JSON'
-                        src='./imgs/data-transfer-download.svg'
+                        src={`${prefix}/imgs/data-transfer-download.svg`}
                         onClick={() => {
                             const text = Serialization.dynamicTable(this.state.tableModel, 'json');
                             Net.serveFile('application/json', text, `${this.props.dnatcofication.identifyingName}_confals_rmsds.json`);
