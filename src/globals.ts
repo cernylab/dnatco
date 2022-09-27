@@ -1,3 +1,3 @@
 export namespace Globals {
-    export const ProductName = 'ReDNACTO';
+    export const ProductName = 'ReDNATCO';
 }

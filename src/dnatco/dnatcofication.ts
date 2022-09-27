@@ -14,6 +14,7 @@ import {
 } from '../cif/categories/ndb-struct-ntc';
 import { Struct } from '../cif/categories/struct';
 import { EventsKeeper } from '../util/events-keeper';
+import { Globals } from '../globals';
 
 const RequiredDnatcoCategories: Category<any>[] = [
     NdbStructNtcOverall, NdbStructNtcStepParameters, NdbStructNtcStep,
@@ -117,7 +118,7 @@ export namespace Dnatcofication {
                 const maybeDnatcofiedCif = Dnatcofier.dnatcoify(cifContent, clsfResData, ctx);
                 cifData = Cif.read(maybeDnatcofiedCif);
                 if (!isDnatcofied(cifData))
-                    throw new Error('Input CIF file does not contain required DNATCO categories and ReDNATCO\'s automatic assignment process was unsuccessful. Sorry...');
+                    throw new Error('Input CIF file does not contain required DNATCO categories and ' + Globals.ProductName + '\'s automatic assignment process was unsuccessful. Sorry...');
             }
 
             const structures = new Array<_Structure>();

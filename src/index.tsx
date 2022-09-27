@@ -24,6 +24,7 @@ import { Search } from './search/search';
 import { BackgroundWorker, WorkerMessage } from './tasks/worker';
 import { ViewerApi, ViewerInterop } from './viewer/viewer-interop';
 import { Task } from './tasks/task';
+import { Globals } from './globals';
 // Image assets
 import '../assets/imgs/elixir.png';
 import '../assets/imgs/home.svg';
@@ -397,7 +398,7 @@ export class App extends WithSubscriptions<{}, State> {
                 Popup.create(
                     <div className='rdo-error-text'>
                         <div>{retval}</div>
-                        <div>ReDNATCO cannot function when its engine fails to initialize. Try to refresh the page...</div>
+                        <div>{Globals.ProductName} cannot function when its engine fails to initialize. Try to refresh the page...</div>
                      </div>
                 );
             }
@@ -406,7 +407,7 @@ export class App extends WithSubscriptions<{}, State> {
             Popup.create(
                 <div className='rdo-error-text'>
                     <div>{e.toString()}</div>
-                    <div>ReDNATCO cannot function when its engine fails to initialize. Try to refresh the page...</div>
+                    <div>{Globals.ProductName} cannot function when its engine fails to initialize. Try to refresh the page...</div>
                  </div>
             );
         });
