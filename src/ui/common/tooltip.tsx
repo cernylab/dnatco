@@ -10,6 +10,7 @@ export class Tooltip extends React.Component<Tooltip.Props> {
     private contentId;
     private inhibitDisplay = false;
     private ref: React.RefObject<HTMLSpanElement> = React.createRef();
+    private pendingDisplay: number|null = null;
 
     constructor(props: Tooltip.Props) {
         super(props);
@@ -18,6 +19,8 @@ export class Tooltip extends React.Component<Tooltip.Props> {
     }
 
     private display(pageX: number, pageY: number, fromTouchEvent: boolean) {
+        this.pendingDisplay = null;
+
         if (this.inhibitDisplay) {
             /* At least Firefox and Chrome differ in behavior here.
                Firefox triggers onMouseEnter event when the Tooltip is dismissed
@@ -92,6 +95,17 @@ export class Tooltip extends React.Component<Tooltip.Props> {
         }
     }
 
+    private scheduleDisplay(pageX: number, pageY: number, fromTouchEvent: boolean, delay: number) {
+        if (this.pendingDisplay)
+            window.clearTimeout(this.pendingDisplay);
+
+        this.pendingDisplay = null;
+        if (delay > 0)
+            this.pendingDisplay = this.pendingDisplay = window.setTimeout(() => this.display(pageX, pageY, fromTouchEvent), delay);
+        else
+            this.display(pageX, pageY, fromTouchEvent);
+    }
+
     private setInhibit(mouseX: number, mouseY: number) {
         const elem = this.ref.current!;
         const rect = elem.getBoundingClientRect();
@@ -117,8 +131,13 @@ export class Tooltip extends React.Component<Tooltip.Props> {
         return (
             <span className='rdo-tooltip'
                 ref={this.ref}
-                onMouseEnter={e => this.display(e.pageX, e.pageY, false)}
+                onMouseEnter={e => this.scheduleDisplay(e.pageX, e.pageY, false, this.props.delayMsec ?? 0)}
                 onMouseLeave={() => {
+                    if (this.pendingDisplay) {
+                        window.clearTimeout(this.pendingDisplay);
+                        this.pendingDisplay = null;
+                    }
+
                     // Cater for Firefox vs. Chrome difference in onMouseEnter behavior
                     this.inhibitDisplay = false;
                 }}
@@ -140,5 +159,6 @@ export namespace Tooltip {
     export interface Props {
         children?: React.ReactNode;
         tag?: JSX.Element|string;
+        delayMsec?: number;
     }
 }

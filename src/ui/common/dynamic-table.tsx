@@ -86,6 +86,7 @@ export class DynamicTable extends React.Component<DynamicTable.Props> {
             return (
                 <Tooltip
                     tag={col.name}
+                    delayMsec={300}
                 >
                     {col.tooltip}
                 </Tooltip>
