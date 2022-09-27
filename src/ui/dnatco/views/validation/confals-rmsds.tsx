@@ -130,7 +130,7 @@ export class ConfalsRmsds extends View<View.Props, State> {
             <div>
                 <div style={{ display: 'flex', flexDirection: 'row', gap: 'var(--v-gap)',  marginBottom: 'var(--v-gap)' }}>
                     <IconTextButton
-                        caption='Csv'
+                        caption='CSV'
                         src='./imgs/data-transfer-download.svg'
                         onClick={() => {
                             const text = Serialization.dynamicTable(this.state.tableModel, 'csv');
@@ -138,7 +138,7 @@ export class ConfalsRmsds extends View<View.Props, State> {
                         }}
                     />
                     <IconTextButton
-                        caption='Json'
+                        caption='JSON'
                         src='./imgs/data-transfer-download.svg'
                         onClick={() => {
                             const text = Serialization.dynamicTable(this.state.tableModel, 'json');

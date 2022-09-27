@@ -105,7 +105,7 @@ export class IconTextButton extends React.Component<IconTextButton.Props> {
                         className={this.props.iconClassName ?? 'rdo-icon-button-image'}
                         src={`${GlobalConfig.data().pathPrefix}${this.props.src}`}
                     />
-                    <span style={{ flex: 1 }}>{this.props.caption}</span>
+                    <span className='rdo-pushbutton-text' style={{ flex: 1 }}>{this.props.caption}</span>
                 </div>
             </BasePushButton>
         );
