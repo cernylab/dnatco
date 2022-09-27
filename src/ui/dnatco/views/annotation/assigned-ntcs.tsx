@@ -57,6 +57,7 @@ export class AssignedNtCs extends View<View.Props, State> {
         };
         const stepColumn: DynamicTable.Column<string> = {
             name: 'Step', values: new Array<DynamicTable.CellValue<string>>(), alignment: 'center',
+            notSortable: true,
             tooltip: <div>Step name...</div>,
         };
         const ntcColumn: DynamicTable.Column<string> = {

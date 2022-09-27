@@ -63,7 +63,7 @@ export class ConfalsRmsds extends View<View.Props, State> {
         } = params;
 
         const stepColumn: DynamicTable.Column<string> = {
-            name: 'Step', values: new Array<DynamicTable.CellValue<string>>(), alignment: 'center',
+            name: 'Step', values: new Array<DynamicTable.CellValue<string>>(), alignment: 'center', notSortable: true,
             tooltip: <div>Step name...</div>,
         };
         const ntcColumn: DynamicTable.Column<string> = {
