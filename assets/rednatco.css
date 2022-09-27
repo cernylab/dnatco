@@ -220,6 +220,10 @@ th.rdo-data-table {
     text-decoration: none;
 }
 
+.rdo-emphasize {
+    font-style: oblique;
+}
+
 .rdo-error-text {
     color: red;
 }

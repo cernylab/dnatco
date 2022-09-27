@@ -50,11 +50,26 @@ export class AssignedNtCs extends View<View.Props, State> {
             tor_NCCN, dist_CC, dist_NN
         } = params;
 
-        const chainColumn: DynamicTable.Column<string> = { name: 'Chain', values: new Array<DynamicTable.CellValue<string>>(), alignment: 'center' };
-        const stepColumn: DynamicTable.Column<string> = { name: 'Step', values: new Array<DynamicTable.CellValue<string>>(), alignment: 'center', };
-        const ntcColumn: DynamicTable.Column<string> = { name: 'NtC', values: new Array<DynamicTable.CellValue<string>>(), alignment: 'center' };
-        const canaColumn: DynamicTable.Column<string> = { name: 'CANA', values: new Array<DynamicTable.CellValue<string>>(), alignment: 'center' };
-        const torsionsColumn: DynamicTable.Column<string> = { name: '?', values: new Array<DynamicTable.CellValue<string>>(), alignment: 'center', notSortable: true, noData: true };
+        const chainColumn: DynamicTable.Column<string> = {
+            name: 'Chain', values: new Array<DynamicTable.CellValue<string>>(), alignment: 'center',
+            tooltip: <div>Chain...</div>,
+        };
+        const stepColumn: DynamicTable.Column<string> = {
+            name: 'Step', values: new Array<DynamicTable.CellValue<string>>(), alignment: 'center',
+            tooltip: <div>Step name...</div>,
+        };
+        const ntcColumn: DynamicTable.Column<string> = {
+            name: 'NtC', values: new Array<DynamicTable.CellValue<string>>(), alignment: 'center',
+            tooltip: <div>NtC...</div>,
+        };
+        const canaColumn: DynamicTable.Column<string> = {
+            name: 'CANA', values: new Array<DynamicTable.CellValue<string>>(), alignment: 'center',
+            tooltip: <div>CANA...</div>,
+        };
+        const torsionsColumn: DynamicTable.Column<string> = {
+            name: '?', values: new Array<DynamicTable.CellValue<string>>(), alignment: 'center', notSortable: true, noData: true,
+            tooltip: <div>Hover over the <span className='rdo-emphasize'>[?]</span> to get details about torsions and distances.</div>
+        };
 
         for (let row = 0; row < steps._rowCount; row++) {
             const modelNum = Cif.Column.value(PDB_model_number, row)!;

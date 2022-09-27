@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { Tooltip } from './tooltip';
 import { deselectText, scrollIntoViewIfNeeded } from '../util';
 import { GlobalConfig } from '../../global-config';
 import '../../../assets/imgs/sort.svg';
@@ -80,6 +81,20 @@ export class DynamicTable extends React.Component<DynamicTable.Props> {
         return rowElems;
     }
 
+    private renderColumnCaption(col: DynamicTable.Column<any>) {
+        if (col.tooltip) {
+            return (
+                <Tooltip
+                    tag={col.name}
+                >
+                    {col.tooltip}
+                </Tooltip>
+            );
+        } else {
+            return <>{col.name}</>;
+        }
+    }
+
     private renderHeader() {
         const prefix = GlobalConfig.data().pathPrefix;
         const headers = new Array<JSX.Element>();
@@ -104,7 +119,7 @@ export class DynamicTable extends React.Component<DynamicTable.Props> {
                         }
                     }}
                 >
-                    {col.name}
+                    {this.renderColumnCaption(col)}
                     {'\u00A0'}
                     {col.notSortable
                         ? undefined
@@ -155,8 +170,9 @@ export namespace DynamicTable {
         comparator?: (a: T, b: T) => number;
         cellStyle?: (v: T) => React.CSSProperties;
         contentFormatter?: (v: T) => string;
-        notSortable?: boolean; // Do not allow to sort by this column
-        noData?: boolean;      // This is only a utility column with no actual data
+        notSortable?: boolean;     // Do not allow to sort by this column
+        noData?: boolean;          // This is only a utility column with no actual data
+        tooltip?: React.ReactNode; // Optional tooltip to display when a column header is hovered
     }
     export type Style = 'normal' | 'wide';
 
