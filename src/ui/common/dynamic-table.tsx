@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { Tooltip } from './tooltip';
-import { deselectText, scrollIntoViewIfNeeded } from '../util';
+import { scrollIntoViewIfNeeded } from '../util';
 import { GlobalConfig } from '../../global-config';
 import '../../../assets/imgs/sort.svg';
 import '../../../assets/imgs/sorted-ascending.svg';
@@ -18,9 +18,12 @@ export class DynamicTable extends React.Component<DynamicTable.Props> {
     private changeSort(columnIdx: number) {
         const { sortedBy, sortOrder } = this.props.model.sortState();
 
-        if (sortedBy === columnIdx)
-            this.props.model.setSort(columnIdx, sortOrder === 'asc' ? 'desc' : 'asc');
-        else
+        if (sortedBy === columnIdx) {
+            if (sortOrder === 'asc')
+                this.props.model.setSort(columnIdx, 'desc');
+            else
+                this.props.model.resetSort();
+        } else
             this.props.model.setSort(columnIdx, 'asc');
 
          this.forceUpdate();
@@ -112,13 +115,6 @@ export class DynamicTable extends React.Component<DynamicTable.Props> {
                 <th
                     className='rdo-data-table'
                     key={idx}
-                    onDoubleClick={() => {
-                        deselectText();
-                        if (!col.notSortable) {
-                            this.props.model.resetSort();
-                            this.forceUpdate();
-                        }
-                    }}
                 >
                     {this.renderColumnCaption(col)}
                     {'\u00A0'}
