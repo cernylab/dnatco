@@ -13,7 +13,7 @@ import '../../assets/html/how-to-cite.html';
 import '../../assets/html/versions.html';
 // Images needed by Contacts content
 import '../../assets/imgs/ibt.png';
-import '../../assets/imgs/CAS_basic_logo_ENG_rgb.png';
+import '../../assets/imgs/CAS_centred_logo_ENG_rgb.png';
 
 const Tabs = {
     'how-to-cite': 'How to cite',

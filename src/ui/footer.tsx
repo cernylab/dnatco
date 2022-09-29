@@ -4,7 +4,7 @@ import { IconButton } from './common/push-button';
 import { Net } from '../util/net';
 import '../../assets/imgs/ibt.png';
 import '../../assets/imgs/elixir.png';
-import '../../assets/imgs/CAS_basic_logo_ENG_rgb.png';
+import '../../assets/imgs/CAS_centred_logo_ENG_rgb.png';
 
 export class Footer extends React.Component {
     render() {
@@ -13,7 +13,13 @@ export class Footer extends React.Component {
                 <div className='rdo-footer-gutter' />
                 <div className='rdo-footer'>
                     <div className='rdo-footer-content'>
-                        <div style={{ color: 'var(--color-c)' }}>Supported by</div>
+                        <div className='rdo-footer-text'>© 2022</div>
+                        <Email email='jiri.cerny@ibt.cas.cz'><span style={{ color: 'var(--color-c)' }}>Jiří Černý</span></Email>
+                        <Email email='bohdan.schneider@ibt.cas.cz'><span style={{ color: 'var(--color-c)' }}>Bohdan Schneider</span></Email>
+
+                        <div style={{ flex: 1 }} />
+
+                        <div style={{ color: 'var(--color-c)' }}>Supported by Institude of Biotechnology & Elixir CZ</div>
                         <IconButton
                             className='rdo-footer-icon-button'
                             iconClassName='rdo-footer-icon-button-image'
@@ -29,14 +35,9 @@ export class Footer extends React.Component {
                         <IconButton
                             className='rdo-footer-icon-button'
                             iconClassName='rdo-footer-icon-button-image'
-                            src='imgs/CAS_basic_logo_ENG_rgb.png'
+                            src='imgs/CAS_centred_logo_ENG_rgb.png'
                             onClick={() => Net.openLink('https://www.avcr.cz', true)}
                         />
-                        <div style={{ flex: 1 }} />
-                        <div className='rdo-footer-text'>© 2022</div>
-                        <Email email='jiri.cerny@ibt.cas.cz'><span style={{ color: 'var(--color-c)' }}>Jiří Černý</span></Email>
-                        <Email email='lada.biedermannova@ibt.cas.cz'><span style={{ color: 'var(--color-c)' }}>Lada Biedermannová</span></Email>
-                        <Email email='bohdan.schneider@ibt.cas.cz'><span style={{ color: 'var(--color-c)' }}>Bohdan Schneider</span></Email>
                     </div>
                 </div>
             </>

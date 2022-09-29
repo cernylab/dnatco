@@ -712,6 +712,10 @@ tr.rdo-list-of-conformers-alternate-clr {
     vertical-align: super;
 }
 
+a.rdo-txa-link {
+    color: black;
+}
+
 ul.rdo-txa-list {
     list-style-type: square;
 }
