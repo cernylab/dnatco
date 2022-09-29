@@ -2,8 +2,15 @@ import * as React from 'react';
 import { NamedList } from './common/named-list';
 import { ShadowedBox } from './common/shadowed-box';
 import { SideSwitchingPanel } from './common/side-switching-panel';
+import { TextContainer } from './common/text-container';
 import { Tooltip } from './common/tooltip';
+import { GlobalConfig } from '../global-config';
 import { WasmSupport } from 'jsLLKA';
+import '../../assets/text/contact.html';
+import '../../assets/text/downloads.html';
+import '../../assets/text/help.html';
+import '../../assets/text/how-to-cite.html';
+import '../../assets/text/versions.html';
 
 const Tabs = {
     'how-to-cite': 'How to cite',
@@ -21,25 +28,25 @@ const TabsOrder: TabId[] = [
 
 class Contact extends React.Component {
     render() {
-        return <div>...</div>
+        return <TextContainer assetUrl={`${GlobalConfig.data().pathPrefix}/html/contact.html`} />;
     }
 }
 
 class Downloads extends React.Component {
     render() {
-        return <div>...</div>
+        return <TextContainer assetUrl={`${GlobalConfig.data().pathPrefix}/html/downloads.html`} />;
     }
 }
 
 class Help extends React.Component {
     render() {
-        return <div>...</div>
+        return <TextContainer assetUrl={`${GlobalConfig.data().pathPrefix}/html/help.html`} />;
     }
 }
 
 class HowToCite extends React.Component {
     render() {
-        return <div>...</div>
+        return <TextContainer assetUrl={`${GlobalConfig.data().pathPrefix}/html/how-to-cite.html`} />;
     }
 }
 
@@ -96,7 +103,7 @@ class Technical extends React.Component {
 
 class VersionHistory extends React.Component {
     render() {
-        return <div>...</div>
+        return <TextContainer assetUrl={`${GlobalConfig.data().pathPrefix}/html/versions.html`} />;
     }
 }
 

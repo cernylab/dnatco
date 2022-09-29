@@ -1,0 +1,51 @@
+<div class="rdo-txa-page">
+    <div class="rdo-txa-section-caption">Method</div>
+
+    <p class="rdo-txa-paragraph">
+        The DNATCO server analyzes structures of nucleic acids - both DNA and RNA - using the NtC structural alphabet developed in our institute.
+        The NtC structural alphabet describes DNA/RNA backbone conformation using 96 “symbols”, where each symbol consists of four characters (e.g. BB00 or ZZ1S) and corresponds to a distinct dinucleotide conformer.
+        The dinucleotides conformers are assigned based on the values of 12 backbone torsion parameters (Figure 1).
+    </p>
+
+    <div class="rdo-txa-image-tainer">
+        <img
+            class="rdo-txa-image"
+            src="./imgs/definition_new_trans2.png"
+        />
+        <div>Figure 1.</div>
+    </div>
+
+    <div class="rdo-txa-section-caption">NtC conformers</div>
+    <p class="rdo-txa-paragraph">
+        Table listing all the conformers is here and can be downloaded.
+        Definition of the NtC conformers (torsion averages and esd values) can be downloaded.
+        Representative structures of the NtC conformers (cartesian coords) can be downloaded.
+    </p>
+
+    <div class="rdo-txa-section-caption">NtC naming</div>
+    <p class="rdo-txa-paragraph">
+        The conformers are identified using four-character symbols.
+        Symbols containing "A", "B", "Z" as the first and/or second character imply a dinucleotide with stacked bases and with first/second nucleotide in an A-, B-, or Z-like conformation. Symbols starting with "IC" correspond to steps with distant but parallel bases that can be InterCalated.
+        Symbols starting with "OP" correspond to steps with unstacked “OPen” bases.
+        Symbols containing "S" at 3rd or 4th position imply that the 1st or 2nd base, respectively, is in syn orientation.
+        Conformationally extreme conformers are not assigned to any of the above; these steps formally represent the 97th conformer denoted as NANT.
+    </p>
+
+    <div class="rdo-txa-section-caption">Validation metrics - confal, RMSD</div>
+    <ul class="rdo-txa-list">
+        <li>
+            confal: a quality score, with value of 100 corresponding to a perfect fit to the reference and 0 corresponding to conformational outliers. The confal function is a Gaussian function defined in such a way that it reaches a value of 100 at the average value of the parameter and a value of 1 at the border closer to the average. The confal value is set to 0 for more distant values. The confal score for a step is then calculated as a harmonic mean of its 12 confal values, and the confal score for a structure is calculated as an average of the step values.
+        </li>
+        <li>
+            RMSD: root mean square deviation in cartesian space between the analyzed step and reference.
+        </li>
+    </ul>
+
+    <div class="rdo-txa-section-caption">Analysis of uploaded structures</div>
+    <p class="rdo-txa-paragraph">
+        DNA/RNA steps are identified based on atom names as defined by the PDB format, version 3.1 or above (sugar atoms as O4' not O4*).
+        Steps with non-standard or missing atoms that define torsions δ1 to δ2, χ1, and χ2 are not considered in the assignment process. Conformers are assigned for modified residues that contain standard names for atoms defining the step torsions between δ and δ+1 and χ and χ+1.
+        See the list of accepted residues
+        Analysis of large structures (multiple NMR MODELs or MD simulation trajectory) or non-standard residues - please, contact the authors for off-line analysis.
+    </p>
+</div>

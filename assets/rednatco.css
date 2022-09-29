@@ -679,7 +679,10 @@ tr.rdo-list-of-conformers-alternate-clr {
  * It is safe to modify these styles without the risk of breaking
  * the layout of the rest of the application.
  *
+ * All styles intended for use with HTML text assets should be prefixed with "rdo-txa-"
+ *
  */
+
 .rdo-txa-page {
     margin-left: auto;
     margin-right: auto;
@@ -698,4 +701,17 @@ tr.rdo-list-of-conformers-alternate-clr {
     font-size: var(--font-large);
     margin-bottom: var(--v-gap);
     text-align: center;
+}
+
+.rdo-txa-subsection-caption {
+    margin-bottom: var(--v-gap);
+    font-style: oblique;
+}
+
+.rdo-txa-sup {
+    vertical-align: super;
+}
+
+ul.rdo-txa-list {
+    list-style-type: square;
 }
