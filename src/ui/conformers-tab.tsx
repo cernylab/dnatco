@@ -5,9 +5,12 @@ import { ShadowedBox } from './common/shadowed-box';
 import { NamedList } from './common/named-list';
 import { PushButton } from './common/push-button';
 import { SideSwitchingPanel } from './common/side-switching-panel';
+import { TextContainer } from './common/text-container';
 import { ListOfConformers } from '../dnatco/list-of-conformers';
 import { Search } from '../search/search';
 import { Net } from '../util/net';
+import { GlobalConfig } from '../global-config';
+import '../../assets/text/about-ntcs.html';
 
 const Tabs = {
     'about-ntcs': 'About NtCs',
@@ -45,7 +48,7 @@ function fmtFlt(f: number, n = 1) {
 
 class AboutNtCs extends React.Component {
     render() {
-        return <div>...</div>
+        return <TextContainer assetUrl={`${GlobalConfig.data().pathPrefix}/html/about-ntcs.html`} />;
     }
 }
 

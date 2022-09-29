@@ -34,10 +34,12 @@
         "webpack-cli": "^4.9.2"
     },
     "dependencies": {
+        "@types/dompurify": "^2.3.4",
         "@types/react": "^18.0.20",
         "@types/react-dom": "^18.0.6",
         "@types/react-plotly.js": "=2.5.0",
         "@types/uuid": "^8.3.4",
+        "dompurify": "^2.4.0",
         "react": "^18.2.0",
         "react-dom": "^18.2.0",
         "react-plotly.js": "=2.5.1",

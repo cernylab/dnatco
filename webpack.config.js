@@ -18,10 +18,20 @@ function sharedConfig(productionBuild) {
                     }],
                 },
                 {
-                    test: /\.(html|php)$/,
+                    test: /\.php$/,
                     use: [{
                         loader: 'file-loader',
                         options: { name: '[name].[ext]' },
+                    }],
+                },
+                {
+                    test: /\.html$/,
+                    use: [{
+                        loader: 'file-loader',
+                        options: {
+                            name: '[name].[ext]',
+                            outputPath: 'html/',
+                        }
                     }],
                 },
                 {
