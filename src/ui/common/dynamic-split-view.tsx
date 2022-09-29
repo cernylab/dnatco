@@ -38,9 +38,15 @@ export class DynamicSplitView extends React.Component<DynamicSplitView.Props, St
         return this.props.orientation === 'horizontal' ? this.adjustWidth : this.adjustHeight;
     }
 
+    private cursorStyle() {
+        return this.props.orientation === 'horizontal' ? 'ew-resize' : 'ns-resize';
+    }
+
     private finalizeAdjust() {
-        this.tainerRef.current!.removeEventListener('mousemove', this.adjustFunc());
         document.body.onselectstart = this.defaultSelectStart;
+        document.body.style.cursor = 'auto';
+
+        this.tainerRef.current!.removeEventListener('mousemove', this.adjustFunc());
         if (this.props.onAdjustDone)
             this.props.onAdjustDone();
     }
@@ -75,8 +81,8 @@ export class DynamicSplitView extends React.Component<DynamicSplitView.Props, St
         const sizeSecond = Steps - r;
 
         const splitterStyle = this.props.orientation === 'horizontal'
-            ? { width: '10px', height: '100%' }
-            : { height: '10px', width: '100%' };
+            ? { width: '10px', height: '100%', cursor: 'ew-resize' }
+            : { height: '10px', width: '100%', cursor: 'ns-resize' };
         const splitterBarStyle = this.props.orientation === 'horizontal'
             ? { width: '50%', height: '100%', backgroundColor: 'var(--color-b)', marginLeft: 'auto', marginRight: 'auto' }
             : { height: '100%', width: '50%', backgroundColor: 'var(--color-b)', marginLeft: 'auto', marginRight: 'auto' };
@@ -99,6 +105,7 @@ export class DynamicSplitView extends React.Component<DynamicSplitView.Props, St
                         const elem = this.tainerRef.current!;
                         elem.addEventListener('mousemove', this.adjustFunc());
 
+                        document.body.style.cursor = this.cursorStyle();
                         document.body.onselectstart = () => false;
                     }}
                     onMouseUp={() => this.finalizeAdjust()}
