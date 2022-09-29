@@ -53,20 +53,20 @@ export class AssignedNtCs extends View<View.Props, State> {
 
         const chainColumn: DynamicTable.Column<string> = {
             name: 'Chain', values: new Array<DynamicTable.CellValue<string>>(), alignment: 'center',
-            tooltip: <div>Chain...</div>,
+            tooltip: <div>PDB chain ID (author)</div>,
         };
         const stepColumn: DynamicTable.Column<string> = {
             name: 'Step', values: new Array<DynamicTable.CellValue<string>>(), alignment: 'center',
             notSortable: true,
-            tooltip: <div>Step name...</div>,
+            tooltip: <div>Dinucleotide step identifier</div>,
         };
         const ntcColumn: DynamicTable.Column<string> = {
             name: 'NtC', values: new Array<DynamicTable.CellValue<string>>(), alignment: 'center',
-            tooltip: <div>NtC...</div>,
+            tooltip: <div>Di<span className='rdo-emphasize'>N</span>ucleotide <span className='rdo-emphasize'>C</span>onformational class</div>,
         };
         const canaColumn: DynamicTable.Column<string> = {
             name: 'CANA', values: new Array<DynamicTable.CellValue<string>>(), alignment: 'center',
-            tooltip: <div>CANA...</div>,
+            tooltip: <div><span className='rdo-emphasize'>C</span>onformational <span className='rdo-emphasize'>A</span>lphabet of <span className='rdo-emphasize'>N</span>ucleic <span className='rdo-emphasize'>A</span>cids</div>,
         };
         const torsionsColumn: DynamicTable.Column<string> = {
             name: '?', values: new Array<DynamicTable.CellValue<string>>(), alignment: 'center', notSortable: true, noData: true,
