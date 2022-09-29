@@ -2,6 +2,9 @@ import * as React from 'react';
 import { Email } from './common/email';
 import { IconButton } from './common/push-button';
 import { Net } from '../util/net';
+import '../../assets/imgs/ibt.png';
+import '../../assets/imgs/elixir.png';
+import '../../assets/imgs/CAS_basic_logo_ENG_rgb.png';
 
 export class Footer extends React.Component {
     render() {
@@ -22,6 +25,12 @@ export class Footer extends React.Component {
                             iconClassName='rdo-footer-icon-button-image'
                             src='imgs/elixir.png'
                             onClick={() => Net.openLink('https://www.elixir-czech.cz/', true)}
+                        />
+                        <IconButton
+                            className='rdo-footer-icon-button'
+                            iconClassName='rdo-footer-icon-button-image'
+                            src='imgs/CAS_basic_logo_ENG_rgb.png'
+                            onClick={() => Net.openLink('https://www.avcr.cz', true)}
                         />
                         <div style={{ flex: 1 }} />
                         <div className='rdo-footer-text'>© 2022</div>

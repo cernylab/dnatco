@@ -6,11 +6,14 @@ import { TextContainer } from './common/text-container';
 import { Tooltip } from './common/tooltip';
 import { GlobalConfig } from '../global-config';
 import { WasmSupport } from 'jsLLKA';
-import '../../assets/text/contact.html';
-import '../../assets/text/downloads.html';
-import '../../assets/text/help.html';
-import '../../assets/text/how-to-cite.html';
-import '../../assets/text/versions.html';
+import '../../assets/html/contact.html';
+import '../../assets/html/downloads.html';
+import '../../assets/html/help.html';
+import '../../assets/html/how-to-cite.html';
+import '../../assets/html/versions.html';
+// Images needed by Contacts content
+import '../../assets/imgs/ibt.png';
+import '../../assets/imgs/CAS_basic_logo_ENG_rgb.png';
 
 const Tabs = {
     'how-to-cite': 'How to cite',
