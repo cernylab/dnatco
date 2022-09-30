@@ -2,7 +2,7 @@ import type { StandardLonghandProperties } from 'csstype';
 import React from 'react';
 import Plot from 'react-plotly.js';
 import { View } from '../view';
-import { makeStepSelection } from '../../util';
+import { listOfChains, makeStepSelection } from '../../util';
 import { ComboBox } from '../../../common/combo-box';
 import { NamedList, NamedListItem } from '../../../common/named-list';
 import { BasePushButton } from '../../../common/push-button';
@@ -26,7 +26,7 @@ type PlotData = typeof PlotData;
 
 interface State {
     chain: string;
-    model: string;
+    model: number;
     stepId: number;
     previousStepId: number;
     nextStepId: number;
@@ -38,38 +38,12 @@ export class ConnectivityPlot extends View<View.Props, State> {
 
         this.state = {
             chain: '',
-            model: '',
+            model: this.props.dnatcofication.data.structures[0].models[0].num,
             stepId: -1,
             previousStepId: -1,
             nextStepId: -1,
             plotData: PlotData,
         };
-    }
-
-    private fullDisplayUpdate(resetChain: boolean) {
-        const steps = this.stepsOptions();
-        const stepId = parseInt(steps[0]?.value) ?? -1;
-        const stepIdx = stepId !== -1 ? StepsMapper.idToIndex(this.props.dnatcofication, stepId) : -1;
-        const plotData = stepIdx !== -1 ? this.plotData(stepIdx) : PlotData;
-        const { previous, next } = StepsMapper.previousNextById(this.props.dnatcofication, stepId);
-
-        const update: Partial<State> = { stepId, plotData, previousStepId: previous, nextStepId: next };
-        if (resetChain)
-            update.chain = '';
-
-        this.setState({ ...this.state, ...update });
-    }
-
-    private naChainOptions() {
-        const opts = [{ caption: 'All', value: '' }];
-
-        if (this.state.model === '')
-            return opts;
-
-        for (const ch of Dnatcofication.Structure.nucleicAcidChains(this.props.dnatcofication, parseInt(this.state.model)))
-            opts.push({ caption: ch, value: ch });
-
-        return opts;
     }
 
     private plotData(stepIdx: number): PlotData {
@@ -119,7 +93,7 @@ export class ConnectivityPlot extends View<View.Props, State> {
     }
 
     private stepsOptions() {
-        const model = this.state.model !== '' ? parseInt(this.state.model) : void 0;
+        const model = this.state.model;
         const chain = this.state.chain !== '' ? this.state.chain : void 0;
 
         const opts: { caption: string, value: string }[] = [{ caption: '-', value: '' }];
@@ -170,20 +144,43 @@ export class ConnectivityPlot extends View<View.Props, State> {
     }
 
     componentDidUpdate(_prevProps: View.Props, prevState: State) {
-        if (this.state.model !== prevState.model)
-            this.fullDisplayUpdate(true);
-        else if (this.state.chain !== prevState.chain)
-            this.fullDisplayUpdate(false);
-        else if (this.state.stepId !== prevState.stepId && this.state.stepId !== -1) {
-            const stepIdx = StepsMapper.idToIndex(this.props.dnatcofication, this.state.stepId);
-            const { previous, next } = StepsMapper.previousNextById(this.props.dnatcofication, this.state.stepId);
-
+        if (this.state.model !== prevState.model) {
             this.setState({
                 ...this.state,
-                plotData: this.plotData(stepIdx),
-                previousStepId: previous,
-                nextStepId: next,
+                chain: '',
+                stepId: -1,
+                previousStepId: -1,
+                nextStepId: -1,
+                plotData: PlotData,
             });
+            this.props.viewerInterop.api.command(ViewerApi.Commands.DeselectStep());
+        } else if (this.state.chain !== prevState.chain) {
+            this.setState({
+                ...this.state,
+                stepId: -1,
+                previousStepId: -1,
+                nextStepId: -1,
+                plotData: PlotData,
+            });
+            this.props.viewerInterop.api.command(ViewerApi.Commands.DeselectStep());
+        } else if (this.state.stepId !== prevState.stepId) {
+            if (this.state.stepId === -1) {
+                this.setState({
+                    ...this.state,
+                    previousStepId: -1,
+                    nextStepId: -1,
+                });
+            } else {
+                const stepIdx = StepsMapper.idToIndex(this.props.dnatcofication, this.state.stepId);
+                const { previous, next } = StepsMapper.previousNextById(this.props.dnatcofication, this.state.stepId);
+
+                this.setState({
+                    ...this.state,
+                    plotData: this.plotData(stepIdx),
+                    previousStepId: previous,
+                    nextStepId: next,
+                });
+            }
         }
     }
 
@@ -197,7 +194,7 @@ export class ConnectivityPlot extends View<View.Props, State> {
                 <NamedList>
                     <NamedListItem name='Model'>
                         <ComboBox
-                            value={this.state.model}
+                            value={this.state.model.toString()}
                             options={[
                                 { caption: 'All', value: '' },
                                 ...sequence(1, Dnatcofication.Structure.numberOfModels(this.props.dnatcofication)).map(n => {
@@ -207,15 +204,22 @@ export class ConnectivityPlot extends View<View.Props, State> {
                             ]}
                             onChange={v => {
                                 this.props.viewerInterop.api.command(ViewerApi.Commands.SwitchModel(parseInt(v)));
-                                this.setState({ ...this.state, model: v });
+                                this.setState({ ...this.state, model: parseInt(v) });
                             }}
                         />
                     </NamedListItem>
                     <NamedListItem name='Chain'>
                         <ComboBox
                             value={this.state.chain}
-                            options={this.naChainOptions()}
-                            onChange={v => this.setState({ ...this.state, chain: v })}
+                            options={[
+                                { value: '', caption: 'All' },
+                                ...listOfChains(this.state.model, this.props.dnatcofication.data.structures[0]),
+                            ]}
+                            onChange={v => {
+                                if (v === this.state.chain)
+                                    return;
+                                this.setState({ ...this.state, chain: v })}
+                            }
                         />
                     </NamedListItem>
                     <NamedListItem name='Step'>

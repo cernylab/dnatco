@@ -191,7 +191,7 @@ export namespace StepsMapper {
         else {
             const steps = new Array<Step>();
 
-            if (chain === undefined) {
+            if (!chain) {
                 const fromIdx = d.data.steps.models[model - 1];
                 const first = d.data.steps.steps[fromIdx];
                 for (let idx = fromIdx; idx < d.data.steps.steps.length; idx++) {
