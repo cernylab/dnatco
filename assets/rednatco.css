@@ -233,15 +233,6 @@ th.rdo-data-table {
     height: 3em;
 }
 
-.rdo-footer-content {
-    display: flex;
-    gap: 1em;
-    align-items: center;
-    justify-content: center;
-    margin-left: 2em;
-    margin-right: 2em;
-}
-
 .rdo-footer-icon-button {
     height: 3em;
     transition: background-color var(--anim-speed);

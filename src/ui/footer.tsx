@@ -6,20 +6,40 @@ import '../../assets/imgs/ibt.png';
 import '../../assets/imgs/elixir.png';
 import '../../assets/imgs/CAS_centred_logo_ENG_rgb.png';
 
+const PadderStyle = { marginLeft: 'calc(var(--h-gap) / 2)', marginRight: 'calc(var(--h-gap) / 2)' };
+
 export class Footer extends React.Component {
     render() {
         return (
             <>
                 <div className='rdo-footer-gutter' />
                 <div className='rdo-footer'>
-                    <div className='rdo-footer-content'>
-                        <div className='rdo-footer-text'>© 2022</div>
-                        <Email email='jiri.cerny@ibt.cas.cz'><span style={{ color: 'var(--color-c)' }}>Jiří Černý</span></Email>
-                        <Email email='bohdan.schneider@ibt.cas.cz'><span style={{ color: 'var(--color-c)' }}>Bohdan Schneider</span></Email>
+                    <div
+                        style={{
+                            marginLeft: '2em',
+                            marginRight: '2em',
+                            display: 'grid',
+                            gridTemplateColumns: 'auto auto auto 1fr auto 5em 5em 5em',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                        }}
+                    >
+                        <div style={PadderStyle}>
+                            <div className='rdo-footer-text'>© 2022</div>
+                        </div>
+                        <div style={PadderStyle}>
+                            <Email email='jiri.cerny@ibt.cas.cz'><span style={{ color: 'var(--color-c)' }}>Jiří Černý</span></Email>
+                        </div>
+                        <div style={PadderStyle}>
+                            <Email email='bohdan.schneider@ibt.cas.cz'><span style={{ color: 'var(--color-c)' }}>Bohdan Schneider</span></Email>
+                        </div>
 
-                        <div style={{ flex: 1 }} />
+                        <div />
 
-                        <div style={{ color: 'var(--color-c)' }}>Supported by Institude of Biotechnology & Elixir CZ</div>
+                        <div style={PadderStyle}>
+                            <div style={{ color: 'var(--color-c)' }}>Supported by Institude of Biotechnology & Elixir CZ</div>
+                        </div>
+
                         <IconButton
                             className='rdo-footer-icon-button'
                             iconClassName='rdo-footer-icon-button-image'
