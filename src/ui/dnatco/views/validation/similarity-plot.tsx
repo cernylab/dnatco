@@ -5,7 +5,7 @@ import { View } from '../view';
 import { makeStepSelection } from '../../util';
 import { ViewerApi } from '../../../../viewer/viewer-interop';
 import { ComboBox } from '../../../common/combo-box';
-import { NamedList } from '../../../common/named-list';
+import { NamedList, NamedListItem } from '../../../common/named-list';
 import { BasePushButton } from '../../../common/push-button';
 import { Dnatcofication } from '../../../../dnatco/dnatcofication';
 import { StepsMapper } from '../../../../dnatco/steps-mapper';
@@ -182,52 +182,44 @@ export class SimilarityPlots extends View<View.Props, State> {
     render() {
         return (
             <div>
-                <NamedList
-                    items={[
-                        {
-                            name: 'Model',
-                            value:
-                                <ComboBox
-                                    value={this.state.model}
-                                    options={[
-                                        { caption: 'All', value: '' },
-                                        ...sequence(1, Dnatcofication.Structure.numberOfModels(this.props.dnatcofication)).map(n => {
-                                            const s = n.toString();
-                                            return { caption: s, value: s };
-                                        })
-                                    ]}
-                                    onChange={v => {
-                                        this.props.viewerInterop.api.command(ViewerApi.Commands.SwitchModel(parseInt(v)));
-                                        this.setState({ ...this.state, model: v });
-                                    }}
-                                />
-                        },
-                        {
-                            name: 'Chain',
-                            value:
-                                <ComboBox
-                                    value={this.state.chain}
-                                    options={this.naChainOptions()}
-                                    onChange={v => this.setState({ ...this.state, chain: v })}
-                                />
-                        },
-                        {
-                            name: 'Step',
-                            value:
-                                <ComboBox
-                                    value={this.state.stepId === -1 ? '' : this.state.stepId.toString()}
-                                    options={this.stepsOptions()}
-                                    onChange={v => {
-                                        if (v === '') return;
-                                        const stepId = parseInt(v);
-                                        const step = StepsMapper.byId(this.props.dnatcofication, stepId);
-                                        this.switchStep(step.name);
-                                        this.setState({ ...this.state, stepId });
-                                    }}
-                                />
-                        },
-                    ]}
-                />
+                <NamedList>
+                    <NamedListItem name='Model'>
+                        <ComboBox
+                            value={this.state.model}
+                            options={[
+                                { caption: 'All', value: '' },
+                                ...sequence(1, Dnatcofication.Structure.numberOfModels(this.props.dnatcofication)).map(n => {
+                                    const s = n.toString();
+                                    return { caption: s, value: s };
+                                })
+                            ]}
+                            onChange={v => {
+                                this.props.viewerInterop.api.command(ViewerApi.Commands.SwitchModel(parseInt(v)));
+                                this.setState({ ...this.state, model: v });
+                            }}
+                        />
+                    </NamedListItem>
+                    <NamedListItem name='Chain'>
+                        <ComboBox
+                            value={this.state.chain}
+                            options={this.naChainOptions()}
+                            onChange={v => this.setState({ ...this.state, chain: v })}
+                        />
+                    </NamedListItem>
+                    <NamedListItem name='Step'>
+                        <ComboBox
+                            value={this.state.stepId === -1 ? '' : this.state.stepId.toString()}
+                            options={this.stepsOptions()}
+                            onChange={v => {
+                                if (v === '') return;
+                                const stepId = parseInt(v);
+                                const step = StepsMapper.byId(this.props.dnatcofication, stepId);
+                                this.switchStep(step.name);
+                                this.setState({ ...this.state, stepId });
+                            }}
+                        />
+                     </NamedListItem>
+                </NamedList>
                 <div className='rdo-offset'>
                     <div className='rdo-plot-container'>
                         <Plot

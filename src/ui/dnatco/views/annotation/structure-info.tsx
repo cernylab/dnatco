@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { View } from '../view';
 import { CollapsibleVertical } from '../../../common/collapsible-vertical';
-import { NamedList } from '../../../common/named-list';
+import { NamedList, NamedListItem } from '../../../common/named-list';
 import { Cif } from '../../../../cif';
 import { Citation } from '../../../../cif/categories/citation';
 import { Category, Schema } from '../../../../cif/categories';
@@ -72,39 +72,33 @@ export class StructureInfo extends View {
 
         return (
             <div>
-                <NamedList
-                    items={[
-                        { name: 'Structure ID', value: getIfAvail(this.props.dnatcofication, Struct, 'entry_id') ?? NA },
-                        { name: 'Structure title', value: getIfAvail(this.props.dnatcofication, Struct, 'title') ?? NA },
-                        { name: 'Deposited to PDB', value: formatDate(getIfAvail(this.props.dnatcofication, PdbxDatabaseStatus, 'recvd_initial_deposition_date')) },
-                    ]}
-                />
+                <NamedList>
+                    <NamedListItem name='Structure ID'>{getIfAvail(this.props.dnatcofication, Struct, 'entry_id') ?? NA }</NamedListItem>
+                    <NamedListItem name='Structure title'>{getIfAvail(this.props.dnatcofication, Struct, 'title') ?? NA }</NamedListItem>
+                    <NamedListItem name='Deposited to PDB'>{formatDate(getIfAvail(this.props.dnatcofication, PdbxDatabaseStatus, 'recvd_initial_deposition_date'))}</NamedListItem>
+                </NamedList>
                 <div className='rdo-line-spacer' />
                 <CollapsibleVertical
                     caption='Literature'
                 >
                     <div className='rdo-offset'>
-                        <NamedList
-                            items={[
-                                { name: 'Publication title', value: priPub?.title ?? NA },
-                                { name: 'Authors', value: listAuthors(this.props.dnatcofication) },
-                                { name: 'PubMed', value: pubmedHref },
-                                { name: 'DOI', value: doiHref },
-                            ]}
-                        />
+                        <NamedList>
+                            <NamedListItem name='Publication title'>{priPub?.title ?? NA }</NamedListItem>
+                            <NamedListItem name='Authors'>{listAuthors(this.props.dnatcofication)}</NamedListItem>
+                            <NamedListItem name='PubMed'>{pubmedHref}</NamedListItem>
+                            <NamedListItem name='DOI'>{doiHref}</NamedListItem>
+                        </NamedList>
                     </div>
                 </CollapsibleVertical>
                 <CollapsibleVertical
                     caption='Experimental'
                 >
                     <div className='rdo-offset'>
-                        <NamedList
-                            items={[
-                                { name: 'Method', value: getIfAvail(this.props.dnatcofication, Exptl, 'method') ?? NA },
-                                { name: 'Resolution', value: `Low: ${getIfAvail(this.props.dnatcofication, Refine, 'ls_d_res_low')?.toFixed(3) ?? NA}, High: ${getIfAvail(this.props.dnatcofication, Refine, 'ls_d_res_high')?.toFixed(3) ?? NA}` },
-                                { name: 'R-free', value: getIfAvail(this.props.dnatcofication, Refine, 'ls_R_factor_R_free')?.toFixed(3) ?? NA },
-                            ]}
-                        />
+                        <NamedList>
+                            <NamedListItem name='Method'>{getIfAvail(this.props.dnatcofication, Exptl, 'method') ?? NA }</NamedListItem>
+                            <NamedListItem name='Resolution'>{`Low: ${getIfAvail(this.props.dnatcofication, Refine, 'ls_d_res_low')?.toFixed(3) ?? NA}, High: ${getIfAvail(this.props.dnatcofication, Refine, 'ls_d_res_high')?.toFixed(3) ?? NA}`}</NamedListItem>
+                            <NamedListItem name='R-free'>{getIfAvail(this.props.dnatcofication, Refine, 'ls_R_factor_R_free')?.toFixed(3) ?? NA }</NamedListItem>
+                        </NamedList>
                     </div>
                 </CollapsibleVertical>
             </div>

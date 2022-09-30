@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { NamedList } from '../common/named-list';
+import { NamedList, NamedListItem } from '../common/named-list';
 import { NtC } from '../../dnatco/ntc';
 import { ListOfConformers } from '../../dnatco/list-of-conformers';
 import { capitalize, objKeys } from '../../util';
@@ -41,23 +41,21 @@ export class SingleStepInfo extends React.Component <SingleStepInfo.Props> {
         const desc = ListOfConformers.stepByName(this.props.NtC)?.description ?? this.props.NtC;
         return (
             <div>
-                <NamedList
-                    items={[
-                        { name: 'Conformer', value: capitalize(desc) },
-                        { name: 'δ1', value: padFlt(this.props.delta1, this.numbersPadding) },
-                        { name: 'ε1', value: padFlt(this.props.epsilon1, this.numbersPadding) },
-                        { name: 'ζ1', value: padFlt(this.props.zeta1, this.numbersPadding) },
-                        { name: 'α2', value: padFlt(this.props.alpha2, this.numbersPadding) },
-                        { name: 'β2', value: padFlt(this.props.beta2, this.numbersPadding) },
-                        { name: 'γ2', value: padFlt(this.props.gamma2, this.numbersPadding) },
-                        { name: 'δ2', value: padFlt(this.props.delta2, this.numbersPadding) },
-                        { name: 'χ1', value: padFlt(this.props.chi1, this.numbersPadding) },
-                        { name: 'χ2', value: padFlt(this.props.chi2, this.numbersPadding) },
-                        { name: 'μ', value: padFlt(this.props.mu, this.numbersPadding) },
-                        { name: 'NN', value: padFlt(this.props.NN, this.numbersPadding) },
-                        { name: "C'C'", value: padFlt(this.props.CC, this.numbersPadding) },
-                    ]}
-                />
+                <NamedList>
+                    <NamedListItem name='Conformer'>{capitalize(desc)}</NamedListItem>
+                    <NamedListItem name='δ1'>{padFlt(this.props.delta1, this.numbersPadding)}</NamedListItem>
+                    <NamedListItem name='ε1'>{padFlt(this.props.epsilon1, this.numbersPadding)}</NamedListItem>
+                    <NamedListItem name='ζ1'>{padFlt(this.props.zeta1, this.numbersPadding)}</NamedListItem>
+                    <NamedListItem name='α2'>{padFlt(this.props.alpha2, this.numbersPadding)}</NamedListItem>
+                    <NamedListItem name='β2'>{padFlt(this.props.beta2, this.numbersPadding)}</NamedListItem>
+                    <NamedListItem name='γ2'>{padFlt(this.props.gamma2, this.numbersPadding)}</NamedListItem>
+                    <NamedListItem name='δ2'>{padFlt(this.props.delta2, this.numbersPadding)}</NamedListItem>
+                    <NamedListItem name='χ1'>{padFlt(this.props.chi1, this.numbersPadding)}</NamedListItem>
+                    <NamedListItem name='χ2'>{padFlt(this.props.chi2, this.numbersPadding)}</NamedListItem>
+                    <NamedListItem name='μ'>{padFlt(this.props.mu, this.numbersPadding)}</NamedListItem>
+                    <NamedListItem name='NN'>{padFlt(this.props.NN, this.numbersPadding)}</NamedListItem>
+                    <NamedListItem name='C'>{padFlt(this.props.CC, this.numbersPadding)}</NamedListItem>
+                </NamedList>
             </div>
         );
     }

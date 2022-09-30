@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { View } from '../view';
-import { NamedList } from '../../../common/named-list';
+import { NamedList, NamedListItem } from '../../../common/named-list';
 import { PushButton } from '../../../common/push-button';
 import { Cif } from '../../../../cif';
 import { Struct } from '../../../../cif/categories/struct';
@@ -23,21 +23,16 @@ export class Downloads extends View {
     render() {
         return (
             <div>
-                <NamedList
-                    items={[
-                        {
-                            name: 'mmCIF file',
-                            value:
-                                <div style={{ width: '10em' }}>
-                                    <PushButton
-                                        caption='Download'
-                                        onClick={() => this.serveMmCif()}
-                                    />
-                                </div>
-                        }
-                    ]}
-                    vcentered={true}
-                />
+                <NamedList>
+                    <NamedListItem name='mmCIF file'>
+                        <div style={{ width: '10em' }}>
+                            <PushButton
+                                caption='Download'
+                                onClick={() => this.serveMmCif()}
+                            />
+                        </div>
+                    </NamedListItem>
+                </NamedList>
             </div>
         );
     }

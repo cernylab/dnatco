@@ -5,7 +5,7 @@ import { listOfChains, makeStepSelection } from '../../util';
 import { ViewerApi } from '../../../../viewer/viewer-interop';
 import { ComboBox } from '../../../common/combo-box';
 import { DynamicTable } from '../../../common/dynamic-table';
-import { NamedList } from '../../../common/named-list';
+import { NamedList, NamedListItem } from '../../../common/named-list';
 import { IconTextButton } from '../../../common/push-button';
 import { Tooltip } from '../../../common/tooltip';
 import { Cif } from '../../../../cif';
@@ -250,51 +250,48 @@ export class AssignedNtCs extends View<View.Props, State> {
     render() {
         return (
             <div>
-                <NamedList
-                    items={[
-                        { name: 'Models', value: Dnatcofication.Structure.numberOfModels(this.props.dnatcofication).toString() },
-                        { name: 'NA chains', value: this.renderNucleicAcidChains() },
-                        {
-                            name: 'Analyzed steps',
-                            value: this.renderAnalyzedSteps(),
-                        },
-                        {
-                            name: 'Model',
-                            value:
-                                <ComboBox
-                                    options={[
-                                        { value: '', caption: 'All' },
-                                        ...sequence(1, Dnatcofication.Structure.numberOfModels(this.props.dnatcofication)).map(v => {
-                                        const s = v.toString();
-                                        return { value: s, caption: s };
-                                    })
-                                ]}
-                                value={this.state.model}
-                                onChange={v => {
-                                    if (v === this.state.model)
-                                        return;
-                                    this.setState({ ...this.state, model: v, chain: '' });
-                                }}
-                            />
-                        },
-                        {
-                            name: 'Chain',
-                            value:
-                                <ComboBox
-                                    options={[
-                                        { value: '', caption: 'All' },
-                                        ...listOfChains(this.state.model === '' ? undefined : parseInt(this.state.model), this.props.dnatcofication.data.structures[0]),
-                                    ]}
-                                    value={this.state.chain}
-                                    onChange={v => {
-                                        if (v === this.state.chain)
-                                            return;
-                                        this.setState({ ...this.state, chain: v });
-                                    }}
-                                />
-                        },
-                    ]}
-                />
+                <NamedList>
+                    <NamedListItem name='Models'>
+                        {Dnatcofication.Structure.numberOfModels(this.props.dnatcofication)}
+                    </NamedListItem>
+                    <NamedListItem name='NA chains'>
+                        {this.renderNucleicAcidChains()}
+                    </NamedListItem>
+                    <NamedListItem name='Analyzed steps'>
+                        {this.renderAnalyzedSteps()}
+                    </NamedListItem>
+                    <NamedListItem name='Model'>
+                        <ComboBox
+                            options={[
+                                { value: '', caption: 'All' },
+                                ...sequence(1, Dnatcofication.Structure.numberOfModels(this.props.dnatcofication)).map(v => {
+                                    const s = v.toString();
+                                    return { value: s, caption: s };
+                                })
+                            ]}
+                            value={this.state.model}
+                            onChange={v => {
+                                if (v === this.state.model)
+                                    return;
+                                this.setState({ ...this.state, model: v, chain: '' });
+                            }}
+                        />
+                    </NamedListItem>
+                    <NamedListItem name='Chain'>
+                        <ComboBox
+                            options={[
+                                { value: '', caption: 'All' },
+                                ...listOfChains(this.state.model === '' ? undefined : parseInt(this.state.model), this.props.dnatcofication.data.structures[0]),
+                            ]}
+                            value={this.state.chain}
+                            onChange={v => {
+                                if (v === this.state.chain)
+                                    return;
+                                this.setState({ ...this.state, chain: v });
+                            }}
+                        />
+                    </NamedListItem>
+                </NamedList>
                 <div className='rdo-line-spacer' />
                 {this.renderStepsTable()}
             </div>

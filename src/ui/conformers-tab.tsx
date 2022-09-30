@@ -2,7 +2,7 @@ import * as React from 'react';
 import { SearchConformers } from './search-conformers';
 import { DynamicTable } from './common/dynamic-table';
 import { ShadowedBox } from './common/shadowed-box';
-import { NamedList } from './common/named-list';
+import { NamedList, NamedListItem } from './common/named-list';
 import { PushButton } from './common/push-button';
 import { SideSwitchingPanel } from './common/side-switching-panel';
 import { TextContainer } from './common/text-container';
@@ -255,25 +255,20 @@ class TableOfConformers extends React.Component {
                     </div>
                     {ListOfConformers.has()
                         ?
-                        <NamedList
-                            items={[
-                                {
-                                    name: 'Download list',
-                                    value:
-                                        <div style={{ display: 'grid', gridTemplateColumns: '6em 6em', columnGap: 'var(--h-gap)' }}>
-                                            <PushButton
-                                                caption='CSV'
-                                                onClick={() => Net.serveFile('text/plain', ListOfConformers.raw, 'conformers.csv')}
-                                            />
-                                            <PushButton
-                                                caption='JSON'
-                                                onClick={() => Net.serveFile('application/json', JSON.stringify(ListOfConformers.list), 'conformers.json')}
-                                            />
-                                        </div>
-                                }
-                            ]}
-                            vcentered={true}
-                        />
+                        <NamedList verticalPosition='center'>
+                            <NamedListItem name='Download list'>
+                                <div style={{ display: 'grid', gridTemplateColumns: '6em 6em', columnGap: 'var(--h-gap)' }}>
+                                    <PushButton
+                                        caption='CSV'
+                                        onClick={() => Net.serveFile('text/plain', ListOfConformers.raw, 'conformers.csv')}
+                                    />
+                                    <PushButton
+                                        caption='JSON'
+                                        onClick={() => Net.serveFile('application/json', JSON.stringify(ListOfConformers.list), 'conformers.json')}
+                                    />
+                                </div>
+                            </NamedListItem>
+                        </NamedList>
                         :
                         <div />
                     }

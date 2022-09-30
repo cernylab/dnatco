@@ -2,7 +2,7 @@ import React from 'react';
 import { View } from '../view';
 import { Common as C } from '../../common';
 import { ComboBox } from '../../../common/combo-box';
-import { NamedList } from '../../../common/named-list';
+import { NamedList, NamedListItem } from '../../../common/named-list';
 import { Tooltip } from '../../../common/tooltip';
 import { listOfChains, makeStepSelection } from '../../util';
 import { ViewerApi } from '../../../../viewer/viewer-interop';
@@ -429,60 +429,52 @@ export class StepTorsions extends View<View.Props, State> {
 
         return (
             <div>
-                <NamedList
-                    items={[
-                        {
-                            name: 'Model',
-                            value:
-                                <ComboBox
-                                    value={this.state.model}
-                                    options={[
-                                        { caption: 'All', value: '' },
-                                        ...sequence(1, Dnatcofication.Structure.numberOfModels(this.props.dnatcofication)).map(n => {
-                                            const s = n.toString();
-                                            return { caption: s, value: s };
-                                        })
-                                    ]}
-                                    onChange={v => {
-                                        this.props.viewerInterop.api!.command(ViewerApi.Commands.SwitchModel(parseInt(v)));
-                                        this.setState({ ...this.state, model: v });
-                                    }}
-                                />
-                        },
-                        {
-                            name: 'Chain',
-                            value:
-                                <ComboBox
-                                    value={this.state.chain}
-                                    options={this.naChainOptions()}
-                                    onChange={v => this.setState({ ...this.state, chain: v })}
-                                />
-                        },
-                        {
-                            name: 'Step',
-                            value:
-                                <ComboBox
-                                    value={cbValue}
-                                    options={toComboBoxOptions(stepsOptions)}
-                                    onChange={v => {
-                                        try {
-                                            const value = JSON.parse(v) as StepValue;
-                                            const stepId = value.id;
-                                            const step = StepsMapper.byId(this.props.dnatcofication, stepId);
+                <NamedList>
+                    <NamedListItem name='Model'>
+                         <ComboBox
+                            value={this.state.model}
+                            options={[
+                                { caption: 'All', value: '' },
+                                ...sequence(1, Dnatcofication.Structure.numberOfModels(this.props.dnatcofication)).map(n => {
+                                    const s = n.toString();
+                                    return { caption: s, value: s };
+                                })
+                            ]}
+                            onChange={v => {
+                                this.props.viewerInterop.api!.command(ViewerApi.Commands.SwitchModel(parseInt(v)));
+                                this.setState({ ...this.state, model: v });
+                            }}
+                        />
+                    </NamedListItem>
+                    <NamedListItem name='Chain'>
+                         <ComboBox
+                            value={this.state.chain}
+                            options={this.naChainOptions()}
+                            onChange={v => this.setState({ ...this.state, chain: v })}
+                        />
+                    </NamedListItem>
+                    <NamedListItem name='Step'>
+                        <ComboBox
+                            value={cbValue}
+                            options={toComboBoxOptions(stepsOptions)}
+                            onChange={v => {
+                                try {
+                                    const value = JSON.parse(v) as StepValue;
+                                    const stepId = value.id;
+                                    const step = StepsMapper.byId(this.props.dnatcofication, stepId);
 
-                                            const selection = makeStepSelection(this.props.dnatcofication, step.name);
-                                            if (selection)
-                                                this.props.viewerInterop.api.command(ViewerApi.Commands.SelectStep(selection.current, selection.prev, selection.next));
+                                    const selection = makeStepSelection(this.props.dnatcofication, step.name);
+                                    if (selection)
+                                        this.props.viewerInterop.api.command(ViewerApi.Commands.SelectStep(selection.current, selection.prev, selection.next));
 
-                                            this.setState({ ...this.state, stepId });
-                                        } catch (e) {
-                                            console.warn(`Failed to parse StepValue: ${e}`);
-                                        }
-                                    }}
-                                />
-                        },
-                    ]}
-                />
+                                    this.setState({ ...this.state, stepId });
+                                } catch (e) {
+                                    console.warn(`Failed to parse StepValue: ${e}`);
+                                }
+                            }}
+                        />
+                    </NamedListItem>
+                </NamedList>
                 <div className='rdo-line-spacer' />
                 Torsions and distances
                 <table className='rdo-data-table'>
@@ -517,22 +509,18 @@ export class StepTorsions extends View<View.Props, State> {
                     </tbody>
                 </table>
                 <div className='rdo-line-spacer' />
-                <NamedList
-                    items={[
-                        { name: 'Step conformer', value: stepInfo.conformer },
-                        { name: 'Cartesian RMSD', value: `${stepInfo.cartesianRmsd!.toFixed(2)} Å` },
-                        { name: 'Pseudorotation', value: `${stepInfo.p1}, ${stepInfo.tau1}, ${stepInfo.pn1} / ${stepInfo.p2}, ${stepInfo.tau2}, ${stepInfo.pn2}` },
-                        {
-                            name: 'Details',
-                            value:
-                                <Tooltip
-                                    tag={stepInfo.details}
-                                >
-                                    {mkViolationDetailsToolip(stepInfo.details)}
-                                </Tooltip>
-                        },
-                    ]}
-                />
+                <NamedList>
+                    <NamedListItem name='Step conformer'>{stepInfo.conformer}</NamedListItem>
+                    <NamedListItem name='Cartesian RMSD'>{`${stepInfo.cartesianRmsd!.toFixed(2)} Å`}</NamedListItem>
+                    <NamedListItem name='Pseudorotation'>{`${stepInfo.p1}, ${stepInfo.tau1}, ${stepInfo.pn1} / ${stepInfo.p2}, ${stepInfo.tau2}, ${stepInfo.pn2}`}</NamedListItem>
+                    <NamedListItem name='Details'>
+                        <Tooltip
+                            tag={stepInfo.details}
+                        >
+                            {mkViolationDetailsToolip(stepInfo.details)}
+                        </Tooltip>
+                    </NamedListItem>
+                </NamedList>
             </div>
         );
     }
