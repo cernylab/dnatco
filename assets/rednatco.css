@@ -154,9 +154,9 @@ select {
     align-items: center;
     color: black;
     display: flex;
-    height: 1em;
-    right: 0.35em;
-    top: calc(50% - 0.5em);
+    height: 100%;
+    width: 1em;
+    right: 0;
     position: absolute;
     z-index: 1;
 }
