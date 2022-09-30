@@ -66,6 +66,7 @@ export class SpinBox extends React.Component<SpinBox.Props> {
                         }
                     }}
                 />
+                <div />
                 <div className='rdo-spinbox-buttons'>
                     <img
                         className='rdo-spinbox-button'

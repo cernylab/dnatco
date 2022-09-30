@@ -539,7 +539,7 @@ tr.rdo-list-of-conformers-alternate-clr {
     border: 0.15em solid #ccc;
     border-radius: 0;
     display: grid;
-    grid-template-columns: auto 1fr;
+    grid-template-columns: auto 1fr auto;
 }
 
 .rdo-spinbox-button {
