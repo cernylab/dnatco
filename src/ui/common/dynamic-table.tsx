@@ -195,7 +195,7 @@ export namespace DynamicTable {
                 rows.push(row);
             }
 
-            if (this.sortedBy === -1)
+            if (this.sortedBy === -1 || rows.length === 0)
                 return rows;
             else {
                 const sortIdx = this.sortedBy;
