@@ -13,9 +13,9 @@ import { GlobalConfig } from '../global-config';
 import '../../assets/html/about-ntcs.html';
 
 const Tabs = {
-    'about-ntcs': 'About NtCs',
-    'table-of-conformers': 'Table of conformers',
-    'browse-conformers': 'Browse',
+    'about-ntcs': { name: 'About NtCs', caption: 'About NtCs' },
+    'table-of-conformers': { name: 'Table of conformers', caption: 'Table of conformers' },
+    'browse-conformers': { name: 'Browse', caption: 'Search PDB database for dinucleotide steps of given conformation (NtC)' }
 };
 type TabId = keyof typeof Tabs;
 
@@ -92,8 +92,11 @@ class BrowseConformers extends React.Component<BrowseConformersProps> {
             <div className='rdo-offset'>
                 <div className='rdo-width-limiter'>
                     <div style={{ display: 'grid', height: '100%', gridTemplateRows: 'auto auto 1fr', gridTemplateColumns: 'auto', rowGap: 'var(--x-gap)', columnGap: 'var(--x-gap)' }}>
-                        <div className='rdo-primary-caption'>{`List of ${this.props.steps.length} randomly selected steps with NtC class ${this.props.criteria.NtC}`}</div>
                         <SearchConformers onDoSearch={this.props.onSearch} initial={this.props.criteria} />
+                        {this.props.steps.length > 0
+                            ? <div className='rdo-secondary-caption'>{`Steps with NtC class ${this.props.criteria.NtC} (randomly selected ${this.props.steps.length} steps from PDB database)`}</div>
+                            : undefined
+                        }
                         <div style={{ overflow: 'hidden' }}>
                             <div className='rdo-scroll-vertically'>
                                 {this.renderStepsTable()}
@@ -312,13 +315,13 @@ export class ConformersTab extends React.Component<ConformersTab.Props, State> {
                 <ShadowedBox>
                     <div className='rdo-screen-with-side-panel' style={{ overflow: 'hidden' }}>
                         <SideSwitchingPanel
-                            items={TabsOrder.map(id => ({ id: id, caption: Tabs[id] }))}
+                            items={TabsOrder.map(id => ({ id: id, caption: Tabs[id].name }))}
                             selectedItem={this.state.selected}
                             onSwitched={id => this.setState({ ...this.state, selected: id as TabId })}
                         />
                         <div style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
                             <div className='rdo-primary-caption'>
-                                {Tabs[this.state.selected]}
+                                {Tabs[this.state.selected].caption}
                             </div>
                             <div className='rdo-offset' style={{ overflow: 'hidden' }}>
                                 {this.renderTab()}
