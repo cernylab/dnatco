@@ -1,12 +1,12 @@
 import * as React from 'react';
 import { View } from '../view';
+import { DownloadButton } from '../../common';
 import { SingleStepInfo } from '../../single-step-info';
 import { listOfChains, makeStepSelection } from '../../util';
 import { ViewerApi } from '../../../../viewer/viewer-interop';
 import { ComboBox } from '../../../common/combo-box';
 import { DynamicTable } from '../../../common/dynamic-table';
 import { NamedList, NamedListItem } from '../../../common/named-list';
-import { IconTextButton } from '../../../common/push-button';
 import { Tooltip } from '../../../common/tooltip';
 import { Cif } from '../../../../cif';
 import {
@@ -17,8 +17,6 @@ import { Dnatcofication } from '../../../../dnatco/dnatcofication';
 import { sequence } from '../../../../util';
 import { Net } from '../../../../util/net';
 import { Serialization } from '../../../../util/serialization';
-import { GlobalConfig } from '../../../../global-config';
-import '../../../../../assets/imgs/data-transfer-download.svg';
 
 interface State {
     model: string;
@@ -162,22 +160,18 @@ export class AssignedNtCs extends View<View.Props, State> {
     }
 
     renderStepsTable() {
-        const prefix = GlobalConfig.data().pathPrefix;
-
         return (
             <div>
-                <div style={{ display: 'flex', flexDirection: 'row', gap: 'var(--v-gap)',  marginBottom: 'var(--v-gap)' }}>
-                    <IconTextButton
+                <div style={{ display: 'flex', flexDirection: 'row', gap: 'var(--h2-gap)',  marginBottom: 'var(--v-gap)' }}>
+                    <DownloadButton
                         caption='CSV'
-                        src={`${prefix}/imgs/data-transfer-download.svg`}
                         onClick={() => {
                             const text = Serialization.dynamicTable(this.state.tableModel, 'csv');
                             Net.serveFile('text/csv', text, `${this.props.dnatcofication.identifyingName}_assigned_ntcs.csv`);
                         }}
                     />
-                    <IconTextButton
+                    <DownloadButton
                         caption='JSON'
-                        src={`${prefix}/imgs/data-transfer-download.svg`}
                         onClick={() => {
                             const text = Serialization.dynamicTable(this.state.tableModel, 'json');
                             Net.serveFile('application/json', text, `${this.props.dnatcofication.identifyingName}_assigned_ntcs.json`);

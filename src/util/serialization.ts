@@ -1,12 +1,14 @@
 import { DynamicTable } from '../ui/common/dynamic-table';
 
-export namespace Serialization {
-    const CSV_COL_SEP = ';';
+const CSV_COL_SEP = ';';
 
+export namespace Serialization {
     type Serializable = {
         tags: string[];     // Used as headers
         values: string[][]; // Values by column -> row
     }
+
+    export type OutputType = 'csv'|'json';
 
     function toCsv(data: Serializable) {
         const NCols = data.tags.length;
@@ -51,7 +53,14 @@ export namespace Serialization {
         }
 
         const s: Serializable = { tags, values };
+        return format === 'csv' ? toCsv(s) : toJson(s);
+    }
 
+    export function table(data: { name: string, values: string[] }[], format: OutputType) {
+        const tags = data.map(x => x.name);
+        const values = data.map(x => x.values);
+
+        const s: Serializable = { tags, values };
         return format === 'csv' ? toCsv(s) : toJson(s);
     }
 }
