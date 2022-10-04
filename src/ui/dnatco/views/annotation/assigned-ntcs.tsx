@@ -24,7 +24,7 @@ interface State {
     model: string;
     chain: string;
     tableModel: DynamicTable.Model;
-    selectedStepName?: string;
+    selectedStepName: string;
 }
 export class AssignedNtCs extends View<View.Props, State> {
     constructor(props: View.Props) {
@@ -34,6 +34,7 @@ export class AssignedNtCs extends View<View.Props, State> {
             model: '',
             chain: '',
             tableModel: this.makeTableModel(void 0, void 0),
+            selectedStepName: ''
         };
     }
 
@@ -204,7 +205,7 @@ export class AssignedNtCs extends View<View.Props, State> {
     componentDidMount() {
         this.subscribe(
             this.props.viewerInterop.events.stepDeselected,
-            () => this.setState({ ...this.state, selectedStepName: undefined })
+            () => this.setState({ ...this.state, selectedStepName: '' })
         );
         this.subscribe(
             this.props.viewerInterop.events.stepSelected,
@@ -239,7 +240,7 @@ export class AssignedNtCs extends View<View.Props, State> {
             }
 
             // NODE: Mind possible races between event handles and this setState()
-            this.setState({ ...this.state, selectedStepName: undefined, tableModel });
+            this.setState({ ...this.state, selectedStepName: '', tableModel });
         }
     }
 

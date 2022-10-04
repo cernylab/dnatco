@@ -1,4 +1,3 @@
-import type { StandardLonghandProperties } from 'csstype';
 import React from 'react';
 import Plot from 'react-plotly.js';
 import { View } from '../view';
@@ -6,15 +5,11 @@ import { listOfChains, makeStepSelection } from '../../util';
 import { ViewerApi } from '../../../../viewer/viewer-interop';
 import { ComboBox } from '../../../common/combo-box';
 import { NamedList, NamedListItem } from '../../../common/named-list';
-import { BasePushButton } from '../../../common/push-button';
+import { Constants } from '../../../dnatco/constants';
+import { rgbToHex, valueToSemaphore } from '../../../dnatco/util';
 import { Dnatcofication } from '../../../../dnatco/dnatcofication';
 import { StepsMapper } from '../../../../dnatco/steps-mapper';
 import { sequence } from '../../../../util';
-import { Constants } from '../../../dnatco/constants';
-import { rgbToHex, valueToSemaphore } from '../../../dnatco/util';
-
-const SimilarityXRange = [0, 1.0];
-const SimilarityYRange = [0, 100];
 
 const PlotData = {
     x: new Array<number>(),
@@ -63,21 +58,6 @@ export class SimilarityPlots extends View<View.Props, State> {
         }
 
         return { x, y, colors, tags };
-    }
-
-    private stepDescription(stepId: number, color: StandardLonghandProperties['color']) {
-        if (stepId === -1) {
-            return [
-                <div style={{ color }}>(None)</div>,
-                <div style={{ color }}>(-)</div>
-            ];
-        }
-
-        const step = StepsMapper.byId(this.props.dnatcofication, stepId);
-        return [
-            <div style={{ color }}>{step.name}</div>,
-            <div style={{ color }}>({step.NtC})</div>
-        ];
     }
 
     private stepsOptions() {
@@ -243,50 +223,15 @@ export class SimilarityPlots extends View<View.Props, State> {
                                 autosize: true,
                                 dragmode: 'pan',
                                 hovermode: 'closest',
-                                xaxis: { range: SimilarityXRange, title: 'Cartesian RMSD [Å]' },
-                                yaxis: { range: SimilarityYRange, title: 'Euclidean distance' },
+                                xaxis: { range: Constants.DefaultSimilarityXRange, title: 'Cartesian RMSD [Å]', automargin: true },
+                                yaxis: { range: Constants.DefaultSimilarityYRange, title: 'Euclidean distance', automargin: true },
                             }}
                             config={{
                                 scrollZoom: true,
                             }}
+                            useResizeHandler={true}
+                            style={{ width: "100%", height: "100%" }}
                         />
-                    </div>
-
-                    <div>
-                        <div style={{ display: 'flex', marginRight: 'auto', maxWidth: '40em' }}>
-                            <BasePushButton
-                                className='rdo-prevcurrnext rdo-prevstep-bgcolor'
-                                onClick={() => {
-                                    if (this.state.previousStepId !== -1) {
-                                        const step = StepsMapper.byId(this.props.dnatcofication, this.state.previousStepId);
-                                        this.switchStep(step.name);
-                                    }
-                                }}
-                                onMouseEnter={e => e.currentTarget.classList.add('rdo-prevnext-active')}
-                                onMouseLeave={e => e.currentTarget.classList.remove('rdo-prevnext-active')}
-                            >
-                                <span style={{ fontWeight: 'bold', color: 'white' }}>Previous step</span>
-                                {this.stepDescription(this.state.previousStepId, 'white')}
-                            </BasePushButton>
-                            <div className='rdo-prevcurrnext'>
-                                <span style={{ fontWeight: 'bold' }}>Current step</span>
-                                {this.stepDescription(this.state.stepId, 'black')}
-                            </div>
-                            <BasePushButton
-                                className='rdo-prevcurrnext rdo-nextstep-bgcolor'
-                                onClick={() => {
-                                    if (this.state.nextStepId !== -1) {
-                                        const step = StepsMapper.byId(this.props.dnatcofication, this.state.nextStepId);
-                                        this.switchStep(step.name);
-                                    }
-                                }}
-                                onMouseEnter={e => e.currentTarget.classList.add('rdo-prevnext-active')}
-                                onMouseLeave={e => e.currentTarget.classList.remove('rdo-prevnext-active')}
-                            >
-                                <span style={{ fontWeight: 'bold' }}>Next step</span>
-                                {this.stepDescription(this.state.nextStepId, 'black')}
-                            </BasePushButton>
-                        </div>
                     </div>
                 </div>
             </div>

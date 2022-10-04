@@ -360,6 +360,12 @@ tr.rdo-list-of-conformers-alternate-clr {
     width: calc(100% - 2*var(--x-gap));
 }
 
+.rdo-plot-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
 .rdo-popup {
     background-color: rgba(0,0,0,.12);
     height: 100%;

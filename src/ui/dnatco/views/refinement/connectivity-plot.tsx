@@ -6,15 +6,12 @@ import { listOfChains, makeStepSelection } from '../../util';
 import { ComboBox } from '../../../common/combo-box';
 import { NamedList, NamedListItem } from '../../../common/named-list';
 import { BasePushButton } from '../../../common/push-button';
+import { Constants } from '../../../dnatco/constants';
 import { Dnatcofication } from '../../../../dnatco/dnatcofication';
 import { StepsMapper } from '../../../../dnatco/steps-mapper';
+import { colorToRgb, rgbToHex, valueToSemaphore } from '../../../dnatco/util';
 import { sequence } from '../../../../util';
 import { ViewerApi } from '../../../../viewer/viewer-interop';
-
-const ConnectivityXRange = [0, 0.5];
-const ConnectivityYRange = [0, 0.5];
-const NextColor = 'cyan';
-const PrevColor = 'blue';
 
 const PlotData = {
     x: new Array<number>(),
@@ -30,7 +27,6 @@ interface State {
     stepId: number;
     previousStepId: number;
     nextStepId: number;
-    plotData: PlotData;
 }
 export class ConnectivityPlot extends View<View.Props, State> {
     constructor(props: View.Props) {
@@ -42,36 +38,44 @@ export class ConnectivityPlot extends View<View.Props, State> {
             stepId: -1,
             previousStepId: -1,
             nextStepId: -1,
-            plotData: PlotData,
         };
     }
 
-    private plotData(stepIdx: number): PlotData {
+    private connectivityPlotData(stepIdx: number, direction: 'previous' | 'next'): PlotData {
         const x = [];
         const y = [];
         const colors = [];
         const tags = [];
 
-        const back = this.props.dnatcofication.data.connectivities.backward[stepIdx];
-        const fwd = this.props.dnatcofication.data.connectivities.forward[stepIdx];
-
-        if (back) {
-            for (const ntc in back) {
-                const conn = back[ntc];
+        const clr = rgbToHex(colorToRgb(direction === 'next' ? Constants.NextStepColor : Constants.PrevStepColor));
+        const conns = direction === 'next' ? this.props.dnatcofication.data.connectivities.forward[stepIdx] : this.props.dnatcofication.data.connectivities.backward[stepIdx];
+        if (conns) {
+            for (const ntc in conns) {
+                const conn = conns[ntc];
                 x.push(conn.C5PrimeDistance);
                 y.push(conn.O3PrimeDistance);
-                colors.push(PrevColor);
+                colors.push(clr);
                 tags.push(ntc);
             }
         }
-        if (fwd) {
-            for (const ntc in fwd) {
-                const conn = fwd[ntc];
-                x.push(conn.C5PrimeDistance);
-                y.push(conn.O3PrimeDistance);
-                colors.push(NextColor);
-                tags.push(ntc);
-            }
+
+        return { x, y, colors, tags };
+    }
+
+    private similarityPlotData(stepIdx: number): PlotData {
+        const x = [];
+        const y = [];
+        const colors = [];
+        const tags = [];
+
+        const similarities = this.props.dnatcofication.data.similarities[stepIdx];
+        for (const ntc in similarities) {
+            const simil = similarities[ntc];
+            x.push(simil.rmsd);
+            y.push(simil.euclideanDistance);
+            const clr = valueToSemaphore(simil.rmsd, Constants.GreenRMSD, Constants.RedRMSD);
+            colors.push(rgbToHex(clr));
+            tags.push(ntc);
         }
 
         return { x, y, colors, tags };
@@ -117,7 +121,6 @@ export class ConnectivityPlot extends View<View.Props, State> {
             () => {
                 this.setState({
                     ...this.state,
-                    plotData: PlotData,
                     stepId: -1,
                     previousStepId: -1,
                     nextStepId: -1,
@@ -151,7 +154,6 @@ export class ConnectivityPlot extends View<View.Props, State> {
                 stepId: -1,
                 previousStepId: -1,
                 nextStepId: -1,
-                plotData: PlotData,
             });
             this.props.viewerInterop.api.command(ViewerApi.Commands.DeselectStep());
         } else if (this.state.chain !== prevState.chain) {
@@ -160,7 +162,6 @@ export class ConnectivityPlot extends View<View.Props, State> {
                 stepId: -1,
                 previousStepId: -1,
                 nextStepId: -1,
-                plotData: PlotData,
             });
             this.props.viewerInterop.api.command(ViewerApi.Commands.DeselectStep());
         } else if (this.state.stepId !== prevState.stepId) {
@@ -171,12 +172,10 @@ export class ConnectivityPlot extends View<View.Props, State> {
                     nextStepId: -1,
                 });
             } else {
-                const stepIdx = StepsMapper.idToIndex(this.props.dnatcofication, this.state.stepId);
                 const { previous, next } = StepsMapper.previousNextById(this.props.dnatcofication, this.state.stepId);
 
                 this.setState({
                     ...this.state,
-                    plotData: this.plotData(stepIdx),
                     previousStepId: previous,
                     nextStepId: next,
                 });
@@ -189,6 +188,16 @@ export class ConnectivityPlot extends View<View.Props, State> {
     }
 
     render() {
+        let simPlotData = PlotData;
+        let prevConnPlotData = PlotData;
+        let nextConnPlotData = PlotData;
+        if (this.state.stepId !== -1) {
+            const stepIdx = StepsMapper.idToIndex(this.props.dnatcofication, this.state.stepId);
+            simPlotData = this.similarityPlotData(stepIdx);
+            prevConnPlotData = this.connectivityPlotData(stepIdx, 'previous');
+            nextConnPlotData = this.connectivityPlotData(stepIdx, 'next');
+        }
+
         return (
             <div>
                 <NamedList>
@@ -234,18 +243,20 @@ export class ConnectivityPlot extends View<View.Props, State> {
                                 this.setState({ ...this.state, stepId });
                             }}
                         />
-                     </NamedListItem>
+                    </NamedListItem>
                 </NamedList>
+
                 <div className='rdo-offset'>
+                    <div className='rdo-secondary-caption'>Similarity plot</div>
                     <div className='rdo-plot-container'>
                         <Plot
                             data={[
                                 {
-                                    x: this.state.plotData.x,
-                                    y: this.state.plotData.y,
-                                    marker: { size: 10, color: this.state.plotData.colors },
+                                    x: simPlotData.x,
+                                    y: simPlotData.y,
+                                    marker: { size: 10, color: simPlotData.colors },
                                     mode: 'text+markers',
-                                    text: this.state.plotData.tags,
+                                    text: simPlotData.tags,
                                     textposition: 'top center',
                                     type: 'scattergl',
                                 },
@@ -254,12 +265,72 @@ export class ConnectivityPlot extends View<View.Props, State> {
                                 autosize: true,
                                 dragmode: 'pan',
                                 hovermode: 'closest',
-                                xaxis: { range: ConnectivityXRange, title: 'C5 distance [Å]' },
-                                yaxis: { range: ConnectivityYRange, title: 'O3 distance [Å]' },
+                                xaxis: { range: Constants.DefaultSimilarityXRange, title: 'Cartesian RMSD [Å]', automargin: true },
+                                yaxis: { range: Constants.DefaultSimilarityYRange, title: 'Euclidean distance', automargin: true },
                             }}
                             config={{
                                 scrollZoom: true,
                             }}
+                            useResizeHandler={true}
+                            style={{ width: "100%", height: "100%" }}
+                        />
+                    </div>
+
+                    <div className='rdo-secondary-caption'>Connectivity to previous residue</div>
+                    <div className='rdo-plot-container'>
+                        <Plot
+                            data={[
+                                {
+                                    x: prevConnPlotData.x,
+                                    y: prevConnPlotData.y,
+                                    marker: { size: 10, color: prevConnPlotData.colors },
+                                    mode: 'text+markers',
+                                    text: prevConnPlotData.tags,
+                                    textposition: 'top center',
+                                    type: 'scattergl',
+                                },
+                            ]}
+                            layout={{
+                                autosize: true,
+                                dragmode: 'pan',
+                                hovermode: 'closest',
+                                xaxis: { range: Constants.DefaultConnectivityXRange, title: 'C5 distance [Å]', automargin: true },
+                                yaxis: { range: Constants.DefaultConnectivityYRange, title: 'O3 distance [Å]', automargin: true },
+                            }}
+                            config={{
+                                scrollZoom: true,
+                            }}
+                            useResizeHandler={true}
+                            style={{ width: "100%", height: "100%" }}
+                        />
+                    </div>
+
+                    <div className='rdo-secondary-caption'>Connectivity to next residue</div>
+                    <div className='rdo-plot-container'>
+                        <Plot
+                            data={[
+                                {
+                                    x: nextConnPlotData.x,
+                                    y: nextConnPlotData.y,
+                                    marker: { size: 10, color: nextConnPlotData.colors },
+                                    mode: 'text+markers',
+                                    text: nextConnPlotData.tags,
+                                    textposition: 'top center',
+                                    type: 'scattergl',
+                                },
+                            ]}
+                            layout={{
+                                autosize: true,
+                                dragmode: 'pan',
+                                hovermode: 'closest',
+                                xaxis: { range: Constants.DefaultConnectivityXRange, title: 'C5 distance [Å]', automargin: true },
+                                yaxis: { range: Constants.DefaultConnectivityYRange, title: 'O3 distance [Å]', automargin: true },
+                            }}
+                            config={{
+                                scrollZoom: true,
+                            }}
+                            useResizeHandler={true}
+                            style={{ width: "100%", height: "100%" }}
                         />
                     </div>
 

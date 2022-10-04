@@ -8,6 +8,10 @@ function componentToHex(c: number) {
     return hex.length == 1 ? "0" + hex : hex;
 }
 
+export function colorToRgb(clr: number) {
+    return { r: (clr >> 24), g: (clr >> 16) & 0xFF, b: (clr >> 8) & 0xFF };
+}
+
 export function listOfChains(modelNum: number|undefined, structure: Structure) {
     let models;
     if (modelNum === undefined)
