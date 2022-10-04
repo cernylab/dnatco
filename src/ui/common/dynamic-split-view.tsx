@@ -1,10 +1,11 @@
 import React from 'react';
 
-const Steps = 2000;
-const Margin = 0.05;
+const MinimumWidth = 0.05;
 
-const StyleFull = { flex: 1000, visibility: 'visible' as 'visible'|'hidden' };
-const StyleHidden = { flex: 0, visibility: 'hidden' as 'visible'|'hidden', width: 0 };
+const StyleFullFirstHorizontal = { display: 'grid', gridTemplateColumns: `100% 20px 0%` };
+const StyleFullSecondHorizontal = { display: 'grid', gridTemplateColumns: `0% 20px 100%` };
+const StyleFullFirstVertical = { display: 'grid', gridTemplateRows: `100% 20px 0%` };
+const StyleFullSecondVertical = { display: 'grid', gridTemplateRows: `0% 20px 100%` };
 
 interface State {
     splitPosition: number;
@@ -21,7 +22,7 @@ export class DynamicSplitView extends React.Component<DynamicSplitView.Props, St
         const tainer = this.tainerRef.current!;
         const x = (evt.clientX - tainer.getBoundingClientRect().left) / tainer.clientWidth;
 
-        if (x < 1.0 - Margin && x > Margin)
+        if (x < 1.0 - MinimumWidth && x > MinimumWidth)
             this.setState({ ...this.state, splitPosition: x });
     }
 
@@ -30,7 +31,7 @@ export class DynamicSplitView extends React.Component<DynamicSplitView.Props, St
         const tainer = this.tainerRef.current!;
         const y = (evt.clientY - tainer.getBoundingClientRect().top) / tainer.clientHeight;
 
-        if (y < 1.0 - Margin && y > Margin)
+        if (y < 1.0 - MinimumWidth && y > MinimumWidth)
             this.setState({ ...this.state, splitPosition: y });
     }
 
@@ -51,24 +52,39 @@ export class DynamicSplitView extends React.Component<DynamicSplitView.Props, St
             this.props.onAdjustDone();
     }
 
-    private renderOne() {
-        const styleFirst = this.props.visible === 'first' ? StyleFull : StyleHidden;
-        const styleSecond = this.props.visible === 'second' ? StyleFull : StyleHidden;
+    private getBlockStyle() {
+        if (this.props.orientation === 'horizontal') {
+            return {
+                display: 'grid',
+                gridTemplateColumns: `${this.state.splitPosition * 100.0}% 20px ${(1.0 - this.state.splitPosition) * 100.0}%`,
+            };
+        } else {
+            return {
+                display: 'grid',
+                gridTemplateRows: `${this.state.splitPosition * 100.0}% 20px ${(1.0 - this.state.splitPosition) * 100.0}%`,
+            };
+        }
+    }
 
+    private renderOne() {
         return (
             <div
                 ref={this.tainerRef}
                 className={this.props.containerClass}
-                style={{ display: 'flex', flexDirection: this.props.orientation === 'horizontal' ? 'row' : 'column' }}
+                style={
+                    this.props.orientation === 'horizontal'
+                        ? this.props.visible === 'first' ? StyleFullFirstHorizontal : StyleFullSecondHorizontal
+                        : this.props.visible === 'first' ? StyleFullFirstVertical : StyleFullSecondVertical
+                }
             >
-                <div style={styleFirst}>
+                <div>
                     {this.props.first}
                 </div>
                 <div
                     style={{ visibility: 'hidden' }}
                 >
                 </div>
-                <div style={styleSecond}>
+                <div>
                     {this.props.second}
                 </div>
             </div>
@@ -76,10 +92,6 @@ export class DynamicSplitView extends React.Component<DynamicSplitView.Props, St
     }
 
     private renderBoth() {
-        const r = Math.round(this.state.splitPosition * Steps)
-        const sizeFirst = r;
-        const sizeSecond = Steps - r;
-
         const splitterStyle = this.props.orientation === 'horizontal'
             ? { width: '10px', height: '100%', cursor: 'ew-resize' }
             : { height: '10px', width: '100%', cursor: 'ns-resize' };
@@ -87,15 +99,17 @@ export class DynamicSplitView extends React.Component<DynamicSplitView.Props, St
             ? { width: '50%', height: '100%', backgroundColor: 'var(--color-b)', marginLeft: 'auto', marginRight: 'auto' }
             : { height: '100%', width: '50%', backgroundColor: 'var(--color-b)', marginLeft: 'auto', marginRight: 'auto' };
 
+        const blockStyle = this.getBlockStyle();
+
         return (
             <div
                 ref={this.tainerRef}
                 className={this.props.containerClass}
-                style={{ display: 'flex', flexDirection: this.props.orientation === 'horizontal' ? 'row' : 'column' }}
+                style={blockStyle}
                 onMouseUp={() => this.finalizeAdjust()}
                 onMouseLeave={() => this.finalizeAdjust()}
             >
-                <div style={{ flex: sizeFirst }}>
+                <div>
                     {this.props.first}
                 </div>
 
@@ -113,7 +127,7 @@ export class DynamicSplitView extends React.Component<DynamicSplitView.Props, St
                     <div style={splitterBarStyle}></div>
                 </div>
 
-                <div style={{ flex: sizeSecond }}>
+                <div>
                     {this.props.second}
                 </div>
             </div>
