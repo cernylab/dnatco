@@ -128,17 +128,17 @@ export class AboutTab extends React.Component<{}, State> {
         return (
             <div className='rdo-offset'>
                 <ShadowedBox>
-                    <div className='rdo-screen-with-side-panel'>
+                    <div className='rdo-screen-with-side-panel' style={{ overflow: 'hidden' }}>
                         <SideSwitchingPanel
                             items={TabsOrder.map(id => ({ id: id, caption: Tabs[id] }))}
                             selectedItem={this.state.selected}
                             onSwitched={id => this.setState({ ...this.state, selected: id as keyof typeof Tabs })}
                         />
-                        <div>
+                        <div style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
                             <div className='rdo-primary-caption'>
                                 {Tabs[this.state.selected]}
                             </div>
-                            <div className='rdo-offset'>
+                            <div className='rdo-offset' style={{ overflow: 'hidden' }}>
                                 {this.renderTab()}
                             </div>
                         </div>

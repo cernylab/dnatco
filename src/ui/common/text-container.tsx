@@ -42,7 +42,7 @@ export class TextContainer extends React.Component<TextContainer.Props, State> {
     render() {
         return (
             <div
-                className='rdo-offset'
+                className='rdo-offset rdo-scroll-vertically'
                 dangerouslySetInnerHTML={{ __html: this.state.content }}
             ></div>
         );
