@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { View } from '../view';
-import { DownloadButton } from '../../common';
+import { DynamicTableDownloadBar } from '../../common';
 import { SingleStepInfo } from '../../single-step-info';
 import { ViewerApi } from '../../../../viewer/viewer-interop';
 import { Constants } from '../../constants';
@@ -16,8 +16,6 @@ import {
 } from '../../../../cif/categories/ndb-struct-ntc';
 import { Dnatcofication } from '../../../../dnatco/dnatcofication';
 import { sequence } from '../../../../util';
-import { Net } from '../../../../util/net';
-import { Serialization } from '../../../../util/serialization';
 
 function confalToColor(rmsd: number): React.CSSProperties  {
     const clr = valueToSemaphore(rmsd, Constants.GreenConfal, Constants.GreenRMSD);
@@ -148,23 +146,11 @@ export class ConfalsRmsds extends View<View.Props, State> {
     renderStepsTable() {
         return (
             <div>
-                <div style={{ display: 'flex', flexDirection: 'row', gap: 'var(--h2-gap)',  marginBottom: 'var(--v-gap)' }}>
-                    <DownloadButton
-                        caption='CSV'
-                        onClick={() => {
-                            const text = Serialization.dynamicTable(this.state.tableModel, 'csv');
-                            Net.serveFile('text/csv', text, `${this.props.dnatcofication.identifyingName}_confals_rmsds.csv`);
-                        }}
-                    />
-                    <DownloadButton
-                        caption='JSON'
-                        onClick={() => {
-                            const text = Serialization.dynamicTable(this.state.tableModel, 'json');
-                            Net.serveFile('application/json', text, `${this.props.dnatcofication.identifyingName}_confals_rmsds.json`);
-                        }}
-                    />
-                    <div style={{ flex: 1 }}>{'\u00A0'}</div>
-                </div>
+                <DynamicTableDownloadBar
+                    filenameCsv={`${this.props.dnatcofication.identifyingName}_confals_rmsds.csv`}
+                    filenameJson={`${this.props.dnatcofication.identifyingName}_confals_rmsds.json`}
+                    model={this.state.tableModel}
+                />
 
                 <DynamicTable
                     model={this.state.tableModel}

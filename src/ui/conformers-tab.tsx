@@ -3,9 +3,9 @@ import { SearchConformers } from './search-conformers';
 import { DynamicTable } from './common/dynamic-table';
 import { ShadowedBox } from './common/shadowed-box';
 import { NamedList, NamedListItem } from './common/named-list';
-import { PushButton } from './common/push-button';
 import { SideSwitchingPanel } from './common/side-switching-panel';
 import { TextContainer } from './common/text-container';
+import { DownloadButton, DynamicTableDownloadBar } from './dnatco/common';
 import { ListOfConformers } from '../dnatco/list-of-conformers';
 import { Search } from '../search/search';
 import { Net } from '../util/net';
@@ -78,12 +78,25 @@ class BrowseConformers extends React.Component<BrowseConformersProps> {
             haveMaps.values.push({ data: 'N' });
         }
 
+        const namePrefix = `search_${this.props.criteria.NtC}_count_${this.props.criteria.maxCount}_${this.props.criteria.largeStructures ? 'with' : 'without'}_large_${this.props.criteria.redundant ? 'with' : 'without'}_redundant`;
+        const model = new DynamicTable.Model([names, CANAs, NtCs, confals, rmsds, resolutions, haveMaps]);
         return (
-            <DynamicTable
-                model={new DynamicTable.Model([names, CANAs, NtCs, confals, rmsds, resolutions, haveMaps])}
-                onCellClicked={(row, column, value) => this.props.onStepSelected(value)}
-                style='wide'
-            />
+            <div>
+                {this.props.steps.length > 0
+                    ? <DynamicTableDownloadBar
+                          filenameCsv={`${namePrefix}.csv`}
+                          filenameJson={`${namePrefix}.json`}
+                          model={model}
+                      />
+                    : undefined
+                }
+
+                <DynamicTable
+                    model={model}
+                    onCellClicked={(row, column, value) => this.props.onStepSelected(value)}
+                    style='wide'
+                />
+            </div>
         );
     }
 
@@ -260,14 +273,14 @@ class TableOfConformers extends React.Component {
                         ?
                         <NamedList verticalPosition='center'>
                             <NamedListItem name='Download list'>
-                                <div style={{ display: 'grid', gridTemplateColumns: '6em 6em', columnGap: 'var(--h-gap)' }}>
-                                    <PushButton
+                                <div style={{ display: 'grid', gridTemplateColumns: '6em 6em 1fr', columnGap: 'var(--h2-gap)' }}>
+                                    <DownloadButton
                                         caption='CSV'
-                                        onClick={() => Net.serveFile('text/plain', ListOfConformers.raw, 'conformers.csv')}
+                                        onClick={() => Net.serveFile('text/plain', ListOfConformers.raw, 'list_of_conformers.csv')}
                                     />
-                                    <PushButton
+                                    <DownloadButton
                                         caption='JSON'
-                                        onClick={() => Net.serveFile('application/json', JSON.stringify(ListOfConformers.list), 'conformers.json')}
+                                        onClick={() => Net.serveFile('application/json', JSON.stringify(ListOfConformers.list), 'list_of_conformers.json')}
                                     />
                                 </div>
                             </NamedListItem>
