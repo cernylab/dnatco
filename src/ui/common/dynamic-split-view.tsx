@@ -77,16 +77,12 @@ export class DynamicSplitView extends React.Component<DynamicSplitView.Props, St
                         : this.props.visible === 'first' ? StyleFullFirstVertical : StyleFullSecondVertical
                 }
             >
-                <div>
-                    {this.props.first}
-                </div>
+                {this.props.first}
                 <div
                     style={{ visibility: 'hidden' }}
                 >
                 </div>
-                <div>
-                    {this.props.second}
-                </div>
+                {this.props.second}
             </div>
         );
     }
@@ -109,9 +105,7 @@ export class DynamicSplitView extends React.Component<DynamicSplitView.Props, St
                 onMouseUp={() => this.finalizeAdjust()}
                 onMouseLeave={() => this.finalizeAdjust()}
             >
-                <div>
-                    {this.props.first}
-                </div>
+                {this.props.first}
 
                 <div
                     style={splitterStyle}
@@ -127,9 +121,7 @@ export class DynamicSplitView extends React.Component<DynamicSplitView.Props, St
                     <div style={splitterBarStyle}></div>
                 </div>
 
-                <div>
-                    {this.props.second}
-                </div>
+                {this.props.second}
             </div>
         );
 
