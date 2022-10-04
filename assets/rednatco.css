@@ -350,10 +350,6 @@ tr.rdo-list-of-conformers-alternate-clr {
     flex: 5;
 }
 
-.rdo-nextstep-bgcolor {
-    background-color: cyan;
-}
-
 .rdo-offset {
     height: calc(100% - 2*var(--x-gap));
     margin: var(--x-gap);
@@ -408,10 +404,6 @@ tr.rdo-list-of-conformers-alternate-clr {
 
 .rdo-prevnext-active {
     border-color: var(--color-b);
-}
-
-.rdo-prevstep-bgcolor {
-    background-color: blue;
 }
 
 .rdo-pushbutton {

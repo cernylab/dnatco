@@ -3,15 +3,6 @@ import { Dnatcofication } from '../../dnatco/dnatcofication';
 import { Chain, Structure } from '../../dnatco/structure';
 import { StepsMapper } from '../../dnatco/steps-mapper';
 
-function componentToHex(c: number) {
-    const hex = c.toString(16);
-    return hex.length == 1 ? "0" + hex : hex;
-}
-
-export function colorToRgb(clr: number) {
-    return { r: (clr >> 24), g: (clr >> 16) & 0xFF, b: (clr >> 8) & 0xFF };
-}
-
 export function listOfChains(modelNum: number|undefined, structure: Structure) {
     let models;
     if (modelNum === undefined)
@@ -43,10 +34,6 @@ export function makeStepSelection(dnatcofication: Dnatcofication, stepName: stri
     const nextName = next === -1 ? undefined : StepsMapper.byId(dnatcofication, next).name;
 
     return { prev: prevName, current: stepName, next: nextName };
-}
-
-export function rgbToHex(rgb: { r: number, g: number, b: number }) {
-  return "#" + componentToHex(rgb.r) + componentToHex(rgb.g) + componentToHex(rgb.b);
 }
 
 export function valueToSemaphore(v: number, greenValue: number, redValue: number) {

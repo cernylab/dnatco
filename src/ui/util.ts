@@ -1,8 +1,21 @@
+function componentToHex(c: number) {
+    const hex = c.toString(16);
+    return hex.length == 1 ? "0" + hex : hex;
+}
+
+export function colorToRgb(clr: number) {
+    return { r: (clr >> 16), g: (clr >> 8) & 0xFF, b: clr & 0xFF };
+}
+
 export function deselectText() {
     if (window?.getSelection)
         window.getSelection()?.removeAllRanges();
     else if ((document as any)['selection'])
         (document as any).selection.empty();
+}
+
+export function rgbToHex(rgb: { r: number, g: number, b: number }) {
+  return "#" + componentToHex(rgb.r) + componentToHex(rgb.g) + componentToHex(rgb.b);
 }
 
 export function scrollIntoViewIfNeeded(elemId: string, tainer: string|HTMLElement) {

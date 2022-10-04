@@ -9,7 +9,8 @@ import { BasePushButton } from '../../../common/push-button';
 import { Constants } from '../../../dnatco/constants';
 import { Dnatcofication } from '../../../../dnatco/dnatcofication';
 import { StepsMapper } from '../../../../dnatco/steps-mapper';
-import { colorToRgb, rgbToHex, valueToSemaphore } from '../../../dnatco/util';
+import { valueToSemaphore } from '../../util';
+import { colorToRgb, rgbToHex } from '../../../util';
 import { sequence } from '../../../../util';
 import { ViewerApi } from '../../../../viewer/viewer-interop';
 
@@ -337,7 +338,8 @@ export class ConnectivityPlot extends View<View.Props, State> {
                     <div>
                         <div style={{ display: 'flex', marginRight: 'auto', maxWidth: '40em' }}>
                             <BasePushButton
-                                className='rdo-prevcurrnext rdo-prevstep-bgcolor'
+                                className='rdo-prevcurrnext'
+                                style={{ backgroundColor: rgbToHex(colorToRgb(Constants.PrevStepColor)) }}
                                 onClick={() => {
                                     if (this.state.previousStepId !== -1) {
                                         const step = StepsMapper.byId(this.props.dnatcofication, this.state.previousStepId);
@@ -355,7 +357,8 @@ export class ConnectivityPlot extends View<View.Props, State> {
                                 {this.stepDescription(this.state.stepId, 'black')}
                             </div>
                             <BasePushButton
-                                className='rdo-prevcurrnext rdo-nextstep-bgcolor'
+                                className='rdo-prevcurrnext'
+                                style={{ backgroundColor: rgbToHex(colorToRgb(Constants.NextStepColor)) }}
                                 onClick={() => {
                                     if (this.state.nextStepId !== -1) {
                                         const step = StepsMapper.byId(this.props.dnatcofication, this.state.nextStepId);

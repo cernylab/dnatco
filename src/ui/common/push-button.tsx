@@ -1,4 +1,5 @@
-import * as React from 'react';
+import type { StandardLonghandProperties } from 'csstype';
+import React from 'react';
 import { GlobalConfig } from '../../global-config';
 
 export class BasePushButton<P extends BasePushButton.Props> extends React.Component<P> {
@@ -17,6 +18,7 @@ export class BasePushButton<P extends BasePushButton.Props> extends React.Compon
         return (
             <div
                 className={this.clsName()}
+                style={this.props.style}
                 onClick={(e: React.MouseEvent<HTMLInputElement>) => {
                     if (this.props.enabled && this.props.onClick)
                         this.props.onClick(e);
@@ -166,6 +168,7 @@ export namespace BasePushButton {
         className?: string
         classNameDisabled?: string;
         children?: React.ReactNode;
+        style?: StandardLonghandProperties;
     }
 }
 

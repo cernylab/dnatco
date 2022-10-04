@@ -1,12 +1,12 @@
 import React from 'react';
 import Plot from 'react-plotly.js';
 import { View } from '../view';
-import { listOfChains, makeStepSelection } from '../../util';
+import { listOfChains, makeStepSelection, valueToSemaphore } from '../../util';
 import { ViewerApi } from '../../../../viewer/viewer-interop';
 import { ComboBox } from '../../../common/combo-box';
 import { NamedList, NamedListItem } from '../../../common/named-list';
 import { Constants } from '../../../dnatco/constants';
-import { rgbToHex, valueToSemaphore } from '../../../dnatco/util';
+import { rgbToHex } from '../../../util';
 import { Dnatcofication } from '../../../../dnatco/dnatcofication';
 import { StepsMapper } from '../../../../dnatco/steps-mapper';
 import { sequence } from '../../../../util';
