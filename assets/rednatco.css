@@ -689,8 +689,9 @@ tr.rdo-list-of-conformers-alternate-clr {
 
 .rdo-txa-section-caption {
     font-size: var(--font-large);
+    font-weight:bold;
     margin-bottom: var(--v-gap);
-    text-align: center;
+    text-align: left;
 }
 
 .rdo-txa-subsection-caption {
