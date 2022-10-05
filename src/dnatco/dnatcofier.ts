@@ -1,4 +1,4 @@
-import * as jsLLKA from 'jsLLKA';
+import * as jsLLKA from 'jsllka';
 import { ClassificationContext } from './classification-context';
 import { ClassificationResources } from './classification-resources';
 import { DnatcoficationTaskContext } from './dnatcofication';

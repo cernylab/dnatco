@@ -1,8 +1,8 @@
+import * as jsLLKA from 'jsllka';
 import { NdbStructNtcStep, NdbStructNtcStepSummary } from '../cif/categories/ndb-struct-ntc';
 import { ClassificationContext } from '../dnatco/classification-context';
 import { Dnatcofication } from '../dnatco/dnatcofication';
 import { M } from '../util/math';
-import * as jsLLKA from 'jsLLKA';
 
 const DinuTorsions = [
     jsLLKA.DinucleotideTorsion.DELTA_1,

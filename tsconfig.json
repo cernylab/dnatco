@@ -24,7 +24,7 @@
 
         "baseUrl": ".",
         "paths": {
-            "jsLLKA": [ "jsLLKA", "jsLLKA/@types" ]
+            "jsLLKA": [ "jsllka", "jsllka/@types" ]
         }
     },
     "include": [ "src/**/*" ]

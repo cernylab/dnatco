@@ -1,5 +1,5 @@
+import * as jsLLKA from 'jsllka';
 import { ClassificationResources } from './classification-resources';
-import * as jsLLKA from 'jsLLKA';
 import { M } from '../util/math';
 
 let _contextData: ClassificationResources.Data|null = null;

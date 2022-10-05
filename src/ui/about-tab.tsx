@@ -5,7 +5,7 @@ import { SideSwitchingPanel } from './common/side-switching-panel';
 import { TextContainer } from './common/text-container';
 import { Tooltip } from './common/tooltip';
 import { GlobalConfig } from '../global-config';
-import { WasmSupport } from 'jsLLKA';
+import { WasmSupport } from 'jsllka';
 import '../../assets/html/contact.html';
 import '../../assets/html/downloads.html';
 import '../../assets/html/help.html';

@@ -1,4 +1,4 @@
-import * as jsLLKA from 'jsLLKA';
+import * as jsLLKA from 'jsllka';
 import { Cif } from '../cif';
 import { AtomSite, AtomSite_Schema } from '../cif/categories/atom-site';
 import { NtC } from './ntc';
