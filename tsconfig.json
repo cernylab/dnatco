@@ -23,9 +23,6 @@
         "rootDir": "src",
 
         "baseUrl": ".",
-        "paths": {
-            "jsLLKA": [ "jsllka", "jsllka/@types" ]
-        }
     },
     "include": [ "src/**/*" ]
 }
