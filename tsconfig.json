@@ -20,9 +20,12 @@
         "moduleResolution": "node",
 
         "outDir": "lib",
-        "rootDir": "src",
+        "rootDirs": [ "src", "tscif" ],
 
         "baseUrl": ".",
+        "paths": {
+            "tscif": [ "tscif/src" ]
+        }
     },
     "include": [ "src/**/*" ]
 }
