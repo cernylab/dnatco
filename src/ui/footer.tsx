@@ -44,7 +44,7 @@ export class Footer extends React.Component {
                             className='rdo-footer-icon-button'
                             iconClassName='rdo-footer-icon-button-image'
                             src='imgs/ibt.png'
-                            onClick={() => Net.openLink('https://www.ibt.cas.cz/', true)}
+                            onClick={() => Net.openLink('https://www.ibt.cas.cz/en', true)}
                         />
                         <IconButton
                             className='rdo-footer-icon-button'
@@ -56,7 +56,7 @@ export class Footer extends React.Component {
                             className='rdo-footer-icon-button'
                             iconClassName='rdo-footer-icon-button-image'
                             src='imgs/CAS_centred_logo_ENG_rgb.png'
-                            onClick={() => Net.openLink('https://www.avcr.cz', true)}
+                            onClick={() => Net.openLink('https://www.avcr.cz/en', true)}
                         />
                     </div>
                 </div>
