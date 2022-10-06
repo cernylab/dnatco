@@ -701,6 +701,7 @@ tr.rdo-list-of-conformers-alternate-clr {
 
 .rdo-txa-sup {
     vertical-align: super;
+    font-size: var(--font-small)
 }
 
 a.rdo-txa-link {
