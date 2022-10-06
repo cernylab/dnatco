@@ -28,16 +28,22 @@ export class Footer extends React.Component {
                             <div className='rdo-footer-text'>© 2022</div>
                         </div>
                         <div style={PadderStyle}>
-                            <Email email='jiri.cerny@ibt.cas.cz'><span style={{ color: 'var(--color-c)' }}>Jiří Černý</span></Email>
+                            <div className='rdo-footer-text'>
+                                <Email email='jiri.cerny@ibt.cas.cz'><span style={{ color: 'var(--color-c)' }}>Jiří Černý</span></Email>
+                            </div>
                         </div>
                         <div style={PadderStyle}>
-                            <Email email='bohdan.schneider@ibt.cas.cz'><span style={{ color: 'var(--color-c)' }}>Bohdan Schneider</span></Email>
+                            <div className='rdo-footer-text'>
+                                <Email email='bohdan.schneider@ibt.cas.cz'><span style={{ color: 'var(--color-c)' }}>Bohdan Schneider</span></Email>
+                            </div>
                         </div>
 
                         <div />
 
                         <div style={PadderStyle}>
-                            <div style={{ color: 'var(--color-c)' }}>Supported by Institude of Biotechnology & Elixir CZ</div>
+                            <div className='rdo-footer-text'>
+                                <div style={{ color: 'var(--color-c)' }}>Supported by Institude of Biotechnology & Elixir CZ</div>
+                            </div>
                         </div>
 
                         <IconButton
