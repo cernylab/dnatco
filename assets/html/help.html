@@ -4,7 +4,7 @@
     <p class="rdo-txa-paragraph">
         The DNATCO server analyzes structures of nucleic acids - both DNA and RNA - using the NtC structural alphabet developed in our institute.
         The NtC structural alphabet describes DNA/RNA backbone conformation using 96 “symbols”, where each symbol consists of four characters (e.g. BB00 or ZZ1S) and corresponds to a distinct dinucleotide conformer.
-        The dinucleotides conformers are assigned based on the values of 12 backbone torsion parameters (Figure 1).
+        The dinucleotide conformers are assigned based on the values of 12 backbone torsion parameters (Figure 1).
     </p>
 
     <div class="rdo-txa-image-tainer">
@@ -12,7 +12,7 @@
             class="rdo-txa-image"
             src="./imgs/definition_new_trans2.png"
         />
-        <div>Figure 1. Dinucleotide step with the 12 parameters <br> (backbone torsions shown in gray, distances in blue) <br> that define the NtC conformational class.</div>
+        <div><b>Figure 1.</b> Dinucleotide step with the 12 parameters <br> (backbone torsions shown in gray, distances in blue) <br> that define the NtC conformational class.</div>
     </div>
 
     <div class="rdo-txa-section-caption">NtC conformers</div>
@@ -35,10 +35,10 @@
     <div class="rdo-txa-section-caption">Validation metrics - confal, RMSD</div>
     <ul class="rdo-txa-list">
         <li>
-            confal: a quality score, with value of 100 corresponding to a perfect fit to the reference and 0 corresponding to conformational outliers. The confal function is a Gaussian function defined in such a way that it reaches a value of 100 at the average value of the parameter and a value of 1 at the border closer to the average. The confal value is set to 0 for more distant values. The confal score for a step is then calculated as a harmonic mean of its 12 confal values, and the confal score for a structure is calculated as an average of the step values.
+            <b>confal</b> a quality score, with value of 100 corresponding to a perfect fit to the reference and 0 corresponding to conformational outliers. The confal function is a Gaussian function defined in such a way that it reaches a value of 100 at the average value of the parameter and a value of 1 at the border closer to the average. The confal value is set to 0 for more distant values. The confal score for a step is then calculated as a harmonic mean of its 12 confal values, and the confal score for a structure is calculated as an average of the step values.
         </li>
         <li>
-            RMSD: root mean square deviation in cartesian space between the analyzed step and reference.
+            <b>RMSD</b>: root mean square deviation in cartesian space between the analyzed step and reference.
         </li>
     </ul>
 
