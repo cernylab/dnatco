@@ -2,9 +2,9 @@ import { CANA } from './cana';
 import { NtC } from './ntc';
 
 export type ConformerInfo = {
-    description: string,
-    CANA: CANA.Class,
     NtC: NtC.Class,
+    CANA: CANA.Class,
+    description: string,
     countInDNA: number;
     percentInDNA: number;
     countInRNA: number;

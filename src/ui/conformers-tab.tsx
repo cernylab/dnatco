@@ -138,9 +138,9 @@ class TableOfConformers extends React.Component {
             <table className='rdo-list-of-conformers rdo-data-table-wide'>
                 <thead>
                     <tr>
+                        <th className='rdo-list-of-conformers-bb' rowSpan={2}>NtC</th>
+                        <th className='rdo-list-of-conformers-bb rdo-list-of-conformers-rb' rowSpan={2}>CANA</th>
                         <th className='rdo-list-of-conformers-bb rdo-list-of-conformers-rb' rowSpan={2}>Annotation</th>
-                        <th className='rdo-list-of-conformers-bb' rowSpan={2}>CANA</th>
-                        <th className='rdo-list-of-conformers-bb rdo-list-of-conformers-rb' rowSpan={2}>NtC</th>
                         <th className='rdo-list-of-conformers-rb' colSpan={5}>Number of steps in</th>
                         <th className='rdo-list-of-conformers-bb rdo-list-of-conformers-highlighted-col' rowSpan={2}>δ1</th>
                         <th className='rdo-list-of-conformers-bb' rowSpan={2}>ε1</th>
@@ -182,9 +182,9 @@ class TableOfConformers extends React.Component {
                                 }
                                 key={idx}
                             >
+                                <td className='rdo-talgn-center'>{info.NtC}</td>
+                                <td className='rdo-talgn-center rdo-list-of-conformers-rb'>{info.CANA}</td>
                                 <td className='rdo-list-of-conformers-rb'>{info.description}</td>
-                                <td className='rdo-talgn-center'>{info.CANA}</td>
-                                <td className='rdo-list-of-conformers-rb rdo-talgn-center'>{info.NtC}</td>
                                 <td className='rdo-talgn-right'>{fmtInt(info.countInDNA)}</td>
                                 <td className='rdo-talgn-right'>{fmtFlt(info.percentInDNA)}</td>
                                 <td className='rdo-talgn-right'>{fmtInt(info.countInRNA)}</td>
@@ -207,8 +207,8 @@ class TableOfConformers extends React.Component {
                     })
                 }
                     <tr>
-                        <td className='rdo-list-of-conformers-rb rdo-list-of-conformers-tb'></td>
                         <td className='rdo-list-of-conformers-tb'></td>
+                        <td className='rdo-list-of-conformers-rb rdo-list-of-conformers-tb'></td>
                         <td className='rdo-list-of-conformers-rb rdo-list-of-conformers-tb'></td>
                         <td className='rdo-list-of-conformers-tb rdo-talgn-right'>{fmtInt(totalDNACount)}</td>
                         <td className='rdo-list-of-conformers-tb rdo-talgn-right'></td>
@@ -231,9 +231,9 @@ class TableOfConformers extends React.Component {
                 </tbody>
                 <thead>
                     <tr>
+                        <th className='rdo-list-of-conformers-bb' rowSpan={2}>NtC</th>
+                        <th className='rdo-list-of-conformers-bb rdo-list-of-conformers-rb' rowSpan={2}>CANA</th>
                         <th className='rdo-list-of-conformers-bb rdo-list-of-conformers-rb' rowSpan={2}>Annotation</th>
-                        <th className='rdo-list-of-conformers-bb' rowSpan={2}>CANA</th>
-                        <th className='rdo-list-of-conformers-bb rdo-list-of-conformers-rb' rowSpan={2}>NtC</th>
                         <th className='rdo-list-of-conformers-tb '>{'N\u00A0DNA'}</th>
                         <th className='rdo-list-of-conformers-tb'>{'%\u00A0DNA'}</th>
                         <th className='rdo-list-of-conformers-tb'>{'N\u00A0RNA'}</th>

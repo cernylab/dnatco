@@ -13,7 +13,7 @@ function sharedConfig(productionBuild) {
                         loader: 'file-loader',
                         options: {
                             name: '[name].[ext]',
-                            sourceMap: false
+                            sourceMap: false,
                         },
                     }],
                 },
@@ -21,7 +21,10 @@ function sharedConfig(productionBuild) {
                     test: /\.php$/,
                     use: [{
                         loader: 'file-loader',
-                        options: { name: '[name].[ext]' },
+                        options: {
+                            name: '[name].[ext]',
+                            sourceMap: false,
+                        },
                     }],
                 },
                 {
@@ -31,6 +34,7 @@ function sharedConfig(productionBuild) {
                         options: {
                             name: '[name].[ext]',
                             outputPath: 'html/',
+                            sourceMap: false,
                         }
                     }],
                 },
@@ -41,7 +45,7 @@ function sharedConfig(productionBuild) {
                         options: {
                             outputPath: 'imgs',
                             name: '[name].[ext]',
-                            sourceMap: false
+                            sourceMap: false,
                         },
                     }],
                 },
@@ -73,7 +77,6 @@ function sharedConfig(productionBuild) {
         resolve: {
             modules: [
                 'node_modules',
-                path.resolve(__dirname, 'jsLLKA/'),
                 path.resolve(__dirname, 'lib/'),
             ],
         },

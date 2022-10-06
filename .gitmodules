@@ -7,6 +7,6 @@
 [submodule "jsllka"]
 	path = jsllka
 	url = git@gitlab.cesnet.cz:madcatxster/jsllka.git
-[submodule "tscif"]
-	path = tscif
+[submodule "src/tscif"]
+	path = src/tscif
 	url = git@gitlab.cesnet.cz:madcatxster/tscif.git
