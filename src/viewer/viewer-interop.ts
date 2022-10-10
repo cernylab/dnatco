@@ -1,5 +1,5 @@
 import { Subject } from 'rxjs';
-import { ReDNATCOMspApi as ViewerApi } from './viewer-api';
+import { ReDNATCOMspApi as ViewerApi } from 'viewer-api';
 import { EventsKeeper } from '../util/events-keeper';
 
 export type ViewerEvents = {

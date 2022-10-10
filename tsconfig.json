@@ -20,12 +20,18 @@
         "moduleResolution": "node",
 
         "outDir": "lib",
-        "rootDirs": [ "src", "molstar/src/apps/rednatco", "tscif/src" ],
+        "rootDirs": [
+            "src",
+            "molstar/src/apps/rednatco",
+            "tscif/src"
+        ],
 
         "baseUrl": ".",
         "paths": {
             "tscif/*": [ "tscif/src" ],
-            "assets/*": [ "assets" ]
+            "assets/*": [ "assets" ],
+            "viewer-api": [ "molstar/src/apps/rednatco/api.ts" ],
+            "viewer-filters": [ "molstar/src/apps/rednatco/filters.ts" ]
         }
     },
     "include": [ "src/**/*" ]

@@ -81,6 +81,8 @@ function sharedConfig(productionBuild) {
             ],
             alias: {
                 'tscif': path.resolve(__dirname, 'lib/tscif/src'),
+                'viewer-api': path.resolve(__dirname, 'lib/molstar/src/apps/rednatco/api.js'),
+                'viewer-filters': path.resolve(__dirname, 'lib/molstar/src/apps/rednatco/filters.js'),
                 'assets': path.resolve(__dirname, 'assets'),
             }
         },
