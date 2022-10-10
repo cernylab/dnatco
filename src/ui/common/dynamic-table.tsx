@@ -2,9 +2,9 @@ import * as React from 'react';
 import { Tooltip } from './tooltip';
 import { scrollIntoViewIfNeeded } from '../util';
 import { GlobalConfig } from '../../global-config';
-import '../../../assets/imgs/sort.svg';
-import '../../../assets/imgs/sorted-ascending.svg';
-import '../../../assets/imgs/sorted-descending.svg';
+import 'assets/imgs/sort.svg';
+import 'assets/imgs/sorted-ascending.svg';
+import 'assets/imgs/sorted-descending.svg';
 
 interface Comparator<T> {
     (a: T, b: T): number;

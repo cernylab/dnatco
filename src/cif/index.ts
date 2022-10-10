@@ -1,5 +1,5 @@
 import { Category, Schema } from './categories';
-import { Parser } from '../tscif/src/parser';
+import { Parser } from 'tscif/parser';
 import { KnownCategories } from './register';
 
 function toArray<T>(list: (string|null)[], conv: (v: string) => T) {

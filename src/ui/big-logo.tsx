@@ -2,7 +2,7 @@ import * as React from 'react';
 import { GlobalConfig } from '../global-config';
 import { Globals } from '../globals';
 import { Version } from '../version';
-import '../../assets/imgs/definition_new_trans2.png';
+import 'assets/imgs/definition_new_trans2.png';
 
 export class BigLogo extends React.Component {
     render() {

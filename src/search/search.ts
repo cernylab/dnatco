@@ -2,7 +2,7 @@ import { WebApi } from './web-api';
 import { CANA } from '../dnatco/cana';
 import { NtC } from '../dnatco/ntc';
 import { EventsKeeper } from '../util/events-keeper';
-import '../../assets/search.php';
+import 'assets/search.php';
 
 export class Search {
     private ek = new EventsKeeper();

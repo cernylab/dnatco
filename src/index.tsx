@@ -26,18 +26,18 @@ import { ViewerApi, ViewerInterop } from './viewer/viewer-interop';
 import { Task } from './tasks/task';
 import { Globals } from './globals';
 // Image assets
-import '../assets/imgs/elixir.png';
-import '../assets/imgs/home.svg';
-import '../assets/imgs/ibt.png';
-import '../assets/imgs/info.svg';
-import '../assets/imgs/magnifying-glass.svg';
-import '../assets/imgs/list.svg';
-import '../assets/imgs/task.svg';
-import '../assets/imgs/loop.svg';
-import '../assets/imgs/document.svg';
+import 'assets/imgs/elixir.png';
+import 'assets/imgs/home.svg';
+import 'assets/imgs/ibt.png';
+import 'assets/imgs/info.svg';
+import 'assets/imgs/magnifying-glass.svg';
+import 'assets/imgs/list.svg';
+import 'assets/imgs/task.svg';
+import 'assets/imgs/loop.svg';
+import 'assets/imgs/document.svg';
 // Base assets
-import '../assets/index.php';
-import '../assets/rednatco.css';
+import 'assets/index.php';
+import 'assets/rednatco.css';
 
 const Params = {
     cifcode: '',
@@ -243,7 +243,7 @@ export class App extends WithSubscriptions<{}, State> {
                     Popup.create(
                         <>
                             <div className='rdo-error-text'>Cannot process structure</div>
-                            <div className='rdo-error-text'>{data.finished.message ?? 'Unknown error'}</div>
+                            <div className='rdo-error-text'>{data.finished.message ?? 'Unspecified error'}</div>
                          </>
                     );
                 } else if (data.finished.state === 'succeeded') {

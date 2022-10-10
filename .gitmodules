@@ -1,12 +1,9 @@
-[submodule "jsLLKA"]
-	path = jsLLKA
-	url = git@gitlab.cesnet.cz:madcatxster/jsLLKA
 [submodule "molstar"]
 	path = molstar
 	url = https://github.com/MadCatX/molstar.git
 [submodule "jsllka"]
 	path = jsllka
 	url = git@gitlab.cesnet.cz:madcatxster/jsllka.git
-[submodule "src/tscif"]
-	path = src/tscif
+[submodule "tscif"]
+	path = tscif
 	url = git@gitlab.cesnet.cz:madcatxster/tscif.git

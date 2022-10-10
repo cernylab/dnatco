@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { GlobalConfig } from '../../global-config';
-import '../../../assets/imgs/triangle-up.svg';
-import '../../../assets/imgs/triangle-down.svg';
+import 'assets/imgs/triangle-up.svg';
+import 'assets/imgs/triangle-down.svg';
 
 function defaultFormatter(v: number|null) {
     if (v === null)

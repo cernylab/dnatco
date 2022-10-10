@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { GlobalConfig } from '../../global-config';
-import '../../../assets/imgs/down_arrow.svg';
+import 'assets/imgs/down_arrow.svg';
 
 
 export class ComboBox extends React.Component<ComboBox.Props> {

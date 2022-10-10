@@ -2,9 +2,9 @@ import * as React from 'react';
 import { Email } from './common/email';
 import { IconButton } from './common/push-button';
 import { Net } from '../util/net';
-import '../../assets/imgs/ibt.png';
-import '../../assets/imgs/elixir.png';
-import '../../assets/imgs/CAS_centred_logo_ENG_rgb.png';
+import 'assets/imgs/ibt.png';
+import 'assets/imgs/elixir.png';
+import 'assets/imgs/CAS_centred_logo_ENG_rgb.png';
 
 const PadderStyle = { marginLeft: 'calc(var(--h-gap) / 2)', marginRight: 'calc(var(--h-gap) / 2)' };
 

@@ -4,7 +4,7 @@ import { IconTextButton } from '../common/push-button';
 import { GlobalConfig } from '../../global-config';
 import { Net } from '../../util/net';
 import { Serialization } from '../../util/serialization';
-import '../../../assets/imgs/data-transfer-download.svg';
+import 'assets/imgs/data-transfer-download.svg';
 
 export namespace Common {
     export const NA = 'N/A';

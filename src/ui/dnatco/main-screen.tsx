@@ -6,8 +6,8 @@ import { DynamicSplitView } from '../common/dynamic-split-view';
 import { WithSubscriptions } from '../service/with-subscriptions';
 import { ViewerInterop, ViewerApi } from '../../viewer/viewer-interop';
 import { Dnatcofication } from '../../dnatco/dnatcofication';
-import '../../../assets/molstar.js';
-import '../../../assets/molstar.css';
+import 'assets/molstar.js';
+import 'assets/molstar.css';
 
 export type MasterMode = 'annotation' | 'validation' | 'refinement';
 type ViewType = keyof typeof Register.Views;

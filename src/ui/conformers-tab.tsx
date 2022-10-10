@@ -10,7 +10,7 @@ import { ListOfConformers } from '../dnatco/list-of-conformers';
 import { Search } from '../search/search';
 import { Net } from '../util/net';
 import { GlobalConfig } from '../global-config';
-import '../../assets/html/about-ntcs.html';
+import 'assets/html/about-ntcs.html';
 
 const Tabs = {
     'about-ntcs': { name: 'About NtCs', caption: 'About NtCs' },

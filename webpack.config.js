@@ -77,8 +77,12 @@ function sharedConfig(productionBuild) {
         resolve: {
             modules: [
                 'node_modules',
-                path.resolve(__dirname, 'lib/'),
+                path.resolve(__dirname, 'lib/src'),
             ],
+            alias: {
+                'tscif': path.resolve(__dirname, 'lib/tscif/src'),
+                'assets': path.resolve(__dirname, 'assets'),
+            }
         },
         experiments: {
             topLevelAwait: true,
@@ -91,7 +95,7 @@ function createApp(name, productionBuild) {
         node: false,
         target: 'web',
         entry: {
-            app: path.resolve(__dirname, `lib/${name}.js`),
+            app: path.resolve(__dirname, `lib/src/${name}.js`),
         },
         output: {
             filename: `${name}.js`,

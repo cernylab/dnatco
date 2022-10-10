@@ -20,9 +20,13 @@
         "inlineSources": true,
 
         "outDir": "lib",
-        "rootDir": "src",
+        "rootDirs": [ "src", "molstar/src/apps/rednatco", "tscif/src" ],
 
-        "baseUrl": "."
+        "baseUrl": ".",
+        "paths": {
+            "tscif/*": [ "tscif/src" ],
+            "assets/*": [ "assets" ]
+        }
     },
     "include": [ "src/**/*" ]
 }
