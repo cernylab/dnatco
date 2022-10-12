@@ -35,12 +35,12 @@ export function StructureSelection(viewerInterop: ViewerInterop, dnatcofication:
         }
         return { modelIndex, chain, stepId: InvalidStepId };
     } else
-        return EmptyStructureSelection();
+        return EmptyStructureSelection(dnatcofication);
 }
 
-export function EmptyStructureSelection(): StructureSelection {
+export function EmptyStructureSelection(d: Dnatcofication): StructureSelection {
     return {
-        modelIndex: InvalidModelIndex,
+        modelIndex: d.data.structures[0].models.length === 1 ? 0 : InvalidModelIndex,
         chain: InvalidChain,
         stepId: InvalidStepId,
     };

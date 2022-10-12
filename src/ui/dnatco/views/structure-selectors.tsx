@@ -17,6 +17,9 @@ function chainOptions(sel: StructureSelection, d: Dnatcofication) {
 }
 
 function modelOptions(d: Dnatcofication) {
+    if (d.data.structures[0].models.length === 1)
+        return listOfModels(d.data.structures[0]);
+
     const opts = [
         { name: 'All', index: InvalidModelIndex },
         ...listOfModels(d.data.structures[0]),
