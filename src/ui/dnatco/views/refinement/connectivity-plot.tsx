@@ -76,15 +76,15 @@ export class ConnectivityPlot extends View<View.Props, State> {
     private stepDescription(stepId: number, color: StandardLonghandProperties['color']) {
         if (stepId === -1) {
             return [
-                <div style={{ color }}>(None)</div>,
-                <div style={{ color }}>(-)</div>
+                <div style={{ color }} key='name'>(None)</div>,
+                <div style={{ color }} key='ntc'>(-)</div>
             ];
         }
 
         const step = StepsMapper.byId(this.props.dnatcofication, stepId);
         return [
-            <div style={{ color }}>{step.name}</div>,
-            <div style={{ color }}>({step.NtC})</div>
+            <div style={{ color }} key='name'>{step.name}</div>,
+            <div style={{ color }} key='ntc'>({step.NtC})</div>
         ];
     }
 

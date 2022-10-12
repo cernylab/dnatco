@@ -33,13 +33,17 @@ export class PhenixRestraints extends View<View.Props, State> {
         const restraints = Phenix.restraints(this.props.dnatcofication, this.state.maxRmsd);
         const elems = new Array<JSX.Element>();
 
+
+        let ctr = 0;
         const lines = Phenix.restraintsAsLines(restraints)
         for (const line of lines) {
             const text = replaceAll(line.text, LeadingWS, '\u00A0');
             if (line.isOk)
-                elems.push(<div className='rdo-monospace'>{text}</div>);
+                elems.push(<div className='rdo-monospace' key={ctr}>{text}</div>);
             else
-                elems.push(<div className='rdo-monospace rdo-error-text'>{text}</div>);
+                elems.push(<div className='rdo-monospace rdo-error-text' key={ctr}>{text}</div>);
+
+            ctr++;
         }
 
         return (

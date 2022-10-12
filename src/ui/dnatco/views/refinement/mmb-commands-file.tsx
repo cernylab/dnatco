@@ -39,7 +39,7 @@ export class MmbCommandsFile extends View<View.Props, State> {
                     </div>
                 </div>
                 <div>
-                    {lines.map(l => <div className='rdo-monospace'>{l}</div>)}
+                    {lines.map((l, idx) => <div className='rdo-monospace' key={idx}>{l}</div>)}
                 </div>
             </div>
         );

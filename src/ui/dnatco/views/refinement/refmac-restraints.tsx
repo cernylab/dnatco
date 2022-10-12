@@ -21,11 +21,14 @@ export class RefmacRestraints extends View<View.Props, State> {
         const restraints = Refmac.restraints(this.props.dnatcofication, this.state.maxRmsd);
         const elems = new Array<JSX.Element>();
 
+        let ctr = 0;
         for (const r of restraints) {
             if (r.rtype === 'unavailable')
-                elems.push(<div className='rdo-error-text rdo-monospace'>{Refmac.restraintAsText(r)}</div>);
+                elems.push(<div className='rdo-error-text rdo-monospace' key={ctr}>{Refmac.restraintAsText(r)}</div>);
             else
-                elems.push(<div className='rdo-monospace'>{Refmac.restraintAsText(r)}</div>);
+                elems.push(<div className='rdo-monospace' key={ctr}>{Refmac.restraintAsText(r)}</div>);
+
+            ctr++;
         }
 
         return (
