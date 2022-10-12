@@ -2,6 +2,7 @@ import { Dnatcofication } from './dnatcofication';
 import { CANA } from './cana';
 import { NtC } from './ntc';
 import { Step } from './step';
+import { Structure } from './structure';
 import { Cif } from '../cif';
 import { NdbStructNtcStep_Schema, NdbStructNtcStepSummary_Schema } from '../cif/categories/ndb-struct-ntc';
 
@@ -54,20 +55,17 @@ export namespace StepsMapper {
         };
     }
 
-    export function map(steps: Cif.Table<NdbStructNtcStep_Schema>, summaries: Cif.Table<NdbStructNtcStepSummary_Schema>, modelCount: number): Mapping {
+    export function map(steps: Cif.Table<NdbStructNtcStep_Schema>, summaries: Cif.Table<NdbStructNtcStepSummary_Schema>, structure: Structure): Mapping {
+        const modelCount = structure.models.length;
+
         if (steps._rowCount < 1)
             return Mapping();
 
         let firstId = Cif.Column.value(steps.id, 0)!;
-        let firstModel = Cif.Column.value(steps.PDB_model_number, 0)!;
         for (let row = 1; row < steps._rowCount; row++) {
             const id = Cif.Column.value(steps.id, row)!;
             if (id < firstId)
                 firstId = id;
-
-            const model = Cif.Column.value(steps.PDB_model_number, row)!;
-            if (model < firstModel)
-                firstModel = model;
         }
 
         const orderedSteps = new Array<Step>(steps._rowCount);
@@ -110,7 +108,9 @@ export namespace StepsMapper {
 
         for (let idx = 0; idx < orderedSteps.length; idx++) {
             const step = orderedSteps[idx];
-            const mIdx = step.model - firstModel;
+            const mIdx = structure.models.findIndex(x => x.num === step.model);
+            if (mIdx < 0)
+                throw new Error(`Cannot find model index for step ${step.name}`);
             if (models[mIdx] === undefined || models[mIdx] > idx)
                 models[mIdx] = idx;
 
@@ -176,23 +176,23 @@ export namespace StepsMapper {
         return d.data.steps.names.get(name);
     }
 
-    export function previousNextById(d: Dnatcofication, id: number): { previous: number, next: number } {
+    export function previousNextById(d: Dnatcofication, id: number): { previousId: number, nextId: number } {
         const idx = id - d.data.steps.firstId;
         const offset = d.data.steps.firstId;
-        const previous = d.data.steps.previous[idx] !== -1 ? d.data.steps.previous[idx] + offset : -1;
-        const next = d.data.steps.next[idx] !== -1 ? d.data.steps.next[idx] + offset : -1;
+        const previousId = d.data.steps.previous[idx] !== -1 ? d.data.steps.previous[idx] + offset : -1;
+        const nextId = d.data.steps.next[idx] !== -1 ? d.data.steps.next[idx] + offset : -1;
 
-        return { previous, next };
+        return { previousId, nextId };
     }
 
-    export function segment(d: Dnatcofication, model?: number, chain?: string) {
-        if (model === undefined)
+    export function segment(d: Dnatcofication, modelIndex?: number, chain?: string) {
+        if (modelIndex === undefined)
             return d.data.steps.steps;
         else {
             const steps = new Array<Step>();
 
             if (!chain) {
-                const fromIdx = d.data.steps.models[model - 1];
+                const fromIdx = d.data.steps.models[modelIndex];
                 const first = d.data.steps.steps[fromIdx];
                 for (let idx = fromIdx; idx < d.data.steps.steps.length; idx++) {
                     const s = d.data.steps.steps[idx];
@@ -201,7 +201,7 @@ export namespace StepsMapper {
                     steps.push(s);
                 }
             } else {
-                const fromIdx = d.data.steps.chains[model - 1].get(chain);
+                const fromIdx = d.data.steps.chains[modelIndex].get(chain);
                 if (fromIdx === undefined)
                     throw new Error(`Invalid chain ${chain}`);
                 const first = d.data.steps.steps[fromIdx];

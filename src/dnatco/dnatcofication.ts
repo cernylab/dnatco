@@ -93,10 +93,10 @@ export class Dnatcofication {
 
 export namespace Dnatcofication {
     export namespace Structure {
-        export function nucleicAcidChains(d: Dnatcofication, model = 1) {
+        export function nucleicAcidChains(d: Dnatcofication, modelIndex = 0) {
             if (d.data.nucleicAcidChains.length === 0)
                 return [];
-            return d.data.nucleicAcidChains[model - 1];
+            return d.data.nucleicAcidChains[modelIndex];
         }
 
         export function numberOfModels(d: Dnatcofication) {
@@ -135,7 +135,7 @@ export namespace Dnatcofication {
             const steps = StepsMapper.map(
                 Cif.File.table(cifData, NdbStructNtcStep),
                 Cif.File.table(cifData, NdbStructNtcStepSummary),
-                structures[0]?.models.length ?? 0
+                structures[0],
             );
 
             ctx.status = 'Calculating connectivities';

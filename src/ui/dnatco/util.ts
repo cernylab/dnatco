@@ -1,39 +1,71 @@
+import { InvalidModelIndex, InvalidStepId } from './structure-selection';
 import { ComboBox } from '../common/combo-box';
 import { Dnatcofication } from '../../dnatco/dnatcofication';
 import { Chain, Structure } from '../../dnatco/structure';
 import { StepsMapper } from '../../dnatco/steps-mapper';
+import { Filters } from 'viewer-filters';
 
-export function listOfChains(modelNum: number|undefined, structure: Structure) {
-    let models;
-    if (modelNum === undefined)
-        models = structure.models;
-    else {
-        const m = structure.models.find(m => m.num === modelNum);
-        models = m ? [m] : [];
-    }
+export type PrevCurrentNextStepSelection = {
+    previous?: { id: number, name: string },
+    current: { id: number, name: string },
+    next?: { id: number, name: string },
+}
+
+export function filterToChain(dnatcofication: Dnatcofication, modelIndex: number, filter: Filters.All) {
+    if (filter.kind === 'empty')
+        return ''; // Empty string indicates all chains
+
+    const chain = filter.slices.at(0)?.chain ?? '';
+    const found = dnatcofication.data.structures[0].models[modelIndex].chains.find(ch => ch.name === chain);
+
+    return found ? chain : '';
+}
+
+export function listOfChains(modelIndex: number, structure: Structure) {
+    if (modelIndex === InvalidModelIndex)
+        return [];
+
+    const model = structure.models[modelIndex];
 
     const seenChains = new Set<string>();
     const options: ComboBox.Option[] = [];
-    for (const m of models) {
-        for (const chain of m.chains) {
-            if (Chain.isNAChain(chain) && !seenChains.has(chain.name))
-                options.push({ value: chain.name, caption: `Auth: ${chain.authName}, Cif: ${chain.name}` });
-        }
+    for (const chain of model.chains) {
+        if (Chain.isNAChain(chain) && !seenChains.has(chain.name))
+            options.push({ value: chain.name, caption: `Auth: ${chain.authName}, Cif: ${chain.name}` });
     }
 
     return options;
 }
 
-export function makeStepSelection(dnatcofication: Dnatcofication, stepName: string): { prev?: string, current: string, next?: string }|undefined {
-    const stepId = StepsMapper.byName(dnatcofication, stepName)?.id ?? -1;
-    if (stepId === -1)
-        return undefined;
+export function listOfModels(structure: Structure) {
+    const list: { name: string, index: number }[] = [];
 
-    const { previous, next } = StepsMapper.previousNextById(dnatcofication, stepId);
-    const prevName = previous === -1 ? undefined : StepsMapper.byId(dnatcofication, previous).name;
-    const nextName = next === -1 ? undefined : StepsMapper.byId(dnatcofication, next).name;
+    let index = 0;
+    for (const model of structure.models) {
+        list.push({ name: model.num.toString(), index });
+        index++;
+    }
 
-    return { prev: prevName, current: stepName, next: nextName };
+    list.sort((a, b) => parseInt(a.name) - parseInt(b.name));
+
+    return list;
+}
+
+export function makeStepSelection(dnatcofication: Dnatcofication, stepId: number): PrevCurrentNextStepSelection {
+    const { previousId, nextId } = StepsMapper.previousNextById(dnatcofication, stepId);
+    const prevStep = previousId === InvalidStepId ? undefined : StepsMapper.byId(dnatcofication, previousId);
+    const nextStep = nextId === InvalidStepId ? undefined : StepsMapper.byId(dnatcofication, nextId);
+
+    return {
+        previous: prevStep ? { id: previousId, name: prevStep.name } : void 0,
+        current: { id: stepId, name: StepsMapper.byId(dnatcofication, stepId).name },
+        next: nextStep ? { id: nextId, name: nextStep.name } : void 0,
+    };
+}
+
+export function toComboBoxOptions<T>(opts: T[], toComboOpt: (o: T) => { caption: string, value: string }) {
+    const cbOpts: ComboBox.Option[] = opts.map(o => toComboOpt(o));
+    return cbOpts;
 }
 
 export function valueToSemaphore(v: number, greenValue: number, redValue: number) {

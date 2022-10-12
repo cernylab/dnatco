@@ -9,6 +9,7 @@ import { Dnatcofication, DnatcoficationData } from './dnatco/dnatcofication';
 import { ListOfConformers } from './dnatco/list-of-conformers';
 import { Reader } from './dnatco/reader';
 import { Step } from './dnatco/step';
+import { StepsMapper } from './dnatco/steps-mapper';
 import { AboutTab } from './ui/about-tab';
 import { DnatcoViewerTab } from './ui/dnatco-viewer-tab';
 import { Footer } from './ui/footer';
@@ -159,12 +160,13 @@ export class App extends WithSubscriptions<{}, State> {
     }
 
     private goToStep(stepName: string) {
-        const selection = makeStepSelection(this.dnatcofication, stepName);
-        if (selection) {
+        const step = StepsMapper.byName(this.dnatcofication, stepName);
+        if (step) {
+            const selection = makeStepSelection(this.dnatcofication, step.id);
             // Use an arbitrary delay to give Molstar some time to settle
             // Not doing this may result in broken rendering
             setTimeout(
-                () => this.viewerInterop.api.command(ViewerApi.Commands.SelectStep(selection.current, selection.prev, selection.next)),
+                () => this.viewerInterop.api.command(ViewerApi.Commands.SelectStep(selection.current.name, selection.previous?.name, selection.next?.name)),
                 200
             );
         }

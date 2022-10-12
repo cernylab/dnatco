@@ -1,11 +1,11 @@
-import * as React from 'react';
+import  React from 'react';
+import { ChainSelect, ModelSelect } from '../structure-selectors';
+import { InvalidChain, InvalidModelIndex, InvalidStepId } from '../../structure-selection';
 import { View } from '../view';
 import { DynamicTableDownloadBar } from '../../common';
 import { SingleStepInfo } from '../../single-step-info';
-import { ViewerApi } from '../../../../viewer/viewer-interop';
 import { Constants } from '../../constants';
-import { listOfChains, makeStepSelection, valueToSemaphore } from '../../util';
-import { ComboBox } from '../../../common/combo-box';
+import { valueToSemaphore } from '../../util';
 import { DynamicTable } from '../../../common/dynamic-table';
 import { NamedList, NamedListItem } from '../../../common/named-list';
 import { Tooltip } from '../../../common/tooltip';
@@ -15,7 +15,7 @@ import {
     NdbStructNtcStepParameters
 } from '../../../../cif/categories/ndb-struct-ntc';
 import { Dnatcofication } from '../../../../dnatco/dnatcofication';
-import { sequence } from '../../../../util';
+import { StepsMapper } from '../../../../dnatco/steps-mapper';
 
 function confalToColor(rmsd: number): React.CSSProperties  {
     const clr = valueToSemaphore(rmsd, Constants.GreenConfal, Constants.GreenRMSD);
@@ -27,24 +27,10 @@ function rmsdToColor(rmsd: number): React.CSSProperties  {
     return { backgroundColor: `rgb(${clr.r},${clr.g},${clr.b})` };
 }
 
-interface State {
-    chain: string;
-    model: string;
-    tableModel: DynamicTable.Model;
-    selectedStepName?: string;
-}
-export class ConfalsRmsds extends View<View.Props, State> {
-    constructor(props: View.Props) {
-        super(props);
+export class ConfalsRmsds extends View<View.Props> {
+    private tableModel: DynamicTable.Model = new DynamicTable.Model([]);
 
-        this.state = {
-            chain: '',
-            model: '',
-            tableModel: this.makeTableModel(void 0, void 0),
-        };
-    }
-
-    private makeTableModel(selectedModelNum: number|undefined, selectedChain: string|undefined) {
+    private makeTableModel(selectedModelNum: number, selectedChain?: string) {
         const steps = this.props.dnatcofication.table(NdbStructNtcStep);
         const summary = this.props.dnatcofication.table(NdbStructNtcStepSummary);
         const params = this.props.dnatcofication.table(NdbStructNtcStepParameters);
@@ -85,7 +71,7 @@ export class ConfalsRmsds extends View<View.Props, State> {
 
         for (let row = 0; row < steps._rowCount; row++) {
             const modelNum = Cif.Column.value(PDB_model_number, row);
-            if (selectedModelNum !== undefined && selectedModelNum !== modelNum)
+            if (selectedModelNum !== -1 && selectedModelNum !== modelNum)
                 continue;
 
             const chain = Cif.Column.value(label_asym_id_1, row)!;
@@ -144,71 +130,34 @@ export class ConfalsRmsds extends View<View.Props, State> {
     }
 
     renderStepsTable() {
+        const modelNum = this.props.structureSelection.modelIndex !== InvalidModelIndex
+            ? this.props.dnatcofication.data.structures[0].models[this.props.structureSelection.modelIndex].num
+            : -1;
+        this.tableModel = this.makeTableModel(modelNum, this.props.structureSelection.chain === InvalidChain ? void 0 : this.props.structureSelection.chain);
+        const stepName = this.props.structureSelection.stepId === InvalidStepId ? '' : StepsMapper.byId(this.props.dnatcofication, this.props.structureSelection.stepId).name;
+
         return (
             <div>
                 <DynamicTableDownloadBar
                     filenameCsv={`${this.props.dnatcofication.identifyingName}_confals_rmsds.csv`}
                     filenameJson={`${this.props.dnatcofication.identifyingName}_confals_rmsds.json`}
-                    model={this.state.tableModel}
+                    model={this.tableModel}
                 />
 
                 <DynamicTable
-                    model={this.state.tableModel}
+                    model={this.tableModel}
                     onCellClicked={(row, col, item) => {
                         if (col === 'Step') {
-                            const selection = makeStepSelection(this.props.dnatcofication, item);
-                            if (selection)
-                                this.props.viewerInterop.api.command(ViewerApi.Commands.SelectStep(selection.current, selection.prev, selection.next));
+                            const stepId = StepsMapper.byName(this.props.dnatcofication, item)?.id ?? InvalidStepId;
+                            if (stepId !== InvalidStepId)
+                                this.props.switching.changeStepId(stepId);
                         }
                     }}
-                    highlightedTag={this.state.selectedStepName}
+                    highlightedTag={stepName}
                     scrollTainerId='rdo-main-screen-data-container'
                 />
             </div>
         );
-    }
-
-    componentDidMount() {
-        this.subscribe(
-            this.props.viewerInterop.events.stepDeselected,
-            () => this.setState({ ...this.state, selectedStepName: undefined })
-        );
-        this.subscribe(
-            this.props.viewerInterop.events.stepSelected,
-            (sel) => {
-                this.setState({ ...this.state, selectedStepName: sel.name});
-            }
-        );
-        this.subscribe(this.props.dnatcofication.events.structureChanged, () => this.setState({ ...this.state, model: '', chain: '', tableModel: this.makeTableModel(void 0, void 0) }));
-
-        if (this.props.viewerInterop.ready()) {
-            const step = this.props.viewerInterop.api.query('selected-step');
-            if (step.name !== '')
-                this.setState({ ...this.state, selectedStepName: step.name });
-        }
-    }
-
-    componentDidUpdate(prevProps: View.Props, prevState: State) {
-        const modelChanged = prevState.model !== this.state.model;
-        const chainChanged = prevState.chain !== this.state.chain;
-        if (modelChanged || chainChanged) {
-            const modelNum = this.state.model === '' ? undefined : parseInt(this.state.model);
-            const chain = this.state.chain === '' ? undefined : this.state.chain;
-            const tableModel = this.makeTableModel(modelNum, chain);
-
-            if (modelChanged) {
-                const n = parseInt(this.state.model);
-                if (!isNaN(n))
-                    this.props.viewerInterop.api.command(ViewerApi.Commands.SwitchModel(n));
-            } else {
-                if (this.state.chain !== '') {
-                    this.props.viewerInterop.api.command(ViewerApi.Commands.DeselectStep());
-                }
-            }
-
-            // NODE: Mind possible races between event handles and this setState()
-            this.setState({ ...this.state, selectedStepName: undefined, tableModel });
-        }
     }
 
     componentWillUnmount() {
@@ -226,34 +175,17 @@ export class ConfalsRmsds extends View<View.Props, State> {
                         {this.renderAnalyzedSteps()}
                     </NamedListItem>
                     <NamedListItem name='Model'>
-                        <ComboBox
-                            options={[
-                                { value: '', caption: 'All' },
-                                ...sequence(1, Dnatcofication.Structure.numberOfModels(this.props.dnatcofication)).map(v => {
-                                    const s = v.toString();
-                                    return { value: s, caption: s };
-                                })
-                            ]}
-                            value={this.state.model}
-                            onChange={v => {
-                                if (v === this.state.model)
-                                    return;
-                                this.setState({ ...this.state, model: v, chain: '' });
-                            }}
+                        <ModelSelect
+                            dnatcofication={this.props.dnatcofication}
+                            structureSelection={this.props.structureSelection}
+                            onChange={this.props.switching.changeModel}
                         />
                     </NamedListItem>
                     <NamedListItem name='Chain'>
-                        <ComboBox
-                            options={[
-                                { value: '', caption: 'All' },
-                                ...listOfChains(this.state.model === '' ? undefined : parseInt(this.state.model), this.props.dnatcofication.data.structures[0]),
-                            ]}
-                            value={this.state.chain}
-                            onChange={v => {
-                                if (v === this.state.chain)
-                                    return;
-                                this.setState({ ...this.state, chain: v });
-                            }}
+                        <ChainSelect
+                            dnatcofication={this.props.dnatcofication}
+                            structureSelection={this.props.structureSelection}
+                            onChange={this.props.switching.changeChain}
                         />
                     </NamedListItem>
                 </NamedList>

@@ -1,11 +1,14 @@
-import * as React from 'react';
+import React from 'react';
 import { makeStepSelection } from './util';
+import { InvalidChain, InvalidModelIndex, InvalidStepId, StructureSelection } from './structure-selection';
 import { ViewsList } from './views-list';
 import { Register } from './views/register';
 import { DynamicSplitView } from '../common/dynamic-split-view';
 import { WithSubscriptions } from '../service/with-subscriptions';
 import { ViewerInterop, ViewerApi } from '../../viewer/viewer-interop';
 import { Dnatcofication } from '../../dnatco/dnatcofication';
+import { StepsMapper } from '../../dnatco/steps-mapper';
+import { Filters } from 'viewer-filters';
 import 'assets/molstar.js';
 import 'assets/molstar.css';
 
@@ -43,26 +46,93 @@ interface State {
     annotationView: typeof AnnotationViews[number];
     validationView: typeof ValidationViews[number];
     refinementView: typeof RefinementViews[number];
+    structureSelection: StructureSelection;
 }
 export class MainScreen extends WithSubscriptions<MainScreen.Props, State> {
+    readonly viewerChangeChain = async (chain: string) => {
+        await this.props.viewerInterop.api.command(ViewerApi.Commands.DeselectStep());
+
+        if (chain === InvalidChain)
+            this.props.viewerInterop.api.command(ViewerApi.Commands.Filter(Filters.Empty()));
+        else {
+            const filter = Filters.Slices([{ chain }]);
+            this.props.viewerInterop.api.command(ViewerApi.Commands.Filter(filter));
+        }
+
+        // Invalidate step selection when switching chains
+        const structureSelection = { ...this.state.structureSelection, chain, stepId: InvalidStepId };
+        this.setState({ ...this.state, structureSelection });
+    }
+
+    readonly viewerChangeModel = async (modelIndex: number) => {
+        await this.props.viewerInterop.api.command(ViewerApi.Commands.DeselectStep());
+        await this.props.viewerInterop.api.command(ViewerApi.Commands.Filter(Filters.Empty()));
+
+        if (modelIndex !== InvalidModelIndex) {
+            const modelNum = this.props.dnatcofication.data.structures[0].models[modelIndex].num;
+            await this.props.viewerInterop.api.command(ViewerApi.Commands.SwitchModel(modelNum));
+        }
+
+        // Invalidate chain and step selection when switching model
+        const structureSelection = { ...this.state.structureSelection, modelIndex, chain: InvalidChain, stepId: InvalidStepId };
+        this.setState({ ...this.state, structureSelection });
+    }
+
+    readonly viewerChangeStepId = async (stepId: number) => {
+        if (stepId === InvalidStepId)
+            await this.props.viewerInterop.api.command(ViewerApi.Commands.DeselectStep());
+        else {
+            // @nocheckin Control whether do display previous and next step!!!
+            const selection = makeStepSelection(this.props.dnatcofication, stepId);
+            await this.props.viewerInterop.api.command(ViewerApi.Commands.SelectStep(selection.current.name, selection.previous?.name, selection.next?.name));
+        }
+
+        const structureSelection = { ...this.state.structureSelection, stepId };
+        this.setState({ ...this.state, structureSelection });
+    }
+
+    readonly viewerSwitching = {
+        changeChain: this.viewerChangeChain,
+        changeModel: this.viewerChangeModel,
+        changeStepId:  this.viewerChangeStepId,
+    }
+
     constructor(props: MainScreen.Props) {
         super(props);
+
+        const structureSelection = StructureSelection(this.props.viewerInterop, this.props.dnatcofication);
 
         this.state = {
             annotationView: 'assigned-ntcs',
             validationView: 'confals-rmsds',
             refinementView: 'connectivity-plot',
+            structureSelection,
         }
     }
 
     private renderView() {
         switch (this.props.masterMode) {
         case 'annotation':
-            return Register.Views[this.state.annotationView]({ dnatcofication: this.props.dnatcofication, viewerInterop: this.props.viewerInterop });
+            return Register.Views[this.state.annotationView]({
+                dnatcofication: this.props.dnatcofication,
+                viewerInterop: this.props.viewerInterop,
+                structureSelection: this.state.structureSelection,
+                switching: this.viewerSwitching,
+            });
         case 'validation':
-            return Register.Views[this.state.validationView]({ dnatcofication: this.props.dnatcofication, viewerInterop: this.props.viewerInterop });
+            return Register.Views[this.state.validationView]({
+                dnatcofication: this.props.dnatcofication,
+                viewerInterop: this.props.viewerInterop,
+                structureSelection: this.state.structureSelection,
+                switching: this.viewerSwitching,
+            });
         case 'refinement':
-            return Register.Views[this.state.refinementView]({ dnatcofication: this.props.dnatcofication, viewerInterop: this.props.viewerInterop });
+            return Register.Views[this.state.refinementView]({
+                dnatcofication: this.props.dnatcofication,
+                viewerInterop: this.props.viewerInterop,
+                structureSelection: this.state.structureSelection,
+                switching: this.viewerSwitching,
+            });
         }
     }
 
@@ -82,9 +152,27 @@ export class MainScreen extends WithSubscriptions<MainScreen.Props, State> {
         this.subscribe(
             this.props.viewerInterop.events.stepRequested,
             (name) => {
-                const selection = makeStepSelection(this.props.dnatcofication, name);
-                if (selection)
-                    this.props.viewerInterop.api.command(ViewerApi.Commands.SelectStep(selection.current, selection.prev, selection.next));
+                const stepId = StepsMapper.byName(this.props.dnatcofication, name)?.id ?? InvalidStepId;
+                if (stepId !== InvalidStepId) {
+                    const selection = makeStepSelection(this.props.dnatcofication, stepId);
+                    this.props.viewerInterop.api.command(ViewerApi.Commands.SelectStep(selection.current.name, selection.previous?.name, selection.next?.name));
+                }
+            }
+        );
+        this.subscribe(
+            this.props.viewerInterop.events.stepDeselected,
+            () => {
+                const sel = { ...this.state.structureSelection, stepId: InvalidModelIndex };
+                this.setState({ ...this.state, structureSelection: sel });
+            }
+        );
+        this.subscribe(
+            this.props.viewerInterop.events.stepSelected,
+            (v) => {
+                const name = v.name;
+                const stepId = StepsMapper.byName(this.props.dnatcofication, name)?.id ?? InvalidStepId;
+                const sel = { ...this.state.structureSelection, stepId };
+                this.setState({ ...this.state, structureSelection: sel });
             }
         );
         this.subscribe(

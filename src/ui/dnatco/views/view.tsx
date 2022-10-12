@@ -1,3 +1,4 @@
+import { StructureSelection, StructureSelectionSwitching } from '../structure-selection';
 import { Dnatcofication } from '../../../dnatco/dnatcofication';
 import { WithSubscriptions } from '../../service/with-subscriptions';
 import { ViewerInterop } from '../../../viewer/viewer-interop';
@@ -10,5 +11,7 @@ export namespace View {
     export interface Props {
         dnatcofication: Dnatcofication;
         viewerInterop: ViewerInterop;
+        structureSelection: StructureSelection;
+        switching: StructureSelectionSwitching;
     }
 }

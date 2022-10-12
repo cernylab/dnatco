@@ -1,18 +1,15 @@
 import type { StandardLonghandProperties } from 'csstype';
 import React from 'react';
 import Plot from 'react-plotly.js';
+import { ChainSelect, ModelSelect, StepSelect } from '../structure-selectors';
 import { View } from '../view';
-import { listOfChains, makeStepSelection } from '../../util';
-import { ComboBox } from '../../../common/combo-box';
+import { InvalidStepId } from '../../structure-selection';
 import { NamedList, NamedListItem } from '../../../common/named-list';
 import { BasePushButton } from '../../../common/push-button';
 import { Constants } from '../../../dnatco/constants';
-import { Dnatcofication } from '../../../../dnatco/dnatcofication';
 import { StepsMapper } from '../../../../dnatco/steps-mapper';
 import { valueToSemaphore } from '../../util';
 import { colorToRgb, rgbToHex } from '../../../util';
-import { sequence } from '../../../../util';
-import { ViewerApi } from '../../../../viewer/viewer-interop';
 
 const PlotData = {
     x: new Array<number>(),
@@ -23,9 +20,6 @@ const PlotData = {
 type PlotData = typeof PlotData;
 
 interface State {
-    chain: string;
-    model: number;
-    stepId: number;
     previousStepId: number;
     nextStepId: number;
 }
@@ -34,9 +28,6 @@ export class ConnectivityPlot extends View<View.Props, State> {
         super(props);
 
         this.state = {
-            chain: '',
-            model: this.props.dnatcofication.data.structures[0].models[0].num,
-            stepId: -1,
             previousStepId: -1,
             nextStepId: -1,
         };
@@ -97,90 +88,24 @@ export class ConnectivityPlot extends View<View.Props, State> {
         ];
     }
 
-    private stepsOptions() {
-        const model = this.state.model;
-        const chain = this.state.chain !== '' ? this.state.chain : void 0;
-
-        const opts: { caption: string, value: string }[] = [{ caption: '-', value: '' }];
-        for (const s of StepsMapper.segment(this.props.dnatcofication, model, chain))
-            opts.push({ caption: s.name, value: s.id.toString() });
-
-        return opts;
-    }
-
-    private switchStep(stepName: string) {
-        const selection = makeStepSelection(this.props.dnatcofication, stepName);
-        if (selection)
-            this.props.viewerInterop.api.command(ViewerApi.Commands.SelectStep(selection.current, selection.prev, selection.next));
-    }
-
     componentDidMount() {
-        this.subscribe(this.props.dnatcofication.events.structureChanged, () => this.forceUpdate());
-
-        this.subscribe(
-            this.props.viewerInterop.events.stepDeselected,
-            () => {
-                this.setState({
-                    ...this.state,
-                    stepId: -1,
-                    previousStepId: -1,
-                    nextStepId: -1,
-                })
-            }
-        );
-        this.subscribe(
-            this.props.viewerInterop.events.stepSelected,
-            sel => {
-                const step = StepsMapper.byName(this.props.dnatcofication, sel.name);
-                if (step)
-                    this.setState({ ...this.state, stepId: step.id });
-            }
-        );
-
-        if (this.props.viewerInterop.ready()) {
-            const sel = this.props.viewerInterop.api.query('selected-step');
-            if (sel.name !== '') {
-                const step = StepsMapper.byName(this.props.dnatcofication, sel.name);
-                if (step)
-                    this.setState({ ...this.state, stepId: step.id });
-            }
+        if (this.props.structureSelection.stepId === InvalidStepId)
+            this.setState({ ...this.state, previousStepId: InvalidStepId, nextStepId: InvalidStepId });
+        else {
+            const prevNext = StepsMapper.previousNextById(this.props.dnatcofication, this.props.structureSelection.stepId);
+            this.setState({ ...this.state, previousStepId: prevNext.previousId, nextStepId: prevNext.nextId });
         }
     }
 
-    componentDidUpdate(_prevProps: View.Props, prevState: State) {
-        if (this.state.model !== prevState.model) {
-            this.setState({
-                ...this.state,
-                chain: '',
-                stepId: -1,
-                previousStepId: -1,
-                nextStepId: -1,
-            });
-            this.props.viewerInterop.api.command(ViewerApi.Commands.DeselectStep());
-        } else if (this.state.chain !== prevState.chain) {
-            this.setState({
-                ...this.state,
-                stepId: -1,
-                previousStepId: -1,
-                nextStepId: -1,
-            });
-            this.props.viewerInterop.api.command(ViewerApi.Commands.DeselectStep());
-        } else if (this.state.stepId !== prevState.stepId) {
-            if (this.state.stepId === -1) {
-                this.setState({
-                    ...this.state,
-                    previousStepId: -1,
-                    nextStepId: -1,
-                });
-            } else {
-                const { previous, next } = StepsMapper.previousNextById(this.props.dnatcofication, this.state.stepId);
+    componentDidUpdate(prevProps: View.Props, prevState: State) {
+        if (this.props.structureSelection.stepId === prevProps.structureSelection.stepId)
+            return;
 
-                this.setState({
-                    ...this.state,
-                    previousStepId: previous,
-                    nextStepId: next,
-                });
-            }
+        if (this.props.structureSelection.stepId === InvalidStepId)
+            this.setState({ ...this.state, previousStepId: InvalidStepId, nextStepId: InvalidStepId });
+        else {
+            const prevNext = StepsMapper.previousNextById(this.props.dnatcofication, this.props.structureSelection.stepId);
+            this.setState({ ...this.state, previousStepId: prevNext.previousId, nextStepId: prevNext.nextId });
         }
     }
 
@@ -192,8 +117,8 @@ export class ConnectivityPlot extends View<View.Props, State> {
         let simPlotData = PlotData;
         let prevConnPlotData = PlotData;
         let nextConnPlotData = PlotData;
-        if (this.state.stepId !== -1) {
-            const stepIdx = StepsMapper.idToIndex(this.props.dnatcofication, this.state.stepId);
+        if (this.props.structureSelection.stepId !== InvalidStepId) {
+            const stepIdx = StepsMapper.idToIndex(this.props.dnatcofication, this.props.structureSelection.stepId);
             simPlotData = this.similarityPlotData(stepIdx);
             prevConnPlotData = this.connectivityPlotData(stepIdx, 'previous');
             nextConnPlotData = this.connectivityPlotData(stepIdx, 'next');
@@ -203,46 +128,24 @@ export class ConnectivityPlot extends View<View.Props, State> {
             <div>
                 <NamedList>
                     <NamedListItem name='Model'>
-                        <ComboBox
-                            value={this.state.model.toString()}
-                            options={[
-                                { caption: 'All', value: '' },
-                                ...sequence(1, Dnatcofication.Structure.numberOfModels(this.props.dnatcofication)).map(n => {
-                                    const s = n.toString();
-                                    return { caption: s, value: s };
-                                })
-                            ]}
-                            onChange={v => {
-                                this.props.viewerInterop.api.command(ViewerApi.Commands.SwitchModel(parseInt(v)));
-                                this.setState({ ...this.state, model: parseInt(v) });
-                            }}
+                        <ModelSelect
+                            dnatcofication={this.props.dnatcofication}
+                            structureSelection={this.props.structureSelection}
+                            onChange={this.props.switching.changeModel}
                         />
                     </NamedListItem>
                     <NamedListItem name='Chain'>
-                        <ComboBox
-                            value={this.state.chain}
-                            options={[
-                                { value: '', caption: 'All' },
-                                ...listOfChains(this.state.model, this.props.dnatcofication.data.structures[0]),
-                            ]}
-                            onChange={v => {
-                                if (v === this.state.chain)
-                                    return;
-                                this.setState({ ...this.state, chain: v })}
-                            }
+                        <ChainSelect
+                            dnatcofication={this.props.dnatcofication}
+                            structureSelection={this.props.structureSelection}
+                            onChange={this.props.switching.changeChain}
                         />
                     </NamedListItem>
                     <NamedListItem name='Step'>
-                        <ComboBox
-                            value={this.state.stepId === -1 ? '' : this.state.stepId.toString()}
-                            options={this.stepsOptions()}
-                            onChange={v => {
-                                if (v === '') return;
-                                const stepId = parseInt(v);
-                                const step = StepsMapper.byId(this.props.dnatcofication, stepId);
-                                this.switchStep(step.name);
-                                this.setState({ ...this.state, stepId });
-                            }}
+                        <StepSelect
+                            dnatcofication={this.props.dnatcofication}
+                            structureSelection={this.props.structureSelection}
+                            onChange={this.props.switching.changeStepId}
                         />
                     </NamedListItem>
                 </NamedList>
@@ -341,10 +244,8 @@ export class ConnectivityPlot extends View<View.Props, State> {
                                 className='rdo-prevcurrnext'
                                 style={{ backgroundColor: rgbToHex(colorToRgb(Constants.PrevStepColor)) }}
                                 onClick={() => {
-                                    if (this.state.previousStepId !== -1) {
-                                        const step = StepsMapper.byId(this.props.dnatcofication, this.state.previousStepId);
-                                        this.switchStep(step.name);
-                                    }
+                                    if (this.state.previousStepId !== InvalidStepId)
+                                        this.props.switching.changeStepId(this.state.previousStepId);
                                 }}
                                 onMouseEnter={e => e.currentTarget.classList.add('rdo-prevnext-active')}
                                 onMouseLeave={e => e.currentTarget.classList.remove('rdo-prevnext-active')}
@@ -354,16 +255,14 @@ export class ConnectivityPlot extends View<View.Props, State> {
                             </BasePushButton>
                             <div className='rdo-prevcurrnext'>
                                 <span style={{ fontWeight: 'bold' }}>Current step</span>
-                                {this.stepDescription(this.state.stepId, 'black')}
+                                {this.stepDescription(this.props.structureSelection.stepId, 'black')}
                             </div>
                             <BasePushButton
                                 className='rdo-prevcurrnext'
                                 style={{ backgroundColor: rgbToHex(colorToRgb(Constants.NextStepColor)) }}
                                 onClick={() => {
-                                    if (this.state.nextStepId !== -1) {
-                                        const step = StepsMapper.byId(this.props.dnatcofication, this.state.nextStepId);
-                                        this.switchStep(step.name);
-                                    }
+                                    if (this.state.nextStepId !== InvalidStepId)
+                                        this.props.switching.changeStepId(this.state.previousStepId);
                                 }}
                                 onMouseEnter={e => e.currentTarget.classList.add('rdo-prevnext-active')}
                                 onMouseLeave={e => e.currentTarget.classList.remove('rdo-prevnext-active')}

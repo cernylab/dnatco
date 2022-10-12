@@ -106,6 +106,13 @@ export class Model {
         }
     }
 }
+export namespace Model {
+    export function modelNameToIndex(name: string, structure: Structure) {
+        // Leave the room open to allow model "number" to be an arbitrary value
+        // because the specs seems to allow that.
+        return structure.models.findIndex(x => x.num.toString() === name);
+    }
+}
 
 export class Structure {
     readonly models = new Array<Model>();

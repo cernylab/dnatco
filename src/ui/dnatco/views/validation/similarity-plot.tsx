@@ -1,15 +1,13 @@
 import React from 'react';
 import Plot from 'react-plotly.js';
+import { ChainSelect, ModelSelect, StepSelect } from '../structure-selectors';
 import { View } from '../view';
-import { listOfChains, makeStepSelection, valueToSemaphore } from '../../util';
-import { ViewerApi } from '../../../../viewer/viewer-interop';
-import { ComboBox } from '../../../common/combo-box';
+import { InvalidStepId } from '../../structure-selection';
+import { valueToSemaphore } from '../../util';
 import { NamedList, NamedListItem } from '../../../common/named-list';
 import { Constants } from '../../../dnatco/constants';
 import { rgbToHex } from '../../../util';
-import { Dnatcofication } from '../../../../dnatco/dnatcofication';
 import { StepsMapper } from '../../../../dnatco/steps-mapper';
-import { sequence } from '../../../../util';
 
 const PlotData = {
     x: new Array<number>(),
@@ -20,24 +18,16 @@ const PlotData = {
 type PlotData = typeof PlotData;
 
 interface State {
-    chain: string;
-    model: number;
-    stepId: number;
     previousStepId: number;
     nextStepId: number;
-    plotData: PlotData;
 }
 export class SimilarityPlots extends View<View.Props, State> {
     constructor(props: View.Props) {
         super(props);
 
         this.state = {
-            chain: '',
-            model: this.props.dnatcofication.data.structures[0].models[0].num,
-            stepId: -1,
             previousStepId: -1,
             nextStepId: -1,
-            plotData: PlotData,
         };
     }
 
@@ -60,97 +50,24 @@ export class SimilarityPlots extends View<View.Props, State> {
         return { x, y, colors, tags };
     }
 
-    private stepsOptions() {
-        const model = this.state.model;
-        const chain = this.state.chain !== '' ? this.state.chain : void 0;
-
-        const opts: { caption: string, value: string }[] = [{ caption: '-', value: '' }];
-        for (const s of StepsMapper.segment(this.props.dnatcofication, model, chain))
-            opts.push({ caption: s.name, value: s.id.toString() });
-
-        return opts;
-    }
-
-    private switchStep(stepName: string) {
-        const selection = makeStepSelection(this.props.dnatcofication, stepName);
-        if (selection)
-            this.props.viewerInterop.api.command(ViewerApi.Commands.SelectStep(selection.current, selection.prev, selection.next));
-        else
-            this.props.viewerInterop.api.command(ViewerApi.Commands.DeselectStep());
-    }
-
     componentDidMount() {
-        this.subscribe(this.props.dnatcofication.events.structureChanged, () => this.forceUpdate());
-
-        this.subscribe(
-            this.props.viewerInterop.events.stepDeselected,
-            () => {
-                this.setState({
-                    ...this.state,
-                    plotData: PlotData,
-                    stepId: -1,
-                    previousStepId: -1,
-                    nextStepId: -1,
-                })
-            }
-        );
-        this.subscribe(
-            this.props.viewerInterop.events.stepSelected,
-            sel => {
-                const step = StepsMapper.byName(this.props.dnatcofication, sel.name);
-                if (step)
-                    this.setState({ ...this.state, stepId: step.id });
-            }
-        );
-
-        if (this.props.viewerInterop.ready()) {
-            const sel = this.props.viewerInterop.api.query('selected-step');
-            if (sel.name !== '') {
-                const step = StepsMapper.byName(this.props.dnatcofication, sel.name);
-                if (step)
-                    this.setState({ ...this.state, stepId: step.id });
-            }
+        if (this.props.structureSelection.stepId === InvalidStepId)
+            this.setState({ ...this.state, previousStepId: InvalidStepId, nextStepId: InvalidStepId });
+        else {
+            const prevNext = StepsMapper.previousNextById(this.props.dnatcofication, this.props.structureSelection.stepId);
+            this.setState({ ...this.state, previousStepId: prevNext.previousId, nextStepId: prevNext.nextId });
         }
     }
 
-    componentDidUpdate(_prevProps: View.Props, prevState: State) {
-        if (this.state.model !== prevState.model) {
-            this.setState({
-                ...this.state,
-                chain: '',
-                stepId: -1,
-                previousStepId: -1,
-                nextStepId: -1,
-                plotData: PlotData,
-            });
-            this.props.viewerInterop.api.command(ViewerApi.Commands.DeselectStep());
-        } else if (this.state.chain !== prevState.chain) {
-            this.setState({
-                ...this.state,
-                stepId: -1,
-                previousStepId: -1,
-                nextStepId: -1,
-                plotData: PlotData,
-            });
-            this.props.viewerInterop.api.command(ViewerApi.Commands.DeselectStep());
-        } else if (this.state.stepId !== prevState.stepId) {
-            if (this.state.stepId === -1) {
-                this.setState({
-                    ...this.state,
-                    previousStepId: -1,
-                    nextStepId: -1,
-                });
-            } else {
-                const stepIdx = StepsMapper.idToIndex(this.props.dnatcofication, this.state.stepId);
-                const { previous, next } = StepsMapper.previousNextById(this.props.dnatcofication, this.state.stepId);
+    componentDidUpdate(prevProps: View.Props, prevState: State) {
+        if (this.props.structureSelection.stepId === prevProps.structureSelection.stepId)
+            return;
 
-                this.setState({
-                    ...this.state,
-                    plotData: this.plotData(stepIdx),
-                    previousStepId: previous,
-                    nextStepId: next,
-                });
-            }
+        if (this.props.structureSelection.stepId === InvalidStepId)
+            this.setState({ ...this.state, previousStepId: InvalidStepId, nextStepId: InvalidStepId });
+        else {
+            const prevNext = StepsMapper.previousNextById(this.props.dnatcofication, this.props.structureSelection.stepId);
+            this.setState({ ...this.state, previousStepId: prevNext.previousId, nextStepId: prevNext.nextId });
         }
     }
 
@@ -159,63 +76,48 @@ export class SimilarityPlots extends View<View.Props, State> {
     }
 
     render() {
+        let plotData = PlotData;
+        if (this.props.structureSelection.stepId !== InvalidStepId) {
+            const stepIdx = StepsMapper.idToIndex(this.props.dnatcofication, this.props.structureSelection.stepId);
+            plotData = this.plotData(stepIdx);
+        }
+
         return (
             <div>
                 <NamedList>
                     <NamedListItem name='Model'>
-                        <ComboBox
-                            value={this.state.model.toString()}
-                            options={[
-                                ...sequence(1, Dnatcofication.Structure.numberOfModels(this.props.dnatcofication)).map(n => {
-                                    const s = n.toString();
-                                    return { caption: s, value: s };
-                                })
-                            ]}
-                            onChange={v => {
-                                this.props.viewerInterop.api.command(ViewerApi.Commands.SwitchModel(parseInt(v)));
-                                this.setState({ ...this.state, model: parseInt(v) });
-                            }}
+                        <ModelSelect
+                            dnatcofication={this.props.dnatcofication}
+                            structureSelection={this.props.structureSelection}
+                            onChange={this.props.switching.changeModel}
                         />
                     </NamedListItem>
                     <NamedListItem name='Chain'>
-                        <ComboBox
-                            value={this.state.chain}
-                            options={[
-                                { value: '', caption: 'All' },
-                                ...listOfChains(this.state.model, this.props.dnatcofication.data.structures[0]),
-                            ]}
-                            onChange={v => {
-                                if (v === this.state.chain)
-                                    return;
-                                this.setState({ ...this.state, chain: v })}
-                            }
+                        <ChainSelect
+                            dnatcofication={this.props.dnatcofication}
+                            structureSelection={this.props.structureSelection}
+                            onChange={this.props.switching.changeChain}
                         />
                     </NamedListItem>
                     <NamedListItem name='Step'>
-                        <ComboBox
-                            value={this.state.stepId === -1 ? '' : this.state.stepId.toString()}
-                            options={this.stepsOptions()}
-                            onChange={v => {
-                                if (v === '') return;
-                                const stepId = parseInt(v);
-                                const step = StepsMapper.byId(this.props.dnatcofication, stepId);
-                                this.switchStep(step.name);
-                                this.setState({ ...this.state, stepId });
-                            }}
+                        <StepSelect
+                            dnatcofication={this.props.dnatcofication}
+                            structureSelection={this.props.structureSelection}
+                            onChange={this.props.switching.changeStepId}
                         />
-                     </NamedListItem>
+                    </NamedListItem>
                 </NamedList>
                 <div className='rdo-offset'>
                     <div className='rdo-plot-container'>
                         <Plot
                             data={[
                                 {
-                                    x: this.state.plotData.x,
-                                    y: this.state.plotData.y,
-                                    marker: { size: 10, color: this.state.plotData.colors },
+                                    x: plotData.x,
+                                    y: plotData.y,
+                                    marker: { size: 10, color: plotData.colors },
                                     mode: 'text+markers',
                                     textposition: 'top center',
-                                    text: this.state.plotData.tags,
+                                    text: plotData.tags,
                                     type: 'scattergl',
                                 },
                             ]}

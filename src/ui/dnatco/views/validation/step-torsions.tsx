@@ -1,21 +1,17 @@
 import React from 'react';
+import { ChainSelect, ModelSelect, StepSelect } from '../structure-selectors';
 import { View } from '../view';
 import { Common as C } from '../../common';
-import { ComboBox } from '../../../common/combo-box';
 import { NamedList, NamedListItem } from '../../../common/named-list';
 import { Tooltip } from '../../../common/tooltip';
-import { listOfChains, makeStepSelection } from '../../util';
-import { ViewerApi } from '../../../../viewer/viewer-interop';
 import { Cif } from '../../../../cif';
 import {
     NdbStructNtcStepParameters, NdbStructNtcStepParameters_Schema,
     NdbStructNtcStepSummary, NdbStructNtcStepSummary_Schema,
     NdbStructSugarStepParameters, NdbStructSugarStepParameters_Schema,
 } from '../../../../cif/categories/ndb-struct-ntc';
-import { Dnatcofication } from '../../../../dnatco/dnatcofication';
 import { Step } from '../../../../dnatco/step';
-import { StepsMapper } from '../../../../dnatco/steps-mapper';
-import { sequence, toFixed } from '../../../../util';
+import { toFixed } from '../../../../util';
 
 const TorsionsDisplayOrder: Step.Torsion[] = ['delta1', 'epsilon1', 'zeta1', 'alpha2', 'beta2', 'gamma2', 'delta2', 'chi1', 'chi2'];
 const TorsionsCaptions = {
@@ -133,17 +129,6 @@ function torsionDiffColumn(table: Cif.Table<NdbStructNtcStepParameters_Schema>, 
     }
 }
 
-function toComboBoxOptions(opts: StepOption[]) {
-    const cbOpts: ComboBox.Option[] = [{ caption: '-', value: '' }];
-
-    for (const o of opts) {
-        const co = { caption: o.caption, value: JSON.stringify(o.value) };
-        cbOpts.push(co);
-    }
-
-    return cbOpts;
-}
-
 type DistanceInfo = {
     actual: Record<Step.Distance, number>,
     confal: Record<Step.Distance, number>,
@@ -169,11 +154,6 @@ const StepInfo = {
     tau2: 0,
     pn2: C.NA,
     details: ''
-};
-type StepValue = { name: string, id: number };
-type StepOption = {
-    caption: string;
-    value: StepValue;
 };
 
 type TorsionInfo = {
@@ -240,24 +220,13 @@ function numOrNA(n: number, decimals = 2, padding = 7) {
     return isNaN(n) ? C.NA : toFixed(n, decimals, { char: '\u00A0', length: padding });
 }
 
-interface State {
-    chain: string;
-    model: string;
-    stepId: number;
-}
-export class StepTorsions extends View<View.Props, State> {
+export class StepTorsions extends View<View.Props> {
     private stepParamsTable: Cif.Table<NdbStructNtcStepParameters_Schema>|null;
     private stepSumTable: Cif.Table<NdbStructNtcStepSummary_Schema>|null;
     private sugarStepParamsTable: Cif.Table<NdbStructSugarStepParameters_Schema>|null;
 
     constructor(props: View.Props) {
         super(props);
-
-        this.state = {
-            chain: '',
-            model: '',
-            stepId: -1,
-        };
 
         this.stepParamsTable = props.dnatcofication.hasTable(NdbStructNtcStepParameters) ? props.dnatcofication.table(NdbStructNtcStepParameters) : null;
         this.stepSumTable = props.dnatcofication.hasTable(NdbStructNtcStepSummary) ? props.dnatcofication.table(NdbStructNtcStepSummary) : null;
@@ -293,13 +262,6 @@ export class StepTorsions extends View<View.Props, State> {
         return info;
     }
 
-    private naChainOptions() {
-        return [
-            { caption: 'All', value: '' },
-            ...listOfChains(this.state.model === '' ? undefined : parseInt(this.state.model), this.props.dnatcofication.data.structures[0]),
-        ];
-    }
-
     private stepInfo(stepId: number) {
         if (!this.stepSumTable || !this.sugarStepParamsTable || !this.stepParamsTable)
             return StepInfo;
@@ -319,7 +281,6 @@ export class StepTorsions extends View<View.Props, State> {
         if (index === -1)
             return StepInfo;
 
-
         return {
             cartesianRmsd: Cif.Column.value(cartesian_rmsd_closest_NtC_representative, index),
             conformer: Cif.Column.value(assigned_NtC, index)!,
@@ -331,17 +292,6 @@ export class StepTorsions extends View<View.Props, State> {
             pn2: Cif.Column.value(Pn_2, index)!,
             details: Cif.Column.value(details, index)!,
         };
-    }
-
-    private stepsOptions() {
-        const model = this.state.model !== '' ? parseInt(this.state.model) : void 0;
-        const chain = this.state.chain !== '' ? this.state.chain : void 0;
-
-        const opts: StepOption[] = [];
-        for (const s of StepsMapper.segment(this.props.dnatcofication, model, chain))
-            opts.push({ caption: s.name, value: { name: s.name, id: s.id } });
-
-        return opts;
     }
 
     private torsionInfo(stepId: number) {
@@ -379,40 +329,6 @@ export class StepTorsions extends View<View.Props, State> {
             this.stepSumTable = this.props.dnatcofication.hasTable(NdbStructNtcStepSummary) ? this.props.dnatcofication.table(NdbStructNtcStepSummary) : null;
             this.sugarStepParamsTable = this.props.dnatcofication.hasTable(NdbStructSugarStepParameters) ? this.props.dnatcofication.table(NdbStructSugarStepParameters) : null;
         });
-
-        this.subscribe(
-            this.props.viewerInterop.events.stepDeselected,
-            () => this.setState({ ...this.state, stepId: -1 })
-        );
-        this.subscribe(
-            this.props.viewerInterop.events.stepSelected,
-            (sel) => {
-                const steps = this.stepsOptions();
-                const s = steps.find(x => x.value.name === sel.name);
-                if (s)
-                    this.setState({ ...this.state, stepId: s?.value.id});
-            }
-        );
-
-        if (this.props.viewerInterop.ready()) {
-            const steps = this.stepsOptions();
-            const step = this.props.viewerInterop.api.query('selected-step');
-            if (step.name !== '' && steps.length > 0) {
-                const s = steps.find(x => x.value.name === step.name);
-                if (s)
-                    this.setState({ ...this.state, stepId: s?.value.id });
-            }
-        }
-    }
-
-    componentDidUpdate(_prevProps: View.Props, prevState: State) {
-        if (this.state.model !== prevState.model) {
-            const steps = this.stepsOptions();
-            this.setState({ ...this.state, chain: '', stepId: steps[0]?.value.id ?? -1 });
-        } else if (this.state.chain !== prevState.chain) {
-            const steps = this.stepsOptions();
-            this.setState({ ...this.state, stepId: steps[0]?.value.id ?? -1 });
-        }
     }
 
     componentWillUnmount() {
@@ -420,58 +336,32 @@ export class StepTorsions extends View<View.Props, State> {
     }
 
     render() {
-        const torsionInfo = this.torsionInfo(this.state.stepId);
-        const distanceInfo = this.distanceInfo(this.state.stepId);
-        const stepInfo = this.stepInfo(this.state.stepId);
-        const stepsOptions = this.stepsOptions();
-        const stepOpt = stepsOptions.find(x => x.value.id ===  this.state.stepId);
-        const cbValue = stepOpt ? JSON.stringify(stepOpt.value) : '';
+        const torsionInfo = this.torsionInfo(this.props.structureSelection.stepId);
+        const distanceInfo = this.distanceInfo(this.props.structureSelection.stepId);
+        const stepInfo = this.stepInfo(this.props.structureSelection.stepId);
 
         return (
             <div>
                 <NamedList>
                     <NamedListItem name='Model'>
-                         <ComboBox
-                            value={this.state.model}
-                            options={[
-                                { caption: 'All', value: '' },
-                                ...sequence(1, Dnatcofication.Structure.numberOfModels(this.props.dnatcofication)).map(n => {
-                                    const s = n.toString();
-                                    return { caption: s, value: s };
-                                })
-                            ]}
-                            onChange={v => {
-                                this.props.viewerInterop.api!.command(ViewerApi.Commands.SwitchModel(parseInt(v)));
-                                this.setState({ ...this.state, model: v });
-                            }}
+                        <ModelSelect
+                            dnatcofication={this.props.dnatcofication}
+                            structureSelection={this.props.structureSelection}
+                            onChange={this.props.switching.changeModel}
                         />
                     </NamedListItem>
                     <NamedListItem name='Chain'>
-                         <ComboBox
-                            value={this.state.chain}
-                            options={this.naChainOptions()}
-                            onChange={v => this.setState({ ...this.state, chain: v })}
+                        <ChainSelect
+                            dnatcofication={this.props.dnatcofication}
+                            structureSelection={this.props.structureSelection}
+                            onChange={this.props.switching.changeChain}
                         />
                     </NamedListItem>
                     <NamedListItem name='Step'>
-                        <ComboBox
-                            value={cbValue}
-                            options={toComboBoxOptions(stepsOptions)}
-                            onChange={v => {
-                                try {
-                                    const value = JSON.parse(v) as StepValue;
-                                    const stepId = value.id;
-                                    const step = StepsMapper.byId(this.props.dnatcofication, stepId);
-
-                                    const selection = makeStepSelection(this.props.dnatcofication, step.name);
-                                    if (selection)
-                                        this.props.viewerInterop.api.command(ViewerApi.Commands.SelectStep(selection.current, selection.prev, selection.next));
-
-                                    this.setState({ ...this.state, stepId });
-                                } catch (e) {
-                                    console.warn(`Failed to parse StepValue: ${e}`);
-                                }
-                            }}
+                        <StepSelect
+                            dnatcofication={this.props.dnatcofication}
+                            structureSelection={this.props.structureSelection}
+                            onChange={this.props.switching.changeStepId}
                         />
                     </NamedListItem>
                 </NamedList>

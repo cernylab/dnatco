@@ -1,4 +1,4 @@
-export type Empty = Record<string, never>;
+export type Empty = Record<never, never>;
 
 const ZeroChar = '0'.charCodeAt(0);
 const NineChar = '9'.charCodeAt(0);
