@@ -53,6 +53,16 @@ function sharedConfig(productionBuild) {
                     }],
                 },
                 {
+                    test: /\.(csv)$/,
+                    use: [{
+                        loader: 'file-loader',
+                        options: {
+                            name: '[name].[ext]',
+                            sourceMap: false,
+                        }
+                    }],
+                },
+                {
                     test: /\.(s*)css$/,
                     use: [
                         MiniCssExtractPlugin.loader,

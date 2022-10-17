@@ -26,6 +26,7 @@ import { BackgroundWorker, WorkerMessage } from './tasks/worker';
 import { ViewerApi, ViewerInterop } from './viewer/viewer-interop';
 import { Task } from './tasks/task';
 import { Globals } from './globals';
+import 'assets/conformers.csv';
 // Image assets
 import 'assets/imgs/elixir.png';
 import 'assets/imgs/home.svg';
