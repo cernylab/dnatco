@@ -1,9 +1,10 @@
 import React from 'react';
-import { listOfChains, listOfModels, toComboBoxOptions } from '../util';
+import { listOfChains, listOfModels } from '../util';
 import { InvalidChain, InvalidModelIndex, InvalidStepId, StructureSelection } from '../structure-selection';
 import { ComboBox } from '../../common/combo-box';
 import { Dnatcofication } from '../../../dnatco/dnatcofication';
 import { StepsMapper } from '../../../dnatco/steps-mapper';
+import { toComboBoxOptions } from '../../util';
 
 function chainOptions(sel: StructureSelection, d: Dnatcofication) {
     if (sel.modelIndex === InvalidModelIndex)

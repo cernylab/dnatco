@@ -1,7 +1,10 @@
 const path = require('path');
+const CopyPlugin = require('copy-webpack-plugin');
 const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
+
+const DistDir = 'dist';
 
 function sharedConfig(productionBuild) {
     return {
@@ -66,6 +69,20 @@ function sharedConfig(productionBuild) {
         plugins: [
             new CssMinimizerPlugin(),
             new MiniCssExtractPlugin({ filename: 'rednatco.css' }),
+            new CopyPlugin({
+                patterns: [
+                    {
+                        from: 'assets/contour_plots/le18/**/*',
+                        to() { return path.resolve(__dirname, DistDir, 'contour_plots/le18/[name][ext]') },
+                        filter: async (resourcePath) => { return resourcePath.endsWith('.png') || resourcePath.endsWith('.pdf'); },
+                    },
+                    {
+                        from: 'assets/contour_plots/gt25/**/*',
+                        to() { return path.resolve(__dirname, DistDir, 'contour_plots/gt25/[name][ext]') },
+                        filter: async (resourcePath) => { return resourcePath.endsWith('.png') || resourcePath.endsWith('.pdf'); },
+                    },
+                ]
+            })
         ],
         optimization: {
             minimize: productionBuild,
@@ -101,7 +118,7 @@ function createApp(name, productionBuild) {
         },
         output: {
             filename: `${name}.js`,
-            path: path.resolve(__dirname, 'dist')
+            path: path.resolve(__dirname, DistDir)
         },
         ...sharedConfig(productionBuild),
     };

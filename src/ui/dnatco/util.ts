@@ -63,11 +63,6 @@ export function makeStepSelection(dnatcofication: Dnatcofication, stepId: number
     };
 }
 
-export function toComboBoxOptions<T>(opts: T[], toComboOpt: (o: T) => { caption: string, value: string }) {
-    const cbOpts: ComboBox.Option[] = opts.map(o => toComboOpt(o));
-    return cbOpts;
-}
-
 export function valueToSemaphore(v: number, greenValue: number, redValue: number) {
     const Min = 0.0
     const Half = 0.5;

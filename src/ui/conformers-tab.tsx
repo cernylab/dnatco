@@ -1,4 +1,5 @@
-import * as React from 'react';
+import React from 'react';
+import { ContourPlots } from './contour-plots';
 import { SearchConformers } from './search-conformers';
 import { DynamicTable } from './common/dynamic-table';
 import { ShadowedBox } from './common/shadowed-box';
@@ -15,7 +16,8 @@ import 'assets/html/about-ntcs.html';
 const Tabs = {
     'about-ntcs': { name: 'About NtCs', caption: 'About NtCs' },
     'table-of-conformers': { name: 'Table of conformers', caption: 'Table of conformers' },
-    'browse-conformers': { name: 'Browse', caption: 'Search PDB database for dinucleotide steps of given conformation (NtC)' }
+    'browse-conformers': { name: 'Browse', caption: 'Search PDB database for dinucleotide steps of given conformation (NtC)' },
+    'contour-plots': { name: 'Contour plots', caption: '' },
 };
 type TabId = keyof typeof Tabs;
 
@@ -23,6 +25,7 @@ const TabsOrder: TabId[] = [
     'about-ntcs',
     'table-of-conformers',
     'browse-conformers',
+    'contour-plots'
 ];
 
 function fmtInt(n: number) {
@@ -319,6 +322,7 @@ export class ConformersTab extends React.Component<ConformersTab.Props, State> {
                 />
             );
         case 'table-of-conformers': return <TableOfConformers />;
+        case 'contour-plots': return <ContourPlots />;
         }
     }
 

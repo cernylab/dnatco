@@ -1,3 +1,5 @@
+import { ComboBox } from './common/combo-box';
+
 function componentToHex(c: number) {
     const hex = c.toString(16);
     return hex.length == 1 ? "0" + hex : hex;
@@ -33,4 +35,9 @@ export function scrollIntoViewIfNeeded(elemId: string, tainer: string|HTMLElemen
                       elemRect.bottom < tainerRect.top;
     if (notInView)
         elem.scrollIntoView({ block: 'center', inline: 'start', behavior: 'smooth' });
+}
+
+export function toComboBoxOptions<T>(opts: T[], toComboOpt: (o: T) => { caption: string, value: string }) {
+    const cbOpts: ComboBox.Option[] = opts.map(o => toComboOpt(o));
+    return cbOpts;
 }

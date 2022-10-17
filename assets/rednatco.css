@@ -37,6 +37,11 @@ body {
     margin: 0;
 }
 
+img.rdo-autosized {
+    width: 100%;
+    object-fit: cover;
+}
+
 input {
     appearance: none;
     -moz-appearance: none;
@@ -647,6 +652,11 @@ tr.rdo-list-of-conformers-alternate-clr {
 
 .rdo-tooltip-text-faded {
     opacity: 0;
+}
+
+.rdo-vertical-text {
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
 }
 
 .rdo-view-visualizer-container {
