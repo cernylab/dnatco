@@ -1,6 +1,5 @@
 <div class="rdo-txa-page">
     <div class="rdo-txa-section-caption">Method</div>
-
     <p class="rdo-txa-paragraph">
         The DNATCO server analyzes structures of nucleic acids - both DNA and RNA - using the NtC structural alphabet developed in our institute.
         The NtC structural alphabet describes DNA/RNA backbone conformation using 96 “symbols”, where each symbol consists of four characters (e.g. BB00 or ZZ1S) and corresponds to a distinct dinucleotide conformer.
@@ -24,29 +23,58 @@
 
     <div class="rdo-txa-section-caption">NtC naming</div>
     <p class="rdo-txa-paragraph">
-        <li>The conformers are identified using four-character symbols.</li>
-        <li>Symbols containing "A", "B", "Z" as the first and/or second character imply a dinucleotide with stacked bases and with first/second nucleotide in an A-, B-, or Z-like conformation.</li>
-        <li> starting with "IC" correspond to steps with distant but parallel bases that can be InterCalated.</li>
-        <li>Symbols starting with "OP" correspond to steps with unstacked “OPen” bases.</li>
-        <li>Symbols containing "S" at 3rd or 4th position imply that the 1st or 2nd base, respectively, is in syn orientation.</li>
-        <li>Conformationally extreme conformers are not assigned to any of the above; these steps formally represent the 97th conformer denoted as NANT.</li>
+        <ul class="rdo-txa-list">
+            <li>
+                The conformers are identified using four-character symbols.
+            </li>
+            <li>
+                Symbols containing "A", "B", "Z" as the first and/or second character imply a dinucleotide with stacked bases and with first/second nucleotide in an A-, B-, or Z-like conformation.
+            </li>
+            <li> 
+                Symbols starting with "IC" correspond to steps with distant but parallel bases that can be InterCalated.
+            </li>
+            <li>
+                Symbols starting with "OP" correspond to steps with unstacked “OPen” bases.
+            </li>
+            <li>
+                Symbols containing "S" at 3rd or 4th position imply that the 1st or 2nd base, respectively, is in syn orientation.
+            </li>
+            <li>
+                Conformationally extreme conformers are not assigned to any of the above; these steps formally represent the 97th conformer denoted as NANT.
+            </li>
+        </ul>
     </p>
 
     <div class="rdo-txa-section-caption">Validation metrics - confal, RMSD</div>
-    <ul class="rdo-txa-list">
-        <li>
-            <span class="rdo-txa-bold">confal</span> a quality score, with value of 100 corresponding to a perfect fit to the reference and 0 corresponding to conformational outliers. The confal function is a Gaussian function defined in such a way that it reaches a value of 100 at the average value of the parameter and a value of 1 at the border closer to the average. The confal value is set to 0 for more distant values. The confal score for a step is then calculated as a harmonic mean of its 12 confal values, and the confal score for a structure is calculated as an average of the step values.
-        </li>
-        <li>
-            <span class="rdo-txa-bold">RMSD</span>: root mean square deviation in cartesian space between the analyzed step and reference.
-        </li>
-    </ul>
+    <p class="rdo-txa-paragraph">
+        <ul class="rdo-txa-list">
+            <li>
+                <span class="rdo-txa-bold">confal</span> a quality score, with value of 100 corresponding to a perfect fit to the reference and 0 corresponding to conformational outliers.
+                The confal function is a Gaussian function defined in such a way that it reaches a value of 100 at the average value of the parameter and a value of 1 at the border closer to the average. 
+                The confal value is set to 0 for more distant values. The confal score for a step is then calculated as a harmonic mean of its 12 confal values, 
+                and the confal score for a structure is calculated as an average of the step values.
+            </li>
+            <li>
+                <span class="rdo-txa-bold">RMSD</span>: root mean square deviation in cartesian space between the analyzed step and reference.
+            </li>
+        </ul>
+    </p>
 
     <div class="rdo-txa-section-caption">Analysis of uploaded structures</div>
     <p class="rdo-txa-paragraph">
-        <li>DNA/RNA steps are identified based on atom names as defined by the PDB format, version 3.1 or above (sugar atoms as O4' not O4*).</li>
-        <li>Steps with non-standard or missing atoms that define torsions δ1 to δ2, χ1, and χ2 are not considered in the assignment process.</li>
-        <li>Conformers are assigned for modified residues that contain standard names for atoms defining the step torsions between δ and δ+1 and χ and χ+1. See the  <a class="rdo-txa-link" href="https://dnatco.datmos.org/next/standard.php">list of accepted residues </a></li>
-        <li>Analysis of large structures (multiple NMR MODELs or MD simulation trajectory) or non-standard residues - please, contact the authors for off-line analysis.</li>
+        <ul class="rdo-txa-list">
+            <li>
+                DNA/RNA steps are identified based on atom names as defined by the PDB format, version 3.1 or above (sugar atoms as O4' not O4*).
+            </li>
+            <li>
+                Steps with non-standard or missing atoms that define torsions δ1 to δ2, χ1, and χ2 are not considered in the assignment process.
+            </li>
+            <li>
+                Conformers are assigned for modified residues that contain standard names for atoms defining the step torsions between δ and δ+1 and χ and χ+1. <br />
+                See the  <a class="rdo-txa-link" href="https://dnatco.datmos.org/next/standard.php">list of accepted residues </a></li>
+            <li>
+                Analysis of large structures (multiple NMR MODELs or MD simulation trajectory) or non-standard residues - please, contact the authors for off-line analysis.
+            </li>
+        </ul>
     </p>
 </div>
