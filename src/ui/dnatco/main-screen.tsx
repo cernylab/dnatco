@@ -47,6 +47,7 @@ interface State {
     validationView: typeof ValidationViews[number];
     refinementView: typeof RefinementViews[number];
     structureSelection: StructureSelection;
+    initializationError?: string;
 }
 export class MainScreen extends WithSubscriptions<MainScreen.Props, State> {
     readonly viewerChangeChain = async (chain: string) => {
@@ -82,7 +83,7 @@ export class MainScreen extends WithSubscriptions<MainScreen.Props, State> {
         if (stepId === InvalidStepId)
             await this.props.viewerInterop.api.command(ViewerApi.Commands.DeselectStep());
         else {
-            // @nocheckin Control whether do display previous and next step!!!
+            // TODO: Prev and next step display must be optional
             const selection = makeStepSelection(this.props.dnatcofication, stepId);
             await this.props.viewerInterop.api.command(ViewerApi.Commands.SelectStep(selection.current.name, selection.previous?.name, selection.next?.name));
         }
@@ -149,38 +150,41 @@ export class MainScreen extends WithSubscriptions<MainScreen.Props, State> {
 
     componentDidMount() {
         this.subscribe(this.props.dnatcofication.events.structureChanged, () => this.forceUpdate());
-        this.subscribe(
-            this.props.viewerInterop.events.stepRequested,
-            (name) => {
-                const stepId = StepsMapper.byName(this.props.dnatcofication, name)?.id ?? InvalidStepId;
-                if (stepId !== InvalidStepId) {
-                    const selection = makeStepSelection(this.props.dnatcofication, stepId);
-                    this.props.viewerInterop.api.command(ViewerApi.Commands.SelectStep(selection.current.name, selection.previous?.name, selection.next?.name));
-                }
-            }
-        );
-        this.subscribe(
-            this.props.viewerInterop.events.stepDeselected,
-            () => {
-                const sel = { ...this.state.structureSelection, stepId: InvalidModelIndex };
-                this.setState({ ...this.state, structureSelection: sel });
-            }
-        );
-        this.subscribe(
-            this.props.viewerInterop.events.stepSelected,
-            (v) => {
-                const name = v.name;
-                const stepId = StepsMapper.byName(this.props.dnatcofication, name)?.id ?? InvalidStepId;
-                const sel = { ...this.state.structureSelection, stepId };
-                this.setState({ ...this.state, structureSelection: sel });
-            }
-        );
-        this.subscribe(
-            this.props.viewerInterop.events.ready,
-            () => this.props.viewerInterop.loadStructure(this.props.dnatcofication.rawCif())
-        );
 
-        this.props.viewerInterop.bind('rdo-id-molstar-container');
+        this.props.viewerInterop.bind('rdo-id-molstar-container').then(() => {
+            this.subscribe(
+                this.props.viewerInterop.events.stepRequested,
+                (name) => {
+                    const stepId = StepsMapper.byName(this.props.dnatcofication, name)?.id ?? InvalidStepId;
+                    if (stepId !== InvalidStepId) {
+                        const selection = makeStepSelection(this.props.dnatcofication, stepId);
+                        this.props.viewerInterop.api.command(ViewerApi.Commands.SelectStep(selection.current.name, selection.previous?.name, selection.next?.name));
+                    }
+                }
+            );
+            this.subscribe(
+                this.props.viewerInterop.events.stepDeselected,
+                () => {
+                    const sel = { ...this.state.structureSelection, stepId: InvalidModelIndex };
+                    this.setState({ ...this.state, structureSelection: sel });
+                }
+            );
+            this.subscribe(
+                this.props.viewerInterop.events.stepSelected,
+                (v) => {
+                    const name = v.name;
+                    const stepId = StepsMapper.byName(this.props.dnatcofication, name)?.id ?? InvalidStepId;
+                    const sel = { ...this.state.structureSelection, stepId };
+                    this.setState({ ...this.state, structureSelection: sel });
+                }
+            );
+            this.subscribe(
+                this.props.viewerInterop.events.ready,
+                () => this.props.viewerInterop.loadStructure(this.props.dnatcofication.rawCif())
+            );
+        }).catch(e => {
+            this.setState({ ...this.state, initializationError: e.toString() });
+        });
     }
 
     componentDidUpdate(prevProps: MainScreen.Props) {
@@ -196,6 +200,17 @@ export class MainScreen extends WithSubscriptions<MainScreen.Props, State> {
     }
 
     render() {
+        if (this.state.initializationError) {
+            return (
+                <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <div className='rdo-error-text'>
+                        Something went wrong during initialization of the interactive viewer. You may try to reload the page and try again...<br />
+                        {this.state.initializationError}
+                    </div>
+                </div>
+            );
+        }
+
         return (
             <div className='rdo-dnatco-main-screen'>
                 <ViewsList

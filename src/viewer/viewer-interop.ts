@@ -1,6 +1,7 @@
 import { Subject } from 'rxjs';
 import { ReDNATCOMspApi as ViewerApi } from 'viewer-api';
 import { EventsKeeper } from '../util/events-keeper';
+import { sleep } from '../util';
 
 export type ViewerEvents = {
     ready: Subject<void>,
@@ -29,25 +30,34 @@ export class ViewerInterop {
         return this._api;
     }
 
-    bind(viewerContainerId: string) {
-        //@ts-ignore
-        this._api = molstar.ReDNATCOMspApi.init(
-            viewerContainerId,
-            (evt: ViewerApi.Event) => {
-                if (evt.type === 'ready') {
-                    this._ready = true;
-                    this.events.ready.next();
-                } else if (evt.type === 'step-selected') {
-                    if (evt.success)
-                        this.events.stepSelected.next({ name: evt.name, rmsd: evt.rmsd });
-                } else if (evt.type === 'step-deselected')
-                    this.events.stepDeselected.next();
-                else if (evt.type === 'step-requested')
-                    this.events.stepRequested.next(evt.name);
-                else if (evt.type === 'structure-loaded')
-                    this.events.structureLoaded.next();
-            }
-        );
+    async bind(viewerContainerId: string) {
+        for (let attempt = 0; attempt < 5; attempt++) {
+            //@ts-ignore
+            if (!molstar || !molstar.ReDNATCOMspApi)
+                await sleep(250);
+
+            //@ts-ignore
+            this._api = molstar.ReDNATCOMspApi.init(
+                viewerContainerId,
+                (evt: ViewerApi.Event) => {
+                    if (evt.type === 'ready') {
+                        this._ready = true;
+                        this.events.ready.next();
+                    } else if (evt.type === 'step-selected') {
+                        if (evt.success)
+                            this.events.stepSelected.next({ name: evt.name, rmsd: evt.rmsd });
+                    } else if (evt.type === 'step-deselected')
+                        this.events.stepDeselected.next();
+                    else if (evt.type === 'step-requested')
+                        this.events.stepRequested.next(evt.name);
+                    else if (evt.type === 'structure-loaded')
+                        this.events.structureLoaded.next();
+                }
+            );
+        }
+
+        if (!this._api)
+            throw new Error('Molstar plugin took too long to initialize');
     }
 
     loadStructure(cif: string) {

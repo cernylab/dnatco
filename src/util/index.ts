@@ -105,3 +105,7 @@ export function sequence(from: number, to: number) {
 
     return seq;
 }
+
+export async function sleep(msec: number) {
+    await new Promise(() => setTimeout(() => {}, msec));
+}
