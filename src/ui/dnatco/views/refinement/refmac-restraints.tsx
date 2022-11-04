@@ -61,3 +61,7 @@ export class RefmacRestraints extends View<View.Props, State> {
         );
     }
 }
+
+export namespace RefmacRestraints {
+    export const StepSwitcher = () => {};
+}

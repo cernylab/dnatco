@@ -78,3 +78,7 @@ export class PhenixRestraints extends View<View.Props, State> {
         );
     }
 }
+
+export namespace PhenixRestraints {
+    export const StepSwitcher = () => {};
+}

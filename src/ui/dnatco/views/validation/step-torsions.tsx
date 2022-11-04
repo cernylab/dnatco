@@ -1,4 +1,5 @@
 import React from 'react';
+import { Validation } from './common';
 import { ChainSelect, ModelSelect, StepSelect } from '../structure-selectors';
 import { View } from '../view';
 import { Common as C } from '../../common';
@@ -347,21 +348,21 @@ export class StepTorsions extends View<View.Props> {
                         <ModelSelect
                             dnatcofication={this.props.dnatcofication}
                             structureSelection={this.props.structureSelection}
-                            onChange={this.props.switching.changeModel}
+                            onChange={this.props.switching.switchModel}
                         />
                     </NamedListItem>
                     <NamedListItem name='Chain'>
                         <ChainSelect
                             dnatcofication={this.props.dnatcofication}
                             structureSelection={this.props.structureSelection}
-                            onChange={this.props.switching.changeChain}
+                            onChange={this.props.switching.switchChain}
                         />
                     </NamedListItem>
                     <NamedListItem name='Step'>
                         <StepSelect
                             dnatcofication={this.props.dnatcofication}
                             structureSelection={this.props.structureSelection}
-                            onChange={this.props.switching.changeStepId}
+                            onChange={this.props.switching.switchStepId}
                         />
                     </NamedListItem>
                 </NamedList>
@@ -414,4 +415,8 @@ export class StepTorsions extends View<View.Props> {
             </div>
         );
     }
+}
+
+export namespace StepTorsions {
+    export const StepSwitcher = Validation.switchStep;
 }

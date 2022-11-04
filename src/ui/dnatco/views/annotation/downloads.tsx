@@ -100,3 +100,7 @@ export class Downloads extends View {
         );
     }
 }
+
+export namespace Downloads {
+    export const StepSwitcher = () => {}
+}

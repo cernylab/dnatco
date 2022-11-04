@@ -45,3 +45,7 @@ export class MmbCommandsFile extends View<View.Props, State> {
         );
     }
 }
+
+export namespace MmbCommandsFile {
+    export const StepSwitcher = () => {}
+}

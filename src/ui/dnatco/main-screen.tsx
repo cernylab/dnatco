@@ -1,5 +1,4 @@
 import React from 'react';
-import { makeStepSelection } from './util';
 import { InvalidChain, InvalidModelIndex, InvalidStepId, StructureSelection } from './structure-selection';
 import { ViewsList } from './views-list';
 import { Register } from './views/register';
@@ -43,14 +42,16 @@ function masterModeViews(mode: MasterMode): { id: ViewType, caption: string }[] 
 }
 
 interface State {
-    annotationView: typeof AnnotationViews[number];
-    validationView: typeof ValidationViews[number];
-    refinementView: typeof RefinementViews[number];
+    activeViews: {
+        annotation: typeof AnnotationViews[number];
+        validation: typeof ValidationViews[number];
+        refinement: typeof RefinementViews[number];
+    };
     structureSelection: StructureSelection;
     initializationError?: string;
 }
 export class MainScreen extends WithSubscriptions<MainScreen.Props, State> {
-    readonly viewerChangeChain = async (chain: string) => {
+    readonly switchChain = async (chain: string) => {
         await this.props.viewerInterop.api.command(ViewerApi.Commands.DeselectStep());
 
         if (chain === InvalidChain)
@@ -65,7 +66,7 @@ export class MainScreen extends WithSubscriptions<MainScreen.Props, State> {
         this.setState({ ...this.state, structureSelection });
     }
 
-    readonly viewerChangeModel = async (modelIndex: number) => {
+    readonly switchModel = async (modelIndex: number) => {
         await this.props.viewerInterop.api.command(ViewerApi.Commands.DeselectStep());
         await this.props.viewerInterop.api.command(ViewerApi.Commands.Filter(Filters.Empty()));
 
@@ -79,23 +80,22 @@ export class MainScreen extends WithSubscriptions<MainScreen.Props, State> {
         this.setState({ ...this.state, structureSelection });
     }
 
-    readonly viewerChangeStepId = async (stepId: number) => {
+    readonly switchStepId = async (stepId: number) => {
+        const switcher = Register.Views[this.activeView()].stepSwitcher;
+
         if (stepId === InvalidStepId)
             await this.props.viewerInterop.api.command(ViewerApi.Commands.DeselectStep());
-        else {
-            // TODO: Prev and next step display must be optional
-            const selection = makeStepSelection(this.props.dnatcofication, stepId);
-            await this.props.viewerInterop.api.command(ViewerApi.Commands.SelectStep(selection.current.name, selection.previous?.name, selection.next?.name));
-        }
+        else
+            await switcher(stepId, this.props.dnatcofication, this.props.viewerInterop);
 
         const structureSelection = { ...this.state.structureSelection, stepId };
         this.setState({ ...this.state, structureSelection });
     }
 
     readonly viewerSwitching = {
-        changeChain: this.viewerChangeChain,
-        changeModel: this.viewerChangeModel,
-        changeStepId:  this.viewerChangeStepId,
+        switchChain: this.switchChain,
+        switchModel: this.switchModel,
+        switchStepId:  this.switchStepId,
     }
 
     constructor(props: MainScreen.Props) {
@@ -104,48 +104,27 @@ export class MainScreen extends WithSubscriptions<MainScreen.Props, State> {
         const structureSelection = StructureSelection(this.props.viewerInterop, this.props.dnatcofication);
 
         this.state = {
-            annotationView: 'assigned-ntcs',
-            validationView: 'confals-rmsds',
-            refinementView: 'connectivity-plot',
+            activeViews: {
+                annotation: 'assigned-ntcs',
+                validation: 'confals-rmsds',
+                refinement: 'connectivity-plot',
+            },
             structureSelection,
         }
     }
 
-    private renderView() {
-        switch (this.props.masterMode) {
-        case 'annotation':
-            return Register.Views[this.state.annotationView]({
-                dnatcofication: this.props.dnatcofication,
-                viewerInterop: this.props.viewerInterop,
-                structureSelection: this.state.structureSelection,
-                switching: this.viewerSwitching,
-            });
-        case 'validation':
-            return Register.Views[this.state.validationView]({
-                dnatcofication: this.props.dnatcofication,
-                viewerInterop: this.props.viewerInterop,
-                structureSelection: this.state.structureSelection,
-                switching: this.viewerSwitching,
-            });
-        case 'refinement':
-            return Register.Views[this.state.refinementView]({
-                dnatcofication: this.props.dnatcofication,
-                viewerInterop: this.props.viewerInterop,
-                structureSelection: this.state.structureSelection,
-                switching: this.viewerSwitching,
-            });
-        }
+    private activeView() {
+        return this.state.activeViews[this.props.masterMode];
     }
 
-    private selectedView() {
-        switch (this.props.masterMode) {
-        case 'annotation':
-            return this.state.annotationView;
-        case 'validation':
-            return this.state.validationView;
-        case 'refinement':
-            return this.state.refinementView;
-        }
+    private renderView() {
+        const view = Register.Views[this.activeView()];
+        return view.render({
+            dnatcofication: this.props.dnatcofication,
+            viewerInterop: this.props.viewerInterop,
+            structureSelection: this.state.structureSelection,
+            switching: this.viewerSwitching,
+        });
     }
 
     componentDidMount() {
@@ -156,10 +135,7 @@ export class MainScreen extends WithSubscriptions<MainScreen.Props, State> {
                 this.props.viewerInterop.events.stepRequested,
                 (name) => {
                     const stepId = StepsMapper.byName(this.props.dnatcofication, name)?.id ?? InvalidStepId;
-                    if (stepId !== InvalidStepId) {
-                        const selection = makeStepSelection(this.props.dnatcofication, stepId);
-                        this.props.viewerInterop.api.command(ViewerApi.Commands.SelectStep(selection.current.name, selection.previous?.name, selection.next?.name));
-                    }
+                    this.switchStepId(stepId);
                 }
             );
             this.subscribe(
@@ -187,10 +163,17 @@ export class MainScreen extends WithSubscriptions<MainScreen.Props, State> {
         });
     }
 
-    componentDidUpdate(prevProps: MainScreen.Props) {
+    componentDidUpdate(prevProps: MainScreen.Props, prevState: State) {
         if (this.props.viewerInterop.ready()) {
-            if (this.props.masterMode !== prevProps.masterMode)
-                this.props.viewerInterop.api.command(ViewerApi.Commands.Redraw());
+            if (this.props.masterMode !== prevProps.masterMode) {
+                this.props.viewerInterop.api.command(ViewerApi.Commands.Redraw()).then(() => {
+                    if (this.state.structureSelection.stepId !== InvalidStepId)
+                        this.switchStepId(this.state.structureSelection.stepId);
+                })
+            } else if (this.state.activeViews[this.props.masterMode] !== prevState.activeViews[this.props.masterMode]) {
+                if (this.state.structureSelection.stepId !== InvalidStepId)
+                    this.switchStepId(this.state.structureSelection.stepId);
+            }
         }
     }
 
@@ -216,19 +199,11 @@ export class MainScreen extends WithSubscriptions<MainScreen.Props, State> {
                 <ViewsList
                     views={masterModeViews(this.props.masterMode)}
                     onSwitchView={id => {
-                        switch (this.props.masterMode) {
-                        case 'annotation':
-                            this.setState({ ...this.state, annotationView: id });
-                            break;
-                        case 'validation':
-                            this.setState({ ...this.state, validationView: id });
-                            break;
-                        case 'refinement':
-                            this.setState({ ...this.state, refinementView: id });
-                            break;
-                        }
+                        const av = { ...this.state.activeViews };
+                        av[this.props.masterMode] = id;
+                        this.setState({ ...this.state, activeViews: { ...av } });
                     }}
-                    selected={this.selectedView()}
+                    selected={this.activeView()}
                 />
                 <div style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
                     <div>
@@ -241,7 +216,7 @@ export class MainScreen extends WithSubscriptions<MainScreen.Props, State> {
                     </div>
                     <DynamicSplitView
                         containerClass='rdo-view-visualizer-container'
-                        visible={AvailableViews[this.selectedView()].visualizer ? 'both' : 'first'}
+                        visible={AvailableViews[this.activeView()].visualizer ? 'both' : 'first'}
                         first={
                             <div className='rdo-offset' style={{ overflow: 'hidden' }}>
                                 <div className='rdo-scroll-vertically'>

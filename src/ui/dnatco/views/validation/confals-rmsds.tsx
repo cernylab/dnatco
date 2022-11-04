@@ -1,4 +1,5 @@
 import  React from 'react';
+import { Validation } from './common';
 import { ChainSelect, ModelSelect } from '../structure-selectors';
 import { InvalidChain, InvalidModelIndex, InvalidStepId } from '../../structure-selection';
 import { View } from '../view';
@@ -150,7 +151,7 @@ export class ConfalsRmsds extends View<View.Props> {
                         if (col === 'Step') {
                             const stepId = StepsMapper.byName(this.props.dnatcofication, item)?.id ?? InvalidStepId;
                             if (stepId !== InvalidStepId)
-                                this.props.switching.changeStepId(stepId);
+                                this.props.switching.switchStepId(stepId);
                         }
                     }}
                     highlightedTag={stepName}
@@ -178,14 +179,14 @@ export class ConfalsRmsds extends View<View.Props> {
                         <ModelSelect
                             dnatcofication={this.props.dnatcofication}
                             structureSelection={this.props.structureSelection}
-                            onChange={this.props.switching.changeModel}
+                            onChange={this.props.switching.switchModel}
                         />
                     </NamedListItem>
                     <NamedListItem name='Chain'>
                         <ChainSelect
                             dnatcofication={this.props.dnatcofication}
                             structureSelection={this.props.structureSelection}
-                            onChange={this.props.switching.changeChain}
+                            onChange={this.props.switching.switchChain}
                         />
                     </NamedListItem>
                 </NamedList>
@@ -195,4 +196,8 @@ export class ConfalsRmsds extends View<View.Props> {
             </div>
         );
     }
+}
+
+export namespace ConfalsRmsds {
+    export const StepSwitcher = Validation.switchStep;
 }

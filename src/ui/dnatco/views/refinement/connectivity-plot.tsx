@@ -1,6 +1,7 @@
 import type { StandardLonghandProperties } from 'csstype';
 import React from 'react';
 import Plot from 'react-plotly.js';
+import { Validation } from '../validation/common';
 import { ChainSelect, ModelSelect, StepSelect } from '../structure-selectors';
 import { View } from '../view';
 import { InvalidStepId } from '../../structure-selection';
@@ -131,21 +132,21 @@ export class ConnectivityPlot extends View<View.Props, State> {
                         <ModelSelect
                             dnatcofication={this.props.dnatcofication}
                             structureSelection={this.props.structureSelection}
-                            onChange={this.props.switching.changeModel}
+                            onChange={this.props.switching.switchModel}
                         />
                     </NamedListItem>
                     <NamedListItem name='Chain'>
                         <ChainSelect
                             dnatcofication={this.props.dnatcofication}
                             structureSelection={this.props.structureSelection}
-                            onChange={this.props.switching.changeChain}
+                            onChange={this.props.switching.switchChain}
                         />
                     </NamedListItem>
                     <NamedListItem name='Step'>
                         <StepSelect
                             dnatcofication={this.props.dnatcofication}
                             structureSelection={this.props.structureSelection}
-                            onChange={this.props.switching.changeStepId}
+                            onChange={this.props.switching.switchStepId}
                         />
                     </NamedListItem>
                 </NamedList>
@@ -245,7 +246,7 @@ export class ConnectivityPlot extends View<View.Props, State> {
                                 style={{ backgroundColor: rgbToHex(colorToRgb(Constants.PrevStepColor)) }}
                                 onClick={() => {
                                     if (this.state.previousStepId !== InvalidStepId)
-                                        this.props.switching.changeStepId(this.state.previousStepId);
+                                        this.props.switching.switchStepId(this.state.previousStepId);
                                 }}
                                 onMouseEnter={e => e.currentTarget.classList.add('rdo-prevnext-active')}
                                 onMouseLeave={e => e.currentTarget.classList.remove('rdo-prevnext-active')}
@@ -262,7 +263,7 @@ export class ConnectivityPlot extends View<View.Props, State> {
                                 style={{ backgroundColor: rgbToHex(colorToRgb(Constants.NextStepColor)) }}
                                 onClick={() => {
                                     if (this.state.nextStepId !== InvalidStepId)
-                                        this.props.switching.changeStepId(this.state.previousStepId);
+                                        this.props.switching.switchStepId(this.state.previousStepId);
                                 }}
                                 onMouseEnter={e => e.currentTarget.classList.add('rdo-prevnext-active')}
                                 onMouseLeave={e => e.currentTarget.classList.remove('rdo-prevnext-active')}
@@ -276,4 +277,8 @@ export class ConnectivityPlot extends View<View.Props, State> {
             </div>
         );
     }
+}
+
+export namespace ConnectivityPlot {
+    export const StepSwitcher = Validation.switchStep;
 }

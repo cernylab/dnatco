@@ -105,3 +105,7 @@ export class StructureInfo extends View {
         );
     }
 }
+
+export namespace StructureInfo {
+    export const StepSwitcher = () => {}
+}

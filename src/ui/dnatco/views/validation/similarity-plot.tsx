@@ -1,5 +1,6 @@
 import React from 'react';
 import Plot from 'react-plotly.js';
+import { Validation } from './common';
 import { ChainSelect, ModelSelect, StepSelect } from '../structure-selectors';
 import { View } from '../view';
 import { InvalidStepId } from '../../structure-selection';
@@ -89,21 +90,21 @@ export class SimilarityPlots extends View<View.Props, State> {
                         <ModelSelect
                             dnatcofication={this.props.dnatcofication}
                             structureSelection={this.props.structureSelection}
-                            onChange={this.props.switching.changeModel}
+                            onChange={this.props.switching.switchModel}
                         />
                     </NamedListItem>
                     <NamedListItem name='Chain'>
                         <ChainSelect
                             dnatcofication={this.props.dnatcofication}
                             structureSelection={this.props.structureSelection}
-                            onChange={this.props.switching.changeChain}
+                            onChange={this.props.switching.switchChain}
                         />
                     </NamedListItem>
                     <NamedListItem name='Step'>
                         <StepSelect
                             dnatcofication={this.props.dnatcofication}
                             structureSelection={this.props.structureSelection}
-                            onChange={this.props.switching.changeStepId}
+                            onChange={this.props.switching.switchStepId}
                         />
                     </NamedListItem>
                 </NamedList>
@@ -139,4 +140,8 @@ export class SimilarityPlots extends View<View.Props, State> {
             </div>
         );
     }
+}
+
+export namespace SimilarityPlots {
+    export const StepSwitcher = Validation.switchStep;
 }

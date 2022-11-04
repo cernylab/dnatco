@@ -27,13 +27,13 @@ export function StructureSelection(viewerInterop: ViewerInterop, dnatcofication:
             return { modelIndex, chain, stepId: InvalidStepId };
 
 
-        const stepName = viewerInterop.api.query('selected-step').name;
-        const step = StepsMapper.byName(dnatcofication, stepName);
+        const stepName = viewerInterop.api.query('selected-step').selected?.name
+        const step = stepName ? StepsMapper.byName(dnatcofication, stepName) : void 0;
         if (step) {
             const stepId = StepsMapper.idToIndex(dnatcofication, step.id);
             return { modelIndex, chain, stepId };
-        }
-        return { modelIndex, chain, stepId: InvalidStepId };
+        } else
+            return { modelIndex, chain, stepId: InvalidStepId };
     } else
         return EmptyStructureSelection(dnatcofication);
 }
@@ -46,8 +46,10 @@ export function EmptyStructureSelection(d: Dnatcofication): StructureSelection {
     };
 }
 
+export type StepSwitcher = (stepId: number, d: Dnatcofication, vi: ViewerInterop) => Promise<void>;
+
 export type StructureSelectionSwitching = {
-    changeModel: (modelIndex: number) => void,
-    changeChain: (chain: string) => void,
-    changeStepId: (stepId: number) => void,
+    switchModel: (modelIndex: number) => void,
+    switchChain: (chain: string) => void,
+    switchStepId: (stepId: number) => void,
 }

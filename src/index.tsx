@@ -18,9 +18,9 @@ import { NavigationBar } from './ui/navigation-bar';
 import { StartTab } from './ui/start-tab';
 import { Popup } from './ui/common/popup';
 import { InProgress } from './ui/common/in-progress';
-import { WithSubscriptions } from './ui/service/with-subscriptions';
+import { Constants } from './ui/dnatco/constants';
 import { MainScreen } from './ui/dnatco/main-screen';
-import { makeStepSelection } from './ui/dnatco/util';
+import { WithSubscriptions } from './ui/service/with-subscriptions';
 import { Search } from './search/search';
 import { BackgroundWorker, WorkerMessage } from './tasks/worker';
 import { ViewerApi, ViewerInterop } from './viewer/viewer-interop';
@@ -163,11 +163,16 @@ export class App extends WithSubscriptions<{}, State> {
     private goToStep(stepName: string) {
         const step = StepsMapper.byName(this.dnatcofication, stepName);
         if (step) {
-            const selection = makeStepSelection(this.dnatcofication, step.id);
             // Use an arbitrary delay to give Molstar some time to settle
             // Not doing this may result in broken rendering
             setTimeout(
-                () => this.viewerInterop.api.command(ViewerApi.Commands.SelectStep(selection.current.name, selection.previous?.name, selection.next?.name)),
+                () => {
+                    this.viewerInterop.api.command(ViewerApi.Commands.SelectStep(
+                        ViewerApi.Payloads.StepSelection(stepName, { NtC: step.closestNtC, color: Constants.StepColor }),
+                        void 0,
+                        void 0
+                    ));
+                },
                 200
             );
         }

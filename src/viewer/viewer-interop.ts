@@ -45,7 +45,7 @@ export class ViewerInterop {
                         this.events.ready.next();
                     } else if (evt.type === 'step-selected') {
                         if (evt.success)
-                            this.events.stepSelected.next({ name: evt.name, rmsd: evt.rmsd });
+                            this.events.stepSelected.next({ name: evt.name });
                     } else if (evt.type === 'step-deselected')
                         this.events.stepDeselected.next();
                     else if (evt.type === 'step-requested')

@@ -1,4 +1,5 @@
 import React from 'react';
+import { Annotation } from './common';
 import { ChainSelect, ModelSelect } from '../structure-selectors';
 import { View } from '../view';
 import { InvalidChain, InvalidModelIndex, InvalidStepId } from '../../structure-selection';
@@ -161,7 +162,7 @@ export class AssignedNtCs extends View<View.Props> {
                         if (col === 'Step') {
                             const stepId = StepsMapper.byName(this.props.dnatcofication, item)?.id ?? InvalidStepId;
                             if (stepId !== InvalidStepId)
-                                this.props.switching.changeStepId(stepId);
+                                this.props.switching.switchStepId(stepId);
                         }
                     }}
                     highlightedTag={stepName}
@@ -192,14 +193,14 @@ export class AssignedNtCs extends View<View.Props> {
                         <ModelSelect
                             dnatcofication={this.props.dnatcofication}
                             structureSelection={this.props.structureSelection}
-                            onChange={this.props.switching.changeModel}
+                            onChange={this.props.switching.switchModel}
                         />
                     </NamedListItem>
                     <NamedListItem name='Chain'>
                         <ChainSelect
                             dnatcofication={this.props.dnatcofication}
                             structureSelection={this.props.structureSelection}
-                            onChange={this.props.switching.changeChain}
+                            onChange={this.props.switching.switchChain}
                         />
                     </NamedListItem>
                 </NamedList>
@@ -208,4 +209,8 @@ export class AssignedNtCs extends View<View.Props> {
             </div>
         );
     }
+}
+
+export namespace AssignedNtCs {
+    export const StepSwitcher = Annotation.switchStep;
 }
