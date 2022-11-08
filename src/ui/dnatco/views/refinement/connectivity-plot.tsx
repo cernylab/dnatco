@@ -1,7 +1,7 @@
 import type { StandardLonghandProperties } from 'csstype';
 import React from 'react';
 import Plot from 'react-plotly.js';
-import { Validation } from '../validation/common';
+import { Refinement } from '../refinement/common';
 import { ChainSelect, ModelSelect, StepSelect } from '../structure-selectors';
 import { View } from '../view';
 import { InvalidStepId } from '../../structure-selection';
@@ -280,5 +280,5 @@ export class ConnectivityPlot extends View<View.Props, State> {
 }
 
 export namespace ConnectivityPlot {
-    export const StepSwitcher = Validation.switchStep;
+    export const StepSwitcher = Refinement.switchStep;
 }
