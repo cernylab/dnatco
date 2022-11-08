@@ -3,6 +3,8 @@ import { View } from './view';
 import { AssignedNtCs } from './annotation/assigned-ntcs';
 import { Downloads } from './annotation/downloads';
 import { StructureInfo } from './annotation/structure-info';
+import { Refinement } from './refinement/common';
+import { ChangeNtCs } from './refinement/change-ntcs';
 import { MmbCommandsFile } from './refinement/mmb-commands-file';
 import { PhenixRestraints } from './refinement/phenix-restraints';
 import { RefmacRestraints } from './refinement/refmac-restraints';
@@ -23,12 +25,16 @@ export namespace Register {
             render: (props: View.Props) => <AssignedNtCs {...props} />,
             stepSwitcher: AssignedNtCs.StepSwitcher
         },
+        'change-ntcs': {
+            render: (props: Refinement.Props) => <ChangeNtCs {...props} />,
+            stepSwitcher: ChangeNtCs.StepSwitcher
+        },
         'confals-rmsds': {
             render: (props: View.Props) => <ConfalsRmsds {...props} />,
             stepSwitcher: ConfalsRmsds.StepSwitcher
         },
         'connectivity-plot': {
-            render: (props: View.Props) => <ConnectivityPlot {...props} />,
+            render: (props: Refinement.Props) => <ConnectivityPlot {...props} />,
             stepSwitcher: ConnectivityPlot.StepSwitcher
         },
         'downloads': {
@@ -36,11 +42,11 @@ export namespace Register {
             stepSwitcher: Downloads.StepSwitcher
         },
         'mmb-commands-file': {
-            render: (props: View.Props) => <MmbCommandsFile {...props} />,
+            render: (props: Refinement.Props) => <MmbCommandsFile {...props} />,
             stepSwitcher: MmbCommandsFile.StepSwitcher
         },
         'phenix-restraints': {
-            render: (props: View.Props) => <PhenixRestraints {...props} />,
+            render: (props: Refinement.Props) => <PhenixRestraints {...props} />,
             stepSwitcher: PhenixRestraints.StepSwitcher
         },
         'refmac-restraints': {

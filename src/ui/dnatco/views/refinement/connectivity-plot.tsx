@@ -1,7 +1,7 @@
 import type { StandardLonghandProperties } from 'csstype';
 import React from 'react';
 import Plot from 'react-plotly.js';
-import { Refinement } from '../refinement/common';
+import { Refinement } from './common';
 import { ChainSelect, ModelSelect, StepSelect } from '../structure-selectors';
 import { View } from '../view';
 import { InvalidStepId } from '../../structure-selection';
@@ -24,8 +24,8 @@ interface State {
     previousStepId: number;
     nextStepId: number;
 }
-export class ConnectivityPlot extends View<View.Props, State> {
-    constructor(props: View.Props) {
+export class ConnectivityPlot extends View<Refinement.Props, State> {
+    constructor(props: Refinement.Props) {
         super(props);
 
         this.state = {
@@ -125,6 +125,20 @@ export class ConnectivityPlot extends View<View.Props, State> {
             nextConnPlotData = this.connectivityPlotData(stepIdx, 'next');
         }
 
+        const changeCustomNtC = (NtC: string) => {
+            const stepId = this.props.structureSelection.stepId;
+            if (this.props.selectedCustomNtCSet === '' || stepId === InvalidStepId)
+                return;
+
+            const step = StepsMapper.byId(this.props.dnatcofication, stepId);
+            console.log(`Switching ${step} to ${NtC}`);
+            this.props.dnatcofication.customNtCs.setCustomNtC(
+                this.props.selectedCustomNtCSet,
+                step.name,
+                NtC
+            );
+        }
+
         return (
             <div>
                 <NamedList>
@@ -178,6 +192,13 @@ export class ConnectivityPlot extends View<View.Props, State> {
                             }}
                             useResizeHandler={true}
                             style={{ width: "100%", height: "100%" }}
+                            onClick={ev => {
+                                const pt = ev.points[0];
+                                if (pt) {
+                                    // @ts-ignore
+                                    changeCustomNtC(pt.text);
+                                }
+                            }}
                         />
                     </div>
 
@@ -207,6 +228,13 @@ export class ConnectivityPlot extends View<View.Props, State> {
                             }}
                             useResizeHandler={true}
                             style={{ width: "100%", height: "100%" }}
+                            onClick={ev => {
+                                const pt = ev.points[0];
+                                if (pt) {
+                                    // @ts-ignore
+                                    changeCustomNtC(pt.text);
+                                }
+                            }}
                         />
                     </div>
 
@@ -236,6 +264,13 @@ export class ConnectivityPlot extends View<View.Props, State> {
                             }}
                             useResizeHandler={true}
                             style={{ width: "100%", height: "100%" }}
+                            onClick={ev => {
+                                const pt = ev.points[0];
+                                if (pt) {
+                                    // @ts-ignore
+                                    changeCustomNtC(pt.text);
+                                }
+                            }}
                         />
                     </div>
 

@@ -1,4 +1,5 @@
 import React from 'react';
+import { Refinement } from './common';
 import { View } from '../view';
 import { PushButton } from '../../../common/push-button';
 import { SpinBox } from '../../../common/spin-box';
@@ -9,7 +10,7 @@ interface State {
     maxRmsd: number;
 }
 export class RefmacRestraints extends View<View.Props, State> {
-    constructor(props: View.Props) {
+    constructor(props: Refinement.Props) {
         super(props);
 
         this.state = {

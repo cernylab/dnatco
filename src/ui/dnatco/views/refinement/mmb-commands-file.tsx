@@ -1,4 +1,5 @@
 import React from 'react';
+import { Refinement } from './common';
 import { View } from '../view';
 import { CheckBox } from '../../../common/check-box';
 import { PushButton } from '../../../common/push-button';
@@ -8,8 +9,8 @@ import { Net } from '../../../../util/net';
 interface State {
     includeSequences: boolean;
 }
-export class MmbCommandsFile extends View<View.Props, State> {
-    constructor(props: View.Props) {
+export class MmbCommandsFile extends View<Refinement.Props, State> {
+    constructor(props: Refinement.Props) {
         super(props);
 
         this.state = {

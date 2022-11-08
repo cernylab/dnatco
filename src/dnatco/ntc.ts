@@ -104,5 +104,6 @@ export namespace NtC {
         'ZZS1',
         'ZZS2',
     ];
-    export type Class = typeof Classes[number] | 'NANT';
+    export type ValidClass = typeof Classes[number];
+    export type Class = ValidClass | 'NANT';
 }

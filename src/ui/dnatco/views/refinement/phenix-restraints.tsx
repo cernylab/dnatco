@@ -1,4 +1,5 @@
 import React from 'react';
+import { Refinement } from './common';
 import { View } from '../view';
 import { PushButton } from '../../../common/push-button';
 import { SpinBox } from '../../../common/spin-box';
@@ -20,8 +21,8 @@ function replaceAll(where: string, what: string|RegExp, _with: string) {
 interface State {
     maxRmsd: number;
 }
-export class PhenixRestraints extends View<View.Props, State> {
-    constructor(props: View.Props) {
+export class PhenixRestraints extends View<Refinement.Props, State> {
+    constructor(props: Refinement.Props) {
         super(props);
 
         this.state = {

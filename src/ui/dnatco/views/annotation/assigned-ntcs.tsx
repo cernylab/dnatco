@@ -19,7 +19,7 @@ import { StepsMapper } from '../../../../dnatco/steps-mapper';
 export class AssignedNtCs extends View<View.Props> {
     private tableModel: DynamicTable.Model = new DynamicTable.Model([]);
 
-    makeTableModel(selectedModelNum: number, selectedChain?: string) {
+    private makeTableModel(selectedModelNum: number, selectedChain?: string) {
         const steps = this.props.dnatcofication.table(NdbStructNtcStep);
         const summary = this.props.dnatcofication.table(NdbStructNtcStepSummary);
         const params = this.props.dnatcofication.table(NdbStructNtcStepParameters);
@@ -131,14 +131,14 @@ export class AssignedNtCs extends View<View.Props> {
         return new DynamicTable.Model([chainColumn, stepColumn, ntcColumn, canaColumn, torsionsColumn]);
     }
 
-    renderAnalyzedSteps() {
+    private renderAnalyzedSteps() {
         const overall = this.props.dnatcofication.table(NdbStructNtcOverall);
         return (
             <div>Classified: {Cif.Column.value(overall.num_classified, 0)}, Unclassified: {Cif.Column.value(overall.num_unclassified, 0)}</div>
         );
     }
 
-    renderNucleicAcidChains() {
+    private renderNucleicAcidChains() {
         if (this.props.structureSelection.modelIndex === InvalidModelIndex) {
             const list: JSX.Element[] = [];
             for (let idx = 0; idx < this.props.dnatcofication.data.structures[0].models.length; idx++) {
@@ -165,10 +165,10 @@ export class AssignedNtCs extends View<View.Props> {
         }
     }
 
-    renderStepsTable() {
+    private renderStepsTable() {
         const modelNum = this.props.structureSelection.modelIndex !== InvalidModelIndex
             ? this.props.dnatcofication.data.structures[0].models[this.props.structureSelection.modelIndex].num
-            : -1;
+            : InvalidModelIndex;
         this.tableModel = this.makeTableModel(modelNum, this.props.structureSelection.chain === InvalidChain ? void 0 : this.props.structureSelection.chain);
         const stepName = this.props.structureSelection.stepId === InvalidStepId ? '' : StepsMapper.byId(this.props.dnatcofication, this.props.structureSelection.stepId).name;
 

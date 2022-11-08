@@ -17,6 +17,7 @@ type ViewType = keyof typeof Register.Views;
 const AvailableViews = {
     'assigned-ntcs': { caption: 'Assigned NtCs', visualizer: true },
     'structure-info': { caption: 'Structure Info', visualizer: false },
+    'change-ntcs': { caption: 'Change NtCs', visualizer: true },
     'confals-rmsds':  { caption: 'Confals & RMSDs', visualizer: true },
     'similarity-plot': { caption: 'Similarity plot', visualizer: true },
     'downloads': { caption: 'Downloads', visualizer: false },
@@ -28,7 +29,7 @@ const AvailableViews = {
 };
 const AnnotationViews: ViewType[] = ['assigned-ntcs', 'structure-info', 'downloads'];
 const ValidationViews: ViewType[] = ['confals-rmsds', 'step-torsions', 'similarity-plot'];
-const RefinementViews: ViewType[] = ['connectivity-plot', 'refmac-restraints', 'phenix-restraints', 'mmb-commands-file'];
+const RefinementViews: ViewType[] = ['connectivity-plot', 'refmac-restraints', 'phenix-restraints', 'mmb-commands-file', 'change-ntcs'];
 
 function masterModeViews(mode: MasterMode): { id: ViewType, caption: string }[] {
     switch (mode) {
@@ -48,6 +49,7 @@ interface State {
         refinement: typeof RefinementViews[number];
     };
     structureSelection: StructureSelection;
+    selectedCustomNtCSet: string;
     initializationError?: string;
 }
 export class MainScreen extends WithSubscriptions<MainScreen.Props, State> {
@@ -86,7 +88,7 @@ export class MainScreen extends WithSubscriptions<MainScreen.Props, State> {
         if (stepId === InvalidStepId)
             await this.props.viewerInterop.api.command(ViewerApi.Commands.DeselectStep());
         else
-            await switcher(stepId, this.props.dnatcofication, this.props.viewerInterop);
+            await switcher(stepId, this.props.dnatcofication, this.props.viewerInterop, this.state.selectedCustomNtCSet);
 
         const structureSelection = { ...this.state.structureSelection, stepId };
         this.setState({ ...this.state, structureSelection });
@@ -110,6 +112,7 @@ export class MainScreen extends WithSubscriptions<MainScreen.Props, State> {
                 refinement: 'connectivity-plot',
             },
             structureSelection,
+            selectedCustomNtCSet: '',
         }
     }
 
@@ -124,11 +127,45 @@ export class MainScreen extends WithSubscriptions<MainScreen.Props, State> {
             viewerInterop: this.props.viewerInterop,
             structureSelection: this.state.structureSelection,
             switching: this.viewerSwitching,
+            selectedCustomNtCSet: this.state.selectedCustomNtCSet,
+            onCustomNtCSetChanged: (set: string) => {
+                if (this.props.dnatcofication.customNtCs.exists(set))
+                    this.setState({ ...this.state, selectedCustomNtCSet: set });
+            }
         });
     }
 
     componentDidMount() {
         this.subscribe(this.props.dnatcofication.events.structureChanged, () => this.forceUpdate());
+        this.subscribe(
+            this.props.dnatcofication.customNtCs.events.changed,
+            ({ set, step }) => {
+                if (this.props.dnatcofication.customNtCs.empty()) {
+                    this.setState({ ...this.state, selectedCustomNtCSet: '' });
+                    return;
+                }
+
+                if (set === '')
+                    this.setState({ ...this.state, selectedCustomNtCSet: '' });
+                else {
+                    if (!this.props.dnatcofication.customNtCs.exists(set)) {
+                        // The set got deleted, switch to the first available custom set
+                        this.setState({ ...this.state, selectedCustomNtCSet: this.props.dnatcofication.customNtCs.sets()[0] ?? '' });
+                        return;
+                    }
+
+                    if (set !== this.state.selectedCustomNtCSet)
+                        return;
+
+                    const sel = this.props.viewerInterop.api.query('selected-step');
+                    if (sel.selected) {
+                        const displayedStep = StepsMapper.byName(this.props.dnatcofication, sel.selected.name);
+                        if (displayedStep && displayedStep.name === step)
+                            this.switchStepId(displayedStep.id);
+                    }
+                }
+            }
+        )
 
         this.props.viewerInterop.bind('rdo-id-molstar-container').then(() => {
             this.subscribe(
@@ -173,6 +210,13 @@ export class MainScreen extends WithSubscriptions<MainScreen.Props, State> {
             } else if (this.state.activeViews[this.props.masterMode] !== prevState.activeViews[this.props.masterMode]) {
                 if (this.state.structureSelection.stepId !== InvalidStepId)
                     this.switchStepId(this.state.structureSelection.stepId);
+            } else if (this.state.selectedCustomNtCSet !== prevState.selectedCustomNtCSet) {
+                const sel = this.props.viewerInterop.api.query('selected-step');
+                if (sel.selected) {
+                    const displayedStep = StepsMapper.byName(this.props.dnatcofication, sel.selected.name);
+                    if (displayedStep)
+                        this.switchStepId(displayedStep.id);
+                }
             }
         }
     }

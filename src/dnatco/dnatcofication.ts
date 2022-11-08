@@ -1,5 +1,6 @@
 import * as ConnSimil from './connectivity-similarity';
 import { ClassificationResources } from './classification-resources';
+import { CustomNtCs } from './custom-ntcs';
 import { Dnatcofier } from './dnatcofier';
 import { ExtractInfo } from './extract-info';
 import { StepsMapper } from './steps-mapper';
@@ -36,6 +37,7 @@ export type DnatcoficationData = typeof DnatcoficationData;
 
 export class Dnatcofication {
     private readonly ek = new EventsKeeper();
+    private _customNtCs = new CustomNtCs();
     data = DnatcoficationData;
 
     readonly events = {
@@ -43,6 +45,10 @@ export class Dnatcofication {
     };
 
     constructor() {
+    }
+
+    get customNtCs() {
+        return this._customNtCs;
     }
 
     get identifyingName() {
