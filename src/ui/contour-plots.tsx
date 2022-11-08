@@ -103,7 +103,6 @@ export class ContourPlots extends WithSubscriptions<{}, State> {
                 gridTemplateColumns: 'auto 30% 30% 30%',
                 rowGap: '0.5em',
                 width: '100%',
-                overflow: 'hidden',
                 alignItems: 'center',
                 justifyContent: 'center',
             }}>

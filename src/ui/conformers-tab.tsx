@@ -346,7 +346,7 @@ export class ConformersTab extends React.Component<ConformersTab.Props, State> {
                             <div className='rdo-primary-caption'>
                                 {Tabs[this.state.selected].caption}
                             </div>
-                            <div className='rdo-offset' style={{ overflow: 'hidden' }}>
+                            <div className='rdo-offset' style={{ overflow: 'scroll' }}>
                                 {this.renderTab()}
                             </div>
                         </div>
