@@ -42,7 +42,7 @@ export class Footer extends React.Component {
 
                         <div style={PadderStyle}>
                             <div className='rdo-footer-text'>
-                                <div style={{ color: 'var(--color-c)' }}>Supported by Institude of Biotechnology & Elixir CZ</div>
+                                <div style={{ color: 'var(--color-c)' }}>Supported by Institute of Biotechnology & Elixir CZ</div>
                             </div>
                         </div>
 
