@@ -25,7 +25,7 @@ export class AssignedNtCs extends View<View.Props> {
         const params = this.props.dnatcofication.table(NdbStructNtcStepParameters);
 
         const { PDB_model_number, label_asym_id_1, name } = steps;
-        const { assigned_NtC, assigned_CANA } = summary;
+        const { assigned_NtC, assigned_CANA, closest_NtC, closest_CANA } = summary;
         const {
             tor_delta_1, tor_epsilon_1, tor_zeta_1,
             tor_alpha_2, tor_beta_2, tor_gamma_2,
@@ -34,24 +34,24 @@ export class AssignedNtCs extends View<View.Props> {
         } = params;
 
         const chainColumn: DynamicTable.Column<string> = {
-            name: 'Chain', values: new Array<DynamicTable.CellValue<string>>(), alignment: 'center',
+            name: 'Chain', cells: new Array<DynamicTable.Cell<string>>(), alignment: 'center',
             tooltip: <div>PDB chain ID (author)</div>,
         };
         const stepColumn: DynamicTable.Column<string> = {
-            name: 'Step', values: new Array<DynamicTable.CellValue<string>>(), alignment: 'center',
+            name: 'Step', cells: new Array<DynamicTable.Cell<string>>(), alignment: 'center',
             notSortable: true,
             tooltip: <div>Dinucleotide step identifier</div>,
         };
         const ntcColumn: DynamicTable.Column<string> = {
-            name: 'NtC', values: new Array<DynamicTable.CellValue<string>>(), alignment: 'center',
+            name: 'NtC', cells: new Array<DynamicTable.Cell<string>>(), alignment: 'center',
             tooltip: <div>Di<span className='rdo-emphasize'>N</span>ucleotide <span className='rdo-emphasize'>C</span>onformational class</div>,
         };
         const canaColumn: DynamicTable.Column<string> = {
-            name: 'CANA', values: new Array<DynamicTable.CellValue<string>>(), alignment: 'center',
+            name: 'CANA', cells: new Array<DynamicTable.Cell<string>>(), alignment: 'center',
             tooltip: <div><span className='rdo-emphasize'>C</span>onformational <span className='rdo-emphasize'>A</span>lphabet of <span className='rdo-emphasize'>N</span>ucleic <span className='rdo-emphasize'>A</span>cids</div>,
         };
         const torsionsColumn: DynamicTable.Column<string> = {
-            name: '?', values: new Array<DynamicTable.CellValue<string>>(), alignment: 'center', notSortable: true, noData: true,
+            name: '?', cells: new Array<DynamicTable.Cell<string>>(), alignment: 'center', notSortable: true, noData: true,
             tooltip: <div>Hover over the <span className='rdo-emphasize'>[?]</span> to get details about torsions and distances.</div>
         };
 
@@ -67,17 +67,41 @@ export class AssignedNtCs extends View<View.Props> {
             const tag = Cif.Column.value(name, row)!;
             const NtC = Cif.Column.value(assigned_NtC, row)!;
 
-            chainColumn.values.push({ data: chain, tag });
-            stepColumn.values.push({ data: tag, tag });
-            ntcColumn.values.push({
+            chainColumn.cells.push({ data: chain, tag });
+            stepColumn.cells.push({ data: tag, tag });
+            ntcColumn.cells.push({
                 data: Cif.Column.value(assigned_NtC, row)!,
+                elem: (() => {
+                    const assigned = Cif.Column.value(assigned_NtC, row)!;
+                    return assigned === 'NANT'
+                        ?
+                            <Tooltip
+                                tag={<span className='rdo-unassigned-ntc'>{Cif.Column.value(closest_NtC, row)!}</span>}
+                                delayMsec={300}
+                            >
+                                This step is unassigned. Closest NtC is shown instead.
+                            </Tooltip>
+                        : <span>{assigned}</span>;
+                })(),
                 tag
             });
-            canaColumn.values.push({
+            canaColumn.cells.push({
                 data: Cif.Column.value(assigned_CANA, row)!,
+                elem: (() => {
+                    const assigned = Cif.Column.value(assigned_CANA, row)!;
+                    return assigned === 'NAN'
+                        ?
+                            <Tooltip
+                                tag={<span className='rdo-unassigned-ntc'>{Cif.Column.value(closest_CANA, row)!}</span>}
+                                delayMsec={300}
+                            >
+                                This step is unassigned. Closest CANA is shown instead.
+                            </Tooltip>
+                        : <span>{assigned}</span>;
+                })(),
                 tag
             });
-            torsionsColumn.values.push({
+            torsionsColumn.cells.push({
                 data: '',
                 tag,
                 tooltip:

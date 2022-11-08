@@ -654,6 +654,10 @@ tr.rdo-list-of-conformers-alternate-clr {
     opacity: 0;
 }
 
+.rdo-unassigned-ntc {
+    color: red;
+}
+
 .rdo-vertical-text {
     writing-mode: vertical-rl;
     transform: rotate(180deg);

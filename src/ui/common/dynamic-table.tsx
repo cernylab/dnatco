@@ -32,8 +32,8 @@ export class DynamicTable extends React.Component<DynamicTable.Props> {
     private findFirstTaggedCellId(tag: string) {
         for (let colIdx = 0; colIdx < this.props.model.columns.length; colIdx++) {
             const col = this.props.model.columns[colIdx];
-            for (let rowIdx = 0; rowIdx < col.values.length; rowIdx++) {
-                const cell = col.values[rowIdx];
+            for (let rowIdx = 0; rowIdx < col.cells.length; rowIdx++) {
+                const cell = col.cells[rowIdx];
                 if (cell.tag && cell.tag.startsWith(tag))
                     return `${cell.tag}-${rowIdx}-${colIdx}`;
             }
@@ -69,8 +69,8 @@ export class DynamicTable extends React.Component<DynamicTable.Props> {
                                 >
                                     {item.tooltip
                                         ? item.tooltip
-                                        : col.contentFormatter !== undefined
-                                            ? col.contentFormatter(item.data)
+                                        : item.elem
+                                            ? item.elem
                                             : item.data
                                     }
                                 </td>
@@ -159,14 +159,13 @@ export class DynamicTable extends React.Component<DynamicTable.Props> {
 }
 
 export namespace DynamicTable {
-    export type CellValue<T extends string|number> = { data: T, tag?: string, tooltip?: React.ReactNode };
+    export type Cell<T extends string|number> = { data: T, tag?: string, elem?: JSX.Element, tooltip?: React.ReactNode };
     export type Column<T extends string|number> = {
         name: string;
-        values: CellValue<T>[];
+        cells: Cell<T>[];
         alignment?: 'left'|'center'|'right';
         comparator?: (a: T, b: T) => number;
         cellStyle?: (v: T) => React.CSSProperties;
-        contentFormatter?: (v: T) => string;
         notSortable?: boolean;     // Do not allow to sort by this column
         noData?: boolean;          // This is only a utility column with no actual data
         tooltip?: React.ReactNode; // Optional tooltip to display when a column header is hovered
@@ -186,12 +185,12 @@ export namespace DynamicTable {
         }
 
         get rows() {
-            const rows = new Array<DynamicTable.CellValue<any>[]>();
+            const rows = new Array<DynamicTable.Cell<any>[]>();
 
-            for (let idx = 0; idx < this.columns[0].values.length; idx++) {
-                const row = new Array<DynamicTable.CellValue<any>>();
+            for (let idx = 0; idx < this.columns[0].cells.length; idx++) {
+                const row = new Array<DynamicTable.Cell<any>>();
                 for (const col of this.columns)
-                    row.push(col.values[idx]);
+                    row.push(col.cells[idx]);
                 rows.push(row);
             }
 
@@ -205,11 +204,9 @@ export namespace DynamicTable {
                     ?
                     mainColumn.comparator
                     :
-                    typeof mainColumn.values[0].data === 'number'
-                        ?
-                        (a: number, b: number) => a - b
-                        :
-                        (a: string, b: string) => a.localeCompare(b);
+                    typeof mainColumn.cells[0].data === 'number'
+                        ? (a: number, b: number) => a - b
+                        : (a: string, b: string) => a.localeCompare(b);
 
                 rows.sort((a, b) => {
                     const eA = a[sortIdx].data;

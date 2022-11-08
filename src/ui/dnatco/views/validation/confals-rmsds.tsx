@@ -37,7 +37,10 @@ export class ConfalsRmsds extends View<View.Props> {
         const params = this.props.dnatcofication.table(NdbStructNtcStepParameters);
 
         const { PDB_model_number, label_asym_id_1, name } = steps;
-        const { assigned_NtC, assigned_CANA, confal_score, cartesian_rmsd_closest_NtC_representative } = summary;
+        const {
+            assigned_NtC, assigned_CANA, closest_NtC, closest_CANA,
+            confal_score, cartesian_rmsd_closest_NtC_representative
+        } = summary;
         const {
             tor_delta_1, tor_epsilon_1, tor_zeta_1,
             tor_alpha_2, tor_beta_2, tor_gamma_2,
@@ -46,27 +49,27 @@ export class ConfalsRmsds extends View<View.Props> {
         } = params;
 
         const stepColumn: DynamicTable.Column<string> = {
-            name: 'Step', values: new Array<DynamicTable.CellValue<string>>(), alignment: 'center', notSortable: true,
+            name: 'Step', cells: new Array<DynamicTable.Cell<string>>(), alignment: 'center', notSortable: true,
             tooltip: <div>Dinucleotide step identifier</div>,
         };
         const ntcColumn: DynamicTable.Column<string> = {
-            name: 'NtC', values: new Array<DynamicTable.CellValue<string>>(), alignment: 'center',
+            name: 'NtC', cells: new Array<DynamicTable.Cell<string>>(), alignment: 'center',
             tooltip: <div>Di<span className='rdo-emphasize'>N</span>ucleotide <span className='rdo-emphasize'>C</span>onformational class</div>,
         };
         const canaColumn: DynamicTable.Column<string> = {
-            name: 'CANA', values: new Array<DynamicTable.CellValue<string>>(), alignment: 'center',
+            name: 'CANA', cells: new Array<DynamicTable.Cell<string>>(), alignment: 'center',
             tooltip: <div><span className='rdo-emphasize'>C</span>onformational <span className='rdo-emphasize'>A</span>lphabet of <span className='rdo-emphasize'>N</span>ucleic <span className='rdo-emphasize'>A</span>cids</div>,
         };
         const confalColumn: DynamicTable.Column<number> = {
-            name: 'Confal', values: new Array<DynamicTable.CellValue<number>>(), alignment: 'center', cellStyle: confalToColor,
+            name: 'Confal', cells: new Array<DynamicTable.Cell<number>>(), alignment: 'center', cellStyle: confalToColor,
             tooltip: <div>Score of similarity between the analyzed step and the assigned NtC class; values between 0 (no match) to 100 (perfect match)</div>,
         };
         const rmsdColumn: DynamicTable.Column<number> = {
-            name: 'RMSD', values: new Array<DynamicTable.CellValue<number>>(), alignment: 'center', cellStyle: rmsdToColor, contentFormatter: n => n.toFixed(3),
+            name: 'RMSD', cells: new Array<DynamicTable.Cell<number>>(), alignment: 'center', cellStyle: rmsdToColor,
             tooltip: <div>RMSD between the analyzed step and the closest NtC representative.</div>
         };
         const torsionsColumn: DynamicTable.Column<string> = {
-            name: '?', values: new Array<DynamicTable.CellValue<string>>(), alignment: 'center', notSortable: true, noData: true,
+            name: '?', cells: new Array<DynamicTable.Cell<string>>(), alignment: 'center', notSortable: true, noData: true,
             tooltip: <div>Hover over the <span className='rdo-emphasize'>[?]</span> to get details about torsions and distances.</div>,
         };
 
@@ -82,18 +85,47 @@ export class ConfalsRmsds extends View<View.Props> {
             const tag = Cif.Column.value(name, row)!;
             const NtC = Cif.Column.value(assigned_NtC, row)!;
 
-            stepColumn.values.push({ data: Cif.Column.value(name, row)!, tag });
-            ntcColumn.values.push({
-                data: Cif.Column.value(assigned_NtC, row)!,
+            stepColumn.cells.push({ data: Cif.Column.value(name, row)!, tag });
+            ntcColumn.cells.push({
+                data :Cif.Column.value(assigned_NtC, row)!,
+                elem: (() => {
+                    const assigned = Cif.Column.value(assigned_NtC, row)!;
+                    return assigned === 'NANT'
+                        ?
+                            <Tooltip
+                                tag={<span className='rdo-unassigned-ntc'>{Cif.Column.value(closest_NtC, row)!}</span>}
+                                delayMsec={300}
+                            >
+                                This step is unassigned. Closest NtC is shown instead.
+                            </Tooltip>
+                        : <span>{assigned}</span>;
+                })(),
                 tag,
             });
-            canaColumn.values.push({
+            canaColumn.cells.push({
                 data: Cif.Column.value(assigned_CANA, row)!,
+                elem: (() => {
+                    const assigned = Cif.Column.value(assigned_CANA, row)!;
+                    return assigned === 'NAN'
+                        ?
+                            <Tooltip
+                                tag={<span className='rdo-unassigned-ntc'>{Cif.Column.value(closest_CANA, row)!}</span>}
+                                delayMsec={300}
+                            >
+                                This step is unassigned. Closest CANA is shown instead.
+                            </Tooltip>
+                        : <span>{assigned}</span>;
+
+                })(),
                 tag,
             });
-            confalColumn.values.push({ data: Cif.Column.value(confal_score, row)!, tag });
-            rmsdColumn.values.push({ data: Cif.Column.value(cartesian_rmsd_closest_NtC_representative, row)!, tag });
-            torsionsColumn.values.push({
+            confalColumn.cells.push({ data: Cif.Column.value(confal_score, row)!, tag });
+            rmsdColumn.cells.push({
+                data: Cif.Column.value(cartesian_rmsd_closest_NtC_representative, row)!,
+                elem: <span>{Cif.Column.value(cartesian_rmsd_closest_NtC_representative, row)!.toFixed(3)}</span>,
+                tag
+            });
+            torsionsColumn.cells.push({
                 data: '',
                 tag,
                 tooltip:

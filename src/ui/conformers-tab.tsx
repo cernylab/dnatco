@@ -63,22 +63,28 @@ export interface BrowseConformersProps {
 }
 class BrowseConformers extends React.Component<BrowseConformersProps> {
     private renderStepsTable() {
-        const names: DynamicTable.Column<string> = { name: 'Name', values: new Array<DynamicTable.CellValue<string>>() };
-        const CANAs: DynamicTable.Column<string> = { name: 'CANA', values: new Array<DynamicTable.CellValue<string>>() };
-        const NtCs: DynamicTable.Column<string> = { name: 'NtC', values: new Array<DynamicTable.CellValue<string>>() };
-        const confals: DynamicTable.Column<number> = { name: 'Confal', values: new Array<DynamicTable.CellValue<number>>() };
-        const rmsds: DynamicTable.Column<number> = { name: 'RMSD', values: new Array<DynamicTable.CellValue<number>>(), contentFormatter: (n) => n.toFixed(2) };
-        const resolutions: DynamicTable.Column<number> = { name: 'Resolution [Å]', values: new Array<DynamicTable.CellValue<number>>(), contentFormatter: (n) => n.toFixed(4) };
-        const haveMaps: DynamicTable.Column<string> = { name: 'Map', values: new Array<DynamicTable.CellValue<string>>() };
+        const names: DynamicTable.Column<string> = { name: 'Name', cells: new Array<DynamicTable.Cell<string>>() };
+        const CANAs: DynamicTable.Column<string> = { name: 'CANA', cells: new Array<DynamicTable.Cell<string>>() };
+        const NtCs: DynamicTable.Column<string> = { name: 'NtC', cells: new Array<DynamicTable.Cell<string>>() };
+        const confals: DynamicTable.Column<number> = { name: 'Confal', cells: new Array<DynamicTable.Cell<number>>() };
+        const rmsds: DynamicTable.Column<number> = { name: 'RMSD', cells: new Array<DynamicTable.Cell<number>>() };
+        const resolutions: DynamicTable.Column<number> = { name: 'Resolution [Å]', cells: new Array<DynamicTable.Cell<number>>() };
+        const haveMaps: DynamicTable.Column<string> = { name: 'Map', cells: new Array<DynamicTable.Cell<string>>() };
 
         for (const step of this.props.steps) {
-            names.values.push({ data: step.name });
-            CANAs.values.push({ data: step.CANA });
-            NtCs.values.push({ data: step.NtC });
-            confals.values.push({ data: step.confal });
-            rmsds.values.push({ data: step.rmsd });
-            resolutions.values.push({ data: step.resolution });
-            haveMaps.values.push({ data: 'N' });
+            names.cells.push({ data: step.name });
+            CANAs.cells.push({ data: step.CANA });
+            NtCs.cells.push({ data: step.NtC });
+            confals.cells.push({ data: step.confal });
+            rmsds.cells.push({
+                data: step.rmsd,
+                elem: <span>{step.rmsd.toFixed(2)}</span>,
+            });
+            resolutions.cells.push({
+                data: step.resolution,
+                elem: <span>{step.resolution.toFixed(4)}</span>
+            });
+            haveMaps.cells.push({ data: 'N' });
         }
 
         const namePrefix = `search_${this.props.criteria.NtC}_count_${this.props.criteria.maxCount}_${this.props.criteria.largeStructures ? 'with' : 'without'}_large_${this.props.criteria.redundant ? 'with' : 'without'}_redundant`;
