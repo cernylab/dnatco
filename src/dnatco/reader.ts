@@ -20,9 +20,9 @@ export namespace Reader {
         return await file.text();
     }
 
-    export async function fromFile(coordsFile: File, densityMapFile: File|null) {
+    export async function fromFile(file: File) {
         try {
-            const text = await fileToText(coordsFile);
+            const text = await fileToText(file);
             return OkResult(text);
         } catch (e) {
             return ErrorResult(`Cannot read file: ${e}`);

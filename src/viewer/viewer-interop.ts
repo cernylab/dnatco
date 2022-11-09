@@ -1,5 +1,6 @@
 import { Subject } from 'rxjs';
 import { ReDNATCOMspApi as ViewerApi } from 'viewer-api';
+import { DensityMap } from '../dnatco/density-map';
 import { EventsKeeper } from '../util/events-keeper';
 import { sleep } from '../util';
 
@@ -60,9 +61,12 @@ export class ViewerInterop {
             throw new Error('Molstar plugin took too long to initialize');
     }
 
-    loadStructure(cif: string) {
+    loadStructure(cif: string, densityMap: DensityMap|null) {
         //@ts-ignore
-        molstar.ReDNATCOMspApi.loadStructure(cif);
+        molstar.ReDNATCOMspApi.loadStructure(
+            { data: cif, type:'cif' },
+            densityMap
+        );
     }
 
     ready() { return this._ready; }

@@ -187,9 +187,15 @@ export class MainScreen extends WithSubscriptions<MainScreen.Props, State> {
                     this.setState({ ...this.state, structureSelection: sel });
                 }
             );
+
             this.subscribe(
                 this.props.viewerInterop.events.ready,
-                () => this.props.viewerInterop.loadStructure(this.props.dnatcofication.rawCif())
+                () => {
+                    this.props.viewerInterop.loadStructure(
+                        this.props.dnatcofication.rawCif(),
+                        this.props.dnatcofication.data.densityMap
+                    );
+                }
             );
         }).catch(e => {
             this.setState({ ...this.state, initializationError: e.toString() });

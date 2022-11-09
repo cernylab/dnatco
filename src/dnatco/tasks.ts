@@ -1,30 +1,39 @@
 import { Result, isError, isOk } from './';
 import { ClassificationResources } from './classification-resources';
+import { DensityMap } from './density-map';
 import { Dnatcofication, DnatcoficationTaskContext } from './dnatcofication';
 import { Reader } from './reader';
 
-function tryIngestCif(result: Result<string>, sourceFileName: string|null, clsfResData: ClassificationResources.Data, ctx: DnatcoficationTaskContext) {
-    if (isOk(result)) {
-        Dnatcofication.ingest(result.data, sourceFileName, clsfResData, ctx);
-    } else if (isError(result)) {
-        ctx.events.finished.next({ state: 'failed', message: result.message });
+async function tryIngestData(coordsResult: Result<string>, densityMapResult: Result<DensityMap>|null, sourceFileName: string|null, clsfResData: ClassificationResources.Data, ctx: DnatcoficationTaskContext) {
+    if (isOk(coordsResult) && (!densityMapResult || isOk(densityMapResult))) {
+        Dnatcofication.ingest(coordsResult.data, densityMapResult ? densityMapResult.data : null, sourceFileName, clsfResData, ctx);
+    } else {
+        const errors = new Array<string>();
+        if (isError(coordsResult))
+            errors.push(`Problem with coordinates - ${coordsResult.message}`);
+        if (densityMapResult && isError(densityMapResult))
+            errors.push(`Problem with density map - ${densityMapResult.message}`);
+
+        ctx.events.finished.next({ state: 'failed', message: errors.join(', ') });
     }
 }
 
 export const Tasks = {
     'dnatco-from-custom-structure': async function (ctx: DnatcoficationTaskContext, payload: { coordsFile: File, densityMapFile: File|null, clsfResData: ClassificationResources.Data }) {
         ctx.status = 'Reading file';
-        const result = await Reader.fromFile(payload.coordsFile, payload.densityMapFile);
-        tryIngestCif(result, payload.coordsFile.name, payload.clsfResData, ctx);
+        const coordsResult = await Reader.fromFile(payload.coordsFile);
+        const densityMapResult = payload.densityMapFile ? await DensityMap.fromFile(payload.densityMapFile) : null;
+
+        tryIngestData(coordsResult, densityMapResult, payload.coordsFile.name, payload.clsfResData, ctx);
     },
     'dnatco-from-pdb-id': async function(ctx: DnatcoficationTaskContext, payload: { pdbId: string, db: Reader.SupportedDatabases, localDbUrl: string, localDbGzipped: boolean, clsfResData: ClassificationResources.Data }) {
         ctx.status = 'Downloading file';
         const result = await Reader.fromPdbId(payload.pdbId, payload.db, payload.localDbUrl, payload.localDbGzipped);
-        tryIngestCif(result, null, payload.clsfResData, ctx);
+        tryIngestData(result, null, null, payload.clsfResData, ctx);
     },
     'dnatco-from-raw-link': async function(ctx: DnatcoficationTaskContext, payload: { link: string, clsfResData: ClassificationResources.Data } ) {
         ctx.status = 'Downloading file';
         const result = await Reader.fromLink(payload.link);
-        tryIngestCif(result, null, payload.clsfResData, ctx);
+        tryIngestData(result, null, null, payload.clsfResData, ctx);
     }
 }
