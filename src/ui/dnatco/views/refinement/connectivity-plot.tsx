@@ -1,4 +1,3 @@
-import type { StandardLonghandProperties } from 'csstype';
 import React from 'react';
 import Plot from 'react-plotly.js';
 import { Refinement } from './common';
@@ -7,7 +6,6 @@ import { ChainSelect, ModelSelect, StepSelect } from '../structure-selectors';
 import { View } from '../view';
 import { InvalidStepId } from '../../structure-selection';
 import { NamedList, NamedListItem } from '../../../common/named-list';
-import { BasePushButton } from '../../../common/push-button';
 import { Constants } from '../../../dnatco/constants';
 import { StepsMapper } from '../../../../dnatco/steps-mapper';
 import { valueToSemaphore } from '../../util';
@@ -73,21 +71,6 @@ export class ConnectivityPlot extends View<Refinement.Props, State> {
         }
 
         return { x, y, colors, tags };
-    }
-
-    private stepDescription(stepId: number, color: StandardLonghandProperties['color']) {
-        if (stepId === -1) {
-            return [
-                <div style={{ color }} key='name'>(None)</div>,
-                <div style={{ color }} key='ntc'>(-)</div>
-            ];
-        }
-
-        const step = StepsMapper.byId(this.props.dnatcofication, stepId);
-        return [
-            <div style={{ color }} key='name'>{step.name}</div>,
-            <div style={{ color }} key='ntc'>({step.NtC})</div>
-        ];
     }
 
     componentDidMount() {
@@ -282,41 +265,6 @@ export class ConnectivityPlot extends View<Refinement.Props, State> {
                                 }
                             }}
                         />
-                    </div>
-
-                    <div>
-                        <div style={{ display: 'flex', marginRight: 'auto', maxWidth: '40em' }}>
-                            <BasePushButton
-                                className='rdo-prevcurrnext'
-                                style={{ backgroundColor: rgbToHex(colorToRgb(Constants.PrevStepColor)) }}
-                                onClick={() => {
-                                    if (this.state.previousStepId !== InvalidStepId)
-                                        this.props.switching.switchStepId(this.state.previousStepId);
-                                }}
-                                onMouseEnter={e => e.currentTarget.classList.add('rdo-prevnext-active')}
-                                onMouseLeave={e => e.currentTarget.classList.remove('rdo-prevnext-active')}
-                            >
-                                <span style={{ fontWeight: 'bold', color: 'white' }}>Previous step</span>
-                                {this.stepDescription(this.state.previousStepId, 'white')}
-                            </BasePushButton>
-                            <div className='rdo-prevcurrnext'>
-                                <span style={{ fontWeight: 'bold' }}>Current step</span>
-                                {this.stepDescription(this.props.structureSelection.stepId, 'black')}
-                            </div>
-                            <BasePushButton
-                                className='rdo-prevcurrnext'
-                                style={{ backgroundColor: rgbToHex(colorToRgb(Constants.NextStepColor)) }}
-                                onClick={() => {
-                                    if (this.state.nextStepId !== InvalidStepId)
-                                        this.props.switching.switchStepId(this.state.previousStepId);
-                                }}
-                                onMouseEnter={e => e.currentTarget.classList.add('rdo-prevnext-active')}
-                                onMouseLeave={e => e.currentTarget.classList.remove('rdo-prevnext-active')}
-                            >
-                                <span style={{ fontWeight: 'bold' }}>Next step</span>
-                                {this.stepDescription(this.state.nextStepId, 'black')}
-                            </BasePushButton>
-                        </div>
                     </div>
                 </div>
             </div>
