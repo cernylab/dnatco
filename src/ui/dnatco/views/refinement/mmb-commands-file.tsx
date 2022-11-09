@@ -25,7 +25,13 @@ export class MmbCommandsFile extends View<Refinement.Props, State> {
             <div style={{ overflow: 'hidden', height: '100%', display: 'flex', flexDirection: 'column' }}>
                 <div>
                     <div className='rdo-secondary-caption'>MMB commands file</div>
-                    <div>Note that this is not a complete MMB commands file but just an excerpt that instructs MMB to apply NtCs to the structure</div>
+
+                    <div style={{ display: 'flex', justifyContent: 'center'}}>
+                        Note that this is not a complete MMB commands file but just an excerpt that instructs MMB to apply NtCs to the structure
+                    </div>
+
+                    <div className='rdo-line-spacer' />
+
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 'var(--h-gap)' }}>
                         NtC set:
                         <ComboBox
