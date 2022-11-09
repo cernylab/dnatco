@@ -57,7 +57,7 @@ export class ChangeNtCs extends View<Refinement.Props, State> {
                 const computedNtC = Cif.Column.value(closest_NtC, row)!;
                 const customNtC = this.props.dnatcofication.customNtCs.getCustomNtC(this.props.selectedCustomNtCSet, step);
                 return (
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 'var(--h-gap)' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 'var(--h2-gap)' }}>
                         <Refinement.NtCSelector
                             value={customNtC ?? computedNtC}
                             onChanged={v => {

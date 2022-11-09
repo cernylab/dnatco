@@ -10,6 +10,8 @@ interface Props extends InputDialog.Props {
     parentElement: HTMLElement;
 }
 export class InputDialog extends React.Component<Props, State> {
+    private textInputRef = React.createRef<HTMLInputElement>();
+
     constructor(props: Props) {
         super(props);
 
@@ -35,28 +37,43 @@ export class InputDialog extends React.Component<Props, State> {
     }
 
     componentDidMount() {
+        this.props.parentElement.addEventListener('keydown', (ev) => {
+            const key = ev.key;
+            if (key === 'Enter')
+                this.accept();
+            else if (key === 'Escape')
+                this.dismiss();
+        });
+
         if (this.props.validator) {
             this.setState({ ...this.state, error: this.props.validator(this.state.value) });
         }
+
+        if (this.textInputRef.current)
+            this.textInputRef.current.focus();
     }
 
     render() {
         return (
             <div className='rdo-popup'>
                 <div className='rdo-popup-inner'>
-                    <div>
-                        <div>{this.props.caption}</div>
-                        <input
-                            type='text'
-                            value={this.state.value}
-                            onChange={ev => {
-                                const value = ev.currentTarget.value;
-                                const error = this.props.validator ? this.props.validator(value) : void 0;
-                                this.setState({ ...this.state, value, error })}
-                            }
-                        />
-                    </div>
+                    <div className='rdo-named-list-name'>{this.props.caption}</div>
+                    <input
+                        ref={this.textInputRef}
+                        className='rdo-input-text'
+                        style={{ width: '100%' }}
+                        type='text'
+                        value={this.state.value}
+                        onChange={ev => {
+                            const value = ev.currentTarget.value;
+                            const error = this.props.validator ? this.props.validator(value) : void 0;
+                            this.setState({ ...this.state, value, error })
+                        }}
+                    />
+
                     {this.state.error ? <div className='rdo-error-text'>{this.state.error}</div> : void 0}
+
+                    <div className='rdo-line-spacer' />
                     <div className='rdo-popup-button-bar'>
                         <div style={{ flex: 1 }} />
                         <PushButton

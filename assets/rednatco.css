@@ -381,6 +381,7 @@ tr.rdo-list-of-conformers-alternate-clr {
 
 .rdo-popup-button-bar {
     display: flex;
+    gap: var(--h2-gap);
 }
 
 .rdo-popup-inner {

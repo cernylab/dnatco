@@ -31,7 +31,7 @@ export class CustomNtCSets extends WithSubscriptions<CustomNtCSets.Props, Empty>
             <div style={{
                 display: 'grid',
                 gridTemplateColumns: 'auto auto 6em 6em 6em 1fr',
-                gap: 'var(--h-gap)',
+                gap: 'var(--h2-gap)',
                 alignItems: 'center',
             }}>
                 <div className='rdo-named-list-name'>Sets of custom NtC</div>
