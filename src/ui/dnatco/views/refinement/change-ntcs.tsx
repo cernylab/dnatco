@@ -40,18 +40,18 @@ export class ChangeNtCs extends View<Refinement.Props, State> {
             notSortable: true,
             tooltip: <div>Dinucleotide step identifier</div>,
         };
-        const computedNtcColumn: DynamicTable.Column<string> = {
+        const computedNtCColumn: DynamicTable.Column<string> = {
             name: 'Computed NtC', cells: new Array<DynamicTable.Cell<string>>(), alignment: 'center',
             tooltip: <div>Di<span className='rdo-emphasize'>N</span>ucleotide <span className='rdo-emphasize'>C</span>onformational class</div>,
         };
-        const selectedNtcColumn: DynamicTable.Column<string> = {
-            name: 'Selected NtC', cells: new Array<DynamicTable.Cell<string>>(), alignment: 'center',
+        const customNtCColumn: DynamicTable.Column<string> = {
+            name: 'Custom NtC', cells: new Array<DynamicTable.Cell<string>>(), alignment: 'center',
             notSortable: true,
             tooltip: <div>Di<span className='rdo-emphasize'>N</span>ucleotide <span className='rdo-emphasize'>C</span>onformational class</div>,
         };
 
         const makeSelCell = this.props.selectedCustomNtCSet === ''
-            ? () => <span>---</span>
+            ? () => <span>(Not changeable)</span>
             : (row: number) => {
                 const step = Cif.Column.value(name, row)!;
                 const computedNtC = Cif.Column.value(closest_NtC, row)!;
@@ -94,7 +94,7 @@ export class ChangeNtCs extends View<Refinement.Props, State> {
 
             chainColumn.cells.push({ data: chain, tag });
             stepColumn.cells.push({ data: tag, tag });
-            computedNtcColumn.cells.push({
+            computedNtCColumn.cells.push({
                 data: Cif.Column.value(assigned_NtC, row)!,
                 elem: (() => {
                     const assigned = Cif.Column.value(assigned_NtC, row)!;
@@ -111,13 +111,13 @@ export class ChangeNtCs extends View<Refinement.Props, State> {
                 tag
             });
 
-            selectedNtcColumn.cells.push({
+            customNtCColumn.cells.push({
                 data: '',
                 elem: makeSelCell(row),
             });
         }
 
-        return new DynamicTable.Model([chainColumn, stepColumn, computedNtcColumn, selectedNtcColumn]);
+        return new DynamicTable.Model([chainColumn, stepColumn, computedNtCColumn, customNtCColumn]);
     }
 
     private renderStepsTable() {
@@ -175,6 +175,7 @@ export class ChangeNtCs extends View<Refinement.Props, State> {
                 </NamedList>
 
                 <div className='rdo-line-spacer' />
+
                 <CustomNtCSets
                     customNtCs={this.props.dnatcofication.customNtCs}
                     selectedSet={this.props.selectedCustomNtCSet}
