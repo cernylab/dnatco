@@ -5,7 +5,6 @@ import { InputDialog } from '../../../common/input-dialog';
 import { IconTextButton } from '../../../common/push-button';
 import { WithSubscriptions } from '../../../service/with-subscriptions';
 import { CustomNtCs } from '../../../../dnatco/custom-ntcs';
-import { GlobalConfig } from '../../../../global-config';
 import { Empty } from '../../../../util';
 import 'assets/imgs/plus.svg';
 import 'assets/imgs/reload.svg';
@@ -28,8 +27,6 @@ export class CustomNtCSets extends WithSubscriptions<CustomNtCSets.Props, Empty>
     }
 
     render() {
-        const prefix = GlobalConfig.data().pathPrefix;
-
         return (
             <div style={{
                 display: 'grid',
@@ -45,7 +42,7 @@ export class CustomNtCSets extends WithSubscriptions<CustomNtCSets.Props, Empty>
                 />
                 <IconTextButton
                     caption='Add'
-                    src={`${prefix}/imgs/plus.svg`}
+                    src={`imgs/plus.svg`}
                     onClick={() => {
                         InputDialog.create({
                             caption: 'Name of the new set',
@@ -63,7 +60,7 @@ export class CustomNtCSets extends WithSubscriptions<CustomNtCSets.Props, Empty>
                 />
                 <IconTextButton
                     caption='Rename'
-                    src={`${prefix}/imgs/reload.svg`}
+                    src={`imgs/reload.svg`}
                     onClick={() => {
                         InputDialog.create({
                             caption: `Set new name for set ${this.props.selectedSet}`,
@@ -81,7 +78,7 @@ export class CustomNtCSets extends WithSubscriptions<CustomNtCSets.Props, Empty>
                 />
                 <IconTextButton
                     caption='Delete'
-                    src={`${prefix}/imgs/x.svg`}
+                    src={`imgs/x.svg`}
                     onClick={() => {
                         if (this.props.selectedSet !== '') {
                             this.props.customNtCs.deleteSet(this.props.selectedSet);

@@ -57,7 +57,7 @@ export class ChangeNtCs extends View<Refinement.Props, State> {
                 const computedNtC = Cif.Column.value(closest_NtC, row)!;
                 const customNtC = this.props.dnatcofication.customNtCs.getCustomNtC(this.props.selectedCustomNtCSet, step);
                 return (
-                    <div style={{ display: 'flex', flexDirection: 'row' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 'var(--h-gap)' }}>
                         <Refinement.NtCSelector
                             value={customNtC ?? computedNtC}
                             onChanged={v => {
@@ -71,10 +71,11 @@ export class ChangeNtCs extends View<Refinement.Props, State> {
                         {customNtC
                             ?
                                 <IconButton
-                                    src=''
+                                    src={`imgs/x.svg`}
                                     onClick={() => this.props.dnatcofication.customNtCs.deleteCustomNtC(this.props.selectedCustomNtCSet, step)}
+                                    className='rdo-icon-text-button'
                                 />
-                            : void 0
+                            : <span />
                         }
                     </div>
                 );
