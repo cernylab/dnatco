@@ -172,6 +172,7 @@ export class ChangeNtCs extends View<Refinement.Props, State> {
                         />
                     </NamedListItem>
                 </NamedList>
+
                 <div className='rdo-line-spacer' />
                 <CustomNtCSets
                     customNtCs={this.props.dnatcofication.customNtCs}

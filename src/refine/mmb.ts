@@ -30,7 +30,7 @@ export namespace Mmb {
         return name[idx];
     }
 
-    export function commands(d: Dnatcofication, includeSequences: boolean) {
+    export function commands(d: Dnatcofication, NtCSet: string, includeSequences: boolean) {
         const model = d.data.structures.at(0)?.models[0];
         if (!model)
             return [];
@@ -66,8 +66,12 @@ export namespace Mmb {
             }
         }
 
-        for (const step of d.data.steps.steps)
-            lines.push(makeNtCDirective(step.chain, step.resNo1, step.resNo2, step.NtC));
+        for (const step of d.data.steps.steps) {
+            const NtC = NtCSet === ''
+                ? step.NtC
+                : d.customNtCs.getCustomNtC(NtCSet, step.name) ?? step.NtC;
+            lines.push(makeNtCDirective(step.chain, step.resNo1, step.resNo2, NtC));
+        }
 
         return lines;
     }

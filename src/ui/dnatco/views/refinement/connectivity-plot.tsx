@@ -2,6 +2,7 @@ import type { StandardLonghandProperties } from 'csstype';
 import React from 'react';
 import Plot from 'react-plotly.js';
 import { Refinement } from './common';
+import { CustomNtCSets } from './custom-ntc-sets';
 import { ChainSelect, ModelSelect, StepSelect } from '../structure-selectors';
 import { View } from '../view';
 import { InvalidStepId } from '../../structure-selection';
@@ -131,7 +132,6 @@ export class ConnectivityPlot extends View<Refinement.Props, State> {
                 return;
 
             const step = StepsMapper.byId(this.props.dnatcofication, stepId);
-            console.log(`Switching ${step} to ${NtC}`);
             this.props.dnatcofication.customNtCs.setCustomNtC(
                 this.props.selectedCustomNtCSet,
                 step.name,
@@ -164,6 +164,16 @@ export class ConnectivityPlot extends View<Refinement.Props, State> {
                         />
                     </NamedListItem>
                 </NamedList>
+
+                <div className='rdo-line-spacer' />
+
+                <CustomNtCSets
+                    customNtCs={this.props.dnatcofication.customNtCs}
+                    selectedSet={this.props.selectedCustomNtCSet}
+                    onSetChanged={this.props.onCustomNtCSetChanged}
+                />
+
+                <div className='rdo-line-spacer' />
 
                 <div className='rdo-offset'>
                     <div className='rdo-secondary-caption'>Similarity plot</div>

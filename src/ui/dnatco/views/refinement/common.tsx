@@ -4,6 +4,7 @@ import { makeStepSelection } from '../../util';
 import { View } from '../../views/view';
 import { ComboBox } from '../../../common/combo-box';
 import { Dnatcofication } from '../../../../dnatco/dnatcofication';
+import { CustomNtCs } from '../../../../dnatco/custom-ntcs';
 import { NtC } from '../../../../dnatco/ntc';
 import { StepsMapper } from '../../../../dnatco/steps-mapper';
 import { ViewerInterop, ViewerApi } from '../../../../viewer/viewer-interop';
@@ -34,6 +35,13 @@ export namespace Refinement {
             value: NtC.ValidClass;
             onChanged: (v: NtC.ValidClass) => void;
         }
+    }
+
+    export function ntcSetsOptions(customNtCs: CustomNtCs) {
+        return [
+            { caption: '(Computed)', value: '' },
+            ...customNtCs.sets().map(s => ({ caption: s, value: s }))
+        ];
     }
 
     export async function switchStep(stepId: number, d: Dnatcofication, vi: ViewerInterop, customNtCSet: string) {

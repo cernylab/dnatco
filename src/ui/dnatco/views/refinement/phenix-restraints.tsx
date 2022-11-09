@@ -1,6 +1,7 @@
 import React from 'react';
 import { Refinement } from './common';
 import { View } from '../view';
+import { ComboBox } from '../../../common/combo-box';
 import { PushButton } from '../../../common/push-button';
 import { SpinBox } from '../../../common/spin-box';
 import { Phenix } from '../../../../refine/phenix';
@@ -31,7 +32,7 @@ export class PhenixRestraints extends View<Refinement.Props, State> {
     }
 
     render() {
-        const restraints = Phenix.restraints(this.props.dnatcofication, this.state.maxRmsd);
+        const restraints = Phenix.restraints(this.props.dnatcofication, this.props.selectedCustomNtCSet, this.state.maxRmsd);
         const elems = new Array<JSX.Element>();
 
 
@@ -52,6 +53,12 @@ export class PhenixRestraints extends View<Refinement.Props, State> {
                 <div>
                     <div className='rdo-secondary-caption'>Restraints for NtC-aware Phenix</div>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 'var(--h-gap)' }}>
+                        NtC set:
+                        <ComboBox
+                            options={Refinement.ntcSetsOptions(this.props.dnatcofication.customNtCs)}
+                            value={this.props.selectedCustomNtCSet}
+                            onChange={(v) => this.props.onCustomNtCSetChanged(v)}
+                        />
                         Maximum allowed RMSD:
                         <SpinBox
                             value={this.state.maxRmsd}

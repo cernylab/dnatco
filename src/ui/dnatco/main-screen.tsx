@@ -129,7 +129,7 @@ export class MainScreen extends WithSubscriptions<MainScreen.Props, State> {
             switching: this.viewerSwitching,
             selectedCustomNtCSet: this.state.selectedCustomNtCSet,
             onCustomNtCSetChanged: (set: string) => {
-                if (this.props.dnatcofication.customNtCs.exists(set))
+                if (this.props.dnatcofication.customNtCs.exists(set) || set === '')
                     this.setState({ ...this.state, selectedCustomNtCSet: set });
             }
         });
@@ -145,24 +145,20 @@ export class MainScreen extends WithSubscriptions<MainScreen.Props, State> {
                     return;
                 }
 
-                if (set === '')
-                    this.setState({ ...this.state, selectedCustomNtCSet: '' });
-                else {
-                    if (!this.props.dnatcofication.customNtCs.exists(set)) {
-                        // The set got deleted, switch to the first available custom set
-                        this.setState({ ...this.state, selectedCustomNtCSet: this.props.dnatcofication.customNtCs.sets()[0] ?? '' });
-                        return;
-                    }
+                if (!this.props.dnatcofication.customNtCs.exists(set)) {
+                    // The set got deleted, switch to the first available custom set
+                    this.setState({ ...this.state, selectedCustomNtCSet: this.props.dnatcofication.customNtCs.sets()[0] ?? '' });
+                    return;
+                }
 
-                    if (set !== this.state.selectedCustomNtCSet)
-                        return;
+                if (set !== this.state.selectedCustomNtCSet)
+                    return;
 
-                    const sel = this.props.viewerInterop.api.query('selected-step');
-                    if (sel.selected) {
-                        const displayedStep = StepsMapper.byName(this.props.dnatcofication, sel.selected.name);
-                        if (displayedStep && displayedStep.name === step)
-                            this.switchStepId(displayedStep.id);
-                    }
+                const sel = this.props.viewerInterop.api.query('selected-step');
+                if (sel.selected) {
+                    const displayedStep = StepsMapper.byName(this.props.dnatcofication, sel.selected.name);
+                    if (displayedStep && displayedStep.name === step)
+                        this.switchStepId(displayedStep.id);
                 }
             }
         )

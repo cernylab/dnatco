@@ -4,8 +4,8 @@ import { Dnatcofication } from '../dnatco/dnatcofication';
 const SigmaFactor = 1.0;
 
 export namespace Refmac {
-    export function restraints(d: Dnatcofication, maxRmsd: number) {
-        return Restraints.make(d, maxRmsd, SigmaFactor);
+    export function restraints(d: Dnatcofication, NtCSet: string, maxRmsd: number) {
+        return Restraints.make(d, NtCSet, maxRmsd, SigmaFactor);
     }
 
     export function restraintAsText(restraint: Restraints.Restraint) {

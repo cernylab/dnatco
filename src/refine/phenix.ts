@@ -159,8 +159,8 @@ export namespace Phenix {
         return lines;
     }
 
-    export function restraints(d: Dnatcofication, maxRmsd: number): Restraints {
-        const restraints = Restraints.make(d, maxRmsd, SigmaFactor);
+    export function restraints(d: Dnatcofication, NtCSet: string, maxRmsd: number): Restraints {
+        const restraints = Restraints.make(d, NtCSet, maxRmsd, SigmaFactor);
         const residueAliases = makeResidueAliases(d);
 
         return { residueAliases, restraints };

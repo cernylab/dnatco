@@ -1,5 +1,6 @@
 import * as jsLLKA from 'jsllka';
 import { NdbStructNtcStep, NdbStructNtcStepSummary } from '../cif/categories/ndb-struct-ntc';
+import { Cif } from '../cif'
 import { ClassificationContext } from '../dnatco/classification-context';
 import { Dnatcofication } from '../dnatco/dnatcofication';
 import { M } from '../util/math';
@@ -251,7 +252,7 @@ export namespace Restraints {
 
     export type Restraint = Distance | Torsion | Unavailable;
 
-    export function make(d: Dnatcofication, maxRmsd: number, sigmaFactor: number) {
+    export function make(d: Dnatcofication, NtCSet: string, maxRmsd: number, sigmaFactor: number) {
         const steps = d.table(NdbStructNtcStep);
         const summary = d.table(NdbStructNtcStepSummary);
         const {
@@ -267,7 +268,10 @@ export namespace Restraints {
 
         const ctx = ClassificationContext.context();
         for (let row = 0; row < _rowCount; row++) {
-            const ntc = jsLLKA.nameToNtC(closest_NtC.values?.[row] ?? 'NANT');
+            const NtC = NtCSet === ''
+                ? Cif.Column.value(closest_NtC, row)!
+                : d.customNtCs.getCustomNtC(NtCSet, Cif.Column.value(name, row)!) ?? Cif.Column.value(closest_NtC, row)!;
+            const LLKANtC = jsLLKA.nameToNtC(NtC);
             const stepName = name.values?.[row] ?? '';
             const rmsd = cartesian_rmsd_closest_NtC_representative.values?.[row] ?? 0;
             const base1 = label_comp_id_1.values?.[row] ?? '';
@@ -289,8 +293,8 @@ export namespace Restraints {
                 continue;
             }
 
-            const retCluster = jsLLKA.classificationClusterForNtC(ntc, ctx);
-            const retConfal = jsLLKA.confalForNtC(ntc, ctx);
+            const retCluster = jsLLKA.classificationClusterForNtC(LLKANtC, ctx);
+            const retConfal = jsLLKA.confalForNtC(LLKANtC, ctx);
             if (!retCluster.isSuccess() || !retConfal.isSuccess()) {
                 restraints.push(Restraints.Unavailable(stepName, 'Metrics for entire step is not available'));
                 continue;

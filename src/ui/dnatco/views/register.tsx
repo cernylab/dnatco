@@ -50,7 +50,7 @@ export namespace Register {
             stepSwitcher: PhenixRestraints.StepSwitcher
         },
         'refmac-restraints': {
-            render: (props: View.Props) => <RefmacRestraints {...props} />,
+            render: (props: Refinement.Props) => <RefmacRestraints {...props} />,
             stepSwitcher: RefmacRestraints.StepSwitcher
         },
         'step-torsions': {
