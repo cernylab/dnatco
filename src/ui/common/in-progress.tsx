@@ -36,10 +36,16 @@ export namespace InProgress {
         const btn = tainer.getElementsByClassName('rdo-pushbutton')[0];
         if (btn)
             (btn as HTMLDivElement).onclick = handler;
+
+        tainer.addEventListener('keydown', (ev) => {
+            if (ev.key === 'Escape')
+                handler(new MouseEvent('mousedown'));
+        });
     }
 
     export async function create(title: string, status: string, abortButton: boolean): Promise<HTMLElement> {
         const tainer = document.createElement('div');
+        tainer.tabIndex = 0;
 
         /* We cannot use React because it renders stuff asynchronously
          * but we need to be sure that this dialog will be visible before

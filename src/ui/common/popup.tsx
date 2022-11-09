@@ -3,13 +3,29 @@ import * as RDC from 'react-dom/client';
 import { PushButton } from './push-button';
 
 export class Popup extends React.Component<Popup.Props> {
+    private selfRef = React.createRef<HTMLDivElement>();
+
     private dismiss() {
         document.body.removeChild(this.props.parentElement);
     }
 
+    componentDidMount() {
+        if (this.selfRef.current) {
+            this.selfRef.current.addEventListener('keydown', (ev) => {
+                if (ev.key === 'Escape')
+                    this.dismiss();
+            });
+            this.selfRef.current.focus();
+        }
+    }
+
     render() {
         return (
-            <div className='rdo-popup'>
+            <div
+                ref={this.selfRef}
+                className='rdo-popup'
+                tabIndex={0}
+            >
                 <div className='rdo-popup-inner'>
                     <div style={{ flex: 1 }}>
                         {this.props.children}
@@ -38,7 +54,7 @@ export namespace Popup {
         const tainer = document.createElement('div');
         document.body.appendChild(tainer);
 
-        const reactRoot = RDC.createRoot(tainer!)
+        const reactRoot = RDC.createRoot(tainer!);
         reactRoot.render(
             <Popup parentElement={tainer}>
                 {children}
