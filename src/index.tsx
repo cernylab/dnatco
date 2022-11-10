@@ -7,7 +7,7 @@ import { ClassificationContext } from './dnatco/classification-context';
 import { ClassificationResources } from './dnatco/classification-resources';
 import { Dnatcofication, DnatcoficationData } from './dnatco/dnatcofication';
 import { ListOfConformers } from './dnatco/list-of-conformers';
-import { Reader } from './dnatco/reader';
+import { SupportedRemoteDatabases } from './dnatco/remote-databases';
 import { Step } from './dnatco/step';
 import { StepsMapper } from './dnatco/steps-mapper';
 import { AboutTab } from './ui/about-tab';
@@ -188,8 +188,8 @@ export class App extends WithSubscriptions<{}, State> {
         this.loadStructure(task, onSuccess);
     }
 
-    private fromPdbId(pdbId: string, db: Reader.SupportedDatabases, onSuccess: () => void) {
-        const task: Task<{ pdbId: string, db: Reader.SupportedDatabases, localDbUrl: string, localDbGzipped: boolean, clsfResData: ClassificationResources.Data }> = {
+    private fromPdbId(pdbId: string, db: SupportedRemoteDatabases, onSuccess: () => void) {
+        const task: Task<{ pdbId: string, db: SupportedRemoteDatabases, localDbUrl: string, localDbGzipped: boolean, clsfResData: ClassificationResources.Data }> = {
             taskFunc: 'dnatco-from-pdb-id',
             payload: { pdbId, db, localDbUrl: GlobalConfig.data().localDbUrl, localDbGzipped: GlobalConfig.data().localDbGzipped, clsfResData: ClassificationContext.data() },
             initialStatus: ''

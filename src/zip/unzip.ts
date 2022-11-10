@@ -97,8 +97,8 @@ async function _readLocal(data: Uint8Array, o: number, out: { [k: string]: Uint8
     }
 }
 
-export function inflateRaw(file: Uint8Array, buf?: Uint8Array) {
-    return _inflate(file, buf);
+export function inflateRaw(data: Uint8Array, buf?: Uint8Array) {
+    return _inflate(data, buf);
 }
 
 export function inflate(file: Uint8Array, buf?: Uint8Array) {

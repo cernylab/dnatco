@@ -1,4 +1,6 @@
 import { OkResult, ErrorResult, Result } from './';
+import { RemoteDatabases, SupportedRemoteDatabases } from './remote-databases';
+import { inflateRaw } from '../zip/unzip';
 
 export type DensityMap = {
     data: Uint8Array,
@@ -31,6 +33,37 @@ export namespace DensityMap {
             return OkResult({ data, type });
         } catch (e) {
             return ErrorResult(`${e}`);
+        }
+    }
+
+    export async function fromLink(link: string, type: DensityMap['type']): Promise<Result<DensityMap>> {
+        try {
+            const req = await fetch(link);
+            if (!req.ok)
+                return ErrorResult(`Cannot load data: ${req.statusText}`);
+            const blob = await req.arrayBuffer();
+            return OkResult({ data: new Uint8Array(blob), type });
+        } catch (e) {
+            return ErrorResult(`Cannot load data: ${e}`);
+        }
+    }
+
+    export async function fromPdbId(pdbId: string, db: SupportedRemoteDatabases): Promise<Result<DensityMap>> {
+        try {
+            const remoteDb = RemoteDatabases[db];
+            const resource = remoteDb.densityMapResource(pdbId);
+            if (!remoteDb.densityMapType || !resource.url)
+                return ErrorResult(`Remote database ${db} does not provide density maps`);
+
+            const req = await fetch(resource.url);
+            if (!req.ok)
+                return ErrorResult(`Cannot load data: ${req.statusText}`);
+            const data = new Uint8Array(await req.arrayBuffer());
+            const extracted = resource.gzipped ? inflateRaw(data) : data;
+
+            return OkResult({ data: extracted, type: remoteDb.densityMapType });
+        } catch (e) {
+            return ErrorResult(`Cannot load data: ${e}`);
         }
     }
 }

@@ -1,11 +1,10 @@
 import { OkResult, ErrorResult } from './';
+import { SupportedRemoteDatabases } from './remote-databases';
 import { ungzip } from '../zip/unzip';
 
 const Utf8Decoder = new TextDecoder('utf-8');
 
-export namespace Reader {
-    export type SupportedDatabases = 'rcsb' | 'redo';
-
+export namespace CoordsReader {
     async function blobToText(buf: ArrayBuffer, gzipped: boolean) {
         const data = new Uint8Array(buf);
         const ungzipped = gzipped ? await ungzip(data) : data;
@@ -29,7 +28,7 @@ export namespace Reader {
         }
     }
 
-    export async function fromPdbId(pdbId: string, db: SupportedDatabases, localDbUrl: string, localDbGzipped: boolean) {
+    export async function fromPdbId(pdbId: string, db: SupportedRemoteDatabases, localDbUrl: string, localDbGzipped: boolean) {
         const resources = (()  => {
             const resources = new Array<{ url: string, gzipped: boolean }>();
 
