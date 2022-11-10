@@ -15,7 +15,7 @@ export type SupportedRemoteDatabases = 'rcsb'|'redo';
 export const RemoteDatabases: Record<SupportedRemoteDatabases, RemoteDatabase> = {
     'rcsb': {
         coordinatesResource: (pdbId: string) => ({ url: `https://files.rcsb.org/download/${pdbId.toUpperCase()}.cif.gz`, gzipped: true }),
-        densityMapResource: (pdbId: string) => ({ url: `https://edmaps.rcsb.org/maps/${pdbId.toLowerCase()}_fofc.dsn6`, gzipped: false }),
+        densityMapResource: (pdbId: string) => ({ url: `https://edmaps.rcsb.org/maps/${pdbId.toLowerCase()}_2fofc.dsn6`, gzipped: false }),
         densityMapType: 'dsn6',
     },
     'redo': {
