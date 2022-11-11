@@ -4,14 +4,19 @@ import { ComboBox } from './common/combo-box';
 import { Popup } from './common/popup';
 import { DummyButton, PushButton } from './common/push-button';
 import { ShadowedBox } from './common/shadowed-box';
-import { SupportedRemoteDatabases } from '../dnatco/remote-databases';
+import { RemoteDatabases, SupportedRemoteDatabases } from '../remote-db/register';
 import { Search } from '../search/search';
 import { isPdbId } from '../util';
 
-const DatabaseOptions = [
-    { value: 'rcsb', caption: 'RSCB-PDB' },
-    { value: 'redo', caption: 'PDB-REDO' },
-];
+const DatabaseOptions = (() => {
+    const opts = [];
+    for (const db in RemoteDatabases) {
+        const _db = db as keyof typeof RemoteDatabases;
+        opts.push({ caption: RemoteDatabases[_db].name, value: db });
+    }
+
+    return opts;
+})();
 
 interface State {
     coordsFile: File|null;

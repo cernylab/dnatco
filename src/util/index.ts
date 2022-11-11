@@ -1,5 +1,3 @@
-export type Empty = Record<never, never>;
-
 const ZeroChar = '0'.charCodeAt(0);
 const NineChar = '9'.charCodeAt(0);
 const MinusChar = '-';
@@ -86,6 +84,14 @@ export function parseFloatStrict(obj: unknown) {
     if (!FloatRegex.test(s))
         return NaN;
     return parseFloat(s);
+}
+
+export function replaceAll(s: string, what: string, _with: string) {
+    let _s = s;
+    while (_s.indexOf(what) !== -1)
+        _s = _s.replace(what, _with);
+
+    return _s;
 }
 
 export function reverseSequence(from: number, to: number) {

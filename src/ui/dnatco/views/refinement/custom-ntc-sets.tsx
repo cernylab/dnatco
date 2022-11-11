@@ -5,7 +5,7 @@ import { InputDialog } from '../../../common/input-dialog';
 import { IconTextButton } from '../../../common/push-button';
 import { WithSubscriptions } from '../../../service/with-subscriptions';
 import { CustomNtCs } from '../../../../dnatco/custom-ntcs';
-import { Empty } from '../../../../util';
+import { Empty } from '../../../../util/types';
 import 'assets/imgs/plus.svg';
 import 'assets/imgs/reload.svg';
 import 'assets/imgs/x.svg';

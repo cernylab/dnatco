@@ -1,4 +1,5 @@
 import * as ConnSimil from './connectivity-similarity';
+import { Coordinates } from './coordinates';
 import { ClassificationResources } from './classification-resources';
 import { CustomNtCs } from './custom-ntcs';
 import { DensityMap } from './density-map';
@@ -114,16 +115,21 @@ export namespace Dnatcofication {
         }
     }
 
-    export function ingest(cifContent: string, densityMap: DensityMap|null, sourceFileName: string|null, clsfResData: ClassificationResources.Data, ctx: DnatcoficationTaskContext) {
+    export function ingest(coordinates: Coordinates, densityMap: DensityMap|null, sourceFileName: string|null, clsfResData: ClassificationResources.Data, ctx: DnatcoficationTaskContext) {
         const tStart = performance.now();
+
+        if (coordinates.type !== 'cif') {
+            ctx.events.finished.next({ state: 'failed', message: 'Only mmCIF files are currently supported' });
+            return;
+        }
 
         try {
             ctx.status = 'Reading CIF file';
 
-            let cifData = Cif.read(cifContent);
+            let cifData = Cif.read(coordinates.data);
             if (!isDnatcofied(cifData)) {
                 // Got a CIF without DNATCO categories. Let's try to create them ourselves
-                const maybeDnatcofiedCif = Dnatcofier.dnatcoify(cifContent, clsfResData, ctx);
+                const maybeDnatcofiedCif = Dnatcofier.dnatcoify(coordinates.data, clsfResData, ctx);
                 cifData = Cif.read(maybeDnatcofiedCif);
                 if (!isDnatcofied(cifData))
                     throw new Error('Input CIF file does not contain required DNATCO categories and ' + Globals.ProductName + '\'s automatic assignment process was unsuccessful. Sorry...');

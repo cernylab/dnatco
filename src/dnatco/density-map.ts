@@ -1,10 +1,9 @@
 import { OkResult, ErrorResult, Result } from './';
-import { RemoteDatabases, SupportedRemoteDatabases } from './remote-databases';
-import { inflateRaw } from '../zip/unzip';
+import { RemoteDatabases, SupportedRemoteDatabases } from '../remote-db/register';
 
 export type DensityMap = {
     data: Uint8Array,
-    type: 'ccp4'|'dsn6',
+    type: 'ccp4'|'dsn6'|'ds',
 };
 
 const Ccp4Suffixes = ['ccp4', 'map', 'mrc'];
@@ -49,21 +48,7 @@ export namespace DensityMap {
     }
 
     export async function fromPdbId(pdbId: string, db: SupportedRemoteDatabases): Promise<Result<DensityMap>> {
-        try {
-            const remoteDb = RemoteDatabases[db];
-            const resource = remoteDb.densityMapResource(pdbId);
-            if (!remoteDb.densityMapType || !resource.url)
-                return ErrorResult(`Remote database ${db} does not provide density maps`);
-
-            const req = await fetch(resource.url);
-            if (!req.ok)
-                return ErrorResult(`Cannot load data: ${req.statusText}`);
-            const data = new Uint8Array(await req.arrayBuffer());
-            const extracted = resource.gzipped ? inflateRaw(data) : data;
-
-            return OkResult({ data: extracted, type: remoteDb.densityMapType });
-        } catch (e) {
-            return ErrorResult(`Cannot load data: ${e}`);
-        }
+        const _db = RemoteDatabases[db];
+        return _db.densityMap(pdbId);
     }
 }
