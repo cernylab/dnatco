@@ -1,5 +1,6 @@
-import { StaticDb } from './remote-db/static-db';
+import { KnownCoordinateFileTypes, KnownDensityMapKinds, KnownDensityMapTypes } from './remote-db';
 import { UserRemoteDatabases } from './remote-db/register';
+import { StaticDb } from './remote-db/static-db';
 import { fromTemplate } from './util/json';
 
 export type GlobalConfigData = {
@@ -33,9 +34,9 @@ function fixups(data: GlobalConfigData) {
         data.pathPrefix = '.';
 
     data.userDatabases = data.userDatabases.filter((x) => {
-        let ok = ['cif', 'pdb'].includes(x.coords.type);
+        let ok = KnownCoordinateFileTypes.includes(x.coords.type);
         for (const dm of x.densityMaps ?? []) {
-            ok = ok && ['ccp4', 'dsn6'].includes(dm.type) && ['2fo-fc', 'fo-fc', 'em'].includes(dm.kind);
+            ok = ok && KnownDensityMapTypes.includes(dm.type) && KnownDensityMapKinds.includes(dm.kind);
         }
 
         return ok;
