@@ -3,7 +3,8 @@ import { ClassificationResources } from './classification-resources';
 import { Coordinates } from './coordinates';
 import { DensityMap } from './density-map';
 import { Dnatcofication, DnatcoficationTaskContext } from './dnatcofication';
-import { SupportedRemoteDatabases } from '../remote-db/register';
+import { UserRemoteDatabases, BuiltInRemoteDatabases } from '../remote-db/register';
+import { StaticDb } from '../remote-db/static-db';
 
 async function tryIngestData(coordsResult: Result<Coordinates>, densityMapResult: Result<DensityMap[]>|null, sourceFileName: string|null, clsfResData: ClassificationResources.Data, ctx: DnatcoficationTaskContext) {
     if (isOk(coordsResult) && (!densityMapResult || isOk(densityMapResult))) {
@@ -24,7 +25,8 @@ export const Tasks = {
         ctx: DnatcoficationTaskContext,
         payload: {
             coords: { file: File, type: Coordinates['type'] },
-            densityMap: { file: File, kind: DensityMap['kind'] }|null, clsfResData: ClassificationResources.Data
+            densityMap: { file: File, kind: DensityMap['kind'] }|null,
+            clsfResData: ClassificationResources.Data,
         }
     ) {
         ctx.status = 'Reading data';
@@ -35,12 +37,26 @@ export const Tasks = {
     'dnatco-from-pdb-id': async function(
         ctx: DnatcoficationTaskContext,
         payload: {
-            pdbId: string, db: SupportedRemoteDatabases, localDbUrl: string, localDbGzipped: boolean, clsfResData: ClassificationResources.Data
+            pdbId: string,
+            dbId: string,
+            clsfResData: ClassificationResources.Data,
+            userDatabases: StaticDb[],
         }
     ) {
+        UserRemoteDatabases._import(payload.userDatabases);
+
         ctx.status = 'Downloading data';
-        const coordsResult = await Coordinates.fromPdbId(payload.pdbId, payload.db, payload.localDbUrl, payload.localDbGzipped);
-        const densityMapResult = await DensityMap.fromPdbId(payload.pdbId, payload.db);
+
+        const db = UserRemoteDatabases.exists(payload.dbId)
+            ? UserRemoteDatabases.get(payload.dbId)
+            : BuiltInRemoteDatabases[payload.dbId as keyof typeof BuiltInRemoteDatabases];
+        if (!db) {
+            ctx.events.finished.next({ state: 'failed', message: 'Unknown database ID' });
+            return;
+        }
+
+        const coordsResult = await Coordinates.fromPdbId(payload.pdbId, db);
+        const densityMapResult = await DensityMap.fromPdbId(payload.pdbId, db);
         if (isError(densityMapResult))
             console.warn(densityMapResult.message); // Log a warning because we do not consider a density map fetch failure a hard failure
         tryIngestData(coordsResult, isOk(densityMapResult) ? densityMapResult : null, null, payload.clsfResData, ctx);
@@ -48,11 +64,13 @@ export const Tasks = {
     'dnatco-from-raw-link': async function(
         ctx: DnatcoficationTaskContext,
         payload: {
-            coordsLink: string, densityMap: { link: string, type: DensityMap['type'], kind: DensityMap['kind'] }|null, clsfResData: ClassificationResources.Data
+            coords: { link: string, type: Coordinates['type'] },
+            densityMap: { link: string, type: DensityMap['type'], kind: DensityMap['kind'] }|null,
+            clsfResData: ClassificationResources.Data,
         }
     ) {
         ctx.status = 'Downloading data';
-        const coordsResult = await Coordinates.fromLink(payload.coordsLink, 'cif'); // @nocheckin HACK
+        const coordsResult = await Coordinates.fromLink(payload.coords.link, payload.coords.type);
         const densityMapResult = payload.densityMap ? await DensityMap.fromLink(payload.densityMap.link, payload.densityMap.type, payload.densityMap.kind) : null;
         tryIngestData(coordsResult, densityMapResult, null, payload.clsfResData, ctx);
     }

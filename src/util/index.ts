@@ -6,6 +6,8 @@ const FloatRegex = new RegExp('[0-9eE+.,-]');
 const PdbIdRegex = new RegExp('[0-9]{1}[a-zA-Z0-9]{3}');
 const ZeroCode = '0'.charCodeAt(0);
 
+export const Utf8Decoder = new TextDecoder('utf-8');
+
 export function capitalize(s: string) {
     return s.substring(0, 1).toUpperCase() + s.substring(1);
 }

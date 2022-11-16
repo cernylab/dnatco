@@ -1,5 +1,5 @@
 import { OkResult, ErrorResult, Result } from './';
-import { RemoteDatabases, SupportedRemoteDatabases } from '../remote-db/register';
+import { RemoteDatabase } from '../remote-db';
 
 export type DensityMap = {
     data: Uint8Array,
@@ -48,8 +48,7 @@ export namespace DensityMap {
         }
     }
 
-    export async function fromPdbId(pdbId: string, db: SupportedRemoteDatabases): Promise<Result<DensityMap[]>> {
-        const _db = RemoteDatabases[db];
-        return _db.densityMaps(pdbId);
+    export async function fromPdbId(pdbId: string, db: RemoteDatabase): Promise<Result<DensityMap[]>> {
+        return db.densityMaps(pdbId);
     }
 }

@@ -1,9 +1,8 @@
 import { OkResult, ErrorResult } from './';
-import { RemoteDatabases, SupportedRemoteDatabases } from '../remote-db/register';
+import { RemoteDatabase } from '../remote-db';
+import { Utf8Decoder } from '../util';
 import { ungzip } from '../zip/unzip';
 
-// @nocheckin: Do not use multiple instances of decoder
-const Utf8Decoder = new TextDecoder('utf-8');
 
 export type Coordinates = {
     data: string;
@@ -34,11 +33,8 @@ export namespace Coordinates {
         }
     }
 
-    export async function fromPdbId(pdbId: string, db: SupportedRemoteDatabases, localDbUrl: string, localDbGzipped: boolean) {
-        // TODO: Temporarily broken
-
-        const _db = RemoteDatabases[db];
-        return await _db.coordinates(pdbId);
+    export async function fromPdbId(pdbId: string, db: RemoteDatabase) {
+        return await db.coordinates(pdbId);
     }
 
     export async function fromLink(link: string, type: Coordinates['type']) {

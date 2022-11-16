@@ -2,10 +2,15 @@ import { RemoteDatabase } from './';
 import { ErrorResult, OkResult } from '../dnatco';
 import { Coordinates } from '../dnatco/coordinates';
 import { DensityMap } from '../dnatco/density-map';
-import { replaceAll } from '../util';
+import { replaceAll, Utf8Decoder } from '../util';
 import { ungzip } from '../zip/unzip';
 
-const Utf8Decoder = new TextDecoder('utf-8');
+export type StaticDb = {
+    id: string;
+    name: string,
+    coords: { link: string, type: Coordinates['type'], gzipped: boolean },
+    densityMaps?: { link: string, type: DensityMap['type'], kind: DensityMap['kind'] }[],
+}
 
 export function StaticDb(
     name: string,
@@ -40,12 +45,13 @@ export function StaticDb(
                 const req = await fetch(replaceAll(dm.link, '${id}', id));
                 if (!req.ok)
                     console.warn(`Failed to download density map: ${req.statusText}`);
-
-                try {
-                    const data = new Uint8Array(await req.arrayBuffer());
-                    maps.push({ data, type: dm.type, kind: dm.kind });
-                } catch (e) {
-                    console.warn(`Invalid database reponse: ${e}`);
+                else {
+                    try {
+                        const data = new Uint8Array(await req.arrayBuffer());
+                        maps.push({ data, type: dm.type, kind: dm.kind });
+                    } catch (e) {
+                        console.warn(`Invalid database reponse: ${e}`);
+                    }
                 }
             }
 

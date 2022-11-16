@@ -4,34 +4,34 @@ import { ComboBox } from './common/combo-box';
 import { Popup } from './common/popup';
 import { DummyButton, PushButton } from './common/push-button';
 import { ShadowedBox } from './common/shadowed-box';
-import { RemoteDatabases, SupportedRemoteDatabases } from '../remote-db/register';
+import { BuiltInRemoteDatabases, UserRemoteDatabases } from '../remote-db/register';
 import { Search } from '../search/search';
 import { isPdbId } from '../util';
-
-const DatabaseOptions = (() => {
-    const opts = [];
-    for (const db in RemoteDatabases) {
-        const _db = db as keyof typeof RemoteDatabases;
-        opts.push({ caption: RemoteDatabases[_db].name, value: db });
-    }
-
-    return opts;
-})();
 
 interface State {
     coordsFile: File|null;
     densityMapFile: File|null;
-    database: SupportedRemoteDatabases;
+    database: string;
     pdbId: string;
 }
 
 export class StartTab extends React.Component<StartTab.Props, State> {
+    private readonly DatabaseOptions = (() => {
+        const opts = UserRemoteDatabases.list().map(x => ({ caption: x.name, value: x.id }));
+
+        for (const id in BuiltInRemoteDatabases) {
+            opts.push({ caption: BuiltInRemoteDatabases[id as keyof typeof BuiltInRemoteDatabases].name, value: id });
+        }
+
+        return opts;
+    })();
+
     constructor(props: StartTab.Props) {
         super(props);
 
         this.state = {
             coordsFile: null,
-            database: 'rcsb',
+            database: this.DatabaseOptions[0].value,
             densityMapFile: null,
             pdbId: '',
         };
@@ -93,9 +93,9 @@ export class StartTab extends React.Component<StartTab.Props, State> {
                                         }}
                                     />
                                     <ComboBox
-                                        options={DatabaseOptions}
+                                        options={this.DatabaseOptions}
                                         value={this.state.database}
-                                        onChange={v => this.setState({ ...this.state, database: v as SupportedRemoteDatabases })}
+                                        onChange={v => this.setState({ ...this.state, database: v })}
                                     />
                                     <PushButton
                                         caption='Proceed'
@@ -173,7 +173,7 @@ export class StartTab extends React.Component<StartTab.Props, State> {
 
 export namespace StartTab {
     export interface Props {
-        onDoPdbId: (pdbId: string, db: SupportedRemoteDatabases) => void,
+        onDoPdbId: (pdbId: string, db: string) => void,
         onDoCustomStructure: (coordsFile: File, densityMapFile: File|null) => void,
         onDoRawLink: (link: string) => void,
         onDoSearchConformers: (options: Search.Criteria) => void,
