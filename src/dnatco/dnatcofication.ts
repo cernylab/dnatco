@@ -34,7 +34,7 @@ export const DnatcoficationData = {
     structures: new Array<_Structure>(),
     cifData: null as (Cif.Data|null),
     sourceFileName: null as (string|null),
-    densityMap: null as DensityMap|null,
+    densityMaps: null as DensityMap[]|null,
 }
 export type DnatcoficationData = typeof DnatcoficationData;
 
@@ -115,7 +115,7 @@ export namespace Dnatcofication {
         }
     }
 
-    export function ingest(coordinates: Coordinates, densityMap: DensityMap|null, sourceFileName: string|null, clsfResData: ClassificationResources.Data, ctx: DnatcoficationTaskContext) {
+    export function ingest(coordinates: Coordinates, densityMaps: DensityMap[]|null, sourceFileName: string|null, clsfResData: ClassificationResources.Data, ctx: DnatcoficationTaskContext) {
         const tStart = performance.now();
 
         if (coordinates.type !== 'cif') {
@@ -172,7 +172,7 @@ export namespace Dnatcofication {
                 structures,
                 cifData,
                 sourceFileName,
-                densityMap,
+                densityMaps,
             };
 
             ctx.events.finished.next({ state: 'succeeded', data });

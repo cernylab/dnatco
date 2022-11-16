@@ -61,11 +61,11 @@ export class ViewerInterop {
             throw new Error('Molstar plugin took too long to initialize');
     }
 
-    loadStructure(cif: string, densityMap: DensityMap|null) {
+    loadStructure(cif: string, densityMaps: DensityMap[]|null) {
         //@ts-ignore
         molstar.ReDNATCOMspApi.loadStructure(
             { data: cif, type:'cif' },
-            densityMap
+            densityMaps
         );
     }
 

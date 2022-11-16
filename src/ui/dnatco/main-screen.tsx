@@ -193,7 +193,7 @@ export class MainScreen extends WithSubscriptions<MainScreen.Props, State> {
                 () => {
                     this.props.viewerInterop.loadStructure(
                         this.props.dnatcofication.rawCif(),
-                        this.props.dnatcofication.data.densityMap
+                        this.props.dnatcofication.data.densityMaps
                     );
                 }
             );

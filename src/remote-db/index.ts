@@ -7,5 +7,5 @@ export type ResourceFetcher<T> = (pdbId: string) => Promise<Result<T>>;
 export type RemoteDatabase = {
     name: string;
     coordinates: ResourceFetcher<Coordinates>;
-    densityMap: ResourceFetcher<DensityMap>;
+    densityMaps: ResourceFetcher<DensityMap[]>;
 }

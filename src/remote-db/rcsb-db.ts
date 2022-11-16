@@ -55,31 +55,50 @@ async function downloadDensityMapEM(pdbId: string) {
             return _Fail('No EMB ID data');
 
         // We have na EMD ID - now get the actual density map
-        req = await fetch(`https://files.rcsb.org/pub/emdb/structures/${emdId}/map/emd_3533.map.gz`);
+        const idNum = emdId.slice(emdId.indexOf('-') + 1);
+        req = await fetch(`https://files.rcsb.org/pub/emdb/structures/${emdId}/map/emd_${idNum}.map.gz`);
         if (!req.ok)
             return _Fail(req.statusText);
 
         const data = new Uint8Array(await req.arrayBuffer());
         const ungzipped = await ungzip(data);
-        return _Ok(ungzipped);
+        return _Ok([{ data: ungzipped, kind: 'em' }]);
     } catch (e) {
         return _Fail((e as Error).message);
     }
 }
 
-async function downloadDensityMapXRay(pdbId: string) {
-    // TODO: We should try to do both Fo-Fc and 2Fo-Fc
+async function downloadDensityMapXRay(pdbId: string): Promise<_Ok<{ data: Uint8Array, kind: DensityMap['kind']}[]>|_Fail|_TryAnother> {
     const id = pdbId.toLowerCase();
-    const req = await fetch(`https://edmaps.rcsb.org/maps/${id}_2fofc.dsn6`);
+
+    // Try 2Fo-Fc first
+    let req = await fetch(`https://edmaps.rcsb.org/maps/${id}_2fofc.dsn6`);
     if (req.status === 404)
-        return _TryAnother();
+        return _TryAnother(); // No joy, fall back to EM map
     if (!req.ok)
         return _Fail(req.statusText);
 
+    let twoFoFc: Uint8Array;
     try {
-        return _Ok(new Uint8Array(await req.arrayBuffer()));
+        twoFoFc = new Uint8Array(await req.arrayBuffer());
     } catch (e) {
         return _Fail((e as Error).message);
+    }
+
+    // Now try Fo-Fc
+    req = await fetch(`https://edmaps.rcsb.org/maps/${id}_fofc.dsn6`);
+    if (!req.ok) {
+        return _Ok([{ data: twoFoFc, kind: '2fo-fc' }]);
+    } else {
+        try {
+            const foFc = new Uint8Array(await req.arrayBuffer());
+            return _Ok([
+                { data: twoFoFc, kind: '2fo-fc' },
+                { data: foFc, kind: 'fo-fc' },
+            ]);
+        } catch (e) {
+            return _Ok([{ data: twoFoFc, kind: '2fo-fc' }]);
+        }
     }
 }
 
@@ -109,17 +128,17 @@ async function fetchCoordinates(pdbId: string): Promise<Result<Coordinates>> {
     }
 }
 
-async function fetchDensityMap(pdbId: string): Promise<Result<DensityMap>> {
+async function fetchDensityMaps(pdbId: string): Promise<Result<DensityMap[]>> {
     try {
         let r = await downloadDensityMap(pdbId, 'x-ray');
-        if (r.type === 'ok')
-            return OkResult({ data: r.data, type: 'dsn6' });
-        else if (r.type === 'fail')
-            return ErrorResult(`Download failure: ${r.message}`);
+        if (r.type === 'ok') {
+            return OkResult(r.data.map(x => ({ data: x.data, type: 'dsn6', kind: x.kind as DensityMap['kind'] })));
+        } else if (r.type === 'fail')
+            return ErrorResult(`Database failure: ${r.message}`);
 
         r = await downloadDensityMap(pdbId, 'em');
         if (r.type === 'ok')
-            return OkResult({ data: r.data, type: 'ccp4' });
+            return OkResult(r.data.map(x => ({ data: x.data, type: 'ccp4', kind: 'em' })));
         else if (r.type === 'fail')
             return ErrorResult(`Download failure: ${r.message}`);
         else
@@ -133,6 +152,6 @@ export function RcsbDb(): RemoteDatabase {
     return {
         name: 'RCSB',
         coordinates: fetchCoordinates,
-        densityMap: fetchDensityMap,
+        densityMaps: fetchDensityMaps,
     };
 }
