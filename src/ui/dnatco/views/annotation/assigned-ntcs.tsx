@@ -190,7 +190,7 @@ export class AssignedNtCs extends View<View.Props> {
                         }
                     }}
                     highlightedTag={stepName}
-                    scrollTainerId='rdo-main-screen-data-container'
+                    scrollTainer={this.props.scrollableParent}
                 />
             </div>
         );

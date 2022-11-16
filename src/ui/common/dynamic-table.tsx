@@ -134,10 +134,10 @@ export class DynamicTable extends React.Component<DynamicTable.Props> {
     }
 
     componentDidUpdate(prevProps: DynamicTable.Props) {
-        if (this.props.scrollTainerId && this.props.highlightedTag && this.props.highlightedTag !== prevProps.highlightedTag) {
+        if (this.props.scrollTainer && this.props.highlightedTag && this.props.highlightedTag !== prevProps.highlightedTag) {
             const cellId = this.findFirstTaggedCellId(this.props.highlightedTag);
-            if (cellId && parent)
-                scrollIntoViewIfNeeded(cellId, this.props.scrollTainerId);
+            if (cellId)
+                scrollIntoViewIfNeeded(cellId, this.props.scrollTainer);
         }
     }
 
@@ -237,7 +237,7 @@ export namespace DynamicTable {
         model: Model;
         onCellClicked?: (row: number, column: string, value: string) => void;
         highlightedTag?: string;
-        scrollTainerId?: string; // This needs to be se to a reasonable element to make autoscrolling work reliably
+        scrollTainer?: string|HTMLElement; // This needs to be se to a reasonable element to make autoscrolling work reliably
         style?: Style;
     }
 }

@@ -53,6 +53,8 @@ interface State {
     initializationError?: string;
 }
 export class MainScreen extends WithSubscriptions<MainScreen.Props, State> {
+    private scrollableElemRef = React.createRef<HTMLDivElement>();
+
     readonly switchChain = async (chain: string) => {
         await this.props.viewerInterop.api.command(ViewerApi.Commands.DeselectStep());
 
@@ -128,6 +130,7 @@ export class MainScreen extends WithSubscriptions<MainScreen.Props, State> {
             structureSelection: this.state.structureSelection,
             switching: this.viewerSwitching,
             selectedCustomNtCSet: this.state.selectedCustomNtCSet,
+            scrollableParent: this.scrollableElemRef.current ?? void 0,
             onCustomNtCSetChanged: (set: string) => {
                 if (this.props.dnatcofication.customNtCs.exists(set) || set === '')
                     this.setState({ ...this.state, selectedCustomNtCSet: set });
@@ -265,7 +268,7 @@ export class MainScreen extends WithSubscriptions<MainScreen.Props, State> {
                         visible={AvailableViews[this.activeView()].visualizer ? 'both' : 'first'}
                         first={
                             <div className='rdo-offset' style={{ overflow: 'hidden' }}>
-                                <div className='rdo-scroll-vertically'>
+                                <div className='rdo-scroll-vertically' ref={this.scrollableElemRef}>
                                     {this.renderView()}
                                 </div>
                             </div>

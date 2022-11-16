@@ -138,7 +138,7 @@ export class ChangeNtCs extends View<Refinement.Props, State> {
                     }
                 }}
                 highlightedTag={stepName}
-                scrollTainerId='rdo-main-screen-data-container'
+                scrollTainer={this.props.scrollableParent}
             />
         );
     }

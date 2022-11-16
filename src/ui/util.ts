@@ -34,7 +34,7 @@ export function scrollIntoViewIfNeeded(elemId: string, tainer: string|HTMLElemen
                       elemRect.left < tainerRect.left ||
                       elemRect.bottom < tainerRect.top;
     if (notInView)
-        elem.scrollIntoView({ block: 'center', inline: 'start', behavior: 'smooth' });
+        elem.scrollIntoView({ block: 'center', behavior: 'smooth' });
 }
 
 export function toComboBoxOptions<T>(opts: T[], toComboOpt: (o: T) => { caption: string, value: string }) {
