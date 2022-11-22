@@ -188,14 +188,7 @@ export class AssignedNtCs extends View<View.Props> {
         return (
             <div>
                 <NamedList>
-                    <NamedListItem
-                        name='Analyzed steps'
-                        tooltip={
-                            <ul className='rdo-list'>
-                                <li>Average confal is a geometric mean of confals of all steps in the model.</li>
-                            </ul>
-                        }
-                    >
+                    <NamedListItem name='Analyzed steps'>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--v-gap)' }}>
                             <StepsClassificationStats
                                 assigned={Cif.Column.value(overall.num_classified, 0)!}
