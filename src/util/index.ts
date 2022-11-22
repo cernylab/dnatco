@@ -12,6 +12,11 @@ export function capitalize(s: string) {
     return s.substring(0, 1).toUpperCase() + s.substring(1);
 }
 
+export function clamp(v: number, min: number, max: number) {
+    return v < min ? min :
+        v > max ? max : v;
+}
+
 export function dequote(s: string) {
     const last = s.length - 1;
 

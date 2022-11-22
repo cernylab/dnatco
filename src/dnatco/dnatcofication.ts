@@ -25,6 +25,7 @@ const RequiredDnatcoCategories: Category<any>[] = [
 ];
 
 export type DnatcoficationTaskContext = TaskContext<DnatcoficationData>;
+export type StepRmsdStats = { rmsdThreshold: number, count: number };
 
 export const DnatcoficationData = {
     connectivities: { backward: [], forward: [] } as ConnSimil.AllConnectivities,
@@ -33,9 +34,13 @@ export const DnatcoficationData = {
     steps: StepsMapper.Mapping(),
     structures: new Array<_Structure>(),
     cifData: null as (Cif.Data|null),
+
     sourceFileName: null as (string|null),
     densityMaps: null as DensityMap[]|null,
-}
+
+    averageConfals: new Array<number>(),
+    stepRmsdStats: new Array<StepRmsdStats[]>(),
+};
 export type DnatcoficationData = typeof DnatcoficationData;
 
 export class Dnatcofication {
@@ -173,6 +178,8 @@ export namespace Dnatcofication {
                 cifData,
                 sourceFileName,
                 densityMaps,
+                averageConfals: ExtractInfo.averageConfals(steps),
+                stepRmsdStats: ExtractInfo.stepRmsdStats([0.5, 1.0], steps),
             };
 
             ctx.events.finished.next({ state: 'succeeded', data });

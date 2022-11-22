@@ -1,23 +1,121 @@
+import type { StandardLonghandProperties } from 'csstype';
 import React from 'react';
 import { Annotation } from './common';
 import { ChainSelect, ModelSelect } from '../structure-selectors';
 import { View } from '../view';
 import { InvalidChain, InvalidModelIndex, InvalidStepId } from '../../structure-selection';
 import { DynamicTableDownloadBar } from '../../common';
+import { valueToSemaphore } from '../../util';
 import { SingleStepInfo } from '../../single-step-info';
 import { DynamicTable } from '../../../common/dynamic-table';
 import { NamedList, NamedListItem } from '../../../common/named-list';
 import { Tooltip } from '../../../common/tooltip';
 import { Cif } from '../../../../cif';
+import { clamp } from '../../../../util';
 import {
     NdbStructNtcOverall, NdbStructNtcStep, NdbStructNtcStepSummary,
     NdbStructNtcStepParameters
 } from '../../../../cif/categories/ndb-struct-ntc';
-import { Dnatcofication } from '../../../../dnatco/dnatcofication';
+import { Dnatcofication, StepRmsdStats } from '../../../../dnatco/dnatcofication';
 import { StepsMapper } from '../../../../dnatco/steps-mapper';
+import { rgbToHex } from '../../../util';
+
+const MarkerWidthRatio = 0.005;
+const MarkerOverdrawRatio = 0.8; // How much smaller is the background gradient than the marker.
+const BarHeightEm = 0.75;
+const ScoreBarStyle = { width: '100%', height: `${BarHeightEm}em` };
+const StyleTableSameColumnWidth = { tableLayout: 'fixed', width: '100%' } as StandardLonghandProperties;
+
+// NO NO NO: This is just a very interim solution to check that we're correct
+function percentile(confal: number) {
+    // TODO: Better function
+    const x = clamp(confal, 0.0, 100.0);
+    const Coeffs = [
+        -8.43983519489781E-13, 2.99903652081687E-10, -4.04702262570393E-08, 2.54732719424787E-06, -7.55126681196185E-05, 0.00111573721670155, -0.00220044745406717, 0.0259204823080706
+    ];
+    const N = Coeffs.length - 1;
+
+    let y = 0;
+    for (let idx = 0; idx < Coeffs.length; idx++)
+        y += Coeffs[idx] * Math.pow(x, N - idx);
+
+    return y * 100.0;
+}
 
 export class AssignedNtCs extends View<View.Props> {
     private tableModel: DynamicTable.Model = new DynamicTable.Model([]);
+    private stepRatiosBarRef = React.createRef<HTMLCanvasElement>();
+    private totalScoreBar = React.createRef<HTMLCanvasElement>();
+
+    private drawStepRmdsStats(canvas: HTMLCanvasElement, stats: StepRmsdStats[]) {
+        const ctx = canvas.getContext('2d');
+        if (!ctx || stats.length < 3)
+            return;
+
+        const tw = canvas.width;
+        const th = canvas.height;
+        const green = stats[0].rmsdThreshold;
+        const red = stats[stats.length - 2].rmsdThreshold;
+
+        const total = stats.reduce((p, c) => p + c.count, 0);
+
+        let fx = 0;
+        for (let idx = 0; idx < stats.length; idx++) {
+            const s = stats[idx];
+            const thrPrev = stats[idx - 1]?.rmsdThreshold ?? 0;
+            const v = s.rmsdThreshold === -1 ? red + 0.1 : thrPrev + (s.rmsdThreshold - thrPrev) / 2.0;
+
+            const w = Math.round(tw * s.count / total);
+            const rgb = valueToSemaphore(v, green ,red);
+
+            ctx.fillStyle = rgbToHex(rgb);
+            ctx.fillRect(fx, 0, w, th);
+            if (w >= tw)
+                return;
+
+            fx += w;
+        }
+    }
+
+    private drawTotalScoreBar(canvas: HTMLCanvasElement, totalScore: number) {
+        let ctx = canvas.getContext('2d');
+        if (!ctx)
+            return;
+
+        const tw = canvas.width;
+        const th = canvas.height;
+
+        ctx.clearRect(0, 0, tw, th);
+
+        const gh = Math.round(0.8 * th);
+        const grad = ctx.createLinearGradient(0, 0, tw, 0);
+        grad.addColorStop(0.0, 'rgba(255,   0,   0, 1.0)');
+        grad.addColorStop(0.5, 'rgba(255, 255, 255, 1.0)');
+        grad.addColorStop(1.0, 'rgba(0,     0, 255, 1.0)');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, (th - gh) / 2.0, tw, gh);
+
+        const mx = tw * totalScore / 100.0;
+        const mwx = Math.round(MarkerWidthRatio * tw);
+        const fx = Math.round(mx - MarkerWidthRatio / 2.0);
+
+        /* Firefox refuses to change fillStyle from CanvasGradient to rgba color
+         * specified by rgba() string. Encode the color differently. */
+        ctx.fillStyle = '#000000';
+        ctx.fillRect(fx, 0, mwx, th);
+    }
+
+    private drawBars() {
+        const modelIdx = this.props.structureSelection.modelIndex;
+
+        const stepsBarRef = this.stepRatiosBarRef.current;
+        if (stepsBarRef)
+            this.drawStepRmdsStats(stepsBarRef, this.props.dnatcofication.data.stepRmsdStats[modelIdx]);
+
+        const tsBarRef = this.totalScoreBar.current;
+        if (tsBarRef)
+            this.drawTotalScoreBar(tsBarRef, this.props.dnatcofication.data.averageConfals[modelIdx]);
+    }
 
     private makeTableModel(selectedModelNum: number, selectedChain?: string) {
         const steps = this.props.dnatcofication.table(NdbStructNtcStep);
@@ -131,11 +229,19 @@ export class AssignedNtCs extends View<View.Props> {
         return new DynamicTable.Model([chainColumn, stepColumn, ntcColumn, canaColumn, torsionsColumn]);
     }
 
-    private renderAnalyzedSteps() {
-        const overall = this.props.dnatcofication.table(NdbStructNtcOverall);
-        return (
-            <div>Classified: {Cif.Column.value(overall.num_classified, 0)}, Unclassified: {Cif.Column.value(overall.num_unclassified, 0)}</div>
-        );
+    private renderAverageConfal(mdx: number) {
+        const { name, avg } = mdx === InvalidModelIndex
+            ? {
+                name: this.props.dnatcofication.data.structures[0].models[0].num.toString(),
+                avg: Math.round(this.props.dnatcofication.data.averageConfals[0]) }
+            : {
+                name: this.props.dnatcofication.data.structures[0].models[mdx].num.toString(),
+                avg: Math.round(this.props.dnatcofication.data.averageConfals[mdx]) };
+
+        if (Dnatcofication.Structure.numberOfModels(this.props.dnatcofication) === 1)
+            return `${avg}`;
+        else
+            return `${avg} (model ${name})`;
     }
 
     private renderNucleicAcidChains() {
@@ -165,6 +271,46 @@ export class AssignedNtCs extends View<View.Props> {
         }
     }
 
+    private renderStepRmsdStats(stats: { rmsdThreshold: number, count: number }[]) {
+        if (stats.length < 2)
+            return void 0;
+
+        const green = stats[0].rmsdThreshold;
+        const red = stats[stats.length - 2].rmsdThreshold;
+        const headers = [<th className='rdo-data-table-small'>RMSD {'\u212B'}</th>];
+        let idx = 0;
+        for (;idx < stats.length - 1; idx++) {
+            const s = stats[idx];
+            const thrPrev = stats[idx - 1]?.rmsdThreshold ?? 0;
+            const v = s.rmsdThreshold === -1 ? red + 0.1 : thrPrev + (s.rmsdThreshold - thrPrev) / 2.0;
+            headers.push(
+                <th
+                    className='rdo-data-table-small'
+                    style={{ color: rgbToHex(valueToSemaphore(v, green, red)) }}
+                >
+                    {`< ${s.rmsdThreshold.toFixed(1)}`}
+                </th>
+            );
+        }
+        headers.push(<th className='rdo-data-table-small' style={{ color: rgbToHex({ r: 255, g: 0, b: 0}) }}>{`> ${stats[stats.length - 2].rmsdThreshold.toFixed(1)}`}</th>);
+
+        const nums = [
+            <td className='rdo-numeric-table-small'></td>,
+            ...stats.map(x => <td className='rdo-numeric-table-small'>{x.count}</td>)
+        ];
+
+        return (
+            <table className='rdo-data-table-small' style={ StyleTableSameColumnWidth }>
+                <thead>
+                    <tr>{headers}</tr>
+                </thead>
+                <tbody>
+                    <tr>{nums}</tr>
+                </tbody>
+            </table>
+        );
+    }
+
     private renderStepsTable() {
         const modelNum = this.props.structureSelection.modelIndex !== InvalidModelIndex
             ? this.props.dnatcofication.data.structures[0].models[this.props.structureSelection.modelIndex].num
@@ -191,9 +337,14 @@ export class AssignedNtCs extends View<View.Props> {
                     }}
                     highlightedTag={stepName}
                     scrollTainer={this.props.scrollableParent}
+                    style='wide'
                 />
             </div>
         );
+    }
+
+    componentDidMount() {
+        this.drawBars();
     }
 
     componentWillUnmount() {
@@ -201,25 +352,86 @@ export class AssignedNtCs extends View<View.Props> {
     }
 
     render() {
+        const overall = this.props.dnatcofication.table(NdbStructNtcOverall);
+        const numModels = Dnatcofication.Structure.numberOfModels(this.props.dnatcofication);
+        const modelIdx = this.props.structureSelection.modelIndex === InvalidModelIndex ? 0 : this.props.structureSelection.modelIndex;
+
         return (
             <div>
                 <NamedList>
-                    <NamedListItem name='Models'>
-                        {Dnatcofication.Structure.numberOfModels(this.props.dnatcofication)}
-                    </NamedListItem>
+                {
+                    numModels > 1
+                        ? <NamedListItem name='Models'>
+                            {Dnatcofication.Structure.numberOfModels(this.props.dnatcofication)}
+                        </NamedListItem>
+                        : undefined
+                }
                     <NamedListItem name='NA chains'>
                         {this.renderNucleicAcidChains()}
                     </NamedListItem>
-                    <NamedListItem name='Analyzed steps'>
-                        {this.renderAnalyzedSteps()}
+                    <NamedListItem
+                        name='Analyzed steps'
+                        tooltip={
+                            <ul className='rdo-list'>
+                                <li>Average confal is a geometric mean of confals of all steps in the model.</li>
+                            </ul>
+                        }
+                    >
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--v-gap)' }}>
+                            <table className='rdo-data-table-small' style={ StyleTableSameColumnWidth }>
+                                <thead>
+                                    <tr>
+                                        <th className='rdo-data-table-small'>
+                                            Assigned
+                                        </th>
+                                        <th className='rdo-data-table-small'>
+                                            Close
+                                        </th>
+                                        <th className='rdo-data-table-small'>
+                                            Unassigned
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td className='rdo-numeric-table-small'>
+                                            {Cif.Column.value(overall.num_classified, 0)}
+                                        </td>
+                                        <td className='rdo-numeric-table-small'>
+                                            {Cif.Column.value(overall.num_unclassified_rmsd_close, 0)}
+                                        </td>
+                                        <td className='rdo-numeric-table-small'>
+                                            {Cif.Column.value(overall.num_unclassified, 0)}
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                            {this.renderStepRmsdStats(this.props.dnatcofication.data.stepRmsdStats[modelIdx])}
+                            <canvas width={300} height={1} style={ ScoreBarStyle } ref={this.stepRatiosBarRef} />
+
+                            <div style={{ display: 'flex', gap: 'var(--h-gap)' }}>
+                                <div>
+                                    <span className='rdo-named-list-name'>Avg. confal: </span>{this.renderAverageConfal(modelIdx)}
+                                </div>
+                                <div>
+                                    <span className='rdo-named-list-name'>Percentile: </span>{percentile(this.props.dnatcofication.data.averageConfals[modelIdx]).toFixed(0)}
+                                </div>
+                            </div>
+                            <canvas width={300} height={30} style={{ ...ScoreBarStyle, height: `${BarHeightEm / MarkerOverdrawRatio}em` }} ref={this.totalScoreBar} />
+                        </div>
                     </NamedListItem>
-                    <NamedListItem name='Model'>
-                        <ModelSelect
-                            dnatcofication={this.props.dnatcofication}
-                            structureSelection={this.props.structureSelection}
-                            onChange={this.props.switching.switchModel}
-                        />
-                    </NamedListItem>
+                {
+                    numModels > 1
+                        ? <NamedListItem name='Model'>
+                                <ModelSelect
+                                    dnatcofication={this.props.dnatcofication}
+                                    structureSelection={this.props.structureSelection}
+                                    onChange={this.props.switching.switchModel}
+                                />
+                            </NamedListItem>
+                        : undefined
+                }
                     <NamedListItem name='Chain'>
                         <ChainSelect
                             dnatcofication={this.props.dnatcofication}

@@ -106,12 +106,40 @@ input.rdo-input-file {
     display: none;
 }
 
+ul.rdo-list {
+    list-style-type: square;
+}
+
 select {
     -moz-appearance: none;
     -webkit-appearance: none;
     appearance: none;
     background: none;
     box-sizing: border-box;
+}
+
+table.rdo-list-of-conformers {
+    border-collapse: collapse;
+}
+
+table.rdo-list-of-conformers td, table.rdo-list-of-conformers th {
+    padding: 0.2em;
+}
+
+td.rdo-list-of-conformers-bb , th.rdo-list-of-conformers-bb {
+    border-bottom: var(--thickness-border) solid black;
+}
+
+td.rdo-list-of-conformers-rb , th.rdo-list-of-conformers-rb {
+    border-right: var(--thickness-border) solid black;
+}
+
+td.rdo-list-of-conformers-tb , th.rdo-list-of-conformers-tb {
+    border-top: var(--thickness-border) solid black;
+}
+
+tr.rdo-list-of-conformers-alternate-clr {
+    background-color: #eeeeee;
 }
 
 #app {
@@ -189,6 +217,11 @@ select {
     border-collapse: collapse;
 }
 
+.rdo-data-table-small {
+    border-collapse: collapse;
+    font-size: var(--font-small);
+}
+
 .rdo-data-table-wide {
     width: 100%;
 }
@@ -196,6 +229,11 @@ select {
 td.rdo-data-table {
     border: var(--thickness-border) solid var(--color-a);
     padding: 0.2em;
+}
+
+td.rdo-data-table-small {
+    border: var(--thickness-border) solid var(--color-a);
+    padding: 0.1em;
 }
 
 td.rdo-data-table-selected {
@@ -209,10 +247,23 @@ td.rdo-numeric-table {
     text-align: right;
 }
 
+td.rdo-numeric-table-small {
+    border: var(--thickness-border) solid var(--color-a);
+    font-family: monospace, monospace;
+    padding: 0.1em;
+    text-align: right;
+}
+
 th.rdo-data-table {
     background-color: var(--color-a);
     border: var(--thickness-border) solid var(--color-a);
     padding: 0.2em;
+}
+
+th.rdo-data-table-small {
+    background-color: var(--color-a);
+    border: var(--thickness-border) solid var(--color-a);
+    padding: 0.1em;
 }
 
 .rdo-dnatco-main-screen {
@@ -288,30 +339,6 @@ th.rdo-data-table {
 
 .rdo-line-spacer {
     height: 1em;
-}
-
-table.rdo-list-of-conformers {
-    border-collapse: collapse;
-}
-
-table.rdo-list-of-conformers td, table.rdo-list-of-conformers th {
-    padding: 0.2em;
-}
-
-td.rdo-list-of-conformers-bb , th.rdo-list-of-conformers-bb {
-    border-bottom: var(--thickness-border) solid black;
-}
-
-td.rdo-list-of-conformers-rb , th.rdo-list-of-conformers-rb {
-    border-right: var(--thickness-border) solid black;
-}
-
-td.rdo-list-of-conformers-tb , th.rdo-list-of-conformers-tb {
-    border-top: var(--thickness-border) solid black;
-}
-
-tr.rdo-list-of-conformers-alternate-clr {
-    background-color: #eeeeee;
 }
 
 .rdo-list-of-conformers-highlighted-col {

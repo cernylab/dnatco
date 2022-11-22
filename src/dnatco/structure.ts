@@ -119,7 +119,7 @@ export class Structure {
 
     constructor(atom_site: Cif.Table<AtomSite_Schema>) {
         const extracted = extractModels(atom_site);
-        for (const num of sortedKeys(extracted)) {
+        for (const num of sortedKeys(extracted, (a, b) => a - b)) {
             const model = extracted.get(num)!;
             this.models.push(new Model(num, model));
         }
@@ -181,6 +181,6 @@ function extractResidues(rows: AtomSiteRow[]) {
     return residues;
 }
 
-function sortedKeys<K extends number|string, T>(map: Map<K, T>) {
-    return Array.from(map.keys()).sort();
+function sortedKeys<K extends number|string, T>(map: Map<K, T>, comparator?: (a: K, b: K) => number) {
+    return Array.from(map.keys()).sort(comparator);
 }

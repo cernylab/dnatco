@@ -15,7 +15,9 @@ export const StepObj = {
     altPos2: '',
     NtC: 'NANT' as NtC.Class,
     closestNtC: 'NANT' as NtC.Class,
-    CANA:  'NAN' as CANA.Class
+    CANA:  'NAN' as CANA.Class,
+    confal: 0,
+    rmsd: 0,
 };
 export type Step = typeof StepObj;
 

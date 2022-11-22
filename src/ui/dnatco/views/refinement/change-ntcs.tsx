@@ -139,6 +139,7 @@ export class ChangeNtCs extends View<Refinement.Props, State> {
                 }}
                 highlightedTag={stepName}
                 scrollTainer={this.props.scrollableParent}
+                style='wide'
             />
         );
     }

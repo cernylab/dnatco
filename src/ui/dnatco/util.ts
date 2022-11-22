@@ -3,6 +3,7 @@ import { ComboBox } from '../common/combo-box';
 import { Dnatcofication } from '../../dnatco/dnatcofication';
 import { Chain, Structure } from '../../dnatco/structure';
 import { StepsMapper } from '../../dnatco/steps-mapper';
+import { clamp } from '../../util';
 import { Filters } from 'viewer-filters';
 
 export type PrevCurrentNextStepSelection = {
@@ -64,18 +65,13 @@ export function makeStepSelection(dnatcofication: Dnatcofication, stepId: number
 }
 
 export function valueToSemaphore(v: number, greenValue: number, redValue: number) {
-    const Min = 0.0
+    const reverse = redValue < greenValue;
+    const Inv = reverse ? 1.0 : 0.0;
+    const Min = reverse ? redValue : greenValue;
+    const Span = redValue - greenValue;
+
     const Half = 0.5;
-    const Max = redValue - greenValue;
-
-    let normalized = (v - Min) / Max;
-    if (Max < Min)
-        normalized = 1.0 + normalized;
-
-    if (normalized > 1.0)
-        normalized = 1.0;
-    else if (normalized < 0.0)
-        normalized = 0.0;
+    const normalized = clamp(Inv + (v - Min) / Span, 0.0, 1.0);
 
     const r = Math.round(255 * (2 * normalized < 1 ? 2 * normalized : 1));
     const g = Math.round(255 * (1 - 2 * (normalized - Half > 0 ? normalized - Half : 0)));

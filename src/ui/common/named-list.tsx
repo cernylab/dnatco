@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { Tooltip } from './tooltip';
 
 export class NamedList extends React.Component<NamedList.Props> {
     static defaultProps = {
@@ -31,11 +32,17 @@ export class NamedList extends React.Component<NamedList.Props> {
     }
 }
 
-export class NamedListItem extends React.Component<{ name: string, children: React.ReactNode }> {
+export class NamedListItem extends React.Component<{ name: string, children?: React.ReactNode|React.ReactNode[], tooltip?: React.ReactNode }> {
     render() {
         return (
             <>
-                <div className='rdo-named-list-name'>{this.props.name}</div>
+                <div className='rdo-named-list-name'>
+                    {this.props.name}
+                    {this.props.tooltip
+                        ? <Tooltip tag='[?]'>{this.props.tooltip}</Tooltip>
+                        : undefined
+                    }
+                </div>
                 <div className='rdo-named-list-value'>{this.props.children}</div>
             </>
         );

@@ -280,6 +280,7 @@ export class MainScreen extends WithSubscriptions<MainScreen.Props, State> {
                         }
                         orientation='horizontal'
                         onAdjustDone={() => this.props.viewerInterop.api.command(ViewerApi.Commands.Redraw())}
+                        initialSplit={0.3}
                     />
                 </div>
             </div>

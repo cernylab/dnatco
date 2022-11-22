@@ -7,7 +7,7 @@ import { Cif } from '../cif';
 import { NdbStructNtcStep_Schema, NdbStructNtcStepSummary_Schema } from '../cif/categories/ndb-struct-ntc';
 
 export namespace StepsMapper {
-    function findNtC(id: number, summaries: Cif.Table<NdbStructNtcStepSummary_Schema>): { assignedNtC: NtC.Class, closestNtC: NtC.Class, CANA: CANA.Class } {
+    function findNtC(id: number, summaries: Cif.Table<NdbStructNtcStepSummary_Schema>): { assignedNtC: NtC.Class, closestNtC: NtC.Class, CANA: CANA.Class, confal: number, rmsd: number } {
         // First assume that summaries are ordered by step_id that begins with 1
         const startFrom = id - 1 >= 0 ? id - 1 : 0;
         for (let row = startFrom; row < summaries._rowCount; row++) {
@@ -16,6 +16,8 @@ export namespace StepsMapper {
                     assignedNtC: Cif.Column.value(summaries.assigned_NtC, row)!,
                     closestNtC: Cif.Column.value(summaries.closest_NtC, row)!,
                     CANA: Cif.Column.value(summaries.assigned_CANA, row)!,
+                    confal: Cif.Column.value(summaries.confal_score, row)!,
+                    rmsd: Cif.Column.value(summaries.cartesian_rmsd_closest_NtC_representative, row)!,
                 };
             }
         }
@@ -27,6 +29,8 @@ export namespace StepsMapper {
                     assignedNtC: Cif.Column.value(summaries.assigned_NtC, row)!,
                     closestNtC: Cif.Column.value(summaries.closest_NtC, row)!,
                     CANA: Cif.Column.value(summaries.assigned_CANA, row)!,
+                    confal: Cif.Column.value(summaries.confal_score, row)!,
+                    rmsd: Cif.Column.value(summaries.cartesian_rmsd_closest_NtC_representative, row)!,
                 };
             }
         }
@@ -68,6 +72,7 @@ export namespace StepsMapper {
                 firstId = id;
         }
 
+
         const orderedSteps = new Array<Step>(steps._rowCount);
         const names = new Map<string, number>();
 
@@ -81,7 +86,7 @@ export namespace StepsMapper {
             if (chain1 !== chain2)
                 throw new Error(`Steps are not allowed to span across chains but step ${id} does that`);
 
-            const { assignedNtC, closestNtC, CANA } = findNtC(id, summaries);
+            const { assignedNtC, closestNtC, CANA, confal, rmsd } = findNtC(id, summaries);
             orderedSteps[idx] = {
                 id,
                 name,
@@ -96,6 +101,8 @@ export namespace StepsMapper {
                 NtC: assignedNtC,
                 closestNtC: closestNtC,
                 CANA,
+                confal,
+                rmsd,
             };
 
             names.set(name, idx);

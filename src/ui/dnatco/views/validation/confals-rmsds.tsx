@@ -188,6 +188,7 @@ export class ConfalsRmsds extends View<View.Props> {
                     }}
                     highlightedTag={stepName}
                     scrollTainer={this.props.scrollableParent}
+                    style='wide'
                 />
             </div>
         );
