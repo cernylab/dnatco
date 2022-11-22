@@ -274,6 +274,33 @@ th.rdo-data-table-small {
     width: 100%;
 }
 
+.rdo-dynamic-table-download-bar {
+    background-color: var(--color-a);
+    display: flex;
+    flex-direction: row;
+    gap: 0.25em;
+}
+
+.rdo-dynamic-table-download-button {
+    align-items: center;
+    background-color: var(--color-a);
+    display: flex;
+    font-weight: bold;
+    font-size: var(--font-small);
+    gap: 0.25em;
+    padding: 0.1em;
+
+    transition: background-color var(--anim-speed);
+}
+.rdo-dynamic-table-download-button:hover {
+    background-color: white;
+}
+
+.rdo-dynamic-table-download-bar-padder {
+    background-color: var(--color-a);
+    flex: 1;
+}
+
 .rdo-email {
     text-decoration: none;
 }

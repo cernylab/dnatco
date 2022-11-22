@@ -3,7 +3,7 @@ import { Annotation } from './common';
 import { ChainSelect, ModelSelect } from '../structure-selectors';
 import { View } from '../view';
 import { InvalidChain, InvalidModelIndex, InvalidStepId } from '../../structure-selection';
-import { ConfalPercentileStats, DynamicTableDownloadBar, StepsClassificationStats, StepRmsdStats, niceStepName } from '../../common';
+import { ConfalPercentileStats, StepsClassificationStats, StepRmsdStats, niceStepName } from '../../common';
 import { Icon } from '../../../common/icon';
 import { SingleStepInfo } from '../../single-step-info';
 import { DynamicTable } from '../../../common/dynamic-table';
@@ -17,6 +17,8 @@ import {
 import { Dnatcofication } from '../../../../dnatco/dnatcofication';
 import { StepsMapper } from '../../../../dnatco/steps-mapper';
 import { GlobalConfig } from '../../../../global-config';
+import { Net } from '../../../../util/net';
+import { Serialization } from '../../../../util/serialization';
 import 'assets/imgs/info.svg';
 import 'assets/imgs/info-inverse.svg';
 
@@ -151,28 +153,33 @@ export class AssignedNtCs extends View<View.Props> {
         this.tableModel = this.makeTableModel(modelNum, this.props.structureSelection.chain === InvalidChain ? void 0 : this.props.structureSelection.chain);
         const stepName = this.props.structureSelection.stepId === InvalidStepId ? '' : StepsMapper.byId(this.props.dnatcofication, this.props.structureSelection.stepId).name;
 
-        return (
-            <div>
-                <DynamicTableDownloadBar
-                    filenameCsv={`${this.props.dnatcofication.identifyingName}_assigned_ntcs.csv`}
-                    filenameJson={`${this.props.dnatcofication.identifyingName}_assigned_ntcs.json`}
-                    model={this.tableModel}
-                />
+        const filenameCsv = `${this.props.dnatcofication.identifyingName}_assigned_ntcs.csv`;
+        const filenameJson = `${this.props.dnatcofication.identifyingName}_assigned_ntcs.json`;
 
-                <DynamicTable
-                    model={this.tableModel}
-                    onCellClicked={(row, col, item) => {
-                        if (col === 'Step') {
-                            const stepId = StepsMapper.byName(this.props.dnatcofication, item)?.id ?? InvalidStepId;
-                            if (stepId !== InvalidStepId)
-                                this.props.switching.switchStepId(stepId);
-                        }
-                    }}
-                    highlightedTag={stepName}
-                    scrollTainer={this.props.scrollableParent}
-                    style='wide'
-                />
-            </div>
+        return (
+            <DynamicTable
+                model={this.tableModel}
+                onCellClicked={(row, col, item) => {
+                    if (col === 'Step') {
+                        const stepId = StepsMapper.byName(this.props.dnatcofication, item)?.id ?? InvalidStepId;
+                        if (stepId !== InvalidStepId)
+                            this.props.switching.switchStepId(stepId);
+                    }
+                }}
+                highlightedTag={stepName}
+                scrollTainer={this.props.scrollableParent}
+                style='wide'
+                downloaders={[
+                    { caption: 'CSV', download: (model) => {
+                        const text = Serialization.dynamicTable(model, 'csv');
+                        Net.serveFile('text/csv', text, filenameCsv);
+                    }},
+                    { caption: 'JSON', download: (model) => {
+                        const text = Serialization.dynamicTable(model, 'json');
+                        Net.serveFile('application/json', text, filenameJson);
+                    }},
+                ]}
+            />
         );
     }
 

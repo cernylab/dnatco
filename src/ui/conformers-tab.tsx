@@ -6,10 +6,11 @@ import { ShadowedBox } from './common/shadowed-box';
 import { NamedList, NamedListItem } from './common/named-list';
 import { SideSwitchingPanel } from './common/side-switching-panel';
 import { TextContainer } from './common/text-container';
-import { DownloadButton, DynamicTableDownloadBar } from './dnatco/common';
+import { DownloadButton } from './dnatco/common';
 import { ListOfConformers } from '../dnatco/list-of-conformers';
 import { Search } from '../search/search';
 import { Net } from '../util/net';
+import { Serialization } from '../util/serialization';
 import { GlobalConfig } from '../global-config';
 import 'assets/html/about-ntcs.html';
 
@@ -89,21 +90,26 @@ class BrowseConformers extends React.Component<BrowseConformersProps> {
 
         const namePrefix = `search_${this.props.criteria.NtC}_count_${this.props.criteria.maxCount}_${this.props.criteria.largeStructures ? 'with' : 'without'}_large_${this.props.criteria.redundant ? 'with' : 'without'}_redundant`;
         const model = new DynamicTable.Model([names, CANAs, NtCs, confals, rmsds, resolutions, haveMaps]);
+        const downloaders = this.props.steps.length > 0
+            ? [
+                { caption: 'CSV', download: (model: DynamicTable.Model) => {
+                    const text = Serialization.dynamicTable(model, 'csv');
+                    Net.serveFile('text/csv', text, `${namePrefix}.csv`);
+                }},
+                { caption: 'JSON', download: (model: DynamicTable.Model) => {
+                    const text = Serialization.dynamicTable(model, 'json');
+                    Net.serveFile('application/json', text, `${namePrefix}.json`);
+                }},
+            ]
+            : undefined;
+
         return (
             <div>
-                {this.props.steps.length > 0
-                    ? <DynamicTableDownloadBar
-                          filenameCsv={`${namePrefix}.csv`}
-                          filenameJson={`${namePrefix}.json`}
-                          model={model}
-                      />
-                    : undefined
-                }
-
                 <DynamicTable
                     model={model}
                     onCellClicked={(row, column, value) => this.props.onStepSelected(value)}
                     style='wide'
+                    downloaders={downloaders}
                 />
             </div>
         );

@@ -1,7 +1,9 @@
 import * as React from 'react';
+import { Icon } from './icon';
 import { Tooltip } from './tooltip';
 import { scrollIntoViewIfNeeded } from '../util';
 import { GlobalConfig } from '../../global-config';
+import 'assets/imgs/data-transfer-download.svg';
 import 'assets/imgs/sort.svg';
 import 'assets/imgs/sorted-ascending.svg';
 import 'assets/imgs/sorted-descending.svg';
@@ -99,6 +101,32 @@ export class DynamicTable extends React.Component<DynamicTable.Props> {
         }
     }
 
+    private renderDownloadBar() {
+        if (!this.props.downloaders || this.props.downloaders.length === 0)
+            return void 0;
+
+        const prefix = GlobalConfig.data().pathPrefix;
+        const buttons = new Array<JSX.Element>();
+        for (const dl of this.props.downloaders) {
+            buttons.push(
+                <div
+                    className='rdo-dynamic-table-download-button'
+                    onClick={() => dl.download(this.props.model)}
+                >
+                    <Icon img={`${prefix}/imgs/data-transfer-download.svg`} size='text' />
+                    {dl.caption}
+                </div>
+            );
+        }
+
+        return (
+            <div className='rdo-dynamic-table-download-bar'>
+                {buttons}
+                <div className='rdo-dynamic-table-download-bar-padder' />
+            </div>
+        );
+    }
+
     private renderHeader() {
         const prefix = GlobalConfig.data().pathPrefix;
         const headers = new Array<JSX.Element>();
@@ -146,14 +174,17 @@ export class DynamicTable extends React.Component<DynamicTable.Props> {
             return <div></div>;
 
         return (
-            <table className={`rdo-data-table ${this.props.style === 'wide' ? 'rdo-data-table-wide' : ''}`}>
-                <thead>
-                    <tr>{this.renderHeader()}</tr>
-                </thead>
-                <tbody>
-                    {this.renderBody()}
-                </tbody>
-            </table>
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+                {this.renderDownloadBar()}
+                <table className={`rdo-data-table ${this.props.style === 'wide' ? 'rdo-data-table-wide' : ''}`}>
+                    <thead>
+                        <tr>{this.renderHeader()}</tr>
+                    </thead>
+                    <tbody>
+                        {this.renderBody()}
+                    </tbody>
+                </table>
+            </div>
         );
     }
 }
@@ -166,9 +197,9 @@ export namespace DynamicTable {
         alignment?: 'left'|'center'|'right';
         comparator?: (a: T, b: T) => number;
         cellStyle?: (v: T) => React.CSSProperties;
-        notSortable?: boolean;     // Do not allow to sort by this column
-        noData?: boolean;          // This is only a utility column with no actual data
-        tooltip?: React.ReactNode; // Optional tooltip to display when a column header is hovered
+        notSortable?: boolean;                 // Do not allow to sort by this column
+        noData?: boolean;                      // This is only a utility column with no actual data
+        tooltip?: React.ReactNode;             // Optional tooltip to display when a column header is hovered
         elem?: JSX.Element|React.ReactElement; // Optional element to show as column header.
     }
     export type Style = 'normal' | 'wide';
@@ -232,11 +263,16 @@ export namespace DynamicTable {
         }
     }
 
+    export type Downloader = {
+        caption: string;
+        download: (model: Model) => void;
+    }
     export interface Props {
         model: Model;
         onCellClicked?: (row: number, column: string, value: string) => void;
         highlightedTag?: string;
         scrollTainer?: string|HTMLElement; // This needs to be se to a reasonable element to make autoscrolling work reliably
         style?: Style;
+        downloaders?: Downloader[];
     }
 }
