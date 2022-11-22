@@ -8,6 +8,7 @@ import { valueToSemaphore } from '../../util';
 import { NamedList, NamedListItem } from '../../../common/named-list';
 import { Constants } from '../../../dnatco/constants';
 import { rgbToHex } from '../../../util';
+import { Dnatcofication } from '../../../../dnatco/dnatcofication';
 import { StepsMapper } from '../../../../dnatco/steps-mapper';
 
 const PlotData = {
@@ -77,6 +78,8 @@ export class SimilarityPlots extends View<View.Props, State> {
     }
 
     render() {
+        const numModels = Dnatcofication.Structure.numberOfModels(this.props.dnatcofication);
+
         let plotData = PlotData;
         if (this.props.structureSelection.stepId !== InvalidStepId) {
             const stepIdx = StepsMapper.idToIndex(this.props.dnatcofication, this.props.structureSelection.stepId);
@@ -86,13 +89,17 @@ export class SimilarityPlots extends View<View.Props, State> {
         return (
             <div>
                 <NamedList>
-                    <NamedListItem name='Model'>
-                        <ModelSelect
-                            dnatcofication={this.props.dnatcofication}
-                            structureSelection={this.props.structureSelection}
-                            onChange={this.props.switching.switchModel}
-                        />
-                    </NamedListItem>
+                {
+                    numModels > 1
+                        ? <NamedListItem name='Model'>
+                                <ModelSelect
+                                    dnatcofication={this.props.dnatcofication}
+                                    structureSelection={this.props.structureSelection}
+                                    onChange={this.props.switching.switchModel}
+                                />
+                            </NamedListItem>
+                        : undefined
+                }
                     <NamedListItem name='Chain'>
                         <ChainSelect
                             dnatcofication={this.props.dnatcofication}

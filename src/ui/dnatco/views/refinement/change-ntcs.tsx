@@ -11,6 +11,7 @@ import { IconButton } from '../../../common/push-button';
 import { Tooltip } from '../../../common/tooltip';
 import { Cif } from '../../../../cif';
 import { NdbStructNtcStep, NdbStructNtcStepSummary } from '../../../../cif/categories/ndb-struct-ntc';
+import { Dnatcofication } from '../../../../dnatco/dnatcofication';
 import { StepsMapper } from '../../../../dnatco/steps-mapper';
 
 interface State {
@@ -162,16 +163,22 @@ export class ChangeNtCs extends View<Refinement.Props, State> {
     }
 
     render() {
+        const numModels = Dnatcofication.Structure.numberOfModels(this.props.dnatcofication);
+
         return (
             <div>
                 <NamedList>
-                    <NamedListItem name='Model'>
-                        <ModelSelect
-                            dnatcofication={this.props.dnatcofication}
-                            structureSelection={this.props.structureSelection}
-                            onChange={this.props.switching.switchModel}
-                        />
-                    </NamedListItem>
+                {
+                    numModels > 1
+                        ? <NamedListItem name='Model'>
+                                <ModelSelect
+                                    dnatcofication={this.props.dnatcofication}
+                                    structureSelection={this.props.structureSelection}
+                                    onChange={this.props.switching.switchModel}
+                                />
+                            </NamedListItem>
+                        : undefined
+                }
                     <NamedListItem name='Chain'>
                         <ChainSelect
                             dnatcofication={this.props.dnatcofication}

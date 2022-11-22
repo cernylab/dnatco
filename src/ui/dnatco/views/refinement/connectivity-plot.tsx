@@ -7,6 +7,7 @@ import { View } from '../view';
 import { InvalidStepId } from '../../structure-selection';
 import { NamedList, NamedListItem } from '../../../common/named-list';
 import { Constants } from '../../../dnatco/constants';
+import { Dnatcofication } from '../../../../dnatco/dnatcofication';
 import { StepsMapper } from '../../../../dnatco/steps-mapper';
 import { valueToSemaphore } from '../../util';
 import { colorToRgb, rgbToHex } from '../../../util';
@@ -99,6 +100,7 @@ export class ConnectivityPlot extends View<Refinement.Props, State> {
     }
 
     render() {
+        const numModels = Dnatcofication.Structure.numberOfModels(this.props.dnatcofication);
         let simPlotData = PlotData;
         let prevConnPlotData = PlotData;
         let nextConnPlotData = PlotData;
@@ -125,13 +127,17 @@ export class ConnectivityPlot extends View<Refinement.Props, State> {
         return (
             <div>
                 <NamedList>
-                    <NamedListItem name='Model'>
-                        <ModelSelect
-                            dnatcofication={this.props.dnatcofication}
-                            structureSelection={this.props.structureSelection}
-                            onChange={this.props.switching.switchModel}
-                        />
-                    </NamedListItem>
+                {
+                    numModels > 1
+                        ? <NamedListItem name='Model'>
+                                <ModelSelect
+                                    dnatcofication={this.props.dnatcofication}
+                                    structureSelection={this.props.structureSelection}
+                                    onChange={this.props.switching.switchModel}
+                                />
+                            </NamedListItem>
+                        : undefined
+                }
                     <NamedListItem name='Chain'>
                         <ChainSelect
                             dnatcofication={this.props.dnatcofication}

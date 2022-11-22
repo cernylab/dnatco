@@ -11,6 +11,7 @@ import {
     NdbStructNtcStepSummary, NdbStructNtcStepSummary_Schema,
     NdbStructSugarStepParameters, NdbStructSugarStepParameters_Schema,
 } from '../../../../cif/categories/ndb-struct-ntc';
+import { Dnatcofication } from '../../../../dnatco/dnatcofication';
 import { Step } from '../../../../dnatco/step';
 import { toFixed } from '../../../../util';
 
@@ -340,17 +341,22 @@ export class StepTorsions extends View<View.Props> {
         const torsionInfo = this.torsionInfo(this.props.structureSelection.stepId);
         const distanceInfo = this.distanceInfo(this.props.structureSelection.stepId);
         const stepInfo = this.stepInfo(this.props.structureSelection.stepId);
+        const numModels = Dnatcofication.Structure.numberOfModels(this.props.dnatcofication);
 
         return (
             <div>
                 <NamedList>
-                    <NamedListItem name='Model'>
-                        <ModelSelect
-                            dnatcofication={this.props.dnatcofication}
-                            structureSelection={this.props.structureSelection}
-                            onChange={this.props.switching.switchModel}
-                        />
-                    </NamedListItem>
+                {
+                    numModels > 1
+                        ? <NamedListItem name='Model'>
+                                <ModelSelect
+                                    dnatcofication={this.props.dnatcofication}
+                                    structureSelection={this.props.structureSelection}
+                                    onChange={this.props.switching.switchModel}
+                                />
+                            </NamedListItem>
+                        : undefined
+                }
                     <NamedListItem name='Chain'>
                         <ChainSelect
                             dnatcofication={this.props.dnatcofication}
