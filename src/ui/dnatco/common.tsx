@@ -4,10 +4,29 @@ import { IconTextButton } from '../common/push-button';
 import { GlobalConfig } from '../../global-config';
 import { Net } from '../../util/net';
 import { Serialization } from '../../util/serialization';
+import { Step } from '../../dnatco/step';
 import 'assets/imgs/data-transfer-download.svg';
 
 export namespace Common {
     export const NA = 'N/A';
+}
+
+export function niceStepName(step: Step) {
+    return (
+        <span>
+            <span className='rdo-nice-step-base'>{step.base1}</span>
+            <span className='rdo-nice-step-brsep'>{'\u00A0'}</span>
+            <span className='rdo-nice-step-residue'>{step.resNo1}{step.insCode1}</span>
+            {step.altPos1 !== '' ? <span className='rdo-nice-step-altpos'>(alt {step.altPos1})</span> : void 0}
+
+            <div className='rdo-nice-step-fssep'>{'\u00A0'}</div>
+
+            <span className='rdo-nice-step-base'>{step.base2}</span>
+            <span className='rdo-nice-step-brsep'>{'\u00A0'}</span>
+            <span className='rdo-nice-step-residue'>{step.resNo2}{step.insCode2}</span>
+            {step.altPos2 !== '' ? <span className='rdo-nice-step-altpos'>(alt {step.altPos2})</span> : void 0}
+        </span>
+    );
 }
 
 export class DownloadButton extends React.Component<DownloadButton.Props> {

@@ -17,6 +17,7 @@
     --color-x: #9e9e9e;
     --color-y: #616161;
 
+    --font-tiny: 8pt;
     --font-small: 10pt;
     --font-large: 14pt;
     --font-xxlarge: 22pt;
@@ -381,6 +382,29 @@ th.rdo-data-table-small {
 
 .rdo-navigation-bar-padder {
     flex: 5;
+}
+
+.rdo-nice-step-altpos {
+    font-size: var(--font-tiny);
+    font-style: oblique;
+}
+
+.rdo-nice-step-brsep {
+    font-size: 4pt;
+}
+
+.rdo-nice-step-fssep {
+    display: inline-block;
+    width: 0.75em;
+}
+
+.rdo-nice-step-base {
+    font-weight: normal;
+    font-size: 11pt;
+}
+
+.rdo-nice-step-residue {
+    font-weight: normal;
 }
 
 .rdo-offset {

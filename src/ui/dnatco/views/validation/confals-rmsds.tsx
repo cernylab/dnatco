@@ -3,7 +3,7 @@ import { Validation } from './common';
 import { ChainSelect, ModelSelect } from '../structure-selectors';
 import { InvalidChain, InvalidModelIndex, InvalidStepId } from '../../structure-selection';
 import { View } from '../view';
-import { DynamicTableDownloadBar } from '../../common';
+import { DynamicTableDownloadBar, niceStepName } from '../../common';
 import { SingleStepInfo } from '../../single-step-info';
 import { Constants } from '../../constants';
 import { valueToSemaphore } from '../../util';
@@ -84,8 +84,13 @@ export class ConfalsRmsds extends View<View.Props> {
 
             const tag = Cif.Column.value(name, row)!;
             const NtC = Cif.Column.value(assigned_NtC, row)!;
+            const _step = StepsMapper.byName(this.props.dnatcofication, tag)!; // tag is the internal step name
 
-            stepColumn.cells.push({ data: Cif.Column.value(name, row)!, tag });
+            stepColumn.cells.push({
+                data: tag,
+                elem: niceStepName(_step),
+                tag
+            });
             ntcColumn.cells.push({
                 data :Cif.Column.value(assigned_NtC, row)!,
                 elem: (() => {

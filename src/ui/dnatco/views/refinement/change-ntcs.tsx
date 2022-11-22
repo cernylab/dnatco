@@ -3,6 +3,7 @@ import { Refinement } from './common';
 import { CustomNtCSets } from './custom-ntc-sets';
 import { ChainSelect, ModelSelect } from '../structure-selectors';
 import { View } from '../view';
+import { niceStepName } from '../../common';
 import { InvalidChain, InvalidModelIndex, InvalidStepId } from '../../structure-selection';
 import { DynamicTable } from '../../../common/dynamic-table';
 import { NamedList, NamedListItem } from '../../../common/named-list';
@@ -91,9 +92,14 @@ export class ChangeNtCs extends View<Refinement.Props, State> {
                 continue;
 
             const tag = Cif.Column.value(name, row)!;
+            const _step = StepsMapper.byName(this.props.dnatcofication, tag)!; // tag is the internal step name
 
             chainColumn.cells.push({ data: chain, tag });
-            stepColumn.cells.push({ data: tag, tag });
+            stepColumn.cells.push({
+                data: tag,
+                elem: niceStepName(_step),
+                tag
+            });
             computedNtCColumn.cells.push({
                 data: Cif.Column.value(assigned_NtC, row)!,
                 elem: (() => {

@@ -4,7 +4,7 @@ import { Annotation } from './common';
 import { ChainSelect, ModelSelect } from '../structure-selectors';
 import { View } from '../view';
 import { InvalidChain, InvalidModelIndex, InvalidStepId } from '../../structure-selection';
-import { DynamicTableDownloadBar } from '../../common';
+import { DynamicTableDownloadBar, niceStepName } from '../../common';
 import { valueToSemaphore } from '../../util';
 import { SingleStepInfo } from '../../single-step-info';
 import { DynamicTable } from '../../../common/dynamic-table';
@@ -164,9 +164,14 @@ export class AssignedNtCs extends View<View.Props> {
 
             const tag = Cif.Column.value(name, row)!;
             const NtC = Cif.Column.value(assigned_NtC, row)!;
+            const _step = StepsMapper.byName(this.props.dnatcofication, tag)!; // tag is the internal step name
 
             chainColumn.cells.push({ data: chain, tag });
-            stepColumn.cells.push({ data: tag, tag });
+            stepColumn.cells.push({
+                data: tag,
+                elem: niceStepName(_step),
+                tag
+            });
             ntcColumn.cells.push({
                 data: Cif.Column.value(assigned_NtC, row)!,
                 elem: (() => {
