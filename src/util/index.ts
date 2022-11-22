@@ -28,6 +28,10 @@ export function dequote(s: string) {
     return s;
 }
 
+export function fileSuffixes(name: string): string[] {
+    return name.toLowerCase().split('.').slice(1);
+}
+
 export function isDigit(s: string) {
     const diff = ZeroCode - s.charCodeAt(0);
     return diff >= 0 && diff <= 9;

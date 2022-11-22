@@ -5,6 +5,8 @@ import { isPdbId } from './util';
 import { Net } from './util/net';
 import { ClassificationContext } from './dnatco/classification-context';
 import { ClassificationResources } from './dnatco/classification-resources';
+import { Coordinates } from './dnatco/coordinates';
+import { DensityMap } from './dnatco/density-map';
 import { Dnatcofication, DnatcoficationData } from './dnatco/dnatcofication';
 import { ListOfConformers } from './dnatco/list-of-conformers';
 import { Step } from './dnatco/step';
@@ -180,9 +182,36 @@ export class App extends WithSubscriptions<{}, State> {
     }
 
     private fromCustomStructure(coordsFile: File, densityMapFile: File|null, onSuccess: () => void) {
-        const task: Task<{ coordsFile: File, densityMapFile: File|null, clsfResData: ClassificationResources.Data }> = {
+        const coordsType = Coordinates.guessType(coordsFile);
+        if (coordsType === 'unknown') {
+            Popup.create(
+                <>
+                    <div className='rdo-error-text'>Cannot process structure</div>
+                    <div className='rdo-error-text'>Cannot infer type of coordinates file</div>
+                </>
+            );
+            return;
+        }
+
+        const densityKind = '2fo-fc'; // HACK!
+        const densityType = densityMapFile ? DensityMap.guessType(densityMapFile) : undefined;
+        if (densityType && densityType === 'unknown') {
+            Popup.create(
+                <>
+                    <div className='rdo-error-text'>Cannot process structure</div>
+                    <div className='rdo-error-text'>Cannot infer type of density map file</div>
+                </>
+            );
+            return;
+        }
+
+        const task: Task<{ coords: { file: File, type: Coordinates['type'] }, densityMap: { file: File, type: DensityMap['type'], kind: DensityMap['kind']}|null, clsfResData: ClassificationResources.Data }> = {
             taskFunc: 'dnatco-from-custom-structure',
-            payload: { coordsFile, densityMapFile, clsfResData: ClassificationContext.data() },
+            payload: {
+                coords: { file: coordsFile, type: coordsType },
+                densityMap: densityMapFile ? { file: densityMapFile, type: densityType!, kind: densityKind } : null,
+                clsfResData: ClassificationContext.data()
+            },
             initialStatus: ''
         };
 

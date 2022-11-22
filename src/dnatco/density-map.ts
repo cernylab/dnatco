@@ -1,5 +1,6 @@
 import { OkResult, ErrorResult, Result } from './';
 import { RemoteDatabase } from '../remote-db';
+import { fileSuffixes } from '../util';
 
 export type DensityMap = {
     data: Uint8Array,
@@ -7,6 +8,7 @@ export type DensityMap = {
     kind: 'fo-fc'|'2fo-fc'|'em',
 };
 
+const Dns6Suffixes = ['dsn6'];
 const Ccp4Suffixes = ['ccp4', 'map', 'mrc'];
 
 export namespace DensityMap {
@@ -50,5 +52,19 @@ export namespace DensityMap {
 
     export async function fromPdbId(pdbId: string, db: RemoteDatabase): Promise<Result<DensityMap[]>> {
         return db.densityMaps(pdbId);
+    }
+
+    export function guessType(file: File): DensityMap['type']|'unknown' {
+        const suffixes = fileSuffixes(file.name);
+        if (suffixes.length === 0)
+            return 'unknown';
+
+        const suff = suffixes[suffixes.length - 1];
+        if (Dns6Suffixes.includes(suff))
+            return 'dsn6';
+        else if (Ccp4Suffixes.includes(suff))
+            return 'ccp4';
+        else
+            return 'unknown';
     }
 }

@@ -1,6 +1,6 @@
 import { OkResult, ErrorResult } from './';
 import { RemoteDatabase } from '../remote-db';
-import { Utf8Decoder } from '../util';
+import { fileSuffixes, Utf8Decoder } from '../util';
 import { ungzip } from '../zip/unzip';
 
 
@@ -8,6 +8,9 @@ export type Coordinates = {
     data: string;
     type: 'cif'|'pdb';
 }
+
+const CifSuffixes = ['cif', 'mmcif'];
+const PdbSuffixes = ['pdb'];
 
 export namespace Coordinates {
     async function blobToText(buf: ArrayBuffer, gzipped: boolean) {
@@ -49,5 +52,26 @@ export namespace Coordinates {
         } catch (e) {
             return ErrorResult(`Cannot load data ${e}`);
         }
+    }
+
+    export function guessType(file: File): Coordinates['type']|'unknown' {
+        const suffixes = fileSuffixes(file.name);
+        if (suffixes.length === 0)
+            return 'unknown';
+
+        while (suffixes.length > 0) {
+            const suff = suffixes.splice(suffixes.length - 1, 1)[0];
+
+            if (CifSuffixes.includes(suff))
+                return 'cif';
+            else if (PdbSuffixes.includes(suff))
+                return 'pdb';
+            else if (suff === 'gz')
+                continue;
+            else
+                return 'unknown';
+        }
+
+        return 'unknown';
     }
 }
