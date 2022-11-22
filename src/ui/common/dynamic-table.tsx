@@ -88,14 +88,14 @@ export class DynamicTable extends React.Component<DynamicTable.Props> {
         if (col.tooltip) {
             return (
                 <Tooltip
-                    tag={col.name}
+                    tag={col.elem ? col.elem : col.name}
                     delayMsec={300}
                 >
                     {col.tooltip}
                 </Tooltip>
             );
         } else {
-            return <>{col.name}</>;
+            return <>{col.elem ? col.elem : col.name}</>;
         }
     }
 
@@ -169,6 +169,7 @@ export namespace DynamicTable {
         notSortable?: boolean;     // Do not allow to sort by this column
         noData?: boolean;          // This is only a utility column with no actual data
         tooltip?: React.ReactNode; // Optional tooltip to display when a column header is hovered
+        elem?: JSX.Element|React.ReactElement; // Optional element to show as column header.
     }
     export type Style = 'normal' | 'wide';
 
@@ -201,10 +202,8 @@ export namespace DynamicTable {
                 const order = this.sortOrder;
                 const mainColumn = this.columns[sortIdx];
                 const comparator = mainColumn.comparator
-                    ?
-                    mainColumn.comparator
-                    :
-                    typeof mainColumn.cells[0].data === 'number'
+                    ? mainColumn.comparator
+                    : typeof mainColumn.cells[0].data === 'number'
                         ? (a: number, b: number) => a - b
                         : (a: string, b: string) => a.localeCompare(b);
 

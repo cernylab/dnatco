@@ -5,6 +5,7 @@ import { ChainSelect, ModelSelect } from '../structure-selectors';
 import { View } from '../view';
 import { InvalidChain, InvalidModelIndex, InvalidStepId } from '../../structure-selection';
 import { DynamicTableDownloadBar, niceStepName } from '../../common';
+import { Icon } from '../../../common/icon';
 import { valueToSemaphore } from '../../util';
 import { SingleStepInfo } from '../../single-step-info';
 import { DynamicTable } from '../../../common/dynamic-table';
@@ -19,6 +20,9 @@ import {
 import { Dnatcofication, StepRmsdStats } from '../../../../dnatco/dnatcofication';
 import { StepsMapper } from '../../../../dnatco/steps-mapper';
 import { rgbToHex } from '../../../util';
+import { GlobalConfig } from '../../../../global-config';
+import 'assets/imgs/info.svg';
+import 'assets/imgs/info-inverse.svg';
 
 const MarkerWidthRatio = 0.005;
 const MarkerOverdrawRatio = 0.8; // How much smaller is the background gradient than the marker.
@@ -118,6 +122,7 @@ export class AssignedNtCs extends View<View.Props> {
     }
 
     private makeTableModel(selectedModelNum: number, selectedChain?: string) {
+        const pathPrefix = GlobalConfig.data().pathPrefix;
         const steps = this.props.dnatcofication.table(NdbStructNtcStep);
         const summary = this.props.dnatcofication.table(NdbStructNtcStepSummary);
         const params = this.props.dnatcofication.table(NdbStructNtcStepParameters);
@@ -150,7 +155,8 @@ export class AssignedNtCs extends View<View.Props> {
         };
         const torsionsColumn: DynamicTable.Column<string> = {
             name: '?', cells: new Array<DynamicTable.Cell<string>>(), alignment: 'center', notSortable: true, noData: true,
-            tooltip: <div>Hover over the <span className='rdo-emphasize'>[?]</span> to get details about torsions and distances.</div>
+            tooltip: <div>Hover over the <Icon img={`${pathPrefix}/imgs/info.svg`} size='text' /> to get details about torsions and distances.</div>,
+            elem: <Icon img={`${pathPrefix}/imgs/info.svg`} size='text' />
         };
 
         for (let row = 0; row < steps._rowCount; row++) {
@@ -209,7 +215,9 @@ export class AssignedNtCs extends View<View.Props> {
                 tag,
                 tooltip:
                     <Tooltip
-                        tag='[?]'
+                        tag={
+                            <Icon img={`${pathPrefix}/imgs/info-inverse.svg`} size='text' />
+                        }
                         delayMsec={300}
                     >
                         <SingleStepInfo

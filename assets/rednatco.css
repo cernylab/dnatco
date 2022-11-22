@@ -314,6 +314,19 @@ th.rdo-data-table-small {
     text-align: center;
 }
 
+.rdo-icon {
+    flex: 1;
+    object-fit: contain;
+}
+
+.rdo-icon-tainer {
+    display: inline-flex;
+}
+
+.rdo-icon-image {
+    margin: 0.1em;
+}
+
 .rdo-icon-button {
     flex: 1;
     object-fit: contain;

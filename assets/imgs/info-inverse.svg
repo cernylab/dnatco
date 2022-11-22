@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="10"
+   height="10"
+   viewBox="0 0 10 10"
+   version="1.1"
+   id="svg28"
+   sodipodi:docname="info-inverse.svg"
+   inkscape:version="1.2.1 (9c6d41e410, 2022-07-14, custom)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs32" />
+  <sodipodi:namedview
+     id="namedview30"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     showgrid="false"
+     inkscape:zoom="56.125"
+     inkscape:cx="3.1714922"
+     inkscape:cy="6.8864143"
+     inkscape:window-width="1565"
+     inkscape:window-height="1426"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="svg28"
+     showguides="true">
+    <sodipodi:guide
+       position="4.9888641,8.6993318"
+       orientation="1,0"
+       id="guide6818"
+       inkscape:locked="false" />
+    <sodipodi:guide
+       position="-3.1180401,5.0111359"
+       orientation="0,-1"
+       id="guide6820"
+       inkscape:locked="false" />
+  </sodipodi:namedview>
+  <path
+     id="rect6874"
+     style="fill:#000000;fill-opacity:1;stroke:none;stroke-width:3.01824"
+     d="M 0 0 L 0 9.9960938 L 9.9960938 9.9960938 L 9.9960938 0 L 0 0 z M 5.9882812 0.97070312 C 6.5382807 0.97070313 6.9882812 1.4207037 6.9882812 1.9707031 C 6.9882813 2.5207026 6.5382807 2.9707031 5.9882812 2.9707031 C 5.4382818 2.9707031 4.9882812 2.5207026 4.9882812 1.9707031 C 4.9882812 1.4207037 5.4382818 0.97070312 5.9882812 0.97070312 z M 4.4882812 3.4707031 C 5.3182804 3.4707031 5.9882812 4.1607039 5.9882812 4.9707031 C 5.9882812 5.6307025 4.9882812 7.1107035 4.9882812 7.4707031 C 4.9882812 7.7507028 5.2082815 7.9707031 5.4882812 7.9707031 C 5.768281 7.9707031 5.9882812 7.7507028 5.9882812 7.4707031 L 6.9882812 7.4707031 C 6.9882812 8.3007023 6.3182804 8.9707031 5.4882812 8.9707031 C 4.6582821 8.9707031 3.9882812 8.3307023 3.9882812 7.4707031 C 3.9882812 6.610704 4.9882812 5.2507028 4.9882812 4.9707031 C 4.9882812 4.6907034 4.768281 4.4707031 4.4882812 4.4707031 C 4.2082815 4.4707031 3.9882812 4.6907034 3.9882812 4.9707031 L 2.9882812 4.9707031 C 2.9882812 4.140704 3.6582821 3.4707031 4.4882812 3.4707031 z " />
+</svg>

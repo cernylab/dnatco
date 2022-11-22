@@ -6,6 +6,7 @@ import { View } from '../view';
 import { DynamicTableDownloadBar, niceStepName } from '../../common';
 import { SingleStepInfo } from '../../single-step-info';
 import { Constants } from '../../constants';
+import { Icon } from '../../../common/icon';
 import { valueToSemaphore } from '../../util';
 import { DynamicTable } from '../../../common/dynamic-table';
 import { NamedList, NamedListItem } from '../../../common/named-list';
@@ -17,6 +18,9 @@ import {
 } from '../../../../cif/categories/ndb-struct-ntc';
 import { Dnatcofication } from '../../../../dnatco/dnatcofication';
 import { StepsMapper } from '../../../../dnatco/steps-mapper';
+import { GlobalConfig } from '../../../../global-config';
+import 'assets/imgs/info.svg';
+import 'assets/imgs/info-inverse.svg'
 
 function confalToColor(rmsd: number): React.CSSProperties  {
     const clr = valueToSemaphore(rmsd, Constants.GreenConfal, Constants.GreenRMSD);
@@ -32,6 +36,7 @@ export class ConfalsRmsds extends View<View.Props> {
     private tableModel: DynamicTable.Model = new DynamicTable.Model([]);
 
     private makeTableModel(selectedModelNum: number, selectedChain?: string) {
+        const pathPrefix = GlobalConfig.data().pathPrefix;
         const steps = this.props.dnatcofication.table(NdbStructNtcStep);
         const summary = this.props.dnatcofication.table(NdbStructNtcStepSummary);
         const params = this.props.dnatcofication.table(NdbStructNtcStepParameters);
@@ -70,7 +75,8 @@ export class ConfalsRmsds extends View<View.Props> {
         };
         const torsionsColumn: DynamicTable.Column<string> = {
             name: '?', cells: new Array<DynamicTable.Cell<string>>(), alignment: 'center', notSortable: true, noData: true,
-            tooltip: <div>Hover over the <span className='rdo-emphasize'>[?]</span> to get details about torsions and distances.</div>,
+            tooltip: <div>Hover over the <Icon img={`${pathPrefix}/imgs/info.svg`} size='text' /> to get details about torsions and distances.</div>,
+            elem: <Icon img={`${pathPrefix}/imgs/info.svg`} size='text' />
         };
 
         for (let row = 0; row < steps._rowCount; row++) {
@@ -135,7 +141,9 @@ export class ConfalsRmsds extends View<View.Props> {
                 tag,
                 tooltip:
                     <Tooltip
-                        tag='[?]'
+                        tag={
+                            <Icon img={`${pathPrefix}/imgs/info-inverse.svg`} size='text' />
+                        }
                         delayMsec={300}
                     >
                         <SingleStepInfo
