@@ -3,7 +3,7 @@ import { Validation } from './common';
 import { ChainSelect, ModelSelect } from '../structure-selectors';
 import { InvalidChain, InvalidModelIndex, InvalidStepId } from '../../structure-selection';
 import { View } from '../view';
-import { DynamicTableDownloadBar, niceStepName } from '../../common';
+import { ConfalPercentileStats, DynamicTableDownloadBar, StepsClassificationStats, StepRmsdStats, niceStepName } from '../../common';
 import { SingleStepInfo } from '../../single-step-info';
 import { Constants } from '../../constants';
 import { Icon } from '../../../common/icon';
@@ -212,22 +212,39 @@ export class ConfalsRmsds extends View<View.Props> {
     }
 
     render() {
+        const overall = this.props.dnatcofication.table(NdbStructNtcOverall);
+        const numModels = Dnatcofication.Structure.numberOfModels(this.props.dnatcofication);
+        const modelIdx = this.props.structureSelection.modelIndex === InvalidModelIndex ? 0 : this.props.structureSelection.modelIndex;
+
         return (
             <div>
                 <NamedList>
-                    <NamedListItem name='Models'>
-                        {Dnatcofication.Structure.numberOfModels(this.props.dnatcofication)}
-                    </NamedListItem>
                     <NamedListItem name='Analyzed steps'>
-                        {this.renderAnalyzedSteps()}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--v-gap)' }}>
+                            <StepsClassificationStats
+                                assigned={Cif.Column.value(overall.num_classified, 0)!}
+                                close={Cif.Column.value(overall.num_unclassified_rmsd_close, 0)!}
+                                unassigned={Cif.Column.value(overall.num_unclassified, 0)!}
+                            />
+                            <StepRmsdStats stats={this.props.dnatcofication.data.stepRmsdStats[modelIdx]} />
+                            <ConfalPercentileStats
+                                avgConfal={this.props.dnatcofication.data.averageConfals[modelIdx]}
+                                modelNum={this.props.dnatcofication.data.structures[0].models[modelIdx].num}
+                                showModelNum={this.props.structureSelection.modelIndex === InvalidModelIndex}
+                            />
+                        </div>
                     </NamedListItem>
-                    <NamedListItem name='Model'>
-                        <ModelSelect
-                            dnatcofication={this.props.dnatcofication}
-                            structureSelection={this.props.structureSelection}
-                            onChange={this.props.switching.switchModel}
-                        />
-                    </NamedListItem>
+                {
+                    numModels > 1
+                        ? <NamedListItem name='Model'>
+                                <ModelSelect
+                                    dnatcofication={this.props.dnatcofication}
+                                    structureSelection={this.props.structureSelection}
+                                    onChange={this.props.switching.switchModel}
+                                />
+                            </NamedListItem>
+                        : undefined
+                }
                     <NamedListItem name='Chain'>
                         <ChainSelect
                             dnatcofication={this.props.dnatcofication}

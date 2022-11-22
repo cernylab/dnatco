@@ -255,11 +255,11 @@ export class MainScreen extends WithSubscriptions<MainScreen.Props, State> {
                     selected={this.activeView()}
                 />
                 <div style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-                    <div>
-                        <div className='rdo-primary-caption'>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr', marginLeft: 'auto', marginRight: 'auto', alignItems: 'center' }}>
+                        <div className='rdo-structure-id'>
                             {this.props.dnatcofication.identifyingName}
                         </div>
-                        <div className='rdo-secondary-caption'>
+                        <div className='rdo-structure-title'>
                            {this.props.dnatcofication.identifyingTitle}
                         </div>
                     </div>

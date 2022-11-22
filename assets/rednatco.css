@@ -630,6 +630,18 @@ th.rdo-data-table-small {
     outline: none;
 }
 
+.rdo-structure-id {
+    font-size: var(--font-xxlarge);
+    font-weight: bold;
+    padding: calc(var(--x-gap) / 2);
+    text-align: right;
+}
+
+.rdo-structure-title {
+    font-weight: bold;
+    text-align: left;
+}
+
 .rdo-tab-button {
     align-items: center;
     display: flex;
