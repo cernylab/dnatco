@@ -66,8 +66,8 @@ export class StartTab extends React.Component<StartTab.Props, State> {
                                 <div className='rdo-section-caption'>
                                     Enter PDB ID (e. g. <span style={{ textDecoration: 'underline', cursor: 'pointer' }} onClick={() => {
                                         if (this.props.dnatcofierReady)
-                                            this.props.onDoPdbId('1bna', 'rcsb')}
-                                    }>1bna</span>)
+                                            this.props.onDoPdbId('1ehz', 'rcsb')}
+                                    }>1ehz</span>)
                                 </div>
                                 <div style={{
                                     columnGap: 'var(--h-gap)',
