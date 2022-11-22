@@ -20,9 +20,13 @@ export namespace Common {
     export const StyleTableSameColumnWidth = { tableLayout: 'fixed', width: '100%' } as StandardLonghandProperties;
 }
 
-export function niceStepName(step: Step) {
+export function niceStepName(step: Step, showModelNum = false) {
     return (
         <span>
+            {showModelNum
+                ? <><span className='rdo-nice-step-model'>M{step.model}</span><div className='rdo-nice-step-msep'>{'\u00A0'}</div></>
+                : undefined
+            }
             <span className='rdo-nice-step-base'>{step.base1}</span>
             <span className='rdo-nice-step-brsep'>{'\u00A0'}</span>
             <span className='rdo-nice-step-residue'>{step.resNo1}{step.insCode1}</span>

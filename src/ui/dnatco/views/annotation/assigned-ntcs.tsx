@@ -77,7 +77,7 @@ export class AssignedNtCs extends View<View.Props> {
             chainColumn.cells.push({ data: chain, tag });
             stepColumn.cells.push({
                 data: tag,
-                elem: niceStepName(_step),
+                elem: niceStepName(_step, selectedModelNum === InvalidModelIndex),
                 tag
             });
             ntcColumn.cells.push({

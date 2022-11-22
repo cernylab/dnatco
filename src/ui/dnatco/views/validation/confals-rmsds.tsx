@@ -66,8 +66,8 @@ export class ConfalsRmsds extends View<View.Props> {
             tooltip: <div><span className='rdo-emphasize'>C</span>onformational <span className='rdo-emphasize'>A</span>lphabet of <span className='rdo-emphasize'>N</span>ucleic <span className='rdo-emphasize'>A</span>cids</div>,
         };
         const confalColumn: DynamicTable.Column<number> = {
-            name: 'Confal', cells: new Array<DynamicTable.Cell<number>>(), alignment: 'center', cellStyle: confalToColor,
-            tooltip: <div>Score of similarity between the analyzed step and the assigned NtC class; values between 0 (no match) to 100 (perfect match)</div>,
+            name: 'CS', cells: new Array<DynamicTable.Cell<number>>(), alignment: 'center', cellStyle: confalToColor,
+            tooltip: <div>Confal Score: Score of similarity between the analyzed step and the assigned NtC class; values between 0 (no match) to 100 (perfect match)</div>,
         };
         const rmsdColumn: DynamicTable.Column<number> = {
             name: 'RMSD', cells: new Array<DynamicTable.Cell<number>>(), alignment: 'center', cellStyle: rmsdToColor,
@@ -94,7 +94,7 @@ export class ConfalsRmsds extends View<View.Props> {
 
             stepColumn.cells.push({
                 data: tag,
-                elem: niceStepName(_step),
+                elem: niceStepName(_step, selectedModelNum === InvalidModelIndex),
                 tag
             });
             ntcColumn.cells.push({

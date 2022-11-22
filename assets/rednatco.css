@@ -402,6 +402,11 @@ th.rdo-data-table-small {
     font-style: oblique;
 }
 
+.rdo-nice-step-base {
+    font-weight: normal;
+    font-size: 11pt;
+}
+
 .rdo-nice-step-brsep {
     font-size: 4pt;
 }
@@ -411,9 +416,14 @@ th.rdo-data-table-small {
     width: 0.75em;
 }
 
-.rdo-nice-step-base {
-    font-weight: normal;
+.rdo-nice-step-model {
     font-size: 11pt;
+    font-style: oblique;
+}
+
+.rdo-nice-step-msep {
+    display: inline-block;
+    width: 0.25em;
 }
 
 .rdo-nice-step-residue {
