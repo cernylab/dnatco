@@ -274,7 +274,7 @@ export class MainScreen extends WithSubscriptions<MainScreen.Props, State> {
                             </div>
                         }
                         second={
-                            <div className='rdo-offset'>
+                            <div className='rdo-offset' style={{ marginLeft: 0, overflow: 'hidden' }}>
                                 <div id='rdo-id-molstar-container' style={{ height: '100%', position: 'relative' }} />
                             </div>
                         }
