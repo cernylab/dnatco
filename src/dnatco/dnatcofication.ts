@@ -19,6 +19,14 @@ import { Struct } from '../cif/categories/struct';
 import { EventsKeeper } from '../util/events-keeper';
 import { Globals } from '../globals';
 
+import { PdbParser } from 'tspdb/parser';
+import { MmCifConverter } from 'tspdb/mmcif-converter';
+
+function pdbToCif(data: string) {
+    const pdb = PdbParser.parse(data);
+    return MmCifConverter.convert(pdb.stru);
+}
+
 const RequiredDnatcoCategories: Category<any>[] = [
     NdbStructNtcOverall, NdbStructNtcStepParameters, NdbStructNtcStep,
     NdbStructNtcStepSummary, NdbStructSugarStepParameters,
@@ -123,18 +131,16 @@ export namespace Dnatcofication {
     export function ingest(coordinates: Coordinates, densityMaps: DensityMap[]|null, sourceFileName: string|null, clsfResData: ClassificationResources.Data, ctx: DnatcoficationTaskContext) {
         const tStart = performance.now();
 
-        if (coordinates.type !== 'cif') {
-            ctx.events.finished.next({ state: 'failed', message: 'Only mmCIF files are currently supported' });
-            return;
-        }
+        const cifCoordinates = coordinates.type === 'cif'
+            ? coordinates.data : pdbToCif(coordinates.data);
 
         try {
             ctx.status = 'Reading CIF file';
 
-            let cifData = Cif.read(coordinates.data);
+            let cifData = Cif.read(cifCoordinates);
             if (!isDnatcofied(cifData)) {
                 // Got a CIF without DNATCO categories. Let's try to create them ourselves
-                const maybeDnatcofiedCif = Dnatcofier.dnatcoify(coordinates.data, clsfResData, ctx);
+                const maybeDnatcofiedCif = Dnatcofier.dnatcoify(cifCoordinates, clsfResData, ctx);
                 cifData = Cif.read(maybeDnatcofiedCif);
                 if (!isDnatcofied(cifData))
                     throw new Error('Input CIF file does not contain required DNATCO categories and ' + Globals.ProductName + '\'s automatic assignment process was unsuccessful. Sorry...');

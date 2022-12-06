@@ -7,3 +7,6 @@
 [submodule "tscif"]
 	path = tscif
 	url = git@gitlab.cesnet.cz:madcatxster/tscif.git
+[submodule "tspdb"]
+	path = tspdb
+	url = git@gitlab.cesnet.cz:madcatxster/tspdb.git
