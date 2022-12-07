@@ -24,6 +24,13 @@ import { MmCifConverter } from 'tspdb/mmcif-converter';
 
 function pdbToCif(data: string) {
     const pdb = PdbParser.parse(data);
+    const criticals = pdb.issues.filter(i => i.severity === 'critical');
+    if (criticals.length > 0) {
+        let msg = 'PDB file contains errors.\n';
+        criticals.forEach(c => msg += `Line ${c.lineNo.toString().padStart(4)}: ${c.message}\n`);
+        throw new Error(msg);
+    }
+
     return MmCifConverter.convert(pdb.stru);
 }
 
@@ -131,11 +138,13 @@ export namespace Dnatcofication {
     export function ingest(coordinates: Coordinates, densityMaps: DensityMap[]|null, sourceFileName: string|null, clsfResData: ClassificationResources.Data, ctx: DnatcoficationTaskContext) {
         const tStart = performance.now();
 
-        const cifCoordinates = coordinates.type === 'cif'
-            ? coordinates.data : pdbToCif(coordinates.data);
-
         try {
-            ctx.status = 'Reading CIF file';
+            ctx.status = 'Reading input coordinates';
+
+            const cifCoordinates = coordinates.type === 'cif'
+                ? coordinates.data : pdbToCif(coordinates.data);
+
+            ctx.status = 'Reading mmCif file';
 
             let cifData = Cif.read(cifCoordinates);
             if (!isDnatcofied(cifData)) {

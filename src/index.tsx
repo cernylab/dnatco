@@ -24,6 +24,7 @@ import { InProgress } from './ui/common/in-progress';
 import { Constants } from './ui/dnatco/constants';
 import { MainScreen } from './ui/dnatco/main-screen';
 import { WithSubscriptions } from './ui/service/with-subscriptions';
+import { formatErrorText } from './ui/util';
 import { Search } from './search/search';
 import { BackgroundWorker, WorkerMessage } from './tasks/worker';
 import { ViewerApi, ViewerInterop } from './viewer/viewer-interop';
@@ -186,8 +187,8 @@ export class App extends WithSubscriptions<{}, State> {
         if (coordsType === 'unknown') {
             Popup.create(
                 <>
-                    <div className='rdo-error-text'>Cannot process structure</div>
-                    <div className='rdo-error-text'>Cannot infer type of coordinates file</div>
+                    {formatErrorText('Cannot process structure')}
+                    {formatErrorText('Cannot infer type of coordinates file')}
                 </>
             );
             return;
@@ -198,8 +199,8 @@ export class App extends WithSubscriptions<{}, State> {
         if (densityType && densityType === 'unknown') {
             Popup.create(
                 <>
-                    <div className='rdo-error-text'>Cannot process structure</div>
-                    <div className='rdo-error-text'>Cannot infer type of density map file</div>
+                    {formatErrorText('Cannot process structure')}
+                    {formatErrorText('Cannot infer type of density map file')}
                 </>
             );
             return;
@@ -253,8 +254,8 @@ export class App extends WithSubscriptions<{}, State> {
 
             Popup.create(
                 <>
-                    <div className='rdo-error-text'>Cannot process structure</div>
-                    <div className='rdo-error-text'>{`Internal error: ${ev.error?.message ?? 'Unspecified error'}`}</div>
+                    {formatErrorText('Cannot process structure')}
+                    {formatErrorText(`Internal error: ${ev.error?.message ?? 'Unspecified error'}`)}
                 </>
             );
         }
@@ -280,8 +281,8 @@ export class App extends WithSubscriptions<{}, State> {
                 if (data.finished.state === 'failed') {
                     Popup.create(
                         <>
-                            <div className='rdo-error-text'>Cannot process structure</div>
-                            <div className='rdo-error-text'>{data.finished.message ?? 'Unspecified error'}</div>
+                            {formatErrorText('Cannot process structure')}
+                            {formatErrorText(data.finished.message ?? 'Unspecified error')}
                          </>
                     );
                 } else if (data.finished.state === 'succeeded') {

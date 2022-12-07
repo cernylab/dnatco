@@ -1,3 +1,4 @@
+import React from 'react';
 import { ComboBox } from './common/combo-box';
 
 function componentToHex(c: number) {
@@ -14,6 +15,15 @@ export function deselectText() {
         window.getSelection()?.removeAllRanges();
     else if ((document as any)['selection'])
         (document as any).selection.empty();
+}
+
+export function formatErrorText(text: string) {
+    const toks = text.split('\n');
+    if (toks.length === 0)
+        return <div className='rdo-error-text'>toks[0]</div>;
+
+    const elems = toks.map(x => <div className='rdo-error-text'>{x}</div>);
+    return <div>{elems}</div>;
 }
 
 export function rgbToHex(rgb: { r: number, g: number, b: number }) {
