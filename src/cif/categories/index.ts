@@ -56,7 +56,7 @@ export namespace Schema {
     }
 
     export function toEnum<T>(v: string, en: Enum<T>) {
-        let dv = v !== null ? dequote(v) : null;
+        let dv = v !== null ? dequote(v).toLowerCase() : null;
 
         // Enum might in principle contain anything but what we get from the raw Cif is a string
         // Convert enum options to string for proper comparison

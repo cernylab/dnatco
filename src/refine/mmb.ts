@@ -39,7 +39,7 @@ export namespace Mmb {
 
         if (includeSequences) {
             for (const chain of model.chains) {
-                const kind = chain.kind;
+                const kind = d.data.entityKinds[0].get(chain.entityId);
                 if (!(kind === 'DNA' || kind === 'RNA'))
                     continue;
 

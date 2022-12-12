@@ -1,6 +1,8 @@
 import { AtomSite } from './categories/atom-site';
+import { ChemComp } from './categories/chem-comp';
 import { Citation } from './categories/citation';
 import { CitationAuthor } from './categories/citation-author';
+import { Entity, EntityPoly, EntityPolySeq } from './categories/entity';
 import { Entry } from './categories/entry';
 import { Exptl, ExptlCrystal, ExptlCrystalGrow } from './categories/experimental';
 import { NdbStructNtcOverall, NdbStructNtcStepParameters, NdbStructNtcStep, NdbStructNtcStepSummary, NdbStructSugarStepParameters } from './categories/ndb-struct-ntc';
@@ -10,8 +12,10 @@ import { Struct } from './categories/struct';
 
 export const KnownCategories = [
     AtomSite,
+    ChemComp,
     Citation,
     CitationAuthor,
+    Entity, EntityPoly, EntityPolySeq,
     Entry,
     Exptl, ExptlCrystal, ExptlCrystalGrow,
     NdbStructNtcOverall, NdbStructNtcStepParameters, NdbStructNtcStep, NdbStructNtcStepSummary, NdbStructSugarStepParameters,

@@ -3,7 +3,7 @@ import { ComboBox } from '../common/combo-box';
 import { Dnatcofication } from '../../dnatco/dnatcofication';
 import { Chain, Structure } from '../../dnatco/structure';
 import { StepsMapper } from '../../dnatco/steps-mapper';
-import { clamp } from '../../util';
+import { capitalize, clamp } from '../../util';
 import { Filters } from 'viewer-filters';
 
 export type PrevCurrentNextStepSelection = {
@@ -22,7 +22,7 @@ export function filterToChain(dnatcofication: Dnatcofication, modelIndex: number
     return found ? chain : '';
 }
 
-export function listOfChains(modelIndex: number, structure: Structure) {
+export function listOfChains(modelIndex: number, structure: Structure, entityKinds: Dnatcofication.EntityKinds) {
     if (modelIndex === InvalidModelIndex)
         return [];
 
@@ -31,8 +31,9 @@ export function listOfChains(modelIndex: number, structure: Structure) {
     const seenChains = new Set<string>();
     const options: ComboBox.Option[] = [];
     for (const chain of model.chains) {
-        if (Chain.isNAChain(chain) && !seenChains.has(chain.name))
-            options.push({ value: chain.name, caption: `Auth: ${chain.authName}, Cif: ${chain.name}` });
+        const ek = entityKinds.get(chain.entityId) ?? 'other';
+        if (Chain.isNAChain(ek) && !seenChains.has(chain.name))
+            options.push({ value: chain.name, caption: `Auth: ${chain.authName}, Cif: ${chain.name} (${capitalize(ek)})` });
     }
 
     return options;

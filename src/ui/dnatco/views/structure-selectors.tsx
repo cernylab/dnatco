@@ -12,7 +12,7 @@ function chainOptions(sel: StructureSelection, d: Dnatcofication) {
 
     const opts = [
         { caption: 'All', value: InvalidChain },
-        ...listOfChains(sel.modelIndex, d.data.structures[0]),
+        ...listOfChains(sel.modelIndex, d.data.structures[0], d.data.entityKinds[sel.modelIndex]),
     ];
     return opts;
 }

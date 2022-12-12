@@ -10,6 +10,7 @@ import { PhenixRestraints } from './refinement/phenix-restraints';
 import { RefmacRestraints } from './refinement/refmac-restraints';
 import { ConnectivityPlot } from './refinement/connectivity-plot';
 import { ConfalsRmsds } from './validation/confals-rmsds';
+import { RsccPlot } from './validation/rscc-plot';
 import { SimilarityPlots } from './validation/similarity-plot';
 import { StepTorsions } from './validation/step-torsions';
 import { StepSwitcher } from '../structure-selection';
@@ -52,6 +53,10 @@ export namespace Register {
         'refmac-restraints': {
             render: (props: Refinement.Props) => <RefmacRestraints {...props} />,
             stepSwitcher: RefmacRestraints.StepSwitcher
+        },
+        'rscc-plot': {
+            render: (props: View.Props) => <RsccPlot {...props} />,
+            stepSwitcher: RsccPlot.StepSwitcher
         },
         'step-torsions': {
             render: (props: View.Props) => <StepTorsions {...props} />,

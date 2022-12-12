@@ -1,24 +1,7 @@
-import { Residues } from './residues';
 import { Cif } from '../cif';
 import { AtomSite, AtomSite_Schema } from '../cif/categories/atom-site';
 
 type AtomSiteRow = Cif.Row<AtomSite_Schema>;
-
-function guessChainKind(residues: Residue[]) {
-    let couldBeDNA = false;
-    let couldBeRNA = false;
-
-    for (const r of residues) {
-        couldBeDNA = couldBeDNA || Residues.isDNAResidue(r.compound);
-        couldBeRNA = couldBeRNA || Residues.isRNAResidue(r.compound);
-    }
-
-    return (
-        couldBeDNA
-            ? couldBeRNA ? 'hybrid' : 'DNA'
-            : couldBeRNA ? 'RNA' : 'other'
-    );
-}
 
 export class Atom {
     readonly altId: string|null;
@@ -72,7 +55,6 @@ export class Chain {
     readonly residues = new Array<Residue>();
     readonly entityId: string;
     readonly authName: string;
-    readonly kind: 'DNA' | 'RNA' | 'hybrid' | 'other';
 
     constructor(readonly name: string, rows: AtomSiteRow[]) {
         const fr = rows[0];
@@ -86,12 +68,13 @@ export class Chain {
         }
 
         this.residues = this.residues.sort((lhs, rhs) => lhs.num - rhs.num);
-        this.kind = guessChainKind(this.residues);
     }
 }
 export namespace Chain {
-    export function isNAChain(chain: Chain) {
-        return chain.kind === 'DNA' || chain.kind === 'RNA' || chain.kind === 'hybrid';
+    export type Kind = 'DNA' | 'RNA' | 'hybrid' | 'peptide' | 'other';
+
+    export function isNAChain(ek: Kind) {
+        return ek === 'DNA' || ek === 'RNA' || ek === 'hybrid';
     }
 }
 

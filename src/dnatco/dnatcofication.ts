@@ -6,7 +6,7 @@ import { DensityMap } from './density-map';
 import { Dnatcofier } from './dnatcofier';
 import { ExtractInfo } from './extract-info';
 import { StepsMapper } from './steps-mapper';
-import { Structure as _Structure } from './structure';
+import { Chain, Structure as _Structure } from './structure';
 import { Cif } from '../cif';
 import { Category, Schema } from '../cif/categories';
 import { AtomSite } from '../cif/categories/atom-site';
@@ -44,7 +44,7 @@ export type StepRmsdStats = { rmsdThreshold: number, count: number };
 
 export const DnatcoficationData = {
     connectivities: { backward: [], forward: [] } as ConnSimil.AllConnectivities,
-    nucleicAcidChains: new Array<string[]>(),
+    entityKinds: [] as Dnatcofication.EntityKinds[],
     similarities: [] as ConnSimil.AllSimilarities,
     steps: StepsMapper.Mapping(),
     structures: new Array<_Structure>(),
@@ -121,11 +121,24 @@ export class Dnatcofication {
 }
 
 export namespace Dnatcofication {
+    export type EntityKinds = Map<string, Chain.Kind>;
+
     export namespace Structure {
-        export function nucleicAcidChains(d: Dnatcofication, modelIndex = 0) {
-            if (d.data.nucleicAcidChains.length === 0)
+        export function nucleicAcidChains(d: Dnatcofication, modelIndex = 0): { name: string, authName: string, kind: Chain.Kind }[] {
+            const et = d.data.entityKinds[modelIndex];
+            if (!et)
                 return [];
-            return d.data.nucleicAcidChains[modelIndex];
+
+            const naChains = new Array<{ name: string, authName: string, kind: Chain.Kind }>();
+            const m = d.data.structures[0].models[modelIndex];
+            for (const [id, ct] of et.entries()) {
+                m.chains.forEach(ch => {
+                    if (ch.entityId === id)
+                        naChains.push({ name: ch.name, authName: ch.authName, kind: ct });
+                });
+            }
+
+            return naChains;
         }
 
         export function numberOfModels(d: Dnatcofication) {
@@ -158,10 +171,10 @@ export namespace Dnatcofication {
             const structures = new Array<_Structure>();
             structures.push(new _Structure(Cif.File.table(cifData, AtomSite, 0))); // NOTE: We are explicitly ignoring any blocks except the first one
 
-            const nucleicAcidChains = new Array<string[]>();
+            const entityKinds = [];
             for (const model of structures[0].models) {
-                const naChains = ExtractInfo.countNucleicAcidChains(model);
-                nucleicAcidChains.push(naChains);
+                const et = ExtractInfo.entityKinds(model, cifData);
+                entityKinds.push(et);
             }
 
             ctx.status = 'Mapping dinucleotide steps';
@@ -186,7 +199,7 @@ export namespace Dnatcofication {
 
             const data: DnatcoficationData = {
                 connectivities,
-                nucleicAcidChains,
+                entityKinds,
                 similarities,
                 steps,
                 structures,

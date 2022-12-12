@@ -26,9 +26,10 @@ const AvailableViews = {
     'phenix-restraints': { caption: 'Phenix restraints', visualizer: false },
     'mmb-commands-file': { caption: 'MMB commands file', visualizer: false },
     'connectivity-plot': { caption: 'Connectivity plot', visualizer: true },
+    'rscc-plot': { caption: 'RSCC plot', visualizer: true },
 };
 const AnnotationViews: ViewType[] = ['assigned-ntcs', 'structure-info', 'downloads'];
-const ValidationViews: ViewType[] = ['confals-rmsds', 'step-torsions', 'similarity-plot'];
+const ValidationViews: ViewType[] = ['confals-rmsds', 'step-torsions', 'similarity-plot', 'rscc-plot'];
 const RefinementViews: ViewType[] = ['connectivity-plot', 'refmac-restraints', 'phenix-restraints', 'mmb-commands-file', 'change-ntcs'];
 
 function masterModeViews(mode: MasterMode): { id: ViewType, caption: string }[] {
