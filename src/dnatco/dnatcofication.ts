@@ -103,6 +103,14 @@ export class Dnatcofication {
         return Cif.File.hasTable(this.data.cifData, category);
     }
 
+    get pdbId() {
+        if (!this.data.cifData)
+            return '';
+
+        const struct = Cif.File.table(this.data.cifData, Struct);
+        return Cif.Column.value(struct.entry_id, 0) ?? '';
+    }
+
     rawCif() {
         return this.data.cifData?.raw ?? '';
     }
