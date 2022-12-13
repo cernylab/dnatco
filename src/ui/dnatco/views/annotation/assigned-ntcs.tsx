@@ -183,10 +183,6 @@ export class AssignedNtCs extends View<View.Props> {
         );
     }
 
-    componentWillUnmount() {
-        this.unsubscribeAll();
-    }
-
     render() {
         const overall = this.props.dnatcofication.table(NdbStructNtcOverall);
         const numModels = Dnatcofication.Structure.numberOfModels(this.props.dnatcofication);

@@ -1,5 +1,5 @@
 export namespace Residues {
-    export type ResdidueKind = 'purine' | 'pyrimidine' | 'non-standard';
+    export type ResidueKind = 'purine' | 'pyrimidine' | 'non-standard';
 
     export function isElementaryResidue(name: string) {
         return ElementaryDNAResidues.has(name) || ElementaryRNAResidues.has(name);
@@ -414,7 +414,7 @@ export namespace Residues {
         'ZDU'
     ]);
 
-    export const StandardResidueKinds = new Map<string, ResdidueKind>([
+    export const StandardResidueKinds = new Map<string, ResidueKind>([
         [  '0A', 'purine' ],
         [ '0AD', 'purine' ],
         [ '0AP', 'pyrimidine' ],
@@ -806,4 +806,16 @@ export namespace Residues {
         [   'Z', 'pyrimidine' ],
         [ 'ZDU', 'pyrimidine' ]
     ]);
+
+    export const AnchorAtoms = {
+        backbone: {
+            first: [ "C5'", "C4'", "O4'", "C3'", "O3'", "C1'", "O4'" ],
+            second: [ "P", "O5'", "C5'", "C4'", "O4'", "C3'", "O3'", "C1'", "O4'" ]
+        },
+        base: {
+            purine: [ "N9", "C4" ],
+            pyrimidine: [ "N1", "C2" ],
+            'non-standard': [],
+        } as Record<ResidueKind, string[]>
+    };
 }

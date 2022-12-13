@@ -17,15 +17,15 @@ function chainOptions(sel: StructureSelection, d: Dnatcofication) {
     return opts;
 }
 
-function modelOptions(d: Dnatcofication) {
+function modelOptions(d: Dnatcofication, hideAllModels = false) {
     if (d.data.structures[0].models.length === 1)
         return listOfModels(d.data.structures[0]);
 
-    const opts = [
-        { name: 'All', index: InvalidModelIndex },
-        ...listOfModels(d.data.structures[0]),
-    ];
-    return opts;
+    const opts = [];
+    if (!hideAllModels)
+        opts.push({ name: 'All', index: InvalidModelIndex });
+
+    return [ ...opts, ...listOfModels(d.data.structures[0]) ];
 }
 
 type StepValue = { name: string, id: number };
@@ -73,7 +73,7 @@ export class ModelSelect extends React.Component<ModelSelect.Props> {
     render() {
         return (
             <ComboBox
-                options={toComboBoxOptions(modelOptions(this.props.dnatcofication), o => ({ caption: o.name, value: o.index.toString() }))}
+                options={toComboBoxOptions(modelOptions(this.props.dnatcofication, this.props.hideAllModelsOption ?? false), o => ({ caption: o.name, value: o.index.toString() }))}
                 value={this.props.structureSelection.modelIndex.toString()}
                 onChange={v => {
                     const modelIndex = parseInt(v);
@@ -90,6 +90,7 @@ export namespace ModelSelect {
         dnatcofication: Dnatcofication;
         structureSelection: StructureSelection;
         onChange: (modelIndex: number) => void;
+        hideAllModelsOption?: boolean;
     }
 }
 
