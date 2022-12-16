@@ -212,7 +212,7 @@ export class RsccPlot extends View<View.Props, State> {
         return (
             <div>
                 { numModels > 1
-                    ? <NamedList sizing='min-content'>
+                    ? <NamedList sizing='min-content' rowSpacing='half'>
                         <NamedListItem name='Model'>
                             <ModelSelect
                                 dnatcofication={this.props.dnatcofication}

@@ -6,6 +6,12 @@ const SizingPolicy = {
     'maximum-available': '100%',
 };
 
+const RowSpacingPolicy = {
+    default: 0,
+    half: 'calc(var(--v-gap) / 2)',
+    one: 'var(--v-gap)',
+};
+
 export class NamedList extends React.Component<NamedList.Props> {
     static defaultProps = {
         horizontalPosition: 'left',
@@ -28,7 +34,10 @@ export class NamedList extends React.Component<NamedList.Props> {
         return (
             <div
                 className={`rdo-named-list ${this.props.verticalPosition === 'center' ? 'rdo-named-list-vcentered' : ''}`}
-                style={{ width: this.props.sizing ? SizingPolicy[this.props.sizing] : SizingPolicy['maximum-available'] }}
+                style={{
+                    width: this.props.sizing ? SizingPolicy[this.props.sizing] : SizingPolicy['maximum-available'],
+                    rowGap: this.props.rowSpacing ? RowSpacingPolicy[this.props.rowSpacing] : RowSpacingPolicy.default,
+                }}
             >
                 {this.props.children}
             </div>
@@ -63,5 +72,6 @@ export namespace NamedList {
         verticalPosition: 'center' | 'top';
         children?: React.ReactNode|React.ReactNode[];
         sizing?: keyof typeof SizingPolicy;
+        rowSpacing?: keyof typeof RowSpacingPolicy;
     }
 }

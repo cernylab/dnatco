@@ -39,7 +39,7 @@ export class SearchConformers extends React.Component<SearchConformers.Props, St
         return (
             <ShadowedBox>
                 <div className='rdo-offset'>
-                    <NamedList sizing='min-content'>
+                    <NamedList sizing='min-content' rowSpacing='half'>
                         <NamedListItem name='Conformation'>
                             <ComboBox
                                 options={NtCOptions}

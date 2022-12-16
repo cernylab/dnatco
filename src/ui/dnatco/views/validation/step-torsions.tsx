@@ -345,7 +345,7 @@ export class StepTorsions extends View<View.Props> {
 
         return (
             <div>
-                <NamedList sizing='min-content'>
+                <NamedList sizing='min-content' rowSpacing='half'>
                 {
                     numModels > 1
                         ? <NamedListItem name='Model'>

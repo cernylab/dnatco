@@ -239,7 +239,7 @@ export class ConfalsRmsds extends View<View.Props> {
                     />
                 </div>
                 <div className='rdo-line-spacer' />
-                <NamedList sizing='min-content'>
+                <NamedList sizing='min-content' rowSpacing='half'>
                 {
                     numModels > 1
                         ? <NamedListItem name='Model'>

@@ -62,7 +62,7 @@ export class Downloads extends View {
     render() {
         return (
             <div>
-                <NamedList>
+                <NamedList rowSpacing='half'>
                     <NamedListItem name='mmCIF file'>
                         <div style={{ width: '10em' }}>
                             <DownloadButton
