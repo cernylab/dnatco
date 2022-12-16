@@ -103,6 +103,25 @@ export class Dnatcofication {
         return Cif.File.hasTable(this.data.cifData, category);
     }
 
+    nucleicAcidKind(modelIndex: number) {
+        const eks = this.data.entityKinds[modelIndex];
+
+        let dna = false;
+        let rna = false;
+        for (const ek of eks.values()) {
+            if (ek === 'hybrid')
+                return 'hybrid';
+            dna = ek === 'DNA';
+            rna = ek === 'RNA';
+        }
+
+        return dna
+            ? rna
+                ? 'hybrid' : 'DNA'
+            : rna
+                ? 'RNA' : 'unknown';
+    }
+
     get pdbId() {
         if (!this.data.cifData)
             return '';

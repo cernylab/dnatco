@@ -8,13 +8,67 @@
  *                                       *
  * * * * * * * * * * * * * * * * * * * * */
 
-import { ErrorResult, OkResult, Result } from './';
+import { ErrorResult, OkResult } from './';
 import { Dnatcofication } from './dnatcofication';
 import { Residues } from './residues';
 import { StepsMapper } from './steps-mapper';
-import { isArr, isNum } from '../util/json';
+import { fromTemplate, isArr, isNum, isObj, isType } from '../util/json';
+
+const BackdropRscc = {
+    rsccMinActual: 0,
+    rsccMaxActual: 0,
+    rmsdMinActual: 0,
+    rmsdMaxActual: 0,
+
+    rsccMinPlotted: 0,
+    rsccMaxPlotted: 0,
+    rmsdMinPlotted: 0,
+    rmsdMaxPlotted: 0,
+
+    rsccCells: 0,
+    rmsdCells: 0,
+    z: [] as number[][],
+
+    distribution: [0, 0, 0, 0] as [ q1: number, q2: number, q3: number, q4: number ],
+};
+
+const BackdropRsccCache = {
+    'dna-assigned': BackdropRscc,
+    'dna-unassigned': BackdropRscc,
+    'rna-assigned': BackdropRscc,
+    'rna-unassigned': BackdropRscc,
+};
+type BackdropRsccCache = typeof BackdropRsccCache;
 
 const RsccCache = new Map<string, Rscc.StructureRscc[]>();
+
+function isBackdropRscc(v: unknown): v is Rscc.BackdropRscc {
+    const templ = (v: unknown): v is Rscc.BackdropRscc => {
+        if (!isObj(v))
+            return false;
+        return fromTemplate(v, BackdropRscc) !== undefined;
+    };
+    return isType(v, templ);
+}
+
+function isBackdropRsccSane(bdrop: Rscc.BackdropRscc) {
+    if (bdrop.rsccMinActual >= bdrop.rsccMaxActual ||
+        bdrop.rmsdMinActual >= bdrop.rmsdMaxActual ||
+        bdrop.rsccMinPlotted >= bdrop.rsccMaxPlotted ||
+        bdrop.rmsdMinPlotted >= bdrop.rmsdMaxPlotted ||
+        bdrop.rsccCells < 2 || bdrop.rmsdCells < 2 || bdrop.distribution.length !== 4)
+        return false;
+
+    if (bdrop.z.length !== bdrop.rsccCells)
+        return false;
+
+    for (const _z of bdrop.z) {
+        if (_z.length !== bdrop.rmsdCells)
+            return false;
+    }
+
+    return true;
+}
 
 function isRsccList(v: any): v is [atomId: number, rscc: number][] {
     return isArr(v, (x: unknown): x is [atomId: number, rscc: number] => {
@@ -22,6 +76,19 @@ function isRsccList(v: any): v is [atomId: number, rscc: number][] {
             return false;
         return x.length === 2;
     });
+}
+
+function makeBackdropRsccUrl(kind: keyof BackdropRsccCache) {
+    const url = './rscc/backdrops/' +
+        (kind === 'dna-assigned'
+            ? 'dna_assigned.json'
+            : kind === 'dna-unassigned'
+                ? 'dna_unassigned.json'
+                : kind === 'rna-assigned'
+                    ? 'rna_assigned.json'
+                    : 'rna_unassigned.json');
+
+    return url;
 }
 
 // TODO: Remove the slow path warning
@@ -41,6 +108,8 @@ function findRscc(atomId: number, list: [atomId: number, rscc: number][], startI
 }
 
 export namespace Rscc {
+    export type BackdropRscc = typeof BackdropRscc;
+    export type BackdropRsccKind = keyof BackdropRsccCache;
     export type StepRscc = { stepId: number, rmsd: number, hRscc: number };
     export type StructureRscc = {
         assigned: StepRscc[];
@@ -116,7 +185,38 @@ export namespace Rscc {
         return { assigned, unassigned };
     }
 
-    export async function structureRscc(d: Dnatcofication, modelIdx: number): Promise<Result<StructureRscc>> {
+    export async function backdropRscc(kind: BackdropRsccKind) {
+        if (isBackdropRsccEmpty(BackdropRsccCache[kind])) {
+            try {
+                const req = await fetch(makeBackdropRsccUrl(kind));
+                if (!req.ok)
+                    return ErrorResult(req.statusText);
+
+                const bdrop = await req.json();
+                if (!isBackdropRscc(bdrop))
+                    return ErrorResult('Invalid backdrop RSCC data');
+
+                if (!isBackdropRsccSane(bdrop))
+                    return ErrorResult('Malformed backdrop RSCC data');
+
+                BackdropRsccCache[kind] = bdrop;
+            } catch (e) {
+                return ErrorResult((e as Error).toString());
+            }
+        }
+
+        return OkResult(BackdropRsccCache[kind]);
+    }
+
+    export function emptyBackdropRscc(): BackdropRscc {
+        return { ...BackdropRscc };
+    }
+
+    export function isBackdropRsccEmpty(bdrop: Rscc.BackdropRscc) {
+        return bdrop.z.length === 0;
+    }
+
+    export async function structureRscc(d: Dnatcofication, modelIdx: number) {
         const pdbId = d.pdbId.toLowerCase();
 
         const cached = RsccCache.get(pdbId);

@@ -6,30 +6,28 @@ import { View } from '../view';
 import { niceStepNameText } from '../../common';
 import { InvalidModelIndex } from '../../structure-selection';
 import { NamedList, NamedListItem } from '../../../common/named-list';
-import { isOk } from '../../../../dnatco';
+import { OkResult, isOk } from '../../../../dnatco';
 import { Dnatcofication } from '../../../../dnatco/dnatcofication';
 import { Rscc } from '../../../../dnatco/rscc';
 import { StepsMapper } from '../../../../dnatco/steps-mapper';
 
-const MinRscc = 0.0;
-const MaxRscc = 1.0;
-const NGridCells = 25;
-const RsccSpan = MaxRscc - MinRscc;
-const XArray = (() => {
-    const x = new Array<number>(NGridCells);
-    for (let idx = 0; idx < NGridCells; idx++)
-        x[idx] = MinRscc + idx * RsccSpan / (NGridCells - 1); // -1 to inclusively cover the entire range
-
-    return x;
-})();
-const Colorscale = [[0, 'rgba(255, 255, 255, 0)'], [0.5, 'yellow'], [1, 'blue']] as Plotly.ColorScale;
-const CrossColorHappySalmon = 'rgb(153, 255, 0)';
+const Colorscale = [
+    [0, 'rgb(251, 155, 154)'],
+    [0.17, 'rgb(255, 0, 0)'],
+    [0.33, 'rgb(181, 224, 143)'],
+    [0.50, 'rgb(0, 255, 0)'],
+    [0.67, 'rgb(166, 206, 227)'],
+    [0.83, 'rgb(0, 0, 255)'],
+    [1, 'rgb(189, 39, 227)']
+] as Plotly.ColorScale;
+const CrossColorDarkSalmon = 'rgb(17, 17, 17)';
 const CrossColorSadSalmon = 'rgb(253, 66, 0)';
 
 const RsccContourData = {
     x: [] as number[],
     y: [] as number[],
     z: [[]] as number[][],
+    distribution: [0, 0, 0, 0] as Rscc.BackdropRscc['distribution'],
 };
 type RsccContourData = typeof RsccContourData;
 
@@ -48,22 +46,20 @@ type RsccPlotData = {
 
 }
 
-function cellIndex(v: number, min: number, span: number, nCells: number) {
-    const sv = v - min;
-    if (sv === 0.0)
-        return 0;
-    else if (sv === span)
-        return nCells - 1;
-    else
-        return Math.floor((v - min) / span * nCells);
+function annotateDistribution(v: number) {
+    return `${v.toFixed(1)} %`;
+}
+
+function headAndTail<T>(x: T[]): [ head: T, tail: T ] {
+    return [ x[0], x[x.length - 1] ];
 }
 
 function isPlotEmpty(data: RsccPlotData) {
     return data.xy.x.length === 0;
 }
 
-function makeData(rscc: Rscc.StepRscc[], totalStepCount: number, selectedStepId: number, d: Dnatcofication): RsccPlotData {
-    const L = rscc.length;
+function makeData(stru: Rscc.StepRscc[], backdrop: Rscc.BackdropRscc, selectedStepId: number, d: Dnatcofication): RsccPlotData {
+    const L = stru.length;
 
     const x = new Array<number>(L);
     const y = new Array<number>(L);
@@ -71,57 +67,41 @@ function makeData(rscc: Rscc.StepRscc[], totalStepCount: number, selectedStepId:
     const stepIds = new Array<number>(L);
     const colors = new Array<string>(L);
 
-    for (let idx = 0; idx < rscc.length; idx++) {
-        const v = rscc[idx];
+    for (let idx = 0; idx < stru.length; idx++) {
+        const v = stru[idx];
         x[idx] = v.hRscc;
         y[idx] = v.rmsd;
 
         const step = StepsMapper.byId(d, v.stepId);
         tags[idx] = niceStepNameText(step);
         stepIds[idx] = v.stepId;
-        colors[idx] = selectedStepId === v.stepId ? CrossColorSadSalmon : CrossColorHappySalmon;
+        colors[idx] = selectedStepId === v.stepId ? CrossColorSadSalmon : CrossColorDarkSalmon;
     }
 
-    return rscc.length > 0
+    return stru.length > 0
         ? { xy: { x, y, tags, stepIds, colors },
-            contour: rscc.length > 0 ? makeRsccContourData(rscc, totalStepCount) : RsccContourData }
+            contour: !Rscc.isBackdropRsccEmpty(backdrop) ? makeRsccContourData(backdrop) : RsccContourData }
         : { xy: RsccXYData, contour: RsccContourData };
 }
 
-function makeRsccContourData(rscc: Rscc.StepRscc[], totalStepCount: number): RsccContourData {
-    const data = Array.from(rscc.values());
-    const MinRmsd = 0;
-    const MaxRmsd = Math.max(...data.map(x => x.rmsd));
-    const RmsdSpan = MaxRmsd - MinRmsd;
+function makeRsccContourData(backdrop: Rscc.BackdropRscc): RsccContourData {
+    const MinRscc = backdrop.rsccMinPlotted;
+    const MaxRscc = backdrop.rsccMaxPlotted;
+    const SpanRscc = MaxRscc - MinRscc;
 
-    const y = new Array<number>(NGridCells);
-    for (let idx = 0; idx < NGridCells + 0; idx++)
-        y[idx] = MinRmsd + idx * RmsdSpan / (NGridCells - 1); // -1 to inclusively cover the entire range
+    const MinRmsd = backdrop.rmsdMinPlotted;
+    const MaxRmsd = backdrop.rmsdMaxPlotted;
+    const SpanRmsd = MaxRmsd - MinRmsd;
 
-    // Create a grid for Z values
-    const z = new Array<Array<number>>(NGridCells);
-    for (let ydx = 0; ydx < NGridCells; ydx++) {
-        const _y = new Array<number>(NGridCells);
-        for (let xdx = 0; xdx < NGridCells; xdx++ ) {
-            _y[xdx] = 0;
-        }
-        z[ydx] = _y;
-    }
+    const x = new Array<number>(backdrop.rsccCells);
+    for (let idx = 0; idx < backdrop.rsccCells; idx++)
+        x[idx] = MinRscc + idx * SpanRscc / (backdrop.rsccCells - 1); // -1 to inclusively cover the entire range
 
-    for (const item of data) {
-        const xdx = cellIndex(item.hRscc, MinRscc, RsccSpan, NGridCells);
-        const ydx = cellIndex(item.rmsd, MinRmsd, RmsdSpan, NGridCells);
-        if (xdx >= 0 && xdx < NGridCells && ydx >= 0 && ydx < NGridCells)
-            z[ydx][xdx]++;
-    }
+    const y = new Array<number>(backdrop.rmsdCells);
+    for (let idx = 0; idx < backdrop.rmsdCells; idx++)
+        y[idx] = MinRmsd + idx * SpanRmsd / (backdrop.rmsdCells - 1); // -1 to inclusively cover the entire range
 
-    for (let ydx = 0; ydx < NGridCells; ydx++) {
-        const _y = z[ydx];
-        for (let xdx = 0; xdx < NGridCells; xdx++)
-            _y[xdx] = 100 * _y[xdx] / totalStepCount;
-    }
-
-    return { x: XArray, y: y, z };
+    return { x, y, z: backdrop.z, distribution: backdrop.distribution };
 }
 
 function minAndMax(arr: number[][]): { min: number, max: number } {
@@ -137,49 +117,104 @@ function minAndMax(arr: number[][]): { min: number, max: number } {
     return { min, max };
 }
 
+function requestedKinds(kind: 'DNA' | 'RNA' | 'hybrid' | 'unknown'): { assigned: Rscc.BackdropRsccKind, unassigned: Rscc.BackdropRsccKind } {
+    if (kind === 'RNA')
+        return { assigned: 'rna-assigned', unassigned: 'rna-unassigned' };
+    else
+        return { assigned: 'dna-assigned', unassigned: 'dna-unassigned' };
+}
+
 interface State {
-    data: Rscc.StructureRscc;
+    stru: Rscc.StructureRscc;
+    backdropAssigned: Rscc.BackdropRscc;
+    backdropUnassigned: Rscc.BackdropRscc;
+    fetchFailed: boolean;
 }
 export class RsccPlot extends View<View.Props, State> {
     constructor(props: View.Props) {
         super(props);
 
         this.state = {
-            data: {
+            stru: {
                 assigned: [],
                 unassigned: [],
-            }
+            },
+            backdropAssigned: Rscc.emptyBackdropRscc(),
+            backdropUnassigned: Rscc.emptyBackdropRscc(),
+            fetchFailed: false,
         };
     }
 
-    private fetchRsccData() {
+    private async fetchRsccData() {
         const mIdx = this.props.structureSelection.modelIndex !== InvalidModelIndex ? 0 : this.props.structureSelection.modelIndex;
 
         // WARN: This may trigger an error of the component unmounts before the request completes!!!
         // We will rewrite this code anyway so we can ignore for the time being...
-        Rscc.structureRscc(this.props.dnatcofication, mIdx).then(res => {
-            if (isOk(res)) {
-                this.setState({ ...this.state, data: res.data });
-            } else {
-                console.log(`RSCC data error: ${res.message}`);
-            }
-        });
+
+        const kinds = requestedKinds(this.props.dnatcofication.nucleicAcidKind(mIdx));
+
+        const struRsccReq = Rscc.structureRscc(this.props.dnatcofication, mIdx);
+        const backdropAssignedReq = Rscc.backdropRscc(kinds.assigned);
+        const backdropUnassignedReq = Rscc.backdropRscc(kinds.unassigned);
+
+        const struRsccRes = await struRsccReq;
+        const backdropAssignedRes = await backdropAssignedReq;
+        const backdropUnassignedRes = await backdropUnassignedReq;
+
+        let fetchFailed = false;
+        if (!isOk(struRsccRes)) {
+            console.log(`Structure RSCC data error: ${struRsccRes.message}`);
+            fetchFailed = true;
+        }
+        if (!isOk(backdropAssignedRes)) {
+            console.log(`Backdrop-assigned RSCC data error: ${backdropAssignedRes.message}`);
+            fetchFailed = true;
+        }
+        if (!isOk(backdropUnassignedRes)) {
+            console.log(`Backdrop-unassigned RSCC data error: ${backdropUnassignedRes.message}`);
+            fetchFailed = true;
+        }
+
+        if (fetchFailed) {
+            this.setState({
+                ...this.state,
+                stru: { assigned: [], unassigned: [] },
+                backdropAssigned: Rscc.emptyBackdropRscc(),
+                backdropUnassigned: Rscc.emptyBackdropRscc(),
+                fetchFailed,
+            });
+        } else {
+            this.setState({
+                ...this.state,
+                stru: (struRsccRes as OkResult<Rscc.StructureRscc>).data,
+                backdropAssigned: (backdropAssignedRes as OkResult<Rscc.BackdropRscc>).data,
+                backdropUnassigned: (backdropUnassignedRes as OkResult<Rscc.BackdropRscc>).data,
+            });
+        }
     }
 
     private makePlotData(): { assigned: RsccPlotData, unassigned: RsccPlotData } {
-        const mIdx = this.props.structureSelection.modelIndex !== InvalidModelIndex ? 0 : this.props.structureSelection.modelIndex;
-        const data = this.state.data;
-        const totalStepCount = StepsMapper.segment(this.props.dnatcofication, mIdx).length;
+        const { stru, backdropAssigned, backdropUnassigned } = this.state;
 
-        const assigned = makeData(data.assigned, totalStepCount, this.props.structureSelection.stepId, this.props.dnatcofication);
-        const unassigned = makeData(data.unassigned, totalStepCount, this.props.structureSelection.stepId, this.props.dnatcofication);
+        const assigned = makeData(
+            stru.assigned,
+            backdropAssigned,
+            this.props.structureSelection.stepId,
+            this.props.dnatcofication
+        );
+        const unassigned = makeData(
+            stru.unassigned,
+            backdropUnassigned,
+            this.props.structureSelection.stepId,
+            this.props.dnatcofication
+        );
 
         return { assigned, unassigned };
     }
 
     private renderPlot(xy: RsccXYData, contour: RsccContourData) {
         const zRng = minAndMax(contour.z);
-        const ContourStep = (zRng.max - zRng.min) / 5;
+        const ContourStep = (zRng.max - zRng.min) / 6;
 
         return (
             <Plot
@@ -188,14 +223,18 @@ export class RsccPlot extends View<View.Props, State> {
                         ...contour,
                         type: 'contour',
                         contours: {
-                            coloring: 'fill',
+                            coloring: 'lines',
                             size: ContourStep,
                             start: zRng.min,
-                            end: zRng.max
+                            end: zRng.max,
                         },
                         autocontour: false,
                         colorscale: Colorscale,
                         hoverinfo: 'none',
+                        line: {
+                            width: 2,
+                        },
+                        showscale: false,
                     },
                     {
                         x: xy.x,
@@ -204,8 +243,53 @@ export class RsccPlot extends View<View.Props, State> {
                         customdata: xy.stepIds,
                         type: 'scattergl',
                         mode: 'markers',
-                        marker: { size: 10, color: xy.colors, symbol: 'x' },
+                        marker: { size: 7, color: xy.colors, symbol: 'x' },
                         hoverinfo: 'text',
+                        showlegend: false,
+                    },
+                    {
+                        x: headAndTail(contour.x),
+                        y: [1, 1],
+                        type: 'scattergl',
+                        mode: 'lines',
+                        line: {
+                            color: 'black',
+                            width: 2,
+                        },
+                        hoverinfo: 'none',
+                        showlegend: false,
+                    },
+                    {
+                        x: [0.8, 0.8],
+                        y: headAndTail(contour.y),
+                        type: 'scattergl',
+                        mode: 'lines',
+                        line: {
+                            color: 'black',
+                            width: 2,
+                        },
+                        hoverinfo: 'none',
+                        showlegend: false,
+                    },
+                    {
+                        x: [ 0.85, 0.65, 0.65, 0.85 ],
+                        y: [ 1.25, 1.25, 0.75, 0.75 ],
+                        text: [
+                            annotateDistribution(contour.distribution[0]),
+                            annotateDistribution(contour.distribution[1]),
+                            annotateDistribution(contour.distribution[2]),
+                            annotateDistribution(contour.distribution[3])
+                        ],
+                        type: 'scattergl',
+                        mode: 'text',
+                        textfont: {
+                            color: 'black',
+                            family: 'helvetica',
+                            size: 22,
+                        },
+                        textposition: 'middle right',
+                        hoverinfo: 'none',
+                        showlegend: false,
                     }
                 ]}
                 layout={{
@@ -270,16 +354,20 @@ export class RsccPlot extends View<View.Props, State> {
 
                 <div className='rdo-secondary-caption'>RSCC(*) vs RMSD plot of assigned steps</div>
                 <div className='rdo-plot-container'>
-                    { !isPlotEmpty(rsccPlotData.assigned)
-                        ? this.renderPlot(rsccPlotData.assigned.xy, rsccPlotData.assigned.contour)
-                        : <div>There are no assigned steps in this structure</div>
+                    { isPlotEmpty(rsccPlotData.assigned)
+                        ? this.state.fetchFailed
+                            ? <div>Unable to get RSCC data</div>
+                            : <div>There are no assigned steps in this structure</div>
+                        : this.renderPlot(rsccPlotData.assigned.xy, rsccPlotData.assigned.contour)
                     }
                 </div>
                 <div className='rdo-secondary-caption'>RSCC(*) vs RMSD plot of unassigned steps</div>
                 <div className='rdo-plot-container'>
-                    { !isPlotEmpty(rsccPlotData.unassigned)
-                        ? this.renderPlot(rsccPlotData.unassigned.xy, rsccPlotData.unassigned.contour)
-                        : <div>There are no unassigned steps in this structure</div>
+                    { isPlotEmpty(rsccPlotData.unassigned)
+                        ? this.state.fetchFailed
+                            ? <div>Unable to get RSCC data</div>
+                            : <div>There are no unassigned steps in this structure</div>
+                        : this.renderPlot(rsccPlotData.unassigned.xy, rsccPlotData.unassigned.contour)
                     }
                 </div>
             </div>

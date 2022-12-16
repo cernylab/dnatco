@@ -67,7 +67,7 @@ export function fromTemplate<T>(o: AnyObject, template: T): T|undefined {
                 return undefined;
 
             for (const p in template) {
-                if (!fromTemplate(o[p] as AnyObject, template[p]))
+                if (fromTemplate(o[p] as AnyObject, template[p]) === undefined)
                     return undefined;
             }
 
