@@ -235,7 +235,7 @@ export class StepRmsdStats extends React.Component<{ stats: DnatcoStepRmsdStats[
 
         const green = stats[0].rmsdThreshold;
         const red = stats[stats.length - 2].rmsdThreshold;
-        const headers = [<th className='rdo-data-table-small'>RMSD{'\u00A0\u212B'}</th>];
+        const headers = [<th key={-1} className='rdo-data-table-small'>RMSD{'\u00A0\u212B'}</th>];
         let idx = 0;
         for (;idx < stats.length - 1; idx++) {
             const s = stats[idx];
@@ -243,6 +243,7 @@ export class StepRmsdStats extends React.Component<{ stats: DnatcoStepRmsdStats[
             const v = s.rmsdThreshold === -1 ? red + 0.1 : thrPrev + (s.rmsdThreshold - thrPrev) / 2.0;
             headers.push(
                 <th
+                    key={idx}
                     className='rdo-data-table-small'
                     style={{ color: rgbToHex(valueToSemaphore(v, green, red)) }}
                 >
@@ -250,11 +251,11 @@ export class StepRmsdStats extends React.Component<{ stats: DnatcoStepRmsdStats[
                 </th>
             );
         }
-        headers.push(<th className='rdo-data-table-small' style={{ color: rgbToHex({ r: 255, g: 0, b: 0}) }}>{`>\u00A0${stats[stats.length - 2].rmsdThreshold.toFixed(1)}`}</th>);
+        headers.push(<th key={stats.length - 1} className='rdo-data-table-small' style={{ color: rgbToHex({ r: 255, g: 0, b: 0}) }}>{`>\u00A0${stats[stats.length - 2].rmsdThreshold.toFixed(1)}`}</th>);
 
         const nums = [
-            <td className='rdo-numeric-table-small'></td>,
-            ...stats.map(x => <td className='rdo-numeric-table-small'>{x.count}</td>)
+            <td key={-1} className='rdo-numeric-table-small'></td>,
+            ...stats.map((x, idx) => <td key={idx} className='rdo-numeric-table-small'>{x.count}</td>)
         ];
 
         return (

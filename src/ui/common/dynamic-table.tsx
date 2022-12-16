@@ -107,9 +107,11 @@ export class DynamicTable extends React.Component<DynamicTable.Props> {
 
         const prefix = GlobalConfig.data().pathPrefix;
         const buttons = new Array<JSX.Element>();
-        for (const dl of this.props.downloaders) {
+
+        this.props.downloaders.forEach((dl, idx) => {
             buttons.push(
                 <div
+                    key={idx}
                     className='rdo-dynamic-table-download-button'
                     onClick={() => dl.download(this.props.model)}
                 >
@@ -117,7 +119,7 @@ export class DynamicTable extends React.Component<DynamicTable.Props> {
                     {dl.caption}
                 </div>
             );
-        }
+        });
 
         return (
             <div className='rdo-dynamic-table-download-bar'>
