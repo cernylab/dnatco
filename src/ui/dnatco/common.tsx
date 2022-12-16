@@ -38,6 +38,21 @@ export function niceStepName(step: Step, showModelNum = false) {
     );
 }
 
+export function niceStepNameText(step: Step, showModelNum = false) {
+    const SP = '\u00A0';
+
+    const nice =
+        step.base1 + SP +
+        step.resNo1 + step.insCode1 +
+        (step.altPos1 !== '' ? `(alt ${step.altPos1})` : '') +
+        SP +
+        step.base2 + SP +
+        step.resNo2 + step.insCode2 +
+        (step.altPos2 !== '' ? `(alt ${step.altPos2})` : '');
+
+    return (showModelNum ? `M${step.model} ` : '') + nice;
+}
+
 // NO NO NO: This is just a very interim solution to check that we're correct
 function percentile(confal: number) {
     // TODO: Better function
