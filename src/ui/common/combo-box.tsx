@@ -2,6 +2,10 @@ import * as React from 'react';
 import { GlobalConfig } from '../../global-config';
 import 'assets/imgs/down_arrow.svg';
 
+const SizingPolicy = {
+    'min-content': 'min-content',
+    'maximum-available': '100%',
+};
 
 export class ComboBox extends React.Component<ComboBox.Props> {
     static defaultProps = {
@@ -18,7 +22,10 @@ export class ComboBox extends React.Component<ComboBox.Props> {
 
     render() {
         return (
-            <div className={this.containerClass()}>
+            <div
+                className={this.containerClass()}
+                style={{ width: this.props.sizing ? SizingPolicy[this.props.sizing] : SizingPolicy['min-content'] }}
+            >
                 <select
                     className='rdo-combobox'
                     value={this.props.value}
@@ -52,5 +59,6 @@ export namespace ComboBox {
         options: Option[];
         onChange: (v: string) => void;
         value: string;
+        sizing?: keyof typeof SizingPolicy;
     }
 }

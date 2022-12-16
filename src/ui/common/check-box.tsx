@@ -23,7 +23,7 @@ export class CheckBox extends React.Component<CheckBox.Props> {
                             this.props.onChanged(evt.currentTarget.checked);
                     }}
                 />
-                {this.props.caption ? <label htmlFor={this.tag}>{this.props.caption}</label> : <></>}
+                {this.props.caption ? <label htmlFor={this.tag} style={{ whiteSpace: 'nowrap' }}>{this.props.caption}</label> : <></>}
             </div>
         );
     }

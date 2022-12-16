@@ -180,6 +180,7 @@ tr.rdo-list-of-conformers-alternate-clr {
     background: none;
     border: none;
     color: black;
+    flex: 1;
     padding: 0.15em 1em 0.15em 0.15em;
     transition: background-color 222ms;
     z-index: 2;
@@ -204,10 +205,10 @@ tr.rdo-list-of-conformers-alternate-clr {
 .rdo-combobox-container {
     border: var(--thickness-border) solid var(--color-b);
     display: flex;
+    height: calc(100% - 2*var(--thickness-border));
     justify-content: center;
     position: relative;
     transition: background-color 222ms;
-    width: min-content;
 }
 
 .rdo-combobox-container-disabled {
@@ -398,6 +399,7 @@ th.rdo-data-table-small {
     display: grid;
     grid-template-columns: auto 1fr;
     grid-column-gap: var(--h-gap);
+    width: min-content;
 }
 
 .rdo-named-list-centered {
@@ -413,6 +415,7 @@ th.rdo-data-table-small {
 
 .rdo-named-list-name {
     font-weight: bold;
+    white-space: nowrap;
 }
 
 .rdo-navigation-bar {

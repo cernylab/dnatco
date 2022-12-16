@@ -57,6 +57,7 @@ export class ChainSelect extends React.Component<ChainSelect.Props> {
                         return;
                     this.props.onChange(v);
                 }}
+                sizing='maximum-available'
             />
         );
     }
@@ -81,6 +82,7 @@ export class ModelSelect extends React.Component<ModelSelect.Props> {
                         return;
                     this.props.onChange(modelIndex);
                 }}
+                sizing='maximum-available'
             />
         );
     }
@@ -106,6 +108,7 @@ export class StepSelect extends React.Component<StepSelect.Props> {
                         return;
                     this.props.onChange(stepId);
                 }}
+                sizing='maximum-available'
             />
         );
     }

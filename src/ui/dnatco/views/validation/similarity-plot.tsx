@@ -88,7 +88,7 @@ export class SimilarityPlots extends View<View.Props, State> {
 
         return (
             <div>
-                <NamedList>
+                <NamedList sizing='min-content'>
                 {
                     numModels > 1
                         ? <NamedListItem name='Model'>

@@ -3,6 +3,11 @@ import { GlobalConfig } from '../../global-config';
 import 'assets/imgs/triangle-up.svg';
 import 'assets/imgs/triangle-down.svg';
 
+const SizingPolicy = {
+    default: 'auto',
+    'maximum-available': '100%',
+};
+
 function defaultFormatter(v: number|null) {
     if (v === null)
         return '';
@@ -42,7 +47,10 @@ export class SpinBox extends React.Component<SpinBox.Props> {
         const pathPrefix = GlobalConfig.data().pathPrefix;
 
         return (
-            <div className='rdo-spinbox-container'>
+            <div
+                className='rdo-spinbox-container'
+                style={{ width: this.props.sizing ? SizingPolicy[this.props.sizing] : SizingPolicy.default }}
+            >
                 <input
                     type='text'
                     className={this.props.disabled ? this.clsDisabled() : this.clsEnabled()}
@@ -93,5 +101,6 @@ export namespace SpinBox {
         className?: string;
         classNameDisabled?: string;
         formatter?: (v: number|null) => string;
+        sizing?: keyof typeof SizingPolicy;
     }
 }

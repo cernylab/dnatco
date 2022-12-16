@@ -39,12 +39,13 @@ export class SearchConformers extends React.Component<SearchConformers.Props, St
         return (
             <ShadowedBox>
                 <div className='rdo-offset'>
-                    <NamedList>
+                    <NamedList sizing='min-content'>
                         <NamedListItem name='Conformation'>
                             <ComboBox
                                 options={NtCOptions}
                                 value={this.state.NtC}
                                 onChange={v => this.setState({ ...this.state, NtC: v })}
+                                sizing='maximum-available'
                             />
                         </NamedListItem>
                         <NamedListItem name='Maximum number of results'>
@@ -54,6 +55,7 @@ export class SearchConformers extends React.Component<SearchConformers.Props, St
                                 step={1}
                                 onChange={v => this.setState({ ...this.state, maxCount: v })}
                                 value={this.state.maxCount}
+                                sizing='maximum-available'
                             />
                         </NamedListItem>
                         <NamedListItem name='PDB structure'>
@@ -61,6 +63,7 @@ export class SearchConformers extends React.Component<SearchConformers.Props, St
                                 options={RedundancyOptions}
                                 value={this.state.redundancy}
                                 onChange={v => this.setState({ ...this.state, redundancy: v as Redundacy })}
+                                sizing='maximum-available'
                             />
                         </NamedListItem>
                         <NamedListItem name='Include large structures'>

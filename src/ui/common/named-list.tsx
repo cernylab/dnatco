@@ -1,6 +1,11 @@
 import * as React from 'react';
 import { Tooltip } from './tooltip';
 
+const SizingPolicy = {
+    'min-content': 'min-content',
+    'maximum-available': '100%',
+};
+
 export class NamedList extends React.Component<NamedList.Props> {
     static defaultProps = {
         horizontalPosition: 'left',
@@ -21,7 +26,10 @@ export class NamedList extends React.Component<NamedList.Props> {
 
     private renderLeft() {
         return (
-            <div className={`rdo-named-list ${this.props.verticalPosition === 'center' ? 'rdo-named-list-vcentered' : ''}`}>
+            <div
+                className={`rdo-named-list ${this.props.verticalPosition === 'center' ? 'rdo-named-list-vcentered' : ''}`}
+                style={{ width: this.props.sizing ? SizingPolicy[this.props.sizing] : SizingPolicy['maximum-available'] }}
+            >
                 {this.props.children}
             </div>
         )
@@ -54,5 +62,6 @@ export namespace NamedList {
         horizontalPosition: 'center' | 'left';
         verticalPosition: 'center' | 'top';
         children?: React.ReactNode|React.ReactNode[];
+        sizing?: keyof typeof SizingPolicy;
     }
 }

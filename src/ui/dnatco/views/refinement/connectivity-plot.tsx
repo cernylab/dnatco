@@ -126,7 +126,7 @@ export class ConnectivityPlot extends View<Refinement.Props, State> {
 
         return (
             <div>
-                <NamedList>
+                <NamedList sizing='min-content'>
                 {
                     numModels > 1
                         ? <NamedListItem name='Model'>
