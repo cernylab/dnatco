@@ -20,6 +20,8 @@ export const StepObj = {
     CANA:  'NAN' as CANA.Class,
     confal: 0,
     rmsd: 0,
+    resNo1Auth: 0,
+    resNo2Auth: 0,
 };
 export type Step = typeof StepObj;
 
