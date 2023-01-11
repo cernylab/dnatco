@@ -16,6 +16,12 @@ const PlotData = {
     y: new Array<number>(),
     colors: new Array<string>(),
     tags: new Array<string>(),
+
+    xSel: new Array<number>(),
+    ySel: new Array<number>(),
+    colorsSel: new Array<string>(),
+    tagsSel: new Array<string>(),
+
 };
 type PlotData = typeof PlotData;
 
@@ -39,17 +45,32 @@ export class SimilarityPlots extends View<View.Props, State> {
         const colors = [];
         const tags = [];
 
+        const xSel = [];
+        const ySel = [];
+        const colorsSel = [];
+        const tagsSel = [];
+
+        const step = this.props.dnatcofication.data.steps.steps[stepIdx];
+
         const similarities = this.props.dnatcofication.data.similarities[stepIdx];
         for (const ntc in similarities) {
             const simil = similarities[ntc];
-            x.push(simil.rmsd);
-            y.push(simil.euclideanDistance);
             const clr = valueToSemaphore(simil.rmsd, Constants.GreenRMSD, Constants.RedRMSD);
-            colors.push(rgbToHex(clr));
-            tags.push(ntc);
+
+            if (ntc === step.NtC) {
+                xSel.push(simil.rmsd);
+                ySel.push(simil.euclideanDistance);
+                colorsSel.push(rgbToHex(clr));
+                tagsSel.push(ntc);
+            } else {
+                x.push(simil.rmsd);
+                y.push(simil.euclideanDistance);
+                colors.push(rgbToHex(clr));
+                tags.push(ntc);
+            }
         }
 
-        return { x, y, colors, tags };
+        return { x, y, colors, tags, xSel, ySel, colorsSel, tagsSel };
     }
 
     componentDidMount() {
@@ -127,6 +148,17 @@ export class SimilarityPlots extends View<View.Props, State> {
                                     textposition: 'top center',
                                     text: plotData.tags,
                                     type: 'scattergl',
+                                    showlegend: false,
+                                },
+                                {
+                                    x: plotData.xSel,
+                                    y: plotData.ySel,
+                                    marker: { size: 10, color: plotData.colorsSel, symbol: 'x' },
+                                    mode: 'text+markers',
+                                    textposition: 'top center',
+                                    text: plotData.tagsSel,
+                                    type: 'scattergl',
+                                    showlegend: false,
                                 },
                             ]}
                             layout={{

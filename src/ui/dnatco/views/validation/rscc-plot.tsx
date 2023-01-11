@@ -5,7 +5,7 @@ import { ModelSelect } from '../structure-selectors';
 import { View } from '../view';
 import { Constants } from '../../constants';
 import { niceStepNameText } from '../../common';
-import { InvalidModelIndex } from '../../structure-selection';
+import { InvalidModelIndex, InvalidStepId } from '../../structure-selection';
 import { NamedList, NamedListItem } from '../../../common/named-list';
 import { OkResult, isOk } from '../../../../dnatco';
 import { Dnatcofication } from '../../../../dnatco/dnatcofication';
@@ -21,7 +21,7 @@ const Colorscale = [
     [0.83, 'rgb(75, 75, 75)'],
     [1, 'rgb(48, 48, 48)']
 ] as Plotly.ColorScale;
-const CrossColorHappySalmon = 'rgb(231, 235, 1)';
+const CrossColorHappySalmon = 'rgb(111, 227, 0)';
 const CrossColorSadSalmon = 'rgb(253, 66, 0)';
 
 const RsccContourData = {
@@ -33,18 +33,23 @@ const RsccContourData = {
 type RsccContourData = typeof RsccContourData;
 
 const RsccXYData = {
-    x: [] as number[],
-    y: [] as number[],
-    tags: [] as string[],
-    stepIds: [] as number[],
-    colors: [] as string[],
+    x: new Array<number>(),
+    y: new Array<number>(),
+    tags: new Array<string>(),
+    stepIds: new Array<number>(),
+    colors: new Array<string>(),
+
+    xSel: new Array<number>(),
+    ySel: new Array<number>(),
+    tagsSel: new Array<string>(),
+    stepIdsSel: new Array<number>(),
+    colorsSel: new Array<string>(),
 };
 type RsccXYData = typeof RsccXYData;
 
 type RsccPlotData = {
     xy: RsccXYData;
     contour: RsccContourData,
-
 }
 
 function annotateDistribution(v: number) {
@@ -60,7 +65,11 @@ function isPlotEmpty(data: RsccPlotData) {
 }
 
 function makeData(stru: Rscc.StepRscc[], backdrop: Rscc.BackdropRscc, selectedStepId: number, d: Dnatcofication): RsccPlotData {
-    const L = stru.length;
+    if (stru.length < 1)
+        return { xy: RsccXYData, contour: RsccContourData };
+
+    const SL = selectedStepId === InvalidStepId ? 0 : 1;
+    const L = stru.length - SL;
 
     const x = new Array<number>(L);
     const y = new Array<number>(L);
@@ -68,21 +77,35 @@ function makeData(stru: Rscc.StepRscc[], backdrop: Rscc.BackdropRscc, selectedSt
     const stepIds = new Array<number>(L);
     const colors = new Array<string>(L);
 
+    const xSel = new Array<number>(SL);
+    const ySel = new Array<number>(SL);
+    const tagsSel = new Array<string>(SL);
+    const stepIdsSel = new Array<number>(SL);
+    const colorsSel = new Array<string>(SL);
+
     for (let idx = 0; idx < stru.length; idx++) {
         const v = stru[idx];
-        x[idx] = v.hRscc;
-        y[idx] = v.rmsd;
-
         const step = StepsMapper.byId(d, v.stepId);
-        tags[idx] = niceStepNameText(step);
-        stepIds[idx] = v.stepId;
-        colors[idx] = selectedStepId === v.stepId ? CrossColorHappySalmon : CrossColorSadSalmon;
+
+        if (selectedStepId === v.stepId) {
+            xSel[idx] = v.hRscc;
+            ySel[idx] = v.rmsd;
+            tagsSel[idx] = niceStepNameText(step);
+            stepIdsSel[idx] = v.stepId;
+            colorsSel[idx] = CrossColorHappySalmon;
+        } else {
+            x[idx] = v.hRscc;
+            y[idx] = v.rmsd;
+            tags[idx] = niceStepNameText(step);
+            stepIds[idx] = v.stepId;
+            colors[idx] = CrossColorSadSalmon;
+        }
     }
 
-    return stru.length > 0
-        ? { xy: { x, y, tags, stepIds, colors },
-            contour: !Rscc.isBackdropRsccEmpty(backdrop) ? makeRsccContourData(backdrop) : RsccContourData }
-        : { xy: RsccXYData, contour: RsccContourData };
+    return {
+        xy: { x, y, tags, stepIds, colors, xSel, ySel, tagsSel, stepIdsSel, colorsSel },
+        contour: !Rscc.isBackdropRsccEmpty(backdrop) ? makeRsccContourData(backdrop) : RsccContourData
+    };
 }
 
 function makeRsccContourData(backdrop: Rscc.BackdropRscc): RsccContourData {
@@ -149,8 +172,8 @@ export class RsccPlot extends View<View.Props, State> {
     private async fetchRsccData() {
         const mIdx = this.props.structureSelection.modelIndex !== InvalidModelIndex ? 0 : this.props.structureSelection.modelIndex;
 
-        // WARN: This may trigger an error of the component unmounts before the request completes!!!
-        // We will rewrite this code anyway so we can ignore for the time being...
+        // WARN: This may trigger an error if the component unmounts before the request completes!!!
+        // We will rewrite this code anyway so we can ignore this for the time being...
 
         const kinds = requestedKinds(this.props.dnatcofication.nucleicAcidKind(mIdx));
 
@@ -245,6 +268,17 @@ export class RsccPlot extends View<View.Props, State> {
                         type: 'scattergl',
                         mode: 'markers',
                         marker: { size: 7, color: xy.colors, symbol: 'x' },
+                        hoverinfo: 'text',
+                        showlegend: false,
+                    },
+                    {
+                        x: xy.xSel,
+                        y: xy.ySel,
+                        text: xy.tagsSel,
+                        customdata: xy.stepIdsSel,
+                        type: 'scattergl',
+                        mode: 'markers',
+                        marker: { size: 7, color: xy.colorsSel, symbol: 'x' },
                         hoverinfo: 'text',
                         showlegend: false,
                     },

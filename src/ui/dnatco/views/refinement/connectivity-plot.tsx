@@ -16,13 +16,26 @@ import { colorToRgb, rgbToHex } from '../../../util';
 
 const MinNumberOfPointsInPlot = 10;
 
-const PlotData = {
+const ConnPlotData = {
     x: new Array<number>(),
     y: new Array<number>(),
     colors: new Array<string>(),
     tags: new Array<string>(),
 };
-type PlotData = typeof PlotData;
+type ConnPlotData = typeof ConnPlotData;
+
+const SimilPlotData = {
+    x: new Array<number>(),
+    y: new Array<number>(),
+    colors: new Array<string>(),
+    tags: new Array<string>(),
+
+    xSel: new Array<number>(),
+    ySel: new Array<number>(),
+    colorsSel: new Array<string>(),
+    tagsSel: new Array<string>(),
+};
+type SimilPlotData = typeof SimilPlotData;
 
 interface State {
     previousStepId: number;
@@ -38,7 +51,7 @@ export class ConnectivityPlot extends View<Refinement.Props, State> {
         };
     }
 
-    private connectivityPlotData(centerStepId: number, surroundingStepId: number, direction: 'previous' | 'next'): PlotData {
+    private connectivityPlotData(centerStepId: number, surroundingStepId: number, direction: 'previous' | 'next'): ConnPlotData {
         const x = new Array<number>();
         const y = new Array<number>();
         const colors = new Array<string>();
@@ -84,7 +97,7 @@ export class ConnectivityPlot extends View<Refinement.Props, State> {
         return { x, y, colors, tags };
     }
 
-    private renderConnectivityPlot(data: PlotData, hints: [xMax: number, yMax: number]) {
+    private renderConnectivityPlot(data: ConnPlotData, hints: [xMax: number, yMax: number]) {
         return (
             <div className='rdo-plot-container' style={{ flex: 1, minHeight: Constants.MinimumFlexiblePlotHeight }}>
                 <Plot
@@ -137,23 +150,40 @@ export class ConnectivityPlot extends View<Refinement.Props, State> {
         );
     }
 
-    private similarityPlotData(stepIdx: number): PlotData {
+    private similarityPlotData(stepId: number): SimilPlotData {
         const x = [];
         const y = [];
         const colors = [];
         const tags = [];
+        const xSel = [];
+        const ySel = [];
+        const colorsSel = [];
+        const tagsSel = [];
 
+        const stepIdx = StepsMapper.idToIndex(this.props.dnatcofication, stepId);
+        const step = this.props.dnatcofication.data.steps.steps[stepIdx];
         const similarities = this.props.dnatcofication.data.similarities[stepIdx];
+        const customNtC = this.props.dnatcofication.customNtCs.getCustomNtC(this.props.selectedCustomNtCSet, step.name);
+        const selectedNtC = customNtC ?? step.closestNtC;
+
         for (const ntc in similarities) {
             const simil = similarities[ntc];
-            x.push(simil.rmsd);
-            y.push(simil.euclideanDistance);
             const clr = valueToSemaphore(simil.rmsd, Constants.GreenRMSD, Constants.RedRMSD);
-            colors.push(rgbToHex(clr));
-            tags.push(ntc);
+
+            if (ntc === selectedNtC) {
+                xSel.push(simil.rmsd);
+                ySel.push(simil.euclideanDistance);
+                colorsSel.push(rgbToHex(clr));
+                tagsSel.push(ntc);
+            } else {
+                x.push(simil.rmsd);
+                y.push(simil.euclideanDistance);
+                colors.push(rgbToHex(clr));
+                tags.push(ntc);
+            }
         }
 
-        return { x, y, colors, tags };
+        return { x, y, colors, tags, xSel, ySel, colorsSel, tagsSel };
     }
 
     componentDidMount() {
@@ -183,9 +213,9 @@ export class ConnectivityPlot extends View<Refinement.Props, State> {
 
     render() {
         const numModels = Dnatcofication.Structure.numberOfModels(this.props.dnatcofication);
-        let simPlotData = PlotData;
-        let prevConnPlotData = PlotData;
-        let nextConnPlotData = PlotData;
+        let simPlotData = SimilPlotData;
+        let prevConnPlotData = ConnPlotData;
+        let nextConnPlotData = ConnPlotData;
         if (this.props.structureSelection.stepId !== InvalidStepId) {
             simPlotData = this.similarityPlotData(this.props.structureSelection.stepId);
             prevConnPlotData = this.connectivityPlotData(this.props.structureSelection.stepId, this.state.previousStepId, 'previous');
@@ -207,7 +237,6 @@ export class ConnectivityPlot extends View<Refinement.Props, State> {
             console.log('Doing a thing');
         }
 
-        const similMaxHints = axesMaximumHints(simPlotData.x, simPlotData.y, MinNumberOfPointsInPlot, Constants.DefaultSimilarityXRange[1], Constants.DefaultSimilarityYRange[1]);
         const prevConnMaxHints = axesMaximumHints(prevConnPlotData.x, prevConnPlotData.y, MinNumberOfPointsInPlot, Constants.DefaultConnectivityXRange[1], Constants.DefaultConnectivityYRange[1]);
         const nextConnMaxHints = axesMaximumHints(nextConnPlotData.x, nextConnPlotData.y, MinNumberOfPointsInPlot, Constants.DefaultConnectivityXRange[1], Constants.DefaultConnectivityYRange[1]);
 
@@ -264,28 +293,25 @@ export class ConnectivityPlot extends View<Refinement.Props, State> {
                                     text: simPlotData.tags,
                                     textposition: 'top center',
                                     type: 'scattergl',
+                                    showlegend: false,
+                                },
+                                {
+                                    x: simPlotData.xSel,
+                                    y: simPlotData.ySel,
+                                    marker: { size: 10, color: simPlotData.colorsSel, symbol: 'x' },
+                                    mode: 'text+markers',
+                                    text: simPlotData.tagsSel,
+                                    textposition: 'top center',
+                                    type: 'scattergl',
+                                    showlegend: false,
                                 },
                             ]}
                             layout={{
                                 autosize: true,
                                 dragmode: 'pan',
                                 hovermode: 'closest',
-                                xaxis: {
-                                    range: [
-                                        Constants.DefaultSimilarityXRange[0],
-                                        similMaxHints[0],
-                                    ],
-                                    title: 'Cartesian RMSD [Å]',
-                                    automargin: true,
-                                },
-                                yaxis: {
-                                    range: [
-                                        Constants.DefaultSimilarityYRange[0],
-                                        similMaxHints[1],
-                                    ],
-                                    title: 'Euclidean distance',
-                                    automargin: true,
-                                },
+                                xaxis: { title: 'Cartesian RMSD [Å]', automargin: true },
+                                yaxis: { title: 'Euclidean distance', automargin: true },
                                 plot_bgcolor: 'white',
                                 paper_bgcolor: 'white',
                                 margin: {
@@ -294,7 +320,8 @@ export class ConnectivityPlot extends View<Refinement.Props, State> {
                                 },
                                 modebar: {
                                     orientation: 'v',
-                                }
+                                },
+                                uirevision: 'true',
                             }}
                             config={{
                                 scrollZoom: true,
