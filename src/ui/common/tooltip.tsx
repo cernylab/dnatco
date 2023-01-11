@@ -2,6 +2,8 @@ import * as React from 'react';
 import * as RDC from 'react-dom/client';
 import { v4 as uuidv4 } from 'uuid';
 
+const CursorOffset = -20;
+
 function inside(x: number, y: number, l: number, t: number, r: number, b: number) {
     return (x >= l && x <= r && y >= t && y <= b);
 }
@@ -33,8 +35,8 @@ export class Tooltip extends React.Component<Tooltip.Props> {
         if (document.getElementById(this.contentId))
             return;
 
-        const posX = pageX - 20;
-        const posY = pageY - 20;
+        const posX = pageX + CursorOffset;
+        const posY = pageY + CursorOffset;
 
         const tainer = document.createElement('div');
         tainer.id = this.contentId;
@@ -84,6 +86,19 @@ export class Tooltip extends React.Component<Tooltip.Props> {
             root.render(<>{this.props.children}</>);
 
             document.body.appendChild(tainer);
+            setTimeout(() => {
+                const bw = document.body.clientWidth;
+                const bh = document.body.clientHeight;
+                const { right, bottom } = tainer.getBoundingClientRect();
+
+                const overhangHoriz = right - bw;
+                const overhangVert = bottom - bh;
+
+                if (overhangHoriz > 0)
+                    tainer.style.left = `${pageX + CursorOffset - overhangHoriz}px`;
+                if (overhangVert > 0)
+                    tainer.style.top = `${pageY + CursorOffset - overhangVert}px`;
+            });
             setTimeout(() => {
                 document.getElementById(this.contentId)?.classList.remove('rdo-tooltip-text-faded');
                 if (!fromTouchEvent)
