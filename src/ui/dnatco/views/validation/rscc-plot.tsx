@@ -12,15 +12,15 @@ import { Rscc } from '../../../../dnatco/rscc';
 import { StepsMapper } from '../../../../dnatco/steps-mapper';
 
 const Colorscale = [
-    [0, 'rgb(251, 155, 154)'],
-    [0.17, 'rgb(255, 0, 0)'],
-    [0.33, 'rgb(181, 224, 143)'],
-    [0.50, 'rgb(0, 255, 0)'],
-    [0.67, 'rgb(166, 206, 227)'],
-    [0.83, 'rgb(0, 0, 255)'],
-    [1, 'rgb(189, 39, 227)']
+    [0, 'rgb(210, 210, 210)'],
+    [0.17, 'rgb(183, 183, 183)'],
+    [0.33, 'rgb(156, 156, 156)'],
+    [0.50, 'rgb(129, 129, 129)'],
+    [0.67, 'rgb(102, 102, 102)'],
+    [0.83, 'rgb(75, 75, 75)'],
+    [1, 'rgb(48, 48, 48)']
 ] as Plotly.ColorScale;
-const CrossColorDarkSalmon = 'rgb(17, 17, 17)';
+const CrossColorHappySalmon = 'rgb(231, 235, 1)';
 const CrossColorSadSalmon = 'rgb(253, 66, 0)';
 
 const RsccContourData = {
@@ -75,7 +75,7 @@ function makeData(stru: Rscc.StepRscc[], backdrop: Rscc.BackdropRscc, selectedSt
         const step = StepsMapper.byId(d, v.stepId);
         tags[idx] = niceStepNameText(step);
         stepIds[idx] = v.stepId;
-        colors[idx] = selectedStepId === v.stepId ? CrossColorSadSalmon : CrossColorDarkSalmon;
+        colors[idx] = selectedStepId === v.stepId ? CrossColorHappySalmon : CrossColorSadSalmon;
     }
 
     return stru.length > 0
@@ -296,11 +296,18 @@ export class RsccPlot extends View<View.Props, State> {
                     autosize: true,
                     dragmode: 'pan',
                     hovermode: 'closest',
-                    xaxis: { title: 'RSCC', automargin: true },
-                    yaxis: { title: 'RMSD [Å]', automargin: true },
+                    xaxis: { title: 'RSCC' },
+                    yaxis: { title: 'RMSD [Å]' },
                     plot_bgcolor: 'white',
                     paper_bgcolor: 'white',
                     uirevision: 'true',
+                    margin: {
+                        t: 0,
+                        r: 10,
+                    },
+                    modebar: {
+                        orientation: 'v',
+                    }
                 }}
                 config={{
                     scrollZoom: true,
