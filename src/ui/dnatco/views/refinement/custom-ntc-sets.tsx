@@ -28,63 +28,70 @@ export class CustomNtCSets extends WithSubscriptions<CustomNtCSets.Props, Empty>
 
     render() {
         return (
-            <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'auto auto 6em 6em 6em 1fr',
-                gap: 'var(--h2-gap)',
-                alignItems: 'center',
-            }}>
-                <div className='rdo-named-list-name'>Sets of custom NtC</div>
-                <ComboBox
-                    options={Refinement.ntcSetsOptions(this.props.customNtCs)}
-                    value={this.props.selectedSet}
-                    onChange={v => this.props.onSetChanged(v)}
-                />
-                <IconTextButton
-                    caption='Add'
-                    src={`imgs/plus.svg`}
-                    onClick={() => {
-                        InputDialog.create({
-                            caption: 'Name of the new set',
-                            validator: v  => {
-                                if (v === '')
-                                    return 'Set must have a name';
-                                return this.props.customNtCs.exists(v) ? `Set named ${v} already exists` : void 0;
-                            },
-                            onAccepted: v => {
-                                this.props.customNtCs.addSet(v);
-                                this.props.onSetChanged(v);
+            <div>
+                <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'auto auto 6em 6em 6em 1fr',
+                    gap: 'var(--h2-gap)',
+                    alignItems: 'center',
+                }}>
+                    <div className='rdo-named-list-name'>Sets of custom NtC</div>
+                    <ComboBox
+                        options={Refinement.ntcSetsOptions(this.props.customNtCs)}
+                        value={this.props.selectedSet}
+                        onChange={v => this.props.onSetChanged(v)}
+                    />
+                    <IconTextButton
+                        caption='Add'
+                        src={`imgs/plus.svg`}
+                        onClick={() => {
+                            InputDialog.create({
+                                caption: 'Name of the new set',
+                                validator: v  => {
+                                    if (v === '')
+                                        return 'Set must have a name';
+                                    return this.props.customNtCs.exists(v) ? `Set named ${v} already exists` : void 0;
+                                },
+                                onAccepted: v => {
+                                    this.props.customNtCs.addSet(v);
+                                    this.props.onSetChanged(v);
+                                }
+                            });
+                        }}
+                    />
+                    <IconTextButton
+                        caption='Rename'
+                        src={`imgs/reload.svg`}
+                        onClick={() => {
+                            InputDialog.create({
+                                caption: `Set new name for set ${this.props.selectedSet}`,
+                                validator: v  => {
+                                    if (v === '')
+                                        return 'Set must have a name';
+                                    return this.props.customNtCs.exists(v) ? `Set named ${v} already exists` : void 0;
+                                },
+                                onAccepted: v => {
+                                    this.props.customNtCs.renameSet(this.props.selectedSet, v);
+                                    this.props.onSetChanged(v);
+                                }
+                            });
+                        }}
+                    />
+                    <IconTextButton
+                        caption='Delete'
+                        src={`imgs/x.svg`}
+                        onClick={() => {
+                            if (this.props.selectedSet !== '') {
+                                this.props.customNtCs.deleteSet(this.props.selectedSet);
                             }
-                        });
-                    }}
-                />
-                <IconTextButton
-                    caption='Rename'
-                    src={`imgs/reload.svg`}
-                    onClick={() => {
-                        InputDialog.create({
-                            caption: `Set new name for set ${this.props.selectedSet}`,
-                            validator: v  => {
-                                if (v === '')
-                                    return 'Set must have a name';
-                                return this.props.customNtCs.exists(v) ? `Set named ${v} already exists` : void 0;
-                            },
-                            onAccepted: v => {
-                                this.props.customNtCs.renameSet(this.props.selectedSet, v);
-                                this.props.onSetChanged(v);
-                            }
-                        });
-                    }}
-                />
-                <IconTextButton
-                    caption='Delete'
-                    src={`imgs/x.svg`}
-                    onClick={() => {
-                        if (this.props.selectedSet !== '') {
-                            this.props.customNtCs.deleteSet(this.props.selectedSet);
-                        }
-                    }}
-                />
+                        }}
+                    />
+                </div>
+                {
+                    this.props.selectedSet === ''
+                        ? <div style={{ fontStyle: 'oblique', color: 'var(--color-f)' }}>(Switch away from the "Computed" NtC set if you wish to set NtCs manually)</div>
+                        : undefined
+                }
             </div>
         );
     }
