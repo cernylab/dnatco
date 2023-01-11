@@ -7,10 +7,14 @@ import { View } from '../view';
 import { InvalidStepId } from '../../structure-selection';
 import { NamedList, NamedListItem } from '../../../common/named-list';
 import { Constants } from '../../../dnatco/constants';
+import { getConnectivities, getStepsAtoms } from '../../../../dnatco/connectivity-similarity';
 import { Dnatcofication } from '../../../../dnatco/dnatcofication';
+import { Step } from '../../../../dnatco/step';
 import { StepsMapper } from '../../../../dnatco/steps-mapper';
-import { valueToSemaphore } from '../../util';
+import { axesMaximumHints, valueToSemaphore } from '../../util';
 import { colorToRgb, rgbToHex } from '../../../util';
+
+const MinNumberOfPointsInPlot = 10;
 
 const PlotData = {
     x: new Array<number>(),
@@ -34,15 +38,37 @@ export class ConnectivityPlot extends View<Refinement.Props, State> {
         };
     }
 
-    private connectivityPlotData(stepIdx: number, direction: 'previous' | 'next'): PlotData {
-        const x = [];
-        const y = [];
-        const colors = [];
-        const tags = [];
+    private connectivityPlotData(centerStepId: number, surroundingStepId: number, direction: 'previous' | 'next'): PlotData {
+        const x = new Array<number>();
+        const y = new Array<number>();
+        const colors = new Array<string>();
+        const tags = new Array<string>();
 
-        const clr = rgbToHex(colorToRgb(direction === 'next' ? Constants.NextStepColor : Constants.PrevStepColor));
-        const conns = direction === 'next' ? this.props.dnatcofication.data.connectivities.forward[stepIdx] : this.props.dnatcofication.data.connectivities.backward[stepIdx];
+        if (surroundingStepId == InvalidStepId)
+            return { x, y, colors, tags };
+
+        const s = this.props.dnatcofication.data.steps.steps;
+
+        const centerIdx = StepsMapper.idToIndex(this.props.dnatcofication, centerStepId);
+        const surrIdx = StepsMapper.idToIndex(this.props.dnatcofication, surroundingStepId);
+
+        const centerStep = Step.clone(s[centerIdx]); // We may need to modify the step props
+        const customNtC = this.props.dnatcofication.customNtCs.getCustomNtC(this.props.selectedCustomNtCSet, centerStep.name);
+
+        // getConnectivities() checks against closestNtC. We need to replace it with the user's choice
+        // if there is a custom NtC set
+        if (customNtC)
+            centerStep.closestNtC = customNtC;
+
+        const previous = direction == 'previous' ? [1] : [-1];
+        const next = direction == 'next' ? [1] : [-1];
+
+        const stepAtoms = getStepsAtoms([centerStep, s[surrIdx]], this.props.dnatcofication.data.cifData!);
+        const _conns = getConnectivities([centerStep, s[surrIdx]], stepAtoms, previous, next);
+
+        const conns = direction == 'previous' ? _conns.backward[0] : _conns.forward[0];
         if (conns) {
+            const clr = rgbToHex(colorToRgb(direction == 'previous' ? Constants.PrevStepColor : Constants.NextStepColor));
             for (const ntc in conns) {
                 const conn = conns[ntc];
                 x.push(conn.C5PrimeDistance);
@@ -51,6 +77,9 @@ export class ConnectivityPlot extends View<Refinement.Props, State> {
                 tags.push(ntc);
             }
         }
+
+        // This is what "automatic memory management" looks like
+        stepAtoms.delete();
 
         return { x, y, colors, tags };
     }
@@ -105,10 +134,9 @@ export class ConnectivityPlot extends View<Refinement.Props, State> {
         let prevConnPlotData = PlotData;
         let nextConnPlotData = PlotData;
         if (this.props.structureSelection.stepId !== InvalidStepId) {
-            const stepIdx = StepsMapper.idToIndex(this.props.dnatcofication, this.props.structureSelection.stepId);
-            simPlotData = this.similarityPlotData(stepIdx);
-            prevConnPlotData = this.connectivityPlotData(stepIdx, 'previous');
-            nextConnPlotData = this.connectivityPlotData(stepIdx, 'next');
+            simPlotData = this.similarityPlotData(this.props.structureSelection.stepId);
+            prevConnPlotData = this.connectivityPlotData(this.props.structureSelection.stepId, this.state.previousStepId, 'previous');
+            nextConnPlotData = this.connectivityPlotData(this.props.structureSelection.stepId, this.state.nextStepId, 'next');
         }
 
         const changeCustomNtC = (NtC: string) => {
@@ -122,7 +150,13 @@ export class ConnectivityPlot extends View<Refinement.Props, State> {
                 step.name,
                 NtC
             );
+
+            console.log('Doing a thing');
         }
+
+        const similMaxHints = axesMaximumHints(simPlotData.x, simPlotData.y, MinNumberOfPointsInPlot, Constants.DefaultSimilarityXRange[1], Constants.DefaultSimilarityYRange[1]);
+        const prevConnMaxHints = axesMaximumHints(prevConnPlotData.x, prevConnPlotData.y, MinNumberOfPointsInPlot, Constants.DefaultConnectivityXRange[1], Constants.DefaultConnectivityYRange[1]);
+        const nextConnMaxHints = axesMaximumHints(nextConnPlotData.x, nextConnPlotData.y, MinNumberOfPointsInPlot, Constants.DefaultConnectivityXRange[1], Constants.DefaultConnectivityYRange[1]);
 
         return (
             <div>
@@ -183,8 +217,20 @@ export class ConnectivityPlot extends View<Refinement.Props, State> {
                                 autosize: true,
                                 dragmode: 'pan',
                                 hovermode: 'closest',
-                                xaxis: { range: Constants.DefaultSimilarityXRange, title: 'Cartesian RMSD [Å]', automargin: true },
-                                yaxis: { range: Constants.DefaultSimilarityYRange, title: 'Euclidean distance', automargin: true },
+                                xaxis: {
+                                    range: [
+                                        Constants.DefaultSimilarityXRange[0],
+                                        similMaxHints[0],
+                                    ],
+                                    title: 'Cartesian RMSD [Å]',
+                                },
+                                yaxis: {
+                                    range: [
+                                        Constants.DefaultSimilarityYRange[0],
+                                        similMaxHints[1],
+                                    ],
+                                    title: 'Euclidean distance',
+                                },
                             }}
                             config={{
                                 scrollZoom: true,
@@ -219,21 +265,26 @@ export class ConnectivityPlot extends View<Refinement.Props, State> {
                                 autosize: true,
                                 dragmode: 'pan',
                                 hovermode: 'closest',
-                                xaxis: { range: Constants.DefaultConnectivityXRange, title: 'C5 distance [Å]', automargin: true },
-                                yaxis: { range: Constants.DefaultConnectivityYRange, title: 'O3 distance [Å]', automargin: true },
+                                xaxis: {
+                                    range: [
+                                        Constants.DefaultConnectivityXRange[0],
+                                        prevConnMaxHints[0],
+                                    ],
+                                    title: 'C5 distance [Å]',
+                                },
+                                yaxis: {
+                                    range: [
+                                        Constants.DefaultConnectivityYRange[0],
+                                        prevConnMaxHints[1],
+                                    ],
+                                    title: 'O3 distance [Å]',
+                                },
                             }}
                             config={{
                                 scrollZoom: true,
                             }}
                             useResizeHandler={true}
                             style={{ width: "100%", height: "100%" }}
-                            onClick={ev => {
-                                const pt = ev.points[0];
-                                if (pt) {
-                                    // @ts-ignore
-                                    changeCustomNtC(pt.text);
-                                }
-                            }}
                         />
                     </div>
 
@@ -255,21 +306,26 @@ export class ConnectivityPlot extends View<Refinement.Props, State> {
                                 autosize: true,
                                 dragmode: 'pan',
                                 hovermode: 'closest',
-                                xaxis: { range: Constants.DefaultConnectivityXRange, title: 'C5 distance [Å]', automargin: true },
-                                yaxis: { range: Constants.DefaultConnectivityYRange, title: 'O3 distance [Å]', automargin: true },
+                                xaxis: {
+                                    range: [
+                                        Constants.DefaultConnectivityXRange[0],
+                                        nextConnMaxHints[0],
+                                    ],
+                                    title: 'C5 distance [Å]',
+                                },
+                                yaxis: {
+                                    range: [
+                                        Constants.DefaultConnectivityYRange,
+                                        nextConnMaxHints[1],
+                                    ],
+                                    title: 'O3 distance [Å]',
+                                },
                             }}
                             config={{
                                 scrollZoom: true,
                             }}
                             useResizeHandler={true}
                             style={{ width: "100%", height: "100%" }}
-                            onClick={ev => {
-                                const pt = ev.points[0];
-                                if (pt) {
-                                    // @ts-ignore
-                                    changeCustomNtC(pt.text);
-                                }
-                            }}
                         />
                     </div>
                 </div>

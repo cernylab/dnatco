@@ -12,6 +12,28 @@ export type PrevCurrentNextStepSelection = {
     next?: { id: number, name: string },
 }
 
+export function axesMaximumHints(x: number[], y: number[], numberOfPoints: number, xHint: number, yHint: number): [xMax: number, yMax: number] {
+    const xSorted = [...x].sort();
+
+    // Get at least numberOfPoints points on x axis
+    const xMax = xSorted.length < numberOfPoints
+        ? xSorted[xSorted.length - 1] : xSorted[numberOfPoints - 1] < xHint
+            ? xHint : xSorted[numberOfPoints - 1];
+
+    let yMax = Number.MIN_SAFE_INTEGER;
+    for (let idx = 0; idx < y.length; idx++) {
+        const _x = x[idx];
+        const _y = y[idx];
+
+        if (_x <= xMax && _y > yMax)
+            yMax = _y;
+    }
+
+    yMax = yMax < yHint ? yHint : yMax;
+
+    return [ xMax, yMax ];
+}
+
 export function filterToChain(dnatcofication: Dnatcofication, modelIndex: number, filter: Filters.All) {
     if (filter.kind === 'empty')
         return ''; // Empty string indicates all chains

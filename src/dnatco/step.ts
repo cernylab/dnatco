@@ -29,6 +29,10 @@ export namespace Step {
     export type Torsion = 'delta1'|'epsilon1'|'zeta1'|'alpha2'|'beta2'|'gamma2'|'delta2'|'chi1'|'chi2'|'nccn';
     export type Distance = 'cc'|'nn';
 
+    export function clone(step: Step): Step {
+        return { ...step };
+    }
+
     export function nameToPdbId(name: string) {
         const toks = name.split('_');
         if (toks.length !== 6)
