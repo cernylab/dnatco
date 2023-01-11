@@ -84,6 +84,57 @@ export class ConnectivityPlot extends View<Refinement.Props, State> {
         return { x, y, colors, tags };
     }
 
+    private renderConnectivityPlot(data: PlotData, hints: [xMax: number, yMax: number]) {
+        return (
+            <Plot
+                data={[
+                    {
+                        x: data.x,
+                        y: data.y,
+                        marker: { size: 10, color: data.colors },
+                        mode: 'text+markers',
+                        text: data.tags,
+                        textposition: 'top center',
+                        type: 'scattergl',
+                    },
+                ]}
+                layout={{
+                    autosize: true,
+                    dragmode: 'pan',
+                    hovermode: 'closest',
+                    xaxis: {
+                        range: [
+                            Constants.DefaultConnectivityXRange[0],
+                            hints[0],
+                        ],
+                        title: 'C5 distance [Å]',
+                        automargin: true,
+                    },
+                    yaxis: {
+                        range: [
+                            Constants.DefaultConnectivityYRange[0],
+                            hints[1],
+                        ],
+                        title: 'O3 distance [Å]',
+                        automargin: true,
+                    },
+                    margin: {
+                        t: 0,
+                        r: 25,
+                    },
+                    modebar: {
+                        orientation: 'v',
+                    }
+                }}
+                config={{
+                    scrollZoom: true,
+                }}
+                useResizeHandler={true}
+                style={{ width: "100%", height: "100%" }}
+            />
+        );
+    }
+
     private similarityPlotData(stepIdx: number): PlotData {
         const x = [];
         const y = [];
@@ -223,6 +274,7 @@ export class ConnectivityPlot extends View<Refinement.Props, State> {
                                         similMaxHints[0],
                                     ],
                                     title: 'Cartesian RMSD [Å]',
+                                    automargin: true,
                                 },
                                 yaxis: {
                                     range: [
@@ -230,7 +282,17 @@ export class ConnectivityPlot extends View<Refinement.Props, State> {
                                         similMaxHints[1],
                                     ],
                                     title: 'Euclidean distance',
+                                    automargin: true,
                                 },
+                                plot_bgcolor: 'white',
+                                paper_bgcolor: 'white',
+                                margin: {
+                                    t: 0,
+                                    r: 25,
+                                },
+                                modebar: {
+                                    orientation: 'v',
+                                }
                             }}
                             config={{
                                 scrollZoom: true,
@@ -249,84 +311,12 @@ export class ConnectivityPlot extends View<Refinement.Props, State> {
 
                     <div className='rdo-secondary-caption'>Connectivity to previous residue</div>
                     <div className='rdo-plot-container'>
-                        <Plot
-                            data={[
-                                {
-                                    x: prevConnPlotData.x,
-                                    y: prevConnPlotData.y,
-                                    marker: { size: 10, color: prevConnPlotData.colors },
-                                    mode: 'text+markers',
-                                    text: prevConnPlotData.tags,
-                                    textposition: 'top center',
-                                    type: 'scattergl',
-                                },
-                            ]}
-                            layout={{
-                                autosize: true,
-                                dragmode: 'pan',
-                                hovermode: 'closest',
-                                xaxis: {
-                                    range: [
-                                        Constants.DefaultConnectivityXRange[0],
-                                        prevConnMaxHints[0],
-                                    ],
-                                    title: 'C5 distance [Å]',
-                                },
-                                yaxis: {
-                                    range: [
-                                        Constants.DefaultConnectivityYRange[0],
-                                        prevConnMaxHints[1],
-                                    ],
-                                    title: 'O3 distance [Å]',
-                                },
-                            }}
-                            config={{
-                                scrollZoom: true,
-                            }}
-                            useResizeHandler={true}
-                            style={{ width: "100%", height: "100%" }}
-                        />
+                        {this.renderConnectivityPlot(prevConnPlotData, prevConnMaxHints)}
                     </div>
 
                     <div className='rdo-secondary-caption'>Connectivity to next residue</div>
                     <div className='rdo-plot-container'>
-                        <Plot
-                            data={[
-                                {
-                                    x: nextConnPlotData.x,
-                                    y: nextConnPlotData.y,
-                                    marker: { size: 10, color: nextConnPlotData.colors },
-                                    mode: 'text+markers',
-                                    text: nextConnPlotData.tags,
-                                    textposition: 'top center',
-                                    type: 'scattergl',
-                                },
-                            ]}
-                            layout={{
-                                autosize: true,
-                                dragmode: 'pan',
-                                hovermode: 'closest',
-                                xaxis: {
-                                    range: [
-                                        Constants.DefaultConnectivityXRange[0],
-                                        nextConnMaxHints[0],
-                                    ],
-                                    title: 'C5 distance [Å]',
-                                },
-                                yaxis: {
-                                    range: [
-                                        Constants.DefaultConnectivityYRange,
-                                        nextConnMaxHints[1],
-                                    ],
-                                    title: 'O3 distance [Å]',
-                                },
-                            }}
-                            config={{
-                                scrollZoom: true,
-                            }}
-                            useResizeHandler={true}
-                            style={{ width: "100%", height: "100%" }}
-                        />
+                        {this.renderConnectivityPlot(nextConnPlotData, nextConnMaxHints)}
                     </div>
                 </div>
             </div>

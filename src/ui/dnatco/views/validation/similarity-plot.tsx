@@ -135,6 +135,15 @@ export class SimilarityPlots extends View<View.Props, State> {
                                 hovermode: 'closest',
                                 xaxis: { range: Constants.DefaultSimilarityXRange, title: 'Cartesian RMSD [Å]', automargin: true },
                                 yaxis: { range: Constants.DefaultSimilarityYRange, title: 'Euclidean distance', automargin: true },
+                                plot_bgcolor: 'white',
+                                paper_bgcolor: 'white',
+                                margin: {
+                                    t: 0,
+                                    r: 25,
+                                },
+                                modebar: {
+                                    orientation: 'v',
+                                }
                             }}
                             config={{
                                 scrollZoom: true,

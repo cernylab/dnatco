@@ -296,14 +296,14 @@ export class RsccPlot extends View<View.Props, State> {
                     autosize: true,
                     dragmode: 'pan',
                     hovermode: 'closest',
-                    xaxis: { title: 'RSCC' },
-                    yaxis: { title: 'RMSD [Å]' },
+                    xaxis: { title: 'RSCC', automargin: true },
+                    yaxis: { title: 'RMSD [Å]', automargin: true },
                     plot_bgcolor: 'white',
                     paper_bgcolor: 'white',
                     uirevision: 'true',
                     margin: {
                         t: 0,
-                        r: 10,
+                        r: 25,
                     },
                     modebar: {
                         orientation: 'v',
