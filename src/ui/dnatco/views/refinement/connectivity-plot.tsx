@@ -86,52 +86,54 @@ export class ConnectivityPlot extends View<Refinement.Props, State> {
 
     private renderConnectivityPlot(data: PlotData, hints: [xMax: number, yMax: number]) {
         return (
-            <Plot
-                data={[
-                    {
-                        x: data.x,
-                        y: data.y,
-                        marker: { size: 10, color: data.colors },
-                        mode: 'text+markers',
-                        text: data.tags,
-                        textposition: 'top center',
-                        type: 'scattergl',
-                    },
-                ]}
-                layout={{
-                    autosize: true,
-                    dragmode: 'pan',
-                    hovermode: 'closest',
-                    xaxis: {
-                        range: [
-                            Constants.DefaultConnectivityXRange[0],
-                            hints[0],
-                        ],
-                        title: 'C5 distance [Å]',
-                        automargin: true,
-                    },
-                    yaxis: {
-                        range: [
-                            Constants.DefaultConnectivityYRange[0],
-                            hints[1],
-                        ],
-                        title: 'O3 distance [Å]',
-                        automargin: true,
-                    },
-                    margin: {
-                        t: 0,
-                        r: 25,
-                    },
-                    modebar: {
-                        orientation: 'v',
-                    }
-                }}
-                config={{
-                    scrollZoom: true,
-                }}
-                useResizeHandler={true}
-                style={{ width: "100%", height: "100%" }}
-            />
+            <div className='rdo-plot-container' style={{ flex: 1, minHeight: Constants.MinimumFlexiblePlotHeight }}>
+                <Plot
+                    data={[
+                        {
+                            x: data.x,
+                            y: data.y,
+                            marker: { size: 10, color: data.colors },
+                            mode: 'text+markers',
+                            text: data.tags,
+                            textposition: 'top center',
+                            type: 'scattergl',
+                        },
+                    ]}
+                    layout={{
+                        autosize: true,
+                        dragmode: 'pan',
+                        hovermode: 'closest',
+                        xaxis: {
+                            range: [
+                                Constants.DefaultConnectivityXRange[0],
+                                hints[0],
+                            ],
+                            title: 'C5 distance [Å]',
+                            automargin: true,
+                        },
+                        yaxis: {
+                            range: [
+                                Constants.DefaultConnectivityYRange[0],
+                                hints[1],
+                            ],
+                            title: 'O3 distance [Å]',
+                            automargin: true,
+                        },
+                        margin: {
+                            t: 0,
+                            r: 25,
+                        },
+                        modebar: {
+                            orientation: 'v',
+                        }
+                    }}
+                    config={{
+                        scrollZoom: true,
+                    }}
+                    useResizeHandler={true}
+                    style={{ width: "100%", height: "100%" }}
+                />
+            </div>
         );
     }
 
@@ -210,7 +212,7 @@ export class ConnectivityPlot extends View<Refinement.Props, State> {
         const nextConnMaxHints = axesMaximumHints(nextConnPlotData.x, nextConnPlotData.y, MinNumberOfPointsInPlot, Constants.DefaultConnectivityXRange[1], Constants.DefaultConnectivityYRange[1]);
 
         return (
-            <div>
+            <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
                 <NamedList sizing='min-content' rowSpacing='half'>
                 {
                     numModels > 1
@@ -249,9 +251,9 @@ export class ConnectivityPlot extends View<Refinement.Props, State> {
 
                 <div className='rdo-line-spacer' />
 
-                <div className='rdo-offset'>
+                <div className='rdo-offset' style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
                     <div className='rdo-secondary-caption'>Similarity plot</div>
-                    <div className='rdo-plot-container'>
+                    <div className='rdo-plot-container' style={{ flex: 1, minHeight: Constants.MinimumFlexiblePlotHeight }}>
                         <Plot
                             data={[
                                 {
@@ -310,14 +312,10 @@ export class ConnectivityPlot extends View<Refinement.Props, State> {
                     </div>
 
                     <div className='rdo-secondary-caption'>Connectivity to previous residue</div>
-                    <div className='rdo-plot-container'>
-                        {this.renderConnectivityPlot(prevConnPlotData, prevConnMaxHints)}
-                    </div>
+                    {this.renderConnectivityPlot(prevConnPlotData, prevConnMaxHints)}
 
                     <div className='rdo-secondary-caption'>Connectivity to next residue</div>
-                    <div className='rdo-plot-container'>
-                        {this.renderConnectivityPlot(nextConnPlotData, nextConnMaxHints)}
-                    </div>
+                    {this.renderConnectivityPlot(nextConnPlotData, nextConnMaxHints)}
                 </div>
             </div>
         );

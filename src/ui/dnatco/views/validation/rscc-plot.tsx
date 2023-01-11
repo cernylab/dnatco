@@ -3,6 +3,7 @@ import Plot from 'react-plotly.js';
 import { Validation } from './common';
 import { ModelSelect } from '../structure-selectors';
 import { View } from '../view';
+import { Constants } from '../../constants';
 import { niceStepNameText } from '../../common';
 import { InvalidModelIndex } from '../../structure-selection';
 import { NamedList, NamedListItem } from '../../../common/named-list';
@@ -344,7 +345,7 @@ export class RsccPlot extends View<View.Props, State> {
         const rsccPlotData = this.makePlotData();
 
         return (
-            <div>
+            <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
                 { numModels > 1
                     ? <NamedList sizing='min-content' rowSpacing='half'>
                         <NamedListItem name='Model'>
@@ -360,7 +361,7 @@ export class RsccPlot extends View<View.Props, State> {
                 }
 
                 <div className='rdo-secondary-caption'>RSCC(*) vs RMSD plot of assigned steps</div>
-                <div className='rdo-plot-container'>
+                <div className='rdo-plot-container' style={{ flex: 1, minHeight: Constants.MinimumFlexiblePlotHeight }}>
                     { isPlotEmpty(rsccPlotData.assigned)
                         ? this.state.fetchFailed
                             ? <div>Unable to get RSCC data</div>
@@ -368,8 +369,9 @@ export class RsccPlot extends View<View.Props, State> {
                         : this.renderPlot(rsccPlotData.assigned.xy, rsccPlotData.assigned.contour)
                     }
                 </div>
+
                 <div className='rdo-secondary-caption'>RSCC(*) vs RMSD plot of unassigned steps</div>
-                <div className='rdo-plot-container'>
+                <div className='rdo-plot-container' style={{ flex: 1, minHeight: Constants.MinimumFlexiblePlotHeight }}>
                     { isPlotEmpty(rsccPlotData.unassigned)
                         ? this.state.fetchFailed
                             ? <div>Unable to get RSCC data</div>

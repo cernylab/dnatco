@@ -14,4 +14,6 @@ export namespace Constants {
 
     export const DefaultSimilarityXRange = [0, 1.0];
     export const DefaultSimilarityYRange = [0, 100];
+
+    export const MinimumFlexiblePlotHeight = '20em';
 }
