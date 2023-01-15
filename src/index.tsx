@@ -145,7 +145,7 @@ type TabKeys = ((keyof (typeof TabsForModes)['nothing']) | (keyof (typeof TabsFo
 interface State {
     mode: keyof typeof TabsForModes;
     selectedTab: TabKeys;
-    dnatcofierReady: boolean;
+    dnatcofierState: 'ready' | 'initializing' | 'failed';
 }
 export class App extends WithSubscriptions<{}, State> {
     private dnatcofication = new Dnatcofication();
@@ -160,7 +160,7 @@ export class App extends WithSubscriptions<{}, State> {
         this.state = {
             mode: 'nothing',
             selectedTab: 'start',
-            dnatcofierReady: false,
+            dnatcofierState: 'initializing',
         };
     }
 
@@ -320,7 +320,7 @@ export class App extends WithSubscriptions<{}, State> {
                         )
                     }}
                     onDoSearchConformers={(options) => this.searchConformers(options)}
-                    dnatcofierReady={this.state.dnatcofierReady}
+                    dnatcofierState={this.state.dnatcofierState}
                 />
             );
         case 'annotation':
@@ -432,8 +432,9 @@ export class App extends WithSubscriptions<{}, State> {
             './classification/nu_angles.csv'
         ).then(retval => {
             if (retval === undefined)
-                this.setState({ ...this.state, dnatcofierReady: true });
+                this.setState({ ...this.state, dnatcofierState: 'ready' });
             else {
+                this.setState({ ...this.state, dnatcofierState: 'failed' });
                 Popup.create(
                     <div className='rdo-error-text'>
                         <div>{retval}</div>
@@ -443,6 +444,7 @@ export class App extends WithSubscriptions<{}, State> {
             }
         }).catch(e => {
             // We should not really get here but let's catch just in case
+            this.setState({ ...this.state, dnatcofierState: 'failed' });
             Popup.create(
                 <div className='rdo-error-text'>
                     <div>{e.toString()}</div>
@@ -459,7 +461,7 @@ export class App extends WithSubscriptions<{}, State> {
     }
 
     componentDidUpdate() {
-        if (this.state.dnatcofierReady && !this.initialSearchDone) {
+        if (this.state.dnatcofierState === 'ready' && !this.initialSearchDone) {
             // Make sure that we don't do this again no matter how the search goes
             this.initialSearchDone = true;
 

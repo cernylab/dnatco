@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { BigLogo } from './big-logo';
 import { ComboBox } from './common/combo-box';
+import { InProgressSpinner } from './common/in-progress-spinner';
 import { Popup } from './common/popup';
 import { DummyButton, PushButton } from './common/push-button';
 import { ShadowedBox } from './common/shadowed-box';
@@ -65,7 +66,7 @@ export class StartTab extends React.Component<StartTab.Props, State> {
                             <div className='rdo-offset'>
                                 <div className='rdo-section-caption'>
                                     Enter PDB ID (e. g. <span style={{ textDecoration: 'underline', cursor: 'pointer' }} onClick={() => {
-                                        if (this.props.dnatcofierReady)
+                                        if (this.props.dnatcofierState === 'ready')
                                             this.props.onDoPdbId('1ehz', 'rcsb')}
                                     }>1ehz</span>)
                                 </div>
@@ -100,10 +101,19 @@ export class StartTab extends React.Component<StartTab.Props, State> {
                                     <PushButton
                                         caption='Proceed'
                                         onClick={() => this.actionPdbId()}
-                                        enabled={this.props.dnatcofierReady}
+                                        enabled={this.props.dnatcofierState === 'ready'}
                                     />
                                     <div></div>
                                 </div>
+                                { this.props.dnatcofierState === 'initializing'
+                                    ? <div style={{ alignItems: 'center', display: 'flex', justifyContent: 'center', marginLeft: 'auto', marginRight: 'auto', marginTop: 'var(--v-gap)', width: 'fit-content' }}>
+                                        <span>ReDNATCO is initializing...{'\u000A'}</span>
+                                        <span style={{ display: 'inline-block', height: 'inherit', width: 'fit-content' }}>
+                                            <InProgressSpinner />
+                                        </span>
+                                     </div>
+                                    : undefined
+                                }
                             </div>
                         </ShadowedBox>
                         <ShadowedBox>
@@ -155,7 +165,7 @@ export class StartTab extends React.Component<StartTab.Props, State> {
                                     </div>
                                     <PushButton
                                         caption='Proceed'
-                                        enabled={this.state.coordsFile !== null && this.props.dnatcofierReady}
+                                        enabled={this.state.coordsFile !== null && this.props.dnatcofierState === 'ready'}
                                         onClick={() => {
                                             if (this.state.coordsFile)
                                                 this.props.onDoCustomStructure(this.state.coordsFile, this.state.densityMapFile);
@@ -177,6 +187,6 @@ export namespace StartTab {
         onDoCustomStructure: (coordsFile: File, densityMapFile: File|null) => void,
         onDoRawLink: (link: string) => void,
         onDoSearchConformers: (options: Search.Criteria) => void,
-        dnatcofierReady: boolean;
+        dnatcofierState: 'ready' | 'initializing' | 'failed';
     }
 }

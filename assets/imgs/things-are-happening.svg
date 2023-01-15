@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="32"
+   height="32"
+   viewBox="0 0 8.4666665 8.4666666"
+   version="1.1"
+   id="svg5"
+   inkscape:version="1.2.2 (b0a8486541, 2022-12-01)"
+   sodipodi:docname="things-are-happening.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview7"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="px"
+     showgrid="false"
+     showguides="true"
+     inkscape:zoom="25.599551"
+     inkscape:cx="-4.4532031"
+     inkscape:cy="7.6563843"
+     inkscape:window-width="3840"
+     inkscape:window-height="2097"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1">
+    <sodipodi:guide
+       position="4.2314937,5.3679562"
+       orientation="1,0"
+       id="guide333"
+       inkscape:locked="false" />
+    <sodipodi:guide
+       position="10.509305,4.2278646"
+       orientation="0,-1"
+       id="guide337"
+       inkscape:locked="false" />
+    <sodipodi:guide
+       position="-2.1704482,2.110354"
+       orientation="0,-1"
+       id="guide1186"
+       inkscape:locked="false" />
+    <sodipodi:guide
+       position="2.1187709,-0.88693162"
+       orientation="1,0"
+       id="guide1188"
+       inkscape:locked="false" />
+    <sodipodi:guide
+       position="8.8905216,6.3436115"
+       orientation="0,-1"
+       id="guide3401"
+       inkscape:locked="false" />
+    <sodipodi:guide
+       position="6.3508946,1.5311096"
+       orientation="1,0"
+       id="guide3407"
+       inkscape:locked="false" />
+  </sodipodi:namedview>
+  <defs
+     id="defs2" />
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <rect
+       style="fill:#ffffff;stroke-width:0.400432;stroke-linecap:round;stroke-linejoin:round;paint-order:fill markers stroke"
+       id="rect1192"
+       width="8.4703465"
+       height="8.4812889"
+       x="-0.0018400159"
+       y="-0.0036851147" />
+    <rect
+       style="fill:#000000;stroke-width:0.2;stroke-linecap:round;stroke-linejoin:round;paint-order:fill markers stroke"
+       id="rect391"
+       width="4.2333331"
+       height="4.2333331"
+       x="4.2314935"
+       y="0.0054689948" />
+    <rect
+       style="fill:#000000;stroke-width:0.15;stroke-linecap:round;stroke-linejoin:round;paint-order:fill markers stroke"
+       id="rect3399"
+       width="3.175"
+       height="3.175"
+       x="0.53139621"
+       y="0.53555501" />
+    <rect
+       style="fill:#000000;stroke-width:0.0999996;stroke-linecap:round;stroke-linejoin:round;paint-order:fill markers stroke"
+       id="rect3403"
+       width="2.1166666"
+       height="2.1166666"
+       x="1.0604377"
+       y="5.2971497" />
+    <rect
+       style="fill:#000000;stroke-width:0.0499998;stroke-linecap:round;stroke-linejoin:round;paint-order:fill markers stroke"
+       id="rect3405"
+       width="1.0583333"
+       height="1.0583333"
+       x="5.8189936"
+       y="5.8263164" />
+  </g>
+</svg>
