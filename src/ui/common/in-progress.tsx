@@ -1,3 +1,10 @@
+import { GlobalConfig } from '../../global-config';
+import { v4 as uuidv4 } from 'uuid';
+// Image assets
+import 'assets/imgs/things-are-happening.svg';
+
+const SpinnerStyle = 'height: 1.5em; width: auto;';
+
 export namespace InProgress {
     function makeAbortButton() {
         return `
@@ -6,12 +13,21 @@ export namespace InProgress {
             </div>
         `;
     }
-    function makeContent(title: string, status: string, abortButton: boolean) {
+    function makeContent(title: string, status: string, abortButton: boolean, spinnerId: string) {
+        const Prefix = GlobalConfig.data().pathPrefix;
+
         return `
             <div class="rdo-popup">
                 <div class="rdo-popup-inner">
-                    <div class="rdo-popup-text" style="flex: 1">
-                        ${makeText(title, status)}
+                    <div style="display: flex; flex: 1">
+                        <div class="rdo-popup-text" style="flex: 1">
+                            ${makeText(title, status)}
+                        </div>
+                        <img
+                            src="${Prefix}/imgs/things-are-happening.svg"
+                            style="${SpinnerStyle}"
+                            id="${spinnerId}"
+                        />
                     </div>
                     <div class="rdo-popup-button-bar">
                         <div style="flex: 1">&nbsp;</div>
@@ -51,7 +67,32 @@ export namespace InProgress {
          * but we need to be sure that this dialog will be visible before
          * any further code is executed. Let's do it the old-fashioned way.
          */
-        tainer.innerHTML = makeContent(title, status, abortButton);
+        const spinnerId = uuidv4();
+        tainer.innerHTML = makeContent(title, status, abortButton, spinnerId);
+
+        /* We need to set up inteval to make the spinner spin. We also need to make sure
+         * that we clear the interval when the popup gets destroyed.
+         */
+        const rot = { angle: 0 };
+        const spinnerInterval = window.setInterval(() => {
+            const elem = document.getElementById(spinnerId);
+            if (elem) {
+                elem.style.transform = `rotate(${rot.angle}deg)`;
+                rot.angle = (rot.angle + 90) % 360;
+            }
+        }, 100);
+        new MutationObserver((mList, obs) => {
+            for (const mut of mList) {
+                if (mut.type === 'childList') {
+                    mut.removedNodes.forEach((node) => {
+                        if (node.isSameNode(tainer)) {
+                            window.clearInterval(spinnerInterval);
+                            obs.disconnect();
+                        }
+                    })
+                }
+            }
+        }).observe(document.body, { childList: true });
 
         /* We also need to wait for the browser to actually render the element.
          * For that we need to observe some events.
