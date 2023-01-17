@@ -111,9 +111,9 @@ export function getConnectivities(steps: Step[], stepsAtoms: jsLLKA.LLKAStructur
         const prevStepIdx = previous[idx];
         const nextStepIdx = next[idx];
 
-        const prevStepStru = prevStepIdx !== -1 ? stepsAtoms.get(prevStepIdx) : null;
+        const prevStepStru = prevStepIdx !== -1 ? stepsAtoms.get(prevStepIdx) : void 0;
         const currentStepStru = stepsAtoms.get(idx);
-        const nextStepStru = nextStepIdx !== -1 ? stepsAtoms.get(nextStepIdx) : null;
+        const nextStepStru = nextStepIdx !== -1 ? stepsAtoms.get(nextStepIdx) : void 0;
 
         const ntc = jsLLKA.LLKA.nameToNtC(steps[idx].closestNtC);
         if (ntc == jsLLKA.LLKA.NtC.LLKA_NANT) {

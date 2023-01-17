@@ -73,8 +73,8 @@ export class ConnectivityPlot extends View<Refinement.Props, State> {
         if (customNtC)
             centerStep.closestNtC = customNtC;
 
-        const previous = direction == 'previous' ? [1] : [-1];
-        const next = direction == 'next' ? [1] : [-1];
+        const previous = direction == 'previous' ? [1, -1] : [-1, -1];
+        const next = direction == 'next' ? [1, -1] : [-1, -1];
 
         const stepAtoms = getStepsAtoms([centerStep, s[surrIdx]], this.props.dnatcofication.data.cifData!);
         const _conns = getConnectivities([centerStep, s[surrIdx]], stepAtoms, previous, next);
