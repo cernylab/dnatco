@@ -15,6 +15,7 @@ import { axesMaximumHints, valueToSemaphore } from '../../util';
 import { colorToRgb, rgbToHex } from '../../../util';
 
 const MinNumberOfPointsInPlot = 10;
+const ExcludeSecondStep = new Set([1]); // Used in connectivityPlotData
 
 const ConnPlotData = {
     x: new Array<number>(),
@@ -77,7 +78,7 @@ export class ConnectivityPlot extends View<Refinement.Props, State> {
         const next = direction == 'next' ? [1, -1] : [-1, -1];
 
         const stepAtoms = getStepsAtoms([centerStep, s[surrIdx]], this.props.dnatcofication.data.cifData!);
-        const _conns = getConnectivities([centerStep, s[surrIdx]], stepAtoms, previous, next);
+        const _conns = getConnectivities([centerStep, s[surrIdx]], stepAtoms, previous, next, ExcludeSecondStep);
 
         const conns = direction == 'previous' ? _conns.backward[0] : _conns.forward[0];
         if (conns) {

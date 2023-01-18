@@ -218,6 +218,7 @@ export namespace Dnatcofication {
 
             ctx.status = 'Calculating similarities';
             const similarities = ConnSimil.getSimilarities(steps.steps, stepsAtoms);
+
             stepsAtoms.delete();
 
             const tEnd = performance.now();

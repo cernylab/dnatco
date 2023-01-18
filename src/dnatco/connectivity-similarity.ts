@@ -100,7 +100,7 @@ export function getStepsAtoms(steps: Step[], cif: Cif.Data) {
     return gatheredAtoms;
 }
 
-export function getConnectivities(steps: Step[], stepsAtoms: jsLLKA.LLKAStructures, previous: number[], next: number[]): AllConnectivities {
+export function getConnectivities(steps: Step[], stepsAtoms: jsLLKA.LLKAStructures, previous: number[], next: number[], excludeSteps: Set<number> = new Set()): AllConnectivities {
     if (steps.length !== stepsAtoms.size())
         throw new Error(`Mismatching number of steps ${steps.length} and step atoms ${stepsAtoms.size()}`);
 
@@ -108,6 +108,9 @@ export function getConnectivities(steps: Step[], stepsAtoms: jsLLKA.LLKAStructur
     const forward = new Array<Connectivities|null>();
 
     for (let idx = 0; idx < steps.length; idx++) {
+        if (excludeSteps.has(idx))
+            continue;
+
         const prevStepIdx = previous[idx];
         const nextStepIdx = next[idx];
 

@@ -23,7 +23,7 @@ export namespace Dnatcofier {
         const cifData = importedStru.cifData;
         res.delete();
 
-        ctx.status = 'Splitting structrure to dinucletide steps';
+        ctx.status = 'Splitting structrure to dinucleotide steps';
         const res2 = jsLLKA.splitStructureToDinucleotideSteps(importedStru.structure);
         if (!res2.isSuccess()) {
             clsfCtx.delete();
