@@ -2,7 +2,6 @@ import { WebApi } from './web-api';
 import { CANA } from '../dnatco/cana';
 import { NtC } from '../dnatco/ntc';
 import { EventsKeeper } from '../util/events-keeper';
-import 'assets/search.php';
 
 export class Search {
     private ek = new EventsKeeper();
@@ -109,7 +108,7 @@ export namespace Search {
             large
         };
 
-        return WebApi.request('./search.php', req);
+        return WebApi.request('search', req);
     }
 
     export async function resolveSearch(pending: WebApi.Pending) {
