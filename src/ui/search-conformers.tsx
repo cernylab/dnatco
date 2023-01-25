@@ -6,7 +6,7 @@ import { PushButton } from './common/push-button';
 import { ShadowedBox } from './common/shadowed-box';
 import { SpinBox } from './common/spin-box';
 import { NtC } from '../dnatco/ntc';
-import { Search } from '../search/search';
+import { Search } from '../remote/search';
 
 type Redundacy = 'non-redundant' | 'all';
 

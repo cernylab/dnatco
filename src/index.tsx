@@ -25,7 +25,7 @@ import { Constants } from './ui/dnatco/constants';
 import { MainScreen } from './ui/dnatco/main-screen';
 import { WithSubscriptions } from './ui/service/with-subscriptions';
 import { formatErrorText } from './ui/util';
-import { Search } from './search/search';
+import { Search } from './remote/search';
 import { BackgroundWorker, WorkerMessage } from './tasks/worker';
 import { ViewerApi, ViewerInterop } from './viewer/viewer-interop';
 import { Task } from './tasks/task';
@@ -182,7 +182,7 @@ export class App extends WithSubscriptions<{}, State> {
         }
     }
 
-    private fromCustomStructure(coordsFile: File, densityMapFile: File|null, onSuccess: () => void) {
+    private fromCustomStructure(coordsFile: File, densityMapFile: File|null, densityMapCoeffsFile: File|null, onSuccess: () => void) {
         const coordsType = Coordinates.guessType(coordsFile);
         if (coordsType === 'unknown') {
             Popup.create(
@@ -206,11 +206,17 @@ export class App extends WithSubscriptions<{}, State> {
             return;
         }
 
-        const task: Task<{ coords: { file: File, type: Coordinates['type'] }, densityMap: { file: File, type: DensityMap['type'], kind: DensityMap['kind']}|null, clsfResData: ClassificationResources.Data }> = {
+        const task: Task<{ coords: {
+            file: File, type: Coordinates['type'] },
+            densityMap: { file: File, type: DensityMap['type'], kind: DensityMap['kind']}|null,
+            densityMapCoeffs: File|null,
+            clsfResData: ClassificationResources.Data
+        }> = {
             taskFunc: 'dnatco-from-custom-structure',
             payload: {
                 coords: { file: coordsFile, type: coordsType },
                 densityMap: densityMapFile ? { file: densityMapFile, type: densityType!, kind: densityKind } : null,
+                densityMapCoeffs: densityMapCoeffsFile,
                 clsfResData: ClassificationContext.data()
             },
             initialStatus: ''
@@ -299,10 +305,11 @@ export class App extends WithSubscriptions<{}, State> {
         case 'start':
             return (
                 <StartTab
-                    onDoCustomStructure={(coordsFile, densityMapFile) => {
+                    onDoCustomStructure={(coordsFile, densityMapFile, densityMapCoeffsFile) => {
                         this.fromCustomStructure(
                             coordsFile,
                             densityMapFile,
+                            densityMapCoeffsFile,
                             () => this.setState({ ...this.state, mode: 'structure', selectedTab: 'annotation' })
                         )
                     }}

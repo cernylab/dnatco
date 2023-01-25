@@ -1,6 +1,4 @@
-// TODO: It will make much more sense to have this elsewhere
-// but since we currently do not have any other use for this
-// we define it here
+import { Requests } from './requests';
 
 function isErrorResponse(v: unknown): v is WebApi.ErrorResponse {
     if (typeof v !== 'object')
@@ -32,16 +30,7 @@ function isOkResponse<T>(v: unknown, checker: (v: unknown) => v is T): v is WebA
 }
 
 export namespace WebApi {
-    export namespace Requests {
-        export type Search = {
-            type: 'search',
-            NtC: string;
-            maxCount: number;
-            redundant: boolean;
-            large: boolean;
-        }
-    }
-    export type Request = Requests.Search;
+    export type Request = Requests.Request;
 
     export type OkResponse<T> = {
         success: true;

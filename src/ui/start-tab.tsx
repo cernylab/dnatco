@@ -6,12 +6,13 @@ import { Popup } from './common/popup';
 import { DummyButton, PushButton } from './common/push-button';
 import { ShadowedBox } from './common/shadowed-box';
 import { BuiltInRemoteDatabases, UserRemoteDatabases } from '../remote-db/register';
-import { Search } from '../search/search';
+import { Search } from '../remote/search';
 import { isPdbId } from '../util';
 
 interface State {
     coordsFile: File|null;
     densityMapFile: File|null;
+    densityMapCoeffsFile: File|null;
     database: string;
     pdbId: string;
 }
@@ -34,6 +35,7 @@ export class StartTab extends React.Component<StartTab.Props, State> {
             coordsFile: null,
             database: this.DatabaseOptions[0].value,
             densityMapFile: null,
+            densityMapCoeffsFile: null,
             pdbId: '',
         };
     }
@@ -162,13 +164,29 @@ export class StartTab extends React.Component<StartTab.Props, State> {
                                                 }}
                                             />
                                         </div>
+                                        <div>Electron density map coefficients (optional)</div>
+                                        <div style={{ alignItems: 'center', display: 'flex', gap: 'var(--h-gap)' }}>
+                                            <label className='rdo-file-upload' htmlFor='upload-density-map-coeffs-file'>
+                                                <DummyButton caption='Browse...' />
+                                            </label>
+                                            <div>{this.state.densityMapCoeffsFile !== null ? this.state.densityMapCoeffsFile.name : 'No file selected'}</div>
+                                            <input
+                                                id='upload-density-map-coeffs-file'
+                                                className='rdo-input-file'
+                                                type='file'
+                                                onChange={e => {
+                                                    const file = (e.currentTarget.files ? e.currentTarget.files[0] : null);
+                                                    this.setState({ ...this.state, densityMapCoeffsFile: file });
+                                                }}
+                                            />
+                                        </div>
                                     </div>
                                     <PushButton
                                         caption='Proceed'
                                         enabled={this.state.coordsFile !== null && this.props.dnatcofierState === 'ready'}
                                         onClick={() => {
                                             if (this.state.coordsFile)
-                                                this.props.onDoCustomStructure(this.state.coordsFile, this.state.densityMapFile);
+                                                this.props.onDoCustomStructure(this.state.coordsFile, this.state.densityMapFile, this.state.densityMapCoeffsFile);
                                         }}
                                     />
                                 </div>
@@ -184,7 +202,7 @@ export class StartTab extends React.Component<StartTab.Props, State> {
 export namespace StartTab {
     export interface Props {
         onDoPdbId: (pdbId: string, db: string) => void,
-        onDoCustomStructure: (coordsFile: File, densityMapFile: File|null) => void,
+        onDoCustomStructure: (coordsFile: File, densityMapFile: File|null, densityMapCoeffsFile: File|null) => void,
         onDoRawLink: (link: string) => void,
         onDoSearchConformers: (options: Search.Criteria) => void,
         dnatcofierState: 'ready' | 'initializing' | 'failed';

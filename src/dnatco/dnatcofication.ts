@@ -10,6 +10,7 @@ import { Chain, Structure as _Structure } from './structure';
 import { Cif } from '../cif';
 import { Category, Schema } from '../cif/categories';
 import { AtomSite } from '../cif/categories/atom-site';
+import { Rscc } from '../remote/rscc';
 import { TaskContext } from '../tasks/task';
 import {
     NdbStructNtcOverall, NdbStructNtcStepParameters, NdbStructNtcStepSummary,
@@ -55,6 +56,8 @@ export const DnatcoficationData = {
 
     averageConfals: new Array<number>(),
     stepRmsdStats: new Array<StepRmsdStats[]>(),
+
+    rscc: new Array<Rscc.Rscc>(),
 };
 export type DnatcoficationData = typeof DnatcoficationData;
 
@@ -175,6 +178,10 @@ export namespace Dnatcofication {
         }
     }
 
+    export function addRscc(data: DnatcoficationData, rscc: DnatcoficationData['rscc']) {
+        data.rscc = rscc;
+    }
+
     export function ingest(coordinates: Coordinates, densityMaps: DensityMap[]|null, sourceFileName: string|null, clsfResData: ClassificationResources.Data, ctx: DnatcoficationTaskContext) {
         const tStart = performance.now();
 
@@ -236,11 +243,14 @@ export namespace Dnatcofication {
                 densityMaps,
                 averageConfals: ExtractInfo.averageConfals(steps),
                 stepRmsdStats: ExtractInfo.stepRmsdStats([0.5, 1.0], steps),
+                rscc: [],
             };
 
-            ctx.events.finished.next({ state: 'succeeded', data });
+            return data;
         } catch (e) {
             ctx.events.finished.next({ state: 'failed', message: (e as Error).toString() });
+
+            return void 0;
         }
     }
 

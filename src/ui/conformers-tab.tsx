@@ -8,7 +8,7 @@ import { SideSwitchingPanel } from './common/side-switching-panel';
 import { TextContainer } from './common/text-container';
 import { DownloadButton } from './dnatco/common';
 import { ListOfConformers } from '../dnatco/list-of-conformers';
-import { Search } from '../search/search';
+import { Search } from '../remote/search';
 import { Net } from '../util/net';
 import { Serialization } from '../util/serialization';
 import { GlobalConfig } from '../global-config';

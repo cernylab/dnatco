@@ -1,6 +1,8 @@
+import { inWorker } from './';
 import { DynamicTable } from '../ui/common/dynamic-table';
 
 const CSV_COL_SEP = ';';
+const ChopUrlTag = /(^[a-zA-Z0-9:./-]+);base64,/;
 
 export namespace Serialization {
     type Serializable = {
@@ -35,6 +37,16 @@ export namespace Serialization {
             obj[data.tags[col]] = data.values[col];
 
         return JSON.stringify(obj);
+    }
+
+    export async function toBase64(file: File) {
+        if (inWorker()) {
+            // @ts-ignore
+            const reader = new FileReaderSync();
+            return reader.readAsDataURL(file).replace(ChopUrlTag, '');
+        } else {
+            return Buffer.from(await file.arrayBuffer()).toString('base64');
+        }
     }
 
     export function dynamicTable(model: DynamicTable.Model, format: 'csv'|'json') {

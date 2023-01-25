@@ -11,8 +11,9 @@
 import { ErrorResult, OkResult } from './';
 import { Dnatcofication } from './dnatcofication';
 import { Residues } from './residues';
+import { Rscc as RemoteRscc } from '../remote/rscc';
 import { StepsMapper } from './steps-mapper';
-import { fromTemplate, isArr, isNum, isObj, isType } from '../util/json';
+import { fromTemplate, isObj, isType } from '../util/json';
 
 const BackdropRscc = {
     rsccMinActual: 0,
@@ -68,14 +69,6 @@ function isBackdropRsccSane(bdrop: Rscc.BackdropRscc) {
     }
 
     return true;
-}
-
-function isRsccList(v: any): v is [atomId: number, rscc: number][] {
-    return isArr(v, (x: unknown): x is [atomId: number, rscc: number] => {
-        if (!isArr(x, isNum))
-            return false;
-        return x.length === 2;
-    });
 }
 
 function makeBackdropRsccUrl(kind: keyof BackdropRsccCache) {
@@ -224,18 +217,9 @@ export namespace Rscc {
             return OkResult(cached[modelIdx]);
 
         try {
-            const req = await fetch(`./rscc/${pdbId}.rscc`);
-            if (!req.ok)
-                return ErrorResult(req.statusText);
-
-            const rsccList = await req.json();
-            if (!isRsccList(rsccList))
-                return ErrorResult('Invalid data');
-
-            rsccList.sort((a, b) => a[0] - b[0]);
+            const rsccList = d.data.rscc.length > 0 ? d.data.rscc : await RemoteRscc.fetchFromDb(pdbId);
 
             const res = calculateRscc(d, modelIdx, rsccList);
-
             const cache = RsccCache.get(pdbId) ?? [];
             cache[modelIdx] = res;
             RsccCache.set(pdbId, cache);

@@ -1,7 +1,8 @@
-import { WebApi } from './web-api';
 import { CANA } from '../dnatco/cana';
 import { NtC } from '../dnatco/ntc';
 import { EventsKeeper } from '../util/events-keeper';
+import { WebApi } from '../web-api';
+import { Requests } from '../web-api/requests';
 
 export class Search {
     private ek = new EventsKeeper();
@@ -52,6 +53,7 @@ export namespace Search {
         rmsd: 0,
     }
     export type FoundStep = typeof FoundStep;
+    export type FoundSteps = FoundStep[];
 
     export const Criteria = {
         NtC: 'AA00',
@@ -87,7 +89,7 @@ export namespace Search {
         return true;
     }
 
-    function isFoundStepList(obj: unknown): obj is FoundStep[] {
+    function isFoundSteps(obj: unknown): obj is FoundSteps {
         if (!Array.isArray(obj))
             return false;
 
@@ -100,18 +102,12 @@ export namespace Search {
     }
 
     export function requestSearch(NtC: string, maxCount: number, redundant: boolean, large: boolean): WebApi.Pending {
-        const req: WebApi.Requests.Search = {
-            type: 'search',
-            NtC,
-            maxCount,
-            redundant,
-            large
-        };
+        const req = Requests.Search(NtC, maxCount, redundant, large);
 
-        return WebApi.request('search', req);
+        return WebApi.request('api/search', req);
     }
 
     export async function resolveSearch(pending: WebApi.Pending) {
-        return await WebApi.resolve<FoundStep[]>(pending, isFoundStepList);
+        return await WebApi.resolve<FoundStep[]>(pending, isFoundSteps);
     }
 }
