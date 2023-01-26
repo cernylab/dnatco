@@ -1,5 +1,5 @@
 import { OkResult, ErrorResult, Result } from './';
-import { RemoteDatabase } from '../remote-db';
+import { RemoteDatabase } from '../remote/db';
 import { fileSuffixes } from '../util';
 
 export type DensityMap = {

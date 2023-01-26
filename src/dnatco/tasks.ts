@@ -3,9 +3,9 @@ import { ClassificationResources } from './classification-resources';
 import { Coordinates } from './coordinates';
 import { DensityMap } from './density-map';
 import { Dnatcofication, DnatcoficationData, DnatcoficationTaskContext } from './dnatcofication';
-import { UserRemoteDatabases, BuiltInRemoteDatabases } from '../remote-db/register';
+import { UserRemoteDatabases, BuiltInRemoteDatabases } from '../remote/db/register';
 import { Rscc } from '../remote/rscc';
-import { StaticDb } from '../remote-db/static-db';
+import { StaticDb } from '../remote/db/static-db';
 
 async function tryGetRscc(coords: File, coeffs: File, ctx: DnatcoficationTaskContext, data: DnatcoficationData) {
     ctx.events.statusChanged.next('Getting RSCC coefficients');

@@ -1,6 +1,6 @@
-import { KnownCoordinateFileTypes, KnownDensityMapKinds, KnownDensityMapTypes } from './remote-db';
-import { UserRemoteDatabases } from './remote-db/register';
-import { StaticDb } from './remote-db/static-db';
+import { KnownCoordinateFileTypes, KnownDensityMapKinds, KnownDensityMapTypes } from './remote/db';
+import { UserRemoteDatabases } from './remote/db/register';
+import { StaticDb } from './remote/db/static-db';
 import { fromTemplate } from './util/json';
 
 export type GlobalConfigData = {

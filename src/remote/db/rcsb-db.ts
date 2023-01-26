@@ -1,9 +1,9 @@
 import { RemoteDatabase } from './';
-import { OkResult, ErrorResult, Result } from '../dnatco';
-import { Coordinates } from '../dnatco/coordinates';
-import { DensityMap } from '../dnatco/density-map';
-import { fromTemplate, isObj } from '../util/json';
-import { ungzip } from '../zip/unzip';
+import { OkResult, ErrorResult, Result } from '../../dnatco';
+import { Coordinates } from '../../dnatco/coordinates';
+import { DensityMap } from '../../dnatco/density-map';
+import { fromTemplate, isObj } from '../../util/json';
+import { ungzip } from '../../zip/unzip';
 
 type _Ok<T> = {
     type: 'ok';

@@ -1,9 +1,9 @@
 import { RemoteDatabase } from './';
-import { ErrorResult, OkResult } from '../dnatco';
-import { Coordinates } from '../dnatco/coordinates';
-import { DensityMap } from '../dnatco/density-map';
-import { replaceAll, Utf8Decoder } from '../util';
-import { ungzip } from '../zip/unzip';
+import { ErrorResult, OkResult } from '../../dnatco';
+import { Coordinates } from '../../dnatco/coordinates';
+import { DensityMap } from '../../dnatco/density-map';
+import { replaceAll, Utf8Decoder } from '../../util';
+import { ungzip } from '../../zip/unzip';
 
 export type StaticDb = {
     id: string;

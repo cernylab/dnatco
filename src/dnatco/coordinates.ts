@@ -1,5 +1,5 @@
 import { OkResult, ErrorResult } from './';
-import { RemoteDatabase } from '../remote-db';
+import { RemoteDatabase } from '../remote/db';
 import { fileSuffixes, Utf8Decoder } from '../util';
 import { ungzip } from '../zip/unzip';
 

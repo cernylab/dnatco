@@ -5,7 +5,7 @@ import { InProgressSpinner } from './common/in-progress-spinner';
 import { Popup } from './common/popup';
 import { DummyButton, PushButton } from './common/push-button';
 import { ShadowedBox } from './common/shadowed-box';
-import { BuiltInRemoteDatabases, UserRemoteDatabases } from '../remote-db/register';
+import { BuiltInRemoteDatabases, UserRemoteDatabases } from '../remote/db/register';
 import { Search } from '../remote/search';
 import { isPdbId } from '../util';
 
