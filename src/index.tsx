@@ -182,7 +182,7 @@ export class App extends WithSubscriptions<{}, State> {
         }
     }
 
-    private fromCustomStructure(coordsFile: File, densityMapFile: File|null, densityMapCoeffsFile: File|null, onSuccess: () => void) {
+    private fromCustomStructure(coordsFile: File, densityMaps: { file: File, kind: DensityMap['kind'] }[], densityMapCoeffs: File|null, onSuccess: () => void) {
         const coordsType = Coordinates.guessType(coordsFile);
         if (coordsType === 'unknown') {
             Popup.create(
@@ -194,29 +194,17 @@ export class App extends WithSubscriptions<{}, State> {
             return;
         }
 
-        const densityKind = '2fo-fc'; // HACK!
-        const densityType = densityMapFile ? DensityMap.guessType(densityMapFile) : undefined;
-        if (densityType && densityType === 'unknown') {
-            Popup.create(
-                <>
-                    {formatErrorText('Cannot process structure')}
-                    {formatErrorText('Cannot infer type of density map file')}
-                </>
-            );
-            return;
-        }
-
         const task: Task<{ coords: {
             file: File, type: Coordinates['type'] },
-            densityMap: { file: File, type: DensityMap['type'], kind: DensityMap['kind']}|null,
+            densityMaps: { file: File, kind: DensityMap['kind'] }[],
             densityMapCoeffs: File|null,
             clsfResData: ClassificationResources.Data
         }> = {
             taskFunc: 'dnatco-from-custom-structure',
             payload: {
                 coords: { file: coordsFile, type: coordsType },
-                densityMap: densityMapFile ? { file: densityMapFile, type: densityType!, kind: densityKind } : null,
-                densityMapCoeffs: densityMapCoeffsFile,
+                densityMaps,
+                densityMapCoeffs,
                 clsfResData: ClassificationContext.data()
             },
             initialStatus: ''
@@ -305,11 +293,11 @@ export class App extends WithSubscriptions<{}, State> {
         case 'start':
             return (
                 <StartTab
-                    onDoCustomStructure={(coordsFile, densityMapFile, densityMapCoeffsFile) => {
+                    onDoCustomStructure={(coordsFile, densityMaps, densityMapCoeffs) => {
                         this.fromCustomStructure(
                             coordsFile,
-                            densityMapFile,
-                            densityMapCoeffsFile,
+                            densityMaps,
+                            densityMapCoeffs,
                             () => this.setState({ ...this.state, mode: 'structure', selectedTab: 'annotation' })
                         )
                     }}

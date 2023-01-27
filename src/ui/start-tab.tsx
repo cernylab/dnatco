@@ -1,20 +1,33 @@
-import * as React from 'react';
+import React from 'react';
 import { BigLogo } from './big-logo';
 import { ComboBox } from './common/combo-box';
+import { IconButton } from './common/push-button';
 import { InProgressSpinner } from './common/in-progress-spinner';
 import { Popup } from './common/popup';
 import { DummyButton, PushButton } from './common/push-button';
 import { ShadowedBox } from './common/shadowed-box';
+import { DensityMap } from '../dnatco/density-map';
 import { BuiltInRemoteDatabases, UserRemoteDatabases } from '../remote/db/register';
 import { Search } from '../remote/search';
 import { isPdbId } from '../util';
+import 'assets/imgs/x.svg';
 
 interface State {
     coordsFile: File|null;
-    densityMapFile: File|null;
-    densityMapCoeffsFile: File|null;
+    densityMaps: { file: File, kind: (DensityMap['kind'] | 'coefficients') }[];
+    remainingDensityMapKinds: (DensityMap['kind'] | 'coefficients')[],
+    selectedDensityMapKind: (DensityMap['kind'] | 'coefficients') | null,
+    currentDensityMapFile: File|null,
     database: string;
     pdbId: string;
+}
+const KnownDensityMapKinds: (DensityMap['kind'] | 'coefficients')[] = [ 'fo-fc', '2fo-fc', 'em', 'coefficients' ];
+
+const NiceMapKinds: Record<DensityMap['kind'] | 'coefficients', string> = {
+    'fo-fc': 'Fo-Fc',
+    '2fo-fc': '2Fo-Fc',
+    'em': 'EM',
+    'coefficients': 'Map coefficients',
 }
 
 export class StartTab extends React.Component<StartTab.Props, State> {
@@ -34,8 +47,10 @@ export class StartTab extends React.Component<StartTab.Props, State> {
         this.state = {
             coordsFile: null,
             database: this.DatabaseOptions[0].value,
-            densityMapFile: null,
-            densityMapCoeffsFile: null,
+            densityMaps: [],
+            remainingDensityMapKinds: [...KnownDensityMapKinds],
+            selectedDensityMapKind: KnownDensityMapKinds[0],
+            currentDensityMapFile: null,
             pdbId: '',
         };
     }
@@ -51,6 +66,19 @@ export class StartTab extends React.Component<StartTab.Props, State> {
             Popup.create(
                 <div className='rdo-error-text'>{`${this.state.pdbId} is not a valid PDB ID`}</div>
             );
+        }
+    }
+
+    componentDidUpdate(prevProps: Readonly<StartTab.Props>, prevState: Readonly<State>) {
+        if (this.state.densityMaps.length !== prevState.densityMaps.length) {
+            const remaining = KnownDensityMapKinds.filter(kind => !this.state.densityMaps.find(x => x.kind === kind));
+
+            this.setState({
+                ...this.state,
+                remainingDensityMapKinds: remaining,
+                selectedDensityMapKind: remaining[0] ?? null,
+                currentDensityMapFile: null,
+            });
         }
     }
 
@@ -120,18 +148,31 @@ export class StartTab extends React.Component<StartTab.Props, State> {
                         </ShadowedBox>
                         <ShadowedBox>
                             <div className='rdo-offset'>
-                                <div className='rdo-section-caption'>
-                                    Custom structure
+                                <div style={{ alignItems: 'center', display: 'flex', gap: 'var(--h-gap)', justifyContent: 'center', marginBottom: 'var(--v-gap)' }}>
+                                    <div className='rdo-text-large'>
+                                        Custom structure
+                                    </div>
+                                    <PushButton
+                                        caption='Proceed'
+                                        enabled={this.state.coordsFile !== null && this.props.dnatcofierState === 'ready'}
+                                        onClick={() => {
+                                            if (this.state.coordsFile) {
+                                                const densityMaps = this.state.densityMaps.filter(x => x.kind !== 'coefficients') as { file: File, kind: DensityMap['kind'] }[];
+                                                const densityMapCoeffs = this.state.densityMaps.find(x => x.kind === 'coefficients')?.file ?? null;
+                                                this.props.onDoCustomStructure(this.state.coordsFile, densityMaps, densityMapCoeffs);
+                                            }
+                                        }}
+                                    />
                                 </div>
                                 <div style={{ alignItems: 'center', display: 'flex', gap: 'var(--h-gap)', justifyContent: 'center' }}>
                                     <div style={{
                                         alignItems: 'center',
                                         columnGap: 'var(--h-gap)',
                                         display: 'grid',
-                                        gridTemplateColumns: 'auto auto',
+                                        gridTemplateColumns: 'auto auto auto auto',
                                         rowGap: 'var(--v-gap)',
                                     }}>
-                                        <div>Coordinates (PDB or CIF)</div>
+                                        <div className='rdo-strong'>Coordinates (PDB or CIF)</div>
                                         <div style={{ alignItems: 'center', display: 'flex', gap: 'var(--h-gap)' }}>
                                             <label className='rdo-file-upload' htmlFor='upload-coords-file'>
                                                 <DummyButton caption='Browse...' />
@@ -147,48 +188,81 @@ export class StartTab extends React.Component<StartTab.Props, State> {
                                                 }}
                                             />
                                         </div>
+                                        <div />
+                                        <div />
 
-                                        <div>Electron density map (optional)</div>
-                                        <div style={{ alignItems: 'center', display: 'flex', gap: 'var(--h-gap)' }}>
-                                            <label className='rdo-file-upload' htmlFor='upload-density-map-file'>
-                                                <DummyButton caption='Browse...' />
-                                            </label>
-                                            <div>{this.state.densityMapFile!== null ? this.state.densityMapFile.name : 'No file selected'}</div>
-                                            <input
-                                                id='upload-density-map-file'
-                                                className='rdo-input-file'
-                                                type='file'
-                                                onChange={e => {
-                                                    const file = (e.currentTarget.files ? e.currentTarget.files[0] : null);
-                                                    this.setState({ ...this.state, densityMapFile: file });
-                                                }}
-                                            />
-                                        </div>
-                                        <div>Electron density map coefficients (optional)</div>
-                                        <div style={{ alignItems: 'center', display: 'flex', gap: 'var(--h-gap)' }}>
-                                            <label className='rdo-file-upload' htmlFor='upload-density-map-coeffs-file'>
-                                                <DummyButton caption='Browse...' />
-                                            </label>
-                                            <div>{this.state.densityMapCoeffsFile !== null ? this.state.densityMapCoeffsFile.name : 'No file selected'}</div>
-                                            <input
-                                                id='upload-density-map-coeffs-file'
-                                                className='rdo-input-file'
-                                                type='file'
-                                                onChange={e => {
-                                                    const file = (e.currentTarget.files ? e.currentTarget.files[0] : null);
-                                                    this.setState({ ...this.state, densityMapCoeffsFile: file });
-                                                }}
-                                            />
-                                        </div>
+                                        <div className='rdo-line-spacer' style={{ gridColumnStart: 'span 4' }} />
+
+                                        <div className='rdo-strong'>Density maps</div>
+                                        <div className='rdo-strong'>File</div>
+                                        <div className='rdo-strong'>Kind</div>
+                                        <div />
+                                        {
+                                            this.state.densityMaps.map((m, idx) => {
+                                                return (
+                                                    <>
+                                                        <div />
+                                                        <div>{m.file.name}</div>
+                                                        <div>{NiceMapKinds[m.kind]}</div>
+                                                        <IconButton
+                                                            src={`imgs/x.svg`}
+                                                            onClick={() => {
+                                                                const dms = [...this.state.densityMaps];
+                                                                dms.splice(idx, 1);
+                                                                this.setState({ ...this.state, densityMaps: dms });
+                                                            }}
+                                                            className='rdo-icon-text-button'
+                                                        />
+                                                    </>
+                                                );
+                                            })
+
+                                        }
+
+                                        {
+                                            this.state.remainingDensityMapKinds.length > 0
+                                                ? <>
+                                                    <PushButton
+                                                        caption='Add density map'
+                                                        onClick={() => {
+                                                            if (this.state.currentDensityMapFile) {
+                                                                this.setState({
+                                                                    ...this.state,
+                                                                    densityMaps: [
+                                                                        ...this.state.densityMaps,
+                                                                        ({ file: this.state.currentDensityMapFile, kind: this.state.selectedDensityMapKind! })
+                                                                    ]
+                                                                });
+                                                            }
+                                                        }}
+                                                    />
+                                                    <div style={{ alignItems: 'center', display: 'flex', gap: 'var(--h-gap)' }}>
+                                                        <label className='rdo-file-upload' htmlFor='upload-density-map'>
+                                                            <DummyButton caption='Browse...' />
+                                                        </label>
+                                                        <input
+                                                            id='upload-density-map'
+                                                            className='rdo-input-file'
+                                                            type='file'
+                                                            onChange={e => {
+                                                                const file = (e.currentTarget.files ? e.currentTarget.files[0] : null);
+                                                                this.setState({ ...this.state, currentDensityMapFile: file });
+                                                            }}
+                                                        />
+                                                        <div>
+                                                            {this.state.currentDensityMapFile ? this.state.currentDensityMapFile.name : 'No file selected'}
+                                                        </div>
+                                                    </div>
+                                                    <ComboBox
+                                                        options={this.state.remainingDensityMapKinds.map(x => ({ caption: NiceMapKinds[x], value: x }))}
+                                                        value={this.state.selectedDensityMapKind ?? ''}
+                                                        onChange={value => this.setState({ ...this.state, selectedDensityMapKind: value as State['selectedDensityMapKind'] })}
+                                                    />
+                                                    <div />
+                                                </>
+                                                : <div style={{ gridColumnStart: 'span 4' }} />
+                                        }
                                     </div>
-                                    <PushButton
-                                        caption='Proceed'
-                                        enabled={this.state.coordsFile !== null && this.props.dnatcofierState === 'ready'}
-                                        onClick={() => {
-                                            if (this.state.coordsFile)
-                                                this.props.onDoCustomStructure(this.state.coordsFile, this.state.densityMapFile, this.state.densityMapCoeffsFile);
-                                        }}
-                                    />
                                 </div>
                             </div>
                         </ShadowedBox>
@@ -202,7 +276,7 @@ export class StartTab extends React.Component<StartTab.Props, State> {
 export namespace StartTab {
     export interface Props {
         onDoPdbId: (pdbId: string, db: string) => void,
-        onDoCustomStructure: (coordsFile: File, densityMapFile: File|null, densityMapCoeffsFile: File|null) => void,
+        onDoCustomStructure: (coordsFile: File, densityMaps: { file: File, kind: DensityMap['kind'] }[], densityMapCoeffs: File|null) => void,
         onDoRawLink: (link: string) => void,
         onDoSearchConformers: (options: Search.Criteria) => void,
         dnatcofierState: 'ready' | 'initializing' | 'failed';

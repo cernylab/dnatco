@@ -677,6 +677,10 @@ th.rdo-data-table-small {
     outline: none;
 }
 
+.rdo-strong {
+    font-weight: bold;
+}
+
 .rdo-structure-id {
     font-size: var(--font-xxlarge);
     font-weight: bold;
