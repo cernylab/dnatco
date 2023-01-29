@@ -217,7 +217,12 @@ export namespace Rscc {
             return OkResult(cached[modelIdx]);
 
         try {
-            const rsccList = d.data.rscc.length > 0 ? d.data.rscc : await RemoteRscc.fetchFromDb(pdbId);
+            const rsccList = d.data.rscc.length > 0
+                ? d.data.rscc
+                : d.data.isCustomStructure ? [] : await RemoteRscc.fetchFromDb(pdbId);
+
+            if (rsccList.length === 0)
+                return ErrorResult('No data have been calculated for this structure');
 
             const res = calculateRscc(d, modelIdx, rsccList);
             const cache = RsccCache.get(pdbId) ?? [];

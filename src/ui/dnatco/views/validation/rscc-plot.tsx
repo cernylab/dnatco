@@ -7,7 +7,7 @@ import { Constants } from '../../constants';
 import { niceStepNameText } from '../../common';
 import { InvalidModelIndex, InvalidStepId } from '../../structure-selection';
 import { NamedList, NamedListItem } from '../../../common/named-list';
-import { OkResult, isOk } from '../../../../dnatco';
+import { OkResult, isError, isOk } from '../../../../dnatco';
 import { Dnatcofication } from '../../../../dnatco/dnatcofication';
 import { Rscc } from '../../../../dnatco/rscc';
 import { StepsMapper } from '../../../../dnatco/steps-mapper';
@@ -152,7 +152,7 @@ interface State {
     stru: Rscc.StructureRscc;
     backdropAssigned: Rscc.BackdropRscc;
     backdropUnassigned: Rscc.BackdropRscc;
-    fetchFailed: boolean;
+    fetchError: string | undefined;
 }
 export class RsccPlot extends View<View.Props, State> {
     constructor(props: View.Props) {
@@ -165,7 +165,7 @@ export class RsccPlot extends View<View.Props, State> {
             },
             backdropAssigned: Rscc.emptyBackdropRscc(),
             backdropUnassigned: Rscc.emptyBackdropRscc(),
-            fetchFailed: false,
+            fetchError: void 0,
         };
     }
 
@@ -205,7 +205,7 @@ export class RsccPlot extends View<View.Props, State> {
                 stru: { assigned: [], unassigned: [] },
                 backdropAssigned: Rscc.emptyBackdropRscc(),
                 backdropUnassigned: Rscc.emptyBackdropRscc(),
-                fetchFailed,
+                fetchError: isError(struRsccRes) ? struRsccRes.message : 'Unable to get RSCC data',
             });
         } else {
             this.setState({
@@ -213,6 +213,7 @@ export class RsccPlot extends View<View.Props, State> {
                 stru: (struRsccRes as OkResult<Rscc.StructureRscc>).data,
                 backdropAssigned: (backdropAssignedRes as OkResult<Rscc.BackdropRscc>).data,
                 backdropUnassigned: (backdropUnassignedRes as OkResult<Rscc.BackdropRscc>).data,
+                fetchError: void 0,
             });
         }
     }
@@ -397,8 +398,8 @@ export class RsccPlot extends View<View.Props, State> {
                 <div className='rdo-secondary-caption'>RSCC(*) vs RMSD plot of assigned steps</div>
                 <div className='rdo-plot-container' style={{ flex: 1, minHeight: Constants.MinimumFlexiblePlotHeight }}>
                     { isPlotEmpty(rsccPlotData.assigned)
-                        ? this.state.fetchFailed
-                            ? <div>Unable to get RSCC data</div>
+                        ? this.state.fetchError
+                            ? <div>{this.state.fetchError}</div>
                             : <div>There are no assigned steps in this structure</div>
                         : this.renderPlot(rsccPlotData.assigned.xy, rsccPlotData.assigned.contour)
                     }
@@ -407,8 +408,8 @@ export class RsccPlot extends View<View.Props, State> {
                 <div className='rdo-secondary-caption'>RSCC(*) vs RMSD plot of unassigned steps</div>
                 <div className='rdo-plot-container' style={{ flex: 1, minHeight: Constants.MinimumFlexiblePlotHeight }}>
                     { isPlotEmpty(rsccPlotData.unassigned)
-                        ? this.state.fetchFailed
-                            ? <div>Unable to get RSCC data</div>
+                        ? this.state.fetchError
+                            ? <div>{this.state.fetchError}</div>
                             : <div>There are no unassigned steps in this structure</div>
                         : this.renderPlot(rsccPlotData.unassigned.xy, rsccPlotData.unassigned.contour)
                     }

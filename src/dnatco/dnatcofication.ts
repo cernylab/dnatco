@@ -44,6 +44,7 @@ export type DnatcoficationTaskContext = TaskContext<DnatcoficationData>;
 export type StepRmsdStats = { rmsdThreshold: number, count: number };
 
 export const DnatcoficationData = {
+    isCustomStructure: false,
     connectivities: { backward: [], forward: [] } as ConnSimil.AllConnectivities,
     entityKinds: [] as Dnatcofication.EntityKinds[],
     similarities: [] as ConnSimil.AllSimilarities,
@@ -182,7 +183,7 @@ export namespace Dnatcofication {
         data.rscc = rscc;
     }
 
-    export function ingest(coordinates: Coordinates, densityMaps: DensityMap[]|null, sourceFileName: string|null, clsfResData: ClassificationResources.Data, ctx: DnatcoficationTaskContext) {
+    export function ingest(coordinates: Coordinates, densityMaps: DensityMap[]|null, sourceFileName: string|null, clsfResData: ClassificationResources.Data, isCustomStructure: boolean, ctx: DnatcoficationTaskContext) {
         const tStart = performance.now();
 
         try {
@@ -233,6 +234,7 @@ export namespace Dnatcofication {
             console.log(`Dnatcofication process took ${((tEnd - tStart) / 1000.0).toFixed(3)} sec`);
 
             const data: DnatcoficationData = {
+                isCustomStructure,
                 connectivities,
                 entityKinds,
                 similarities,
