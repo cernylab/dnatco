@@ -42,10 +42,11 @@ export namespace WebApi {
 
     export type ErrorResponse = {
         success: false;
+        status: number;
         message?: string;
     }
-    export function ErrorResponse(message?: string): ErrorResponse {
-        return { success: false, message };
+    export function ErrorResponse(status: number, message?: string): ErrorResponse {
+        return { success: false, status, message };
     }
 
     export type ApiResponse<T> = OkResponse<T>|ErrorResponse;
@@ -79,17 +80,16 @@ export namespace WebApi {
     export async function resolve<T>(pending: Pending, payloadChecker: (v: unknown) => v is T): Promise<ApiResponse<T>> {
         try {
             const resp = await pending.running;
-            if (!resp.ok)
-                return ErrorResponse(resp.statusText);
             const json = await resp.json();
 
             if (isErrorResponse(json))
-                return json;
+                return ErrorResponse(json.status, json.message);
             else if (isOkResponse<T>(json, payloadChecker))
                 return json;
-            return ErrorResponse('Malformed response');
+
+            return ErrorResponse(resp.status, 'Malformed response');
         } catch (e) {
-            return ErrorResponse((e as Error).message);
+            return ErrorResponse(500, (e as Error).message);
         }
     }
 }
