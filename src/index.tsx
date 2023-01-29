@@ -21,6 +21,7 @@ import { NavigationBar } from './ui/navigation-bar';
 import { StartTab } from './ui/start-tab';
 import { Popup } from './ui/common/popup';
 import { InProgress } from './ui/common/in-progress';
+import { QuestionDialog } from './ui/common/question-dialog';
 import { Constants } from './ui/dnatco/constants';
 import { MainScreen } from './ui/dnatco/main-screen';
 import { WithSubscriptions } from './ui/service/with-subscriptions';
@@ -194,23 +195,44 @@ export class App extends WithSubscriptions<{}, State> {
             return;
         }
 
-        const task: Task<{ coords: {
-            file: File, type: Coordinates['type'] },
-            densityMaps: { file: File, kind: DensityMap['kind'] }[],
-            densityMapCoeffs: File|null,
-            clsfResData: ClassificationResources.Data
-        }> = {
-            taskFunc: 'dnatco-from-custom-structure',
-            payload: {
-                coords: { file: coordsFile, type: coordsType },
-                densityMaps,
-                densityMapCoeffs,
-                clsfResData: ClassificationContext.data()
-            },
-            initialStatus: ''
-        };
+        const doTask = (coeffs: File|null) => {
+           const task: Task<{ coords: {
+                file: File, type: Coordinates['type'] },
+                densityMaps: { file: File, kind: DensityMap['kind'] }[],
+                densityMapCoeffs: File|null,
+                clsfResData: ClassificationResources.Data
+            }> = {
+                taskFunc: 'dnatco-from-custom-structure',
+                payload: {
+                    coords: { file: coordsFile, type: coordsType },
+                    densityMaps,
+                    densityMapCoeffs: coeffs,
+                    clsfResData: ClassificationContext.data()
+                },
+                initialStatus: ''
+            };
 
-        this.loadStructure(task, onSuccess);
+            this.loadStructure(task, onSuccess);
+        }
+
+        if (densityMapCoeffs) {
+            QuestionDialog.create({
+                caption: 'Upload structure for external processing?',
+                text: (
+                    <div>
+                        You attached a map coefficients file to the structure. {Globals.ProductName} can use this information to calculate additional validation information about the structure. To do this calculation, {Globals.ProductName} must upload your structure and the map coefficients to an external server for processing.
+                        <div className='rdo-line-spacer' />
+                        Is this okay?
+                    </div>
+                ),
+                answers: [
+                    { text: 'Yes', code: 1 },
+                    { text: 'No', code: 0 },
+                ],
+                onAnswered: (code) => doTask(code === 1 ? densityMapCoeffs : null)
+            });
+        } else
+            doTask(null);
     }
 
     private fromPdbId(pdbId: string, dbId: string, onSuccess: () => void) {
