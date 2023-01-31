@@ -5,6 +5,7 @@ import { IconButton } from './common/push-button';
 import { InProgressSpinner } from './common/in-progress-spinner';
 import { Popup } from './common/popup';
 import { DummyButton, PushButton } from './common/push-button';
+import { QuestionDialog } from './common/question-dialog';
 import { ShadowedBox } from './common/shadowed-box';
 import { DensityMap } from '../dnatco/density-map';
 import { BuiltInRemoteDatabases, UserRemoteDatabases } from '../remote/db/register';
@@ -159,7 +160,19 @@ export class StartTab extends React.Component<StartTab.Props, State> {
                                             if (this.state.coordsFile) {
                                                 const densityMaps = this.state.densityMaps.filter(x => x.kind !== 'coefficients') as { file: File, kind: DensityMap['kind'] }[];
                                                 const densityMapCoeffs = this.state.densityMaps.find(x => x.kind === 'coefficients')?.file ?? null;
-                                                this.props.onDoCustomStructure(this.state.coordsFile, densityMaps, densityMapCoeffs);
+
+                                                if (this.state.currentDensityMapFile) {
+                                                    QuestionDialog.create({
+                                                        caption: 'Confirm action',
+                                                        text: 'You have selected a density map file but you did not add the file to the list of density map files. Was that intentional?',
+                                                        answers: [{ code: 0, text: 'Yes' }, { code: 1, text: 'No' }],
+                                                        onAnswered: (code) => {
+                                                            if (code === 0)
+                                                                this.props.onDoCustomStructure(this.state.coordsFile!, densityMaps, densityMapCoeffs);
+                                                        }
+                                                    });
+                                                } else
+                                                    this.props.onDoCustomStructure(this.state.coordsFile, densityMaps, densityMapCoeffs);
                                             }
                                         }}
                                     />
