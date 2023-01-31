@@ -12,7 +12,7 @@ export class Popup extends React.Component<Popup.Props> {
     componentDidMount() {
         if (this.selfRef.current) {
             this.selfRef.current.addEventListener('keydown', (ev) => {
-                if (ev.key === 'Escape')
+                if (ev.key === 'Escape' || ev.key === 'Enter')
                     this.dismiss();
             });
             this.selfRef.current.focus();
