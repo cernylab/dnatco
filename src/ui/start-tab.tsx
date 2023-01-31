@@ -198,26 +198,29 @@ export class StartTab extends React.Component<StartTab.Props, State> {
                                         <div className='rdo-strong'>Kind</div>
                                         <div />
                                         {
-                                            this.state.densityMaps.map((m, idx) => {
-                                                return (
-                                                    <>
-                                                        <div />
-                                                        <div>{m.file.name}</div>
-                                                        <div>{NiceMapKinds[m.kind]}</div>
-                                                        <IconButton
-                                                            src={`imgs/x.svg`}
-                                                            onClick={() => {
-                                                                const dms = [...this.state.densityMaps];
-                                                                dms.splice(idx, 1);
-                                                                this.setState({ ...this.state, densityMaps: dms });
-                                                            }}
-                                                            className='rdo-icon-text-button'
-                                                        />
-                                                    </>
-                                                );
-                                            })
-
+                                            this.state.densityMaps.length === 0
+                                                ? <div style={{ gridColumnStart: 'span 4', textAlign: 'center' }}>(No density map files)</div>
+                                                : this.state.densityMaps.map((m, idx) => {
+                                                    return (
+                                                        <>
+                                                            <div />
+                                                            <div>{m.file.name}</div>
+                                                            <div>{NiceMapKinds[m.kind]}</div>
+                                                            <IconButton
+                                                                src={`imgs/x.svg`}
+                                                                onClick={() => {
+                                                                    const dms = [...this.state.densityMaps];
+                                                                    dms.splice(idx, 1);
+                                                                    this.setState({ ...this.state, densityMaps: dms });
+                                                                }}
+                                                                className='rdo-icon-text-button'
+                                                            />
+                                                        </>
+                                                    );
+                                                })
                                         }
+
+                                        <div style={{ marginTop: 'calc(var(--v-gap) / 2', gridColumnStart: 'span 4' }} />
 
                                         {
                                             this.state.remainingDensityMapKinds.length > 0
