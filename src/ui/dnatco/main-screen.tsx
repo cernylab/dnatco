@@ -27,9 +27,10 @@ const AvailableViews = {
     'mmb-commands-file': { caption: 'MMB commands file', visualizer: false },
     'connectivity-plot': { caption: 'Connectivity plot', visualizer: true },
     'rscc-plot': { caption: 'RSCC plot', visualizer: true },
+    'bonds-angles': { caption: 'Bonds & Angles', visualizer: true },
 };
 const AnnotationViews: ViewType[] = ['assigned-ntcs', 'structure-info', 'downloads'];
-const ValidationViews: ViewType[] = ['confals-rmsds', 'step-torsions', 'similarity-plot', 'rscc-plot'];
+const ValidationViews: ViewType[] = ['confals-rmsds', 'step-torsions', 'similarity-plot', 'rscc-plot', 'bonds-angles'];
 const RefinementViews: ViewType[] = ['connectivity-plot', 'refmac-restraints', 'phenix-restraints', 'mmb-commands-file', 'change-ntcs'];
 
 function masterModeViews(mode: MasterMode): { id: ViewType, caption: string }[] {
@@ -90,8 +91,10 @@ export class MainScreen extends WithSubscriptions<MainScreen.Props, State> {
 
         if (stepId === InvalidStepId)
             await this.props.viewerInterop.api.command(ViewerApi.Commands.DeselectStep());
-        else
-            await switcher(stepId, this.props.dnatcofication, this.props.viewerInterop, this.state.selectedCustomNtCSet);
+        else {
+            if (switcher)
+                await switcher(stepId, this.props.dnatcofication, this.props.viewerInterop, this.state.selectedCustomNtCSet);
+        }
 
         const structureSelection = { ...this.state.structureSelection, stepId };
         this.setState({ ...this.state, structureSelection });

@@ -9,6 +9,7 @@ import { MmbCommandsFile } from './refinement/mmb-commands-file';
 import { PhenixRestraints } from './refinement/phenix-restraints';
 import { RefmacRestraints } from './refinement/refmac-restraints';
 import { ConnectivityPlot } from './refinement/connectivity-plot';
+import { BondsAngles } from './validation/bonds-angles';
 import { ConfalsRmsds } from './validation/confals-rmsds';
 import { RsccPlot } from './validation/rscc-plot';
 import { SimilarityPlots } from './validation/similarity-plot';
@@ -25,6 +26,10 @@ export namespace Register {
         'assigned-ntcs': {
             render: (props: View.Props) => <AssignedNtCs {...props} />,
             stepSwitcher: AssignedNtCs.StepSwitcher
+        },
+        'bonds-angles': {
+            render:(props: View.Props) => <BondsAngles {...props} />,
+            stepSwitcher: void 0,
         },
         'change-ntcs': {
             render: (props: Refinement.Props) => <ChangeNtCs {...props} />,

@@ -5,6 +5,7 @@ import { CustomNtCs } from './custom-ntcs';
 import { DensityMap } from './density-map';
 import { Dnatcofier } from './dnatcofier';
 import { ExtractInfo } from './extract-info';
+import { Prosco } from './prosco';
 import { StepsMapper } from './steps-mapper';
 import { Chain, Structure as _Structure } from './structure';
 import { Cif } from '../cif';
@@ -22,6 +23,34 @@ import { Globals } from '../globals';
 
 import { PdbParser } from 'tspdb/parser';
 import { MmCifConverter } from 'tspdb/mmcif-converter';
+
+function mapProsco(residues: Prosco.Residue[]): MappedProsco {
+    const models = new Map<number, number[]>();
+    const chains = new Map<number, Map<string, number[]>>();
+
+    for (let idx = 0; idx < residues.length; idx++) {
+        const r = residues[idx];
+
+        const m = r.modelNum;
+        if (models.has(m))
+            models.get(m)!.push(idx);
+        else
+            models.set(m, [idx]);
+
+        if (chains.has(m)) {
+            const cm = chains.get(m)!;
+            if (cm.has(r.chain))
+                cm.get(r.chain)!.push(idx);
+            else
+                cm.set(r.chain, [idx]);
+        } else {
+            const cm = new Map([[r.chain, [idx]]]);
+            chains.set(m, cm);
+        }
+    }
+
+    return { models, chains, residues };
+}
 
 function pdbToCif(data: string) {
     const pdb = PdbParser.parse(data);
@@ -41,6 +70,7 @@ const RequiredDnatcoCategories: Category<any>[] = [
 ];
 
 export type DnatcoficationTaskContext = TaskContext<DnatcoficationData>;
+export type MappedProsco = { models: Map<number, number[]>, chains: Map<number, Map<string, number[]>>, residues: Prosco.Residue[] };
 export type StepRmsdStats = { rmsdThreshold: number, count: number };
 
 export const DnatcoficationData = {
@@ -58,6 +88,7 @@ export const DnatcoficationData = {
     averageConfals: new Array<number>(),
     stepRmsdStats: new Array<StepRmsdStats[]>(),
 
+    prosco: { models: new Map(), chains: new Map() } as MappedProsco,
     rscc: new Array<Rscc.Rscc>(),
 };
 export type DnatcoficationData = typeof DnatcoficationData;
@@ -192,15 +223,48 @@ export namespace Dnatcofication {
             const cifCoordinates = coordinates.type === 'cif'
                 ? coordinates.data : pdbToCif(coordinates.data);
 
-            ctx.status = 'Reading mmCif file';
+            ctx.status = 'Reading CIF file';
 
+            // This is "our" CIF representation
             let cifData = Cif.read(cifCoordinates);
+
+            // @nocheckin Delete these when an exception occurs!!!
+            let llkaImported;
+            try {
+                llkaImported = Dnatcofier.importStructure(cifCoordinates, ctx);
+            } catch (e) {
+                throw new Error(`Failed to import CIF data: ${e}`);
+            }
+
+            let llkaSteps;
+            try {
+                llkaSteps = Dnatcofier.steps(llkaImported.structure, ctx);
+            } catch (e) {
+                Dnatcofier.destroyImported(llkaImported);
+
+                throw new Error(`Failed to split structure to steps: ${e}`);
+            }
+
             if (!isDnatcofied(cifData)) {
                 // Got a CIF without DNATCO categories. Let's try to create them ourselves
-                const maybeDnatcofiedCif = Dnatcofier.dnatcoify(cifCoordinates, clsfResData, ctx);
+                const maybeDnatcofiedCif = Dnatcofier.dnatcoify(llkaSteps, llkaImported, clsfResData, ctx);
                 cifData = Cif.read(maybeDnatcofiedCif);
-                if (!isDnatcofied(cifData))
+                if (!isDnatcofied(cifData)) {
+                    llkaSteps.delete();
+                    Dnatcofier.destroyImported(llkaImported);
+
                     throw new Error('Input CIF file does not contain required DNATCO categories and ' + Globals.ProductName + '\'s automatic assignment process was unsuccessful. Sorry...');
+                }
+            }
+
+            let prosco;
+            try {
+                prosco = Dnatcofier.proscoify(llkaSteps, ctx);
+            } catch (e) {
+                llkaSteps.delete();
+                Dnatcofier.destroyImported(llkaImported);
+
+                throw new Error(`Failed to calculate Prosco: ${e}`);
             }
 
             const structures = new Array<_Structure>();
@@ -245,6 +309,7 @@ export namespace Dnatcofication {
                 densityMaps,
                 averageConfals: ExtractInfo.averageConfals(steps),
                 stepRmsdStats: ExtractInfo.stepRmsdStats([0.5, 1.0], steps),
+                prosco: mapProsco(prosco),
                 rscc: [],
             };
 

@@ -1,7 +1,7 @@
 export namespace Residues {
     export type ResidueKind = 'purine' | 'pyrimidine' | 'non-standard';
 
-    export function isElementaryResidue(name: string) {
+    export function isElementaryResidue(name: string): name is ElementaryResidue {
         return ElementaryDNAResidues.has(name) || ElementaryRNAResidues.has(name);
     }
 
@@ -20,6 +20,7 @@ export namespace Residues {
 
     export const ElementaryDNAResidues = new Set<string>([ 'DA', 'DC', 'DG', 'DT' ]);
     export const ElementaryRNAResidues = new Set<string>([ 'A', 'C', 'G', 'U' ]);
+    export type ElementaryResidue = 'A' | 'C' | 'G' | 'U' | 'DA' | 'DC' | 'DG' | 'DT';
 
     export const StandardResidues = new Set<string>([
          '0A',
@@ -806,6 +807,10 @@ export namespace Residues {
         [   'Z', 'pyrimidine' ],
         [ 'ZDU', 'pyrimidine' ]
     ]);
+
+    export const ElementaryResidueKinds = new Map<string, ResidueKind>(
+        [...Array.from(ElementaryDNAResidues), ...Array.from(ElementaryRNAResidues)].map(x => ([ x, StandardResidueKinds.get(x)! ]))
+    );
 
     export const AnchorAtoms = {
         backbone: {

@@ -2,69 +2,85 @@ import * as jsLLKA from 'jsllka';
 import { ClassificationContext } from './classification-context';
 import { ClassificationResources } from './classification-resources';
 import { DnatcoficationTaskContext } from './dnatcofication';
-
+import { Prosco } from './prosco';
 
 export namespace Dnatcofier {
-    export function dnatcoify(cif: string, clsfCtxData: ClassificationResources.Data, ctx: DnatcoficationTaskContext) {
-        ctx.status = 'Initializing classification context';
+    export function destroyImported(imported: jsLLKA.LLKAImportedStructure) {
+        imported.structure.delete();
+        imported.cifData.blocks.delete();
+    }
 
+    export function dnatcoify(steps: jsLLKA.LLKAStructures, imported: jsLLKA.LLKAImportedStructure, clsfCtxData: ClassificationResources.Data, ctx: DnatcoficationTaskContext) {
+        ctx.status = 'Initializing classification context';
         const clsfCtx = ClassificationContext.initializeContext(clsfCtxData);
 
-        ctx.status = 'Reading CIF data';
-        const res = jsLLKA.cifToStructure(cif, jsLLKA.MINICIF_GET_CIFDATA);
+        ctx.status = 'Classifying dinucleotide steps';
+        const res = jsLLKA.classifySteps(steps, clsfCtx);
         if (!res.isSuccess()) {
             clsfCtx.delete();
             const fail = res.failure();
             res.delete();
-            throw new Error(`Failed to process CIF: ${jsLLKA.LLKA.errorToString(fail.tRet)} ${fail.error ?? ''}`);
-        }
 
-        const importedStru = res.success();
-        const cifData = importedStru.cifData;
-        res.delete();
-
-        ctx.status = 'Splitting structrure to dinucleotide steps';
-        const res2 = jsLLKA.splitStructureToDinucleotideSteps(importedStru.structure);
-        if (!res2.isSuccess()) {
-            clsfCtx.delete();
-            const fail = res2.failure();
-            res2.delete();
-            throw new Error(`Failed to split structure into dinucleotide steps: ${jsLLKA.LLKA.errorToString(fail)}`);
-        }
-
-        const steps = res2.success();
-        res2.delete();
-
-        ctx.status = 'Classifying dinucleotide steps';
-        const res3 = jsLLKA.classifySteps(steps, clsfCtx);
-        if (!res3.isSuccess()) {
-            clsfCtx.delete();
-            const fail = res3.failure();
-            res3.delete();
             throw new Error(`Failed to classify steps: ${jsLLKA.LLKA.errorToString(fail)}`);
         }
 
-        const attemptedSteps = res3.success();
-        res3.delete();
+        const attemptedSteps = res.success();
+        res.delete();
 
         ctx.status = 'Adding DNATCO categories to CIF';
-        const cifDataDNATCO = jsLLKA.addDNATCOCategoriesToCif(cifData, attemptedSteps, steps, importedStru.id);
-        steps.delete();
+        const cifDataDNATCO = jsLLKA.addDNATCOCategoriesToCif(imported.cifData, attemptedSteps, steps, imported.id);
         attemptedSteps.delete();
         clsfCtx.delete();
 
         ctx.status = 'Writing out extended CIF file';
-        const res4 = jsLLKA.cifDataToString(cifDataDNATCO, true);
-        if (!res4.isSuccess()) {
-            const fail = res4.failure();
-            res4.delete();
+        const res2 = jsLLKA.cifDataToString(cifDataDNATCO, true);
+        if (!res2.isSuccess()) {
+            const fail = res2.failure();
+            res2.delete();
+
             throw new Error(`Failed to write out extended CIF: ${jsLLKA.LLKA.errorToString(fail)}`);
         }
 
-        const extendedCif = res4.success();
-        res4.delete();
+        const extendedCif = res2.success();
+        res2.delete();
 
         return extendedCif;
     }
-}
 
+    export function importStructure(cif: string, ctx: DnatcoficationTaskContext) {
+        ctx.status = 'Reading CIF data';
+        const res = jsLLKA.cifToStructure(cif, jsLLKA.MINICIF_GET_CIFDATA);
+        if (!res.isSuccess()) {
+            const fail = res.failure();
+            res.delete();
+
+            throw new Error(`${jsLLKA.LLKA.errorToString(fail.tRet)} ${fail.error ?? ''}`);
+        }
+
+        const imported = res.success();
+        res.delete();
+
+        return imported;
+    }
+
+    export function proscoify(steps: jsLLKA.LLKAStructures, ctx: DnatcoficationTaskContext) {
+        ctx.status = 'Prosco test';
+
+        return Prosco.calculate(steps);
+    }
+
+    export function steps(stru: jsLLKA.LLKAStructure, ctx: DnatcoficationTaskContext) {
+        ctx.status = 'Splitting structrure to dinucleotide steps';
+        const res = jsLLKA.splitStructureToDinucleotideSteps(stru);
+        if (!res.isSuccess()) {
+            const fail = res.failure();
+            res.delete();
+            throw new Error(jsLLKA.LLKA.errorToString(fail));
+        }
+
+        const steps = res.success();
+        res.delete();
+
+        return steps;
+    }
+}
