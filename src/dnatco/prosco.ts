@@ -267,7 +267,7 @@ const ThymineBonds = [
     ["N3", "C4"],
     ["O4'", "C1'"],
     ["O5'", "C5'"],
-    ["P", "O5'_2"],
+    ["P", "O5'"],
     ["P", "OP1"],
     ["P", "OP2"],
 ] as BondPair[];
