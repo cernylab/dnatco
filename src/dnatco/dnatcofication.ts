@@ -21,8 +21,8 @@ import { Struct } from '../cif/categories/struct';
 import { EventsKeeper } from '../util/events-keeper';
 import { Globals } from '../globals';
 
-import { PdbParser } from 'tspdb/parser';
-import { MmCifConverter } from 'tspdb/mmcif-converter';
+import { PdbParser } from 'tspdb';
+import { MmCifConverter } from 'tspdb';
 
 function mapProsco(residues: Prosco.Residue[]): MappedProsco {
     const models = new Map<number, number[]>();

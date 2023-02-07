@@ -28,8 +28,6 @@
 
         "baseUrl": ".",
         "paths": {
-            "tscif/*": [ "tscif/src" ],
-            "tspdb/*": [ "tspdb/src" ],
             "assets/*": [ "assets" ],
             "viewer-api": [ "molstar/src/apps/rednatco/api.ts" ],
             "viewer-filters": [ "molstar/src/apps/rednatco/filters.ts" ]

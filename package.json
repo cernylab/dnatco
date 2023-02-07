@@ -48,6 +48,8 @@
         "react-dom": "^18.2.0",
         "react-plotly.js": "^2.6.0",
         "rxjs": "^7.5.6",
+        "tscif": "file:./tscif",
+        "tspdb": "file:./tspdb",
         "tslib": "^2.4.0",
         "uuid": "^8.3.2"
     }
