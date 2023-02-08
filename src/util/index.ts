@@ -67,6 +67,20 @@ export function isPdbId(v: string) {
     return v.length === 4 && PdbIdRegex.test(v);
 }
 
+export function keyValue<T extends object, K extends keyof T>(obj: T, key: K): [K, T[K]] {
+    return [key, obj[key]];
+}
+export function iterate<T extends object>(obj: T) {
+    const list = [];
+
+    for (const p in obj) {
+        const kv = keyValue(obj, p);
+        list.push(kv);
+    }
+
+    return list;
+}
+
 export function parseIntStrict(obj: unknown, allowNegative = true) {
     if (typeof obj === 'number')
         return obj;

@@ -25,3 +25,7 @@ export function ErrorResult(message: string): ErrorResult {
 export function OkResult<T>(data: T): OkResult<T> {
     return { success: 'ok', data };
 }
+
+export function VoidResult(): OkResult<void> {
+    return { success: 'ok', data: void 0 };
+}

@@ -2,7 +2,7 @@ import * as jsLLKA from 'jsllka';
 import { ClassificationContext } from './classification-context';
 import { ClassificationResources } from './classification-resources';
 import { DnatcoficationTaskContext } from './dnatcofication';
-import { Prosco } from './prosco';
+import { Measure } from './angles-lengths/measure';
 
 export namespace Dnatcofier {
     export function destroyImported(imported: jsLLKA.LLKAImportedStructure) {
@@ -63,10 +63,10 @@ export namespace Dnatcofier {
         return imported;
     }
 
-    export function proscoify(steps: jsLLKA.LLKAStructures, ctx: DnatcoficationTaskContext) {
-        ctx.status = 'Prosco test';
+    export function measureAnglesAndLengths(steps: jsLLKA.LLKAStructures, ctx: DnatcoficationTaskContext) {
+        ctx.status = 'Measuring bond angles and lengths';
 
-        return Prosco.calculate(steps);
+        return Measure.allSteps(steps);
     }
 
     export function steps(stru: jsLLKA.LLKAStructure, ctx: DnatcoficationTaskContext) {

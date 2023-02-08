@@ -3,6 +3,8 @@ import * as RDC from 'react-dom/client';
 import { GlobalConfig } from './global-config';
 import { isPdbId } from './util';
 import { Net } from './util/net';
+import { isError } from './dnatco';
+import { AnglesLengths } from './dnatco/angles-lengths';
 import { ClassificationContext } from './dnatco/classification-context';
 import { ClassificationResources } from './dnatco/classification-resources';
 import { Coordinates } from './dnatco/coordinates';
@@ -454,19 +456,41 @@ export class App extends WithSubscriptions<{}, State> {
                 this.setState({ ...this.state, dnatcofierState: 'failed' });
                 Popup.create(
                     <div className='rdo-error-text'>
-                        <div>{retval}</div>
+                        <div>Classification context - {retval}</div>
                         <div>{Globals.ProductName} cannot function when its engine fails to initialize. Try to refresh the page...</div>
-                     </div>
+                    </div>
                 );
             }
+
+            AnglesLengths.initialize().then(res => {
+                if (isError(res)) {
+                    this.setState({ ...this.state, dnatcofierState: 'failed' });
+                    Popup.create(
+                        <div className='rdo-error-text'>
+                            <div>Angles and lengths - {res.message}</div>
+                            <div>{Globals.ProductName} cannot function when its engine fails to initialize. Try to refresh the page...</div>
+                        </div>
+                    );
+                } else
+                    this.setState({ ...this.state, dnatcofierState: 'ready' });
+            }).catch(e => {
+                // We should not really get here but let's catch just in case
+                this.setState({ ...this.state, dnatcofierState: 'failed' });
+                Popup.create(
+                    <div className='rdo-error-text'>
+                        <div>Angles and lengths - {e.toString()}</div>
+                        <div>{Globals.ProductName} cannot function when its engine fails to initialize. Try to refresh the page...</div>
+                    </div>
+                );
+            });
         }).catch(e => {
             // We should not really get here but let's catch just in case
             this.setState({ ...this.state, dnatcofierState: 'failed' });
             Popup.create(
                 <div className='rdo-error-text'>
-                    <div>{e.toString()}</div>
+                    <div>Classification context - {e.toString()}</div>
                     <div>{Globals.ProductName} cannot function when its engine fails to initialize. Try to refresh the page...</div>
-                 </div>
+                </div>
             );
         });
 

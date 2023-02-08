@@ -5,13 +5,13 @@ import { InvalidChain, InvalidModelIndex } from '../../structure-selection';
 import { CollapsibleVertical } from '../../../common/collapsible-vertical';
 import { NamedList, NamedListItem } from '../../../common/named-list';
 import { Dnatcofication  } from '../../../../dnatco/dnatcofication';
-import { Prosco } from '../../../../dnatco/prosco';
+import { Measure } from '../../../../dnatco/angles-lengths/measure';
 import { M } from '../../../../util/math';
 
 const DetailsTableStyle = { display: 'grid', gridTemplateColumns: 'auto 1fr', columnGap: '1em' };
 
-export class BondsAngles extends View {
-    private renderResidue(residue: Prosco.Residue, multipleModels: boolean) {
+export class AnglesLengths extends View {
+    private renderResidue(residue: Measure.Residue, multipleModels: boolean) {
         const residueName = multipleModels
             ? `${residue.modelNum} ${residue.authChain}${residue.authSeqId}`
             : `${residue.authChain}${residue.authSeqId}`;
@@ -48,25 +48,25 @@ export class BondsAngles extends View {
     }
 
     private renderModel(modelIdx: number, multipleModels: boolean, chain: string) {
-        const prosco = this.props.dnatcofication.data.prosco;
+        const alm = this.props.dnatcofication.data.alm;
         if (modelIdx === InvalidModelIndex) {
             const elems = [];
-            for (const mm of prosco.models.values())
-                elems.push(...mm.map(x => this.renderResidue(prosco.residues[x], multipleModels)));
+            for (const mm of alm.models.values())
+                elems.push(...mm.map(x => this.renderResidue(alm.residues[x], multipleModels)));
 
             return elems;
         } else {
             const modelNum = this.props.dnatcofication.data.structures[0].models[modelIdx].num;
 
             if (chain) {
-                const cm = prosco.chains.get(modelNum)?.get(chain);
+                const cm = alm.chains.get(modelNum)?.get(chain);
                 return cm
-                    ? cm.map(x => this.renderResidue(prosco.residues[x], multipleModels))
+                    ? cm.map(x => this.renderResidue(alm.residues[x], multipleModels))
                     : [];
             } else {
-                const mm = prosco.models.get(modelNum);
+                const mm = alm.models.get(modelNum);
                 return mm
-                    ? mm.map(x => this.renderResidue(prosco.residues[x], multipleModels))
+                    ? mm.map(x => this.renderResidue(alm.residues[x], multipleModels))
                     : [];
             }
         }

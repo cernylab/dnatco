@@ -5,7 +5,7 @@ import { CustomNtCs } from './custom-ntcs';
 import { DensityMap } from './density-map';
 import { Dnatcofier } from './dnatcofier';
 import { ExtractInfo } from './extract-info';
-import { Prosco } from './prosco';
+import { Measure } from './angles-lengths/measure';
 import { StepsMapper } from './steps-mapper';
 import { Chain, Structure as _Structure } from './structure';
 import { Cif } from '../cif';
@@ -24,7 +24,7 @@ import { Globals } from '../globals';
 import { PdbParser } from 'tspdb';
 import { MmCifConverter } from 'tspdb';
 
-function mapProsco(residues: Prosco.Residue[]): MappedProsco {
+function mapALM(residues: Measure.Residue[]): MappedALM {
     const models = new Map<number, number[]>();
     const chains = new Map<number, Map<string, number[]>>();
 
@@ -70,7 +70,7 @@ const RequiredDnatcoCategories: Category<any>[] = [
 ];
 
 export type DnatcoficationTaskContext = TaskContext<DnatcoficationData>;
-export type MappedProsco = { models: Map<number, number[]>, chains: Map<number, Map<string, number[]>>, residues: Prosco.Residue[] };
+export type MappedALM = { models: Map<number, number[]>, chains: Map<number, Map<string, number[]>>, residues: Measure.Residue[] };
 export type StepRmsdStats = { rmsdThreshold: number, count: number };
 
 export const DnatcoficationData = {
@@ -88,7 +88,7 @@ export const DnatcoficationData = {
     averageConfals: new Array<number>(),
     stepRmsdStats: new Array<StepRmsdStats[]>(),
 
-    prosco: { models: new Map(), chains: new Map() } as MappedProsco,
+    alm: { models: new Map(), chains: new Map() } as MappedALM,
     rscc: new Array<Rscc.Rscc>(),
 };
 export type DnatcoficationData = typeof DnatcoficationData;
@@ -257,14 +257,14 @@ export namespace Dnatcofication {
                 }
             }
 
-            let prosco;
+            let alm;
             try {
-                prosco = Dnatcofier.proscoify(llkaSteps, ctx);
+                alm = Dnatcofier.measureAnglesAndLengths(llkaSteps, ctx);
             } catch (e) {
                 llkaSteps.delete();
                 Dnatcofier.destroyImported(llkaImported);
 
-                throw new Error(`Failed to calculate Prosco: ${e}`);
+                throw new Error(`Failed to bond lengths and angles: ${e}`);
             }
 
             const structures = new Array<_Structure>();
@@ -309,7 +309,7 @@ export namespace Dnatcofication {
                 densityMaps,
                 averageConfals: ExtractInfo.averageConfals(steps),
                 stepRmsdStats: ExtractInfo.stepRmsdStats([0.5, 1.0], steps),
-                prosco: mapProsco(prosco),
+                alm: mapALM(alm),
                 rscc: [],
             };
 

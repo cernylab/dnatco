@@ -27,10 +27,10 @@ const AvailableViews = {
     'mmb-commands-file': { caption: 'MMB commands file', visualizer: false },
     'connectivity-plot': { caption: 'Connectivity plot', visualizer: true },
     'rscc-plot': { caption: 'RSCC plot', visualizer: true },
-    'bonds-angles': { caption: 'Bonds & Angles', visualizer: true },
+    'angles-lengths': { caption: 'Bond Angles & Lengths', visualizer: true },
 };
 const AnnotationViews: ViewType[] = ['assigned-ntcs', 'structure-info', 'downloads'];
-const ValidationViews: ViewType[] = ['confals-rmsds', 'step-torsions', 'similarity-plot', 'rscc-plot', 'bonds-angles'];
+const ValidationViews: ViewType[] = ['confals-rmsds', 'step-torsions', 'similarity-plot', 'rscc-plot', 'angles-lengths'];
 const RefinementViews: ViewType[] = ['connectivity-plot', 'refmac-restraints', 'phenix-restraints', 'mmb-commands-file', 'change-ntcs'];
 
 function masterModeViews(mode: MasterMode): { id: ViewType, caption: string }[] {
