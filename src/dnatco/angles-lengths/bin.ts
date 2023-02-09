@@ -11,6 +11,10 @@ export function Bin(from: number, to: number, probability: number, prosco: numbe
     return { from, to, probability, prosco };
 }
 
+export function isWithin(value: number, bin: Bin) {
+    return bin.from <= value && value <= bin.to;
+}
+
 export type Bins = Bin[];
 
 export const WireBins = {

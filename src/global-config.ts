@@ -3,16 +3,31 @@ import { UserRemoteDatabases } from './remote/db/register';
 import { StaticDb } from './remote/db/static-db';
 import { fromTemplate } from './util/json';
 
+export type AngleLengthInterval = {
+    threshold: number,
+    color: string,
+};
+export const AngleLengthInterval: AngleLengthInterval = {
+    threshold: 0,
+    color: '#ffffff',
+};
+
 export type GlobalConfigData = {
     isDevel: boolean,
     pathPrefix: string,
     userDatabases: StaticDb[],
-}
+    angleLengthIntervals: AngleLengthInterval[],
+};
 const GlobalConfigData: GlobalConfigData = {
     isDevel: false,
     pathPrefix: '.',
     userDatabases: [],
-}
+    angleLengthIntervals: [
+        { threshold: 80, color: '#006eff' },
+        { threshold: 95, color: '#00ff00' },
+        { threshold: 99.9, color: '#ffff00' },
+    ],
+};
 
 function checkAndSetEntry<K extends keyof GlobalConfigData>(data: GlobalConfigData, k: K, inputObj: any) {
     const to = data[k];

@@ -7,7 +7,16 @@ function componentToHex(c: number) {
 }
 
 export function colorToRgb(clr: number) {
-    return { r: (clr >> 16), g: (clr >> 8) & 0xFF, b: clr & 0xFF };
+    const tup = colorToTuple(clr);
+    return { r: tup[0], g: tup[1], b: tup[2] };
+}
+
+export function colorToTuple(clr: number): [r: number, g: number, b: number] {
+    const r = clr >> 16;
+    const g = (clr >> 8) & 0xFF;
+    const b = clr & 0xFF;
+
+    return [r, g, b];
 }
 
 export function deselectText() {

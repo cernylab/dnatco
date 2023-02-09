@@ -2,16 +2,18 @@ import React from 'react';
 import { ChainSelect, ModelSelect } from '../structure-selectors';
 import { View } from '../view';
 import { InvalidChain, InvalidModelIndex } from '../../structure-selection';
+import { colorToTuple } from '../../../util';
 import { CollapsibleVertical } from '../../../common/collapsible-vertical';
 import { NamedList, NamedListItem } from '../../../common/named-list';
 import { Dnatcofication  } from '../../../../dnatco/dnatcofication';
-import { Measure } from '../../../../dnatco/angles-lengths/measure';
+import { AnglesLengths as DAnglesLengths } from '../../../../dnatco/angles-lengths';
+import { Measurements } from '../../../../dnatco/angles-lengths/measurements';
 import { M } from '../../../../util/math';
 
-const DetailsTableStyle = { display: 'grid', gridTemplateColumns: 'auto 1fr', columnGap: '1em' };
+const DetailsTableStyle = { display: 'grid', gridTemplateColumns: '1em auto 1fr', columnGap: '1em' };
 
 export class AnglesLengths extends View {
-    private renderResidue(residue: Measure.Residue, multipleModels: boolean) {
+    private renderResidue(residue: Measurements.Residue, multipleModels: boolean) {
         const residueName = multipleModels
             ? `${residue.modelNum} ${residue.authChain}${residue.authSeqId}`
             : `${residue.authChain}${residue.authSeqId}`;
@@ -21,11 +23,14 @@ export class AnglesLengths extends View {
                 caption={residueName}
             >
                 <div style={DetailsTableStyle}>
-                    <div style={{ gridColumnStart: 'span 2' }}>Bond lengths</div>
+                    <div style={{ gridColumnStart: 'span 3' }}>Bond lengths</div>
                     {residue.bondLengths.map(x => {
+                        const interval = DAnglesLengths.lengthInterval(residue.compound, x);
+                        const color = interval ? `rgb(${colorToTuple(interval.color).join(',')})` : 'rgb(0,0,0)';
                         return (
                             <>
-                                <div className='rdo-monospace'>{x.a} - {x.b}</div>
+                                <div style={{ backgroundColor: color }} />
+                                <div className='rdo-monospace'>{x.pair[0]} - {x.pair[1]}</div>
                                 <div>{x.length.toFixed(2)}{'\u00A0'}{'\u212B'}</div>
                             </>
                         );
@@ -33,11 +38,14 @@ export class AnglesLengths extends View {
                 </div>
 
                 <div style={DetailsTableStyle}>
-                    <div style={{ gridColumnStart: 'span 2' }}>Bond angles</div>
+                    <div style={{ gridColumnStart: 'span 3' }}>Bond angles</div>
                     {residue.bondAngles.map(x => {
+                        const interval = DAnglesLengths.angleInterval(residue.compound, x);
+                        const color = interval ? `rgb(${colorToTuple(interval.color).join(',')})` : 'rgb(0,0,0)';
                         return (
                             <>
-                                <div className='rdo-monospace'>{x.a} - {x.b} - {x.c}</div>
+                                <div style={{ backgroundColor: color }} />
+                                <div className='rdo-monospace'>{x.triplet[0]} - {x.triplet[1]} - {x.triplet[2]}</div>
                                 <div>{M.r2d(x.angle).toFixed(1)}{'\u00B0'}</div>
                             </>
                         );

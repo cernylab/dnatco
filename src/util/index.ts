@@ -32,6 +32,24 @@ export function fileSuffixes(name: string): string[] {
     return name.toLowerCase().split('.').slice(1);
 }
 
+const LongHtmlColor = /^#([0-9abcdefABCDEF]){6}$/;
+const ShortHtmlColor = /^#([0-9abcdefABCDEF]){3}$/;
+export function htmlColorAsNumber(s: string) {
+    let r, g, b;
+    if (s.match(LongHtmlColor)) {
+        r = parseInt(s.substring(1, 3), 16);
+        g = parseInt(s.substring(3, 5), 16);
+        b = parseInt(s.substring(5, 7), 16);
+    } else if (s.match(ShortHtmlColor)) {
+        r = parseInt(s.substring(1, 2), 16);
+        g = parseInt(s.substring(2, 3), 16);
+        b = parseInt(s.substring(3, 4), 16);
+    } else
+        return void 0;
+
+    return (r << 16) + (g << 8) + b;
+}
+
 export function inWorker() {
     // @ts-ignore
     return (typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope);

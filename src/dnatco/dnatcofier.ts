@@ -2,7 +2,7 @@ import * as jsLLKA from 'jsllka';
 import { ClassificationContext } from './classification-context';
 import { ClassificationResources } from './classification-resources';
 import { DnatcoficationTaskContext } from './dnatcofication';
-import { Measure } from './angles-lengths/measure';
+import { Measurements } from './angles-lengths/measurements';
 
 export namespace Dnatcofier {
     export function destroyImported(imported: jsLLKA.LLKAImportedStructure) {
@@ -66,7 +66,7 @@ export namespace Dnatcofier {
     export function measureAnglesAndLengths(steps: jsLLKA.LLKAStructures, ctx: DnatcoficationTaskContext) {
         ctx.status = 'Measuring bond angles and lengths';
 
-        return Measure.allSteps(steps);
+        return Measurements.allSteps(steps);
     }
 
     export function steps(stru: jsLLKA.LLKAStructure, ctx: DnatcoficationTaskContext) {

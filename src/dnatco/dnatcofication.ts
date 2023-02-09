@@ -5,7 +5,7 @@ import { CustomNtCs } from './custom-ntcs';
 import { DensityMap } from './density-map';
 import { Dnatcofier } from './dnatcofier';
 import { ExtractInfo } from './extract-info';
-import { Measure } from './angles-lengths/measure';
+import { Measurements } from './angles-lengths/measurements';
 import { StepsMapper } from './steps-mapper';
 import { Chain, Structure as _Structure } from './structure';
 import { Cif } from '../cif';
@@ -24,7 +24,7 @@ import { Globals } from '../globals';
 import { PdbParser } from 'tspdb';
 import { MmCifConverter } from 'tspdb';
 
-function mapALM(residues: Measure.Residue[]): MappedALM {
+function mapALM(residues: Measurements.Residue[]): MappedALM {
     const models = new Map<number, number[]>();
     const chains = new Map<number, Map<string, number[]>>();
 
@@ -70,7 +70,7 @@ const RequiredDnatcoCategories: Category<any>[] = [
 ];
 
 export type DnatcoficationTaskContext = TaskContext<DnatcoficationData>;
-export type MappedALM = { models: Map<number, number[]>, chains: Map<number, Map<string, number[]>>, residues: Measure.Residue[] };
+export type MappedALM = { models: Map<number, number[]>, chains: Map<number, Map<string, number[]>>, residues: Measurements.Residue[] };
 export type StepRmsdStats = { rmsdThreshold: number, count: number };
 
 export const DnatcoficationData = {
@@ -228,7 +228,6 @@ export namespace Dnatcofication {
             // This is "our" CIF representation
             let cifData = Cif.read(cifCoordinates);
 
-            // @nocheckin Delete these when an exception occurs!!!
             let llkaImported;
             try {
                 llkaImported = Dnatcofier.importStructure(cifCoordinates, ctx);
@@ -296,6 +295,9 @@ export namespace Dnatcofication {
             const tEnd = performance.now();
 
             console.log(`Dnatcofication process took ${((tEnd - tStart) / 1000.0).toFixed(3)} sec`);
+
+            llkaSteps.delete();
+            Dnatcofier.destroyImported(llkaImported);
 
             const data: DnatcoficationData = {
                 isCustomStructure,

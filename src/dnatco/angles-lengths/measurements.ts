@@ -4,7 +4,7 @@ import { Angles, Triplet } from './angles';
 import { Atoms, shiftedName } from './atoms';
 import { Lengths, Pair } from './lengths';
 
-export namespace Measure {
+export namespace Measurements {
     function expandAltId(step: jsLLKA.LLKAStructure, seqId: number) {
         const altIds = new Set<string>();
         for (let idx = 0; idx < step.size(); idx++) {
@@ -40,7 +40,7 @@ export namespace Measure {
                 return void 0;
 
             const angle = jsLLKA.measureAngle(a, b, c);
-            bondAngles.push({ a: a.label_atom_id, b: b.label_atom_id, c: c.label_atom_id, angle });
+            bondAngles.push({ triplet: [a.label_atom_id, b.label_atom_id, c.label_atom_id] as Triplet, angle });
         }
 
         return bondAngles;
@@ -56,7 +56,7 @@ export namespace Measure {
                 return void 0;
 
             const length = jsLLKA.measureDistance(a, b);
-            lengths.push({ a: a.label_atom_id, b: b.label_atom_id, length });
+            lengths.push({ pair: [a.label_atom_id, b.label_atom_id] as Pair, length });
         }
 
         return lengths;
@@ -73,12 +73,16 @@ export namespace Measure {
         return void 0;
     }
 
-    function processResidue(firstAtom: jsLLKA.LLKAAtom, altId: string, step: jsLLKA.LLKAStructure): Residue {
+    function processResidue(firstAtom: jsLLKA.LLKAAtom, altId: string, step: jsLLKA.LLKAStructure): Residue | undefined {
         const compId = firstAtom.label_comp_id;
         const seqId = firstAtom.label_seq_id;
+
+        if (!Residues.isElementaryResidue(compId))
+            return void 0;
+
         const residue: Residue = {
             chain: firstAtom.label_asym_id,
-            compound: firstAtom.label_comp_id,
+            compound: compId,
             seqId: firstAtom.label_seq_id,
             insCode: firstAtom.pdbx_PDB_ins_code,
             altId,
@@ -89,24 +93,21 @@ export namespace Measure {
             bondAngles: [],
         };
 
-        if (!Residues.isElementaryResidue(compId))
-            return residue;
-
         const requiredAtoms = new Map<string, jsLLKA.LLKAAtom>();
         for (const [name, shift] of Atoms[compId]) {
             const a = findAtom(step, name, seqId + shift, firstAtom.pdbx_PDB_model_num);
             if (!a)
-                return residue;
+                return void 0;
             requiredAtoms.set(shiftedName(name, shift), a);
         }
 
         const lengths = measureBondLenghts(requiredAtoms, Lengths[compId]);
         if (!lengths)
-            return residue;
+            return void 0;
 
         const angles = measureBondAngles(requiredAtoms, Angles[compId]);
         if (!angles)
-            return residue;
+            return void 0;
 
         residue.bondLengths = lengths;
         residue.bondAngles = angles;
@@ -115,21 +116,18 @@ export namespace Measure {
     }
 
     export type BondAngle = {
-        a: string;
-        b: string;
-        c: string;
-        angle: number;
+        triplet: Triplet,
+        angle: number,
     };
 
     export type BondLength = {
-        a: string;
-        b: string;
-        length: number;
+        pair: Pair,
+        length: number,
     };
 
     export type Residue = {
         chain: string;
-        compound: string;
+        compound: Residues.ElementaryResidue;
         seqId: number;
         insCode: string;
         altId: string;
