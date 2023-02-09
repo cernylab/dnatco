@@ -31,16 +31,16 @@ export namespace Measurements {
 
     function measureBondAngles(requiredAtoms: Map<string, jsLLKA.LLKAAtom>, angles: Triplet[]): BondAngle[] | undefined {
         const bondAngles = [];
-        for (const bond of angles) {
-            const a = requiredAtoms.get(bond[0]);
-            const b = requiredAtoms.get(bond[1]);
-            const c = requiredAtoms.get(bond[2]);
+        for (const triplet of angles) {
+            const a = requiredAtoms.get(triplet[0]);
+            const b = requiredAtoms.get(triplet[1]);
+            const c = requiredAtoms.get(triplet[2]);
 
             if (!a || !b || !c)
                 return void 0;
 
             const angle = jsLLKA.measureAngle(a, b, c);
-            bondAngles.push({ triplet: [a.label_atom_id, b.label_atom_id, c.label_atom_id] as Triplet, angle });
+            bondAngles.push({ triplet, angle });
         }
 
         return bondAngles;
@@ -48,15 +48,15 @@ export namespace Measurements {
 
     function measureBondLenghts(requiredAtoms: Map<string, jsLLKA.LLKAAtom>, bonds: Pair[]): BondLength[] | undefined {
         const lengths = [];
-        for (const bond of bonds) {
-            const a = requiredAtoms.get(bond[0]);
-            const b = requiredAtoms.get(bond[1]);
+        for (const pair of bonds) {
+            const a = requiredAtoms.get(pair[0]);
+            const b = requiredAtoms.get(pair[1]);
 
             if (!a || !b)
                 return void 0;
 
             const length = jsLLKA.measureDistance(a, b);
-            lengths.push({ pair: [a.label_atom_id, b.label_atom_id] as Pair, length });
+            lengths.push({ pair, length });
         }
 
         return lengths;

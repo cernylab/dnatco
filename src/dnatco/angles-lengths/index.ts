@@ -9,13 +9,16 @@ import { GlobalConfig } from '../../global-config';
 import { iterate, htmlColorAsNumber } from '../../util';
 
 type Average = [base: Residues.ElementaryResidue, tag: string, bins: Bins];
-type Intervals = Record<
+type IntervalBins = Record<
     Residues.ElementaryResidue,
-    Map<string, [interval: number, bin:Bin][]>
+    Map<
+        string, // Angle or length tag
+        [threshold: number, bin: Bin][] // Array of cumulative probability intervals and the "cumulative" bins that cover them
+    >
 >;
 type Resource = [base: Residues.ElementaryResidue, tag: string, file: string];
 
-const AngleIntervals: Intervals = {
+const AngleIntervalBins: IntervalBins = {
     'A': new Map(),
     'C': new Map(),
     'G': new Map(),
@@ -26,7 +29,7 @@ const AngleIntervals: Intervals = {
     'DT': new Map(),
 };
 
-const LengthIntervals: Intervals = {
+const LengthIntervalBins: IntervalBins = {
     'A': new Map(),
     'C': new Map(),
     'G': new Map(),
@@ -37,7 +40,7 @@ const LengthIntervals: Intervals = {
     'DT': new Map(),
 };
 
-const IntervalColors = [] as { threshold: number, color: number }[];
+const Intervals = [] as { threshold: number, color: number }[];
 
 async function fetchAverages(prefix: string, resources: Resource[]) {
     const averages = [] as Average[];
@@ -67,13 +70,28 @@ function fileName(base: Residues.ElementaryResidue, data: { kind: 'length', v: P
     return `${base}_${data.kind}_${data.v.map(x => x.replace("'", "p")).join('_')}_prosco.json`;
 }
 
-function setIntervals(intervals: Intervals, averages: Average[]) {
+function getInterval(intervalBins: [threshold: number, bin: Bin][], value: number) {
+    for (let idx = 0; idx < intervalBins.length; idx++) {
+        const intvl = intervalBins[idx];
+        if (isWithin(value, intvl[1]))
+            return {
+                threshold: intvl[0],
+                bin: { ...intvl[1] },
+                color: Intervals[idx].color,
+                index: idx,
+            };
+    }
+
+    return void 0; // Outlier
+}
+
+function setIntervals(intervals: typeof Intervals, intervalBins: IntervalBins, averages: Average[]) {
     for (const [base, tag, bins] of averages) {
-        for (const cumul of [80, 95, 99.9]) {
+        for (const cumul of intervals.map(x => x.threshold)) {
             const bin = Grouping.cumulative(bins, cumul / 100.0);
-            const bond = intervals[base].get(tag) ?? [];
+            const bond = intervalBins[base].get(tag) ?? [];
             bond.push([cumul, bin]);
-            intervals[base].set(tag, bond);
+            intervalBins[base].set(tag, bond);
         }
     }
 }
@@ -82,16 +100,16 @@ export namespace AnglesLengths {
     export async function initialize(): Promise<Result<void>> {
         const prefix = `${GlobalConfig.data().pathPrefix}/angles_lengths`;
 
-        for (const blk of GlobalConfig.data().angleLengthIntervals) {
-            const color = htmlColorAsNumber(blk.color);
+        for (const intvl of GlobalConfig.data().angleLengthIntervals) {
+            const color = htmlColorAsNumber(intvl.color);
             if (!color)
-                throw new Error(`${blk.color} is not a valid HTML color string`);
+                throw new Error(`${intvl.color} is not a valid HTML color string`);
 
-            IntervalColors.push({ threshold: blk.threshold, color });
+            Intervals.push({ threshold: intvl.threshold, color });
         }
-        if (IntervalColors.length === 0)
+        if (Intervals.length === 0)
             throw new Error('No probability intervals');
-        IntervalColors.sort((a, b) => a.threshold - b.threshold);
+        Intervals.sort((a, b) => a.threshold - b.threshold);
 
         try {
             const angleAverages = await fetchAverages(
@@ -103,8 +121,8 @@ export namespace AnglesLengths {
                 iterate(Lengths).flatMap(([base, pairs]) => pairs.map(p => ([base, pairTag(p), fileName(base, { kind: 'length', v: p })] as Resource)))
             );
 
-            setIntervals(AngleIntervals, angleAverages);
-            setIntervals(LengthIntervals, lengthAverages);
+            setIntervals(Intervals, AngleIntervalBins, angleAverages);
+            setIntervals(Intervals, LengthIntervalBins, lengthAverages);
 
             return VoidResult();
         } catch (e) {
@@ -114,37 +132,33 @@ export namespace AnglesLengths {
 
     export function angleInterval(base: Residues.ElementaryResidue, angle: Measurements.BondAngle) {
         const tag = tripletTag(angle.triplet);
-        const bond = AngleIntervals[base].get(tag);
+        const intervals = AngleIntervalBins[base].get(tag);
 
-        if (!bond) {
+        if (!intervals) {
             console.warn(`Unknown bond angle tag ${tag}`);
             return void 0;
         }
 
-        for (let idx = 0; idx < bond.length; idx++) {
-            const bi = bond[idx];
-            if (isWithin(angle.angle, bi[1]))
-                return { threshold: bi[0], bin: { ...bi[1] }, color: IntervalColors[idx].color };
-        }
-
-        return void 0; // Outlier
+        return getInterval(intervals, angle.angle);
     }
 
     export function lengthInterval(base: Residues.ElementaryResidue, length: Measurements.BondLength) {
         const tag = pairTag(length.pair);
-        const bond = LengthIntervals[base].get(tag);
+        const intervalBins = LengthIntervalBins[base].get(tag);
 
-        if (!bond) {
+        if (!intervalBins) {
             console.warn(`Unknown bond length tag ${tag}`);
             return void 0;
         }
 
-        for (let idx = 0; idx < bond.length; idx++) {
-            const bi = bond[idx];
-            if (isWithin(length.length, bi[1]))
-                return { threshold: bi[0], bin: { ...bi[1] }, color: IntervalColors[idx].color };
-        }
+        return getInterval(intervalBins, length.length);
+    }
 
-        return void 0; // Outlier
+    export function intervalColor(idx: number) {
+        return Intervals[idx].color ?? 0;
+    }
+
+    export function intervalCount() {
+        return Intervals.length;
     }
 }

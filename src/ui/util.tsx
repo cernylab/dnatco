@@ -1,17 +1,20 @@
 import React from 'react';
 import { ComboBox } from './common/combo-box';
 
+export type Rgb = { r: number, g: number, b: number };
+export type ColorTuple = [r: number, g: number, b: number];
+
 function componentToHex(c: number) {
     const hex = c.toString(16);
     return hex.length == 1 ? "0" + hex : hex;
 }
 
-export function colorToRgb(clr: number) {
+export function colorToRgb(clr: number): Rgb {
     const tup = colorToTuple(clr);
     return { r: tup[0], g: tup[1], b: tup[2] };
 }
 
-export function colorToTuple(clr: number): [r: number, g: number, b: number] {
+export function colorToTuple(clr: number): ColorTuple  {
     const r = clr >> 16;
     const g = (clr >> 8) & 0xFF;
     const b = clr & 0xFF;
@@ -35,8 +38,10 @@ export function formatErrorText(text: string) {
     return <div>{elems}</div>;
 }
 
-export function rgbToHex(rgb: { r: number, g: number, b: number }) {
-  return "#" + componentToHex(rgb.r) + componentToHex(rgb.g) + componentToHex(rgb.b);
+export function rgbToHex(rgb: Rgb | ColorTuple) {
+    return Array.isArray(rgb)
+        ? '#' + rgb.map(x => componentToHex(x)).join('')
+        : '#' + componentToHex(rgb.r) + componentToHex(rgb.g) + componentToHex(rgb.b);
 }
 
 export function scrollIntoViewIfNeeded(elemId: string, tainer: string|HTMLElement) {

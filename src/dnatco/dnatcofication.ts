@@ -1,4 +1,6 @@
 import * as ConnSimil from './connectivity-similarity';
+import { PdbParser } from 'tspdb';
+import { MmCifConverter } from 'tspdb';
 import { Coordinates } from './coordinates';
 import { ClassificationResources } from './classification-resources';
 import { CustomNtCs } from './custom-ntcs';
@@ -20,9 +22,6 @@ import {
 import { Struct } from '../cif/categories/struct';
 import { EventsKeeper } from '../util/events-keeper';
 import { Globals } from '../globals';
-
-import { PdbParser } from 'tspdb';
-import { MmCifConverter } from 'tspdb';
 
 function mapALM(residues: Measurements.Residue[]): MappedALM {
     const models = new Map<number, number[]>();

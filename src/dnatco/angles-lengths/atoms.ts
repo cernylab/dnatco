@@ -36,6 +36,12 @@ export const Atoms = {
     'U': Uracil,
 };
 
+const ShiftSuffix = 'r2';
+
+export function isShiftedName(name: string) {
+    return name.endsWith(ShiftSuffix);
+}
+
 export function shiftedName(name: string, shift: 0 | -1) {
-    return shift === 0 ? name : name + 'r2';
+    return shift === 0 ? name : name + ShiftSuffix;
 }

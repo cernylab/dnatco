@@ -13,15 +13,31 @@ export class CollapsibleVertical extends React.Component<CollapsibleVertical.Pro
         };
     }
 
-    render() {
-        return (
-            <div className='rdo-collapsible-vertical'>
+    private renderHeader() {
+        if (typeof this.props.header === 'string') {
+            return (
                 <div
                     className='rdo-collapsible-vertical-caption'
                     onClick={() => this.setState({ ...this.state, collapsed: !this.state.collapsed })}
                 >
-                    {this.props.caption}
+                    {this.props.header}
                 </div>
+            );
+        } else {
+            return (
+                <div
+                    onClick={() => this.setState({ ...this.state, collapsed: !this.state.collapsed })}
+                >
+                    {this.props.header}
+                </div>
+            );
+        }
+    }
+
+    render() {
+        return (
+            <div className='rdo-collapsible-vertical'>
+                {this.renderHeader()}
                 {this.state.collapsed ? undefined : this.props.children}
             </div>
         );
@@ -30,7 +46,7 @@ export class CollapsibleVertical extends React.Component<CollapsibleVertical.Pro
 
 export namespace CollapsibleVertical {
     export interface Props {
-        caption: string;
+        header: string | React.ReactNode;
         children?: React.ReactNode;
     }
 }

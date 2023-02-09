@@ -79,7 +79,7 @@ export class StructureInfo extends View {
                 </NamedList>
                 <div className='rdo-line-spacer' />
                 <CollapsibleVertical
-                    caption='Literature'
+                    header='Literature'
                 >
                     <div className='rdo-offset'>
                         <NamedList>
@@ -91,7 +91,7 @@ export class StructureInfo extends View {
                     </div>
                 </CollapsibleVertical>
                 <CollapsibleVertical
-                    caption='Experimental'
+                    header='Experimental'
                 >
                     <div className='rdo-offset'>
                         <NamedList>

@@ -70,15 +70,11 @@ export function objKeys<T extends object>(obj: T, exclude: (keyof T)[] = []) {
     return keys;
 }
 
-export function toFixed(num: number, decimals: number, prefix?: { char: string, length: number }) {
-    if (!prefix)
-        return num.toFixed(decimals);
-    else {
-        if (num < 0 && isDigit(prefix.char))
-            return "-" + Math.abs(num).toFixed(decimals).padStart(prefix.length - 1, prefix.char);
-        else
-            return num.toFixed(decimals).padStart(prefix.length, prefix.char);
-    }
+export function initedArray<T>(initialValue: T, length: number) {
+    const arr = new Array<T>(length);
+    for (let idx = 0; idx < length; idx++) arr[idx] = initialValue;
+
+    return arr;
 }
 
 export function isPdbId(v: string) {
@@ -162,4 +158,15 @@ export function sequence(from: number, to: number) {
 
 export async function sleep(msec: number) {
     await new Promise(() => setTimeout(() => {}, msec));
+}
+
+export function toFixed(num: number, decimals: number, prefix?: { char: string, length: number }) {
+    if (!prefix)
+        return num.toFixed(decimals);
+    else {
+        if (num < 0 && isDigit(prefix.char))
+            return "-" + Math.abs(num).toFixed(decimals).padStart(prefix.length - 1, prefix.char);
+        else
+            return num.toFixed(decimals).padStart(prefix.length, prefix.char);
+    }
 }
