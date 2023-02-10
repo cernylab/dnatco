@@ -677,6 +677,11 @@ th.rdo-data-table-small {
     outline: none;
 }
 
+.rdo-sup {
+    vertical-align: super;
+    font-size: var(--font-small)
+}
+
 .rdo-strong {
     font-weight: bold;
 }

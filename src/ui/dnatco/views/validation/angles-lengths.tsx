@@ -10,6 +10,9 @@ import { NamedList, NamedListItem } from '../../../common/named-list';
 import { Tooltip } from '../../../common/tooltip';
 import { Dnatcofication  } from '../../../../dnatco/dnatcofication';
 import { AnglesLengths as DAnglesLengths } from '../../../../dnatco/angles-lengths';
+import { isShiftedName, unshiftName } from '../../../../dnatco/angles-lengths/atoms';
+import { Triplet } from '../../../../dnatco/angles-lengths/angles';
+import { Pair } from '../../../../dnatco/angles-lengths/lengths';
 import { Measurements } from '../../../../dnatco/angles-lengths/measurements';
 import { Summarize } from '../../../../dnatco/angles-lengths/summarize';
 import { rgbToHex } from '../../../util';
@@ -41,6 +44,18 @@ const ResidueBarCaptionStyle = {
 
 const DetailsTableStyle = { display: 'grid', gridTemplateColumns: '1em auto 1fr', columnGap: '1em' };
 const OutlierColor = [0, 0, 0] as ColorTuple;
+
+function bondName(bond: Pair | Triplet) {
+    const toks = bond.map(x => isShiftedName(x) ? <span>{unshiftName(x)}<span className='rdo-sup'>(-1)</span></span> : <span>{x}</span>);
+    let idx = 1;
+    while (idx < toks.length) {
+        const tail = toks.splice(idx, toks.length - idx, <span>-</span>);
+        toks.push(...tail);
+        idx += 2;
+    }
+
+    return <span>{toks}</span>;
+}
 
 function colorStyle(clr: [r: number, g: number, b: number]) {
     return `rgb(${clr.join(',')})`;
@@ -143,6 +158,18 @@ class AnglesLengthsBar extends React.Component<{ caption?: string | React.ReactN
     }
 }
 
+class IntervalSummary extends React.Component<{ caption: string | JSX.Element, from: number, to: number, unit: string }> {
+    render() {
+        return (
+            <div style={{ display: 'grid', gridTemplateColumns: 'auto auto', columnGap: 'var(--h-gap)' }}>
+                <div className='rdo-strong' style={{ gridColumnStart: 'span 2', textAlign: 'center' }}>{this.props.caption}</div>
+                <div className='rdo-strong'>From</div><div>{`${this.props.from}\u00A0${this.props.unit}`}</div>
+                <div className='rdo-strong'>To</div><div>{`${this.props.to}\u00A0${this.props.unit}`}</div>
+            </div>
+        )
+    }
+}
+
 class ResidueHeader extends React.Component<{ caption: string, summary: Summarize.Summary, countsAngles: CountInInterval[], countsLengths: CountInInterval[] }> {
     private tainerRef = React.createRef<HTMLDivElement>();
 
@@ -217,9 +244,22 @@ export class AnglesLengths extends View {
                             const clr = interval ? colorToTuple(interval.color) : OutlierColor;
                             return (
                                 <>
-                                    <div style={{ backgroundColor: colorStyle(clr) }} />
-                                    <div className='rdo-monospace'>{x.pair[0]} - {x.pair[1]}</div>
-                                    <div>{x.length.toFixed(2)}{'\u00A0'}{'\u212B'}</div>
+                                    <Tooltip
+                                        tag=<div style={{ width: '100%', height: '100%', backgroundColor: colorStyle(clr) }} />
+                                        delayMsec={Constants.TooltipDelayMSec}
+                                        display='block'
+                                    >
+                                        {interval
+                                            ? <IntervalSummary
+                                                caption={bondName(x.pair)}
+                                                from={M.toDecimals(interval.bin.from, 2)}
+                                                to={M.toDecimals(interval.bin.to, 2)}
+                                                unit={'\u212B'} />
+                                            : 'Outlier'
+                                        }
+                                    </Tooltip>
+                                    {bondName(x.pair)}
+                                    <div>{x.length.toFixed(2)}{'\u00A0\u212B'}</div>
                                 </>
                             );
                         })}
@@ -232,8 +272,21 @@ export class AnglesLengths extends View {
                             const clr = interval ? colorToTuple(interval.color) : OutlierColor;
                             return (
                                 <>
-                                    <div style={{ backgroundColor: colorStyle(clr) }} />
-                                    <div className='rdo-monospace'>{x.triplet[0]} - {x.triplet[1]} - {x.triplet[2]}</div>
+                                    <Tooltip
+                                        tag=<div style={{ width: '100%', height: '100%', backgroundColor: colorStyle(clr) }} />
+                                        delayMsec={Constants.TooltipDelayMSec}
+                                        display='block'
+                                    >
+                                        {interval
+                                            ? <IntervalSummary
+                                                caption={bondName(x.triplet)}
+                                                from={M.toDecimals(M.r2d(interval.bin.from), 1)}
+                                                to={M.toDecimals(M.r2d(interval.bin.to), 1)}
+                                                unit={'\u00B0'} />
+                                            : 'Outlier'
+                                        }
+                                    </Tooltip>
+                                    {bondName(x.triplet)}
                                     <div>{M.r2d(x.angle).toFixed(1)}{'\u00B0'}</div>
                                 </>
                             );

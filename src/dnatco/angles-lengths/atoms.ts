@@ -45,3 +45,7 @@ export function isShiftedName(name: string) {
 export function shiftedName(name: string, shift: 0 | -1) {
     return shift === 0 ? name : name + ShiftSuffix;
 }
+
+export function unshiftName(name: string) {
+    return name.substring(0, name.length - ShiftSuffix.length);
+}

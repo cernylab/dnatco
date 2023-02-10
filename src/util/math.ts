@@ -15,4 +15,9 @@ export namespace M {
 
         return neg * ((2.0*Math.PI) + angle) + (1.0 - neg) * angle;
     }
+
+    export function toDecimals(n: number, decimals: number) {
+        const scale = Math.pow(10, decimals);
+        return Math.round(n * scale) / scale;
+    }
 }
