@@ -42,7 +42,11 @@ const ResidueBarCaptionStyle = {
     ...StayAboveStyle,
 } as StandardLonghandProperties;
 
-const DetailsTableStyle = { display: 'grid', gridTemplateColumns: '1em auto 1fr', columnGap: '1em' };
+const DetailsTableStyle = {
+    display: 'grid',
+    gridTemplateColumns: '1em auto auto 1fr',
+    columnGap: '1em'
+};
 const OutlierColor = [0, 0, 0] as ColorTuple;
 
 function bondName(bond: Pair | Triplet) {
@@ -170,9 +174,9 @@ class IntervalSummary extends React.Component<{
                 <div className='rdo-strong'>From</div><div className='rdo-strong'>To</div><div className='rdo-strong'>Probability (%)</div>
                 {this.props.ranges.map(x => (
                     <>
-                        <div className='rdo-monospace'>{`${x.from}\u00A0${this.props.unit}`}</div>
-                        <div className='rdo-monospace'>{`${x.to}\u00A0${this.props.unit}`}</div>
-                        <div className='rdo-monospace'>{x.probability.toFixed(4)}</div>
+                        <div className='rdo-monospace rdo-talgn-right'>{`${x.from}\u00A0${this.props.unit}`}</div>
+                        <div className='rdo-monospace rdo-talgn-right'>{`${x.to}\u00A0${this.props.unit}`}</div>
+                        <div className='rdo-monospace rdo-talgn-right'>{x.probability.toFixed(4)}</div>
                     </>
                 ))}
             </div>
@@ -213,11 +217,11 @@ class SubstructureSummary extends React.Component<{ stats: { threshold: number|'
             <div style={{ display: 'grid', gridTemplateColumns: 'auto auto', columnGap: 'var(--h-gap)' }}>
                 <div className='rdo-strong'>Probability (%)</div><div className='rdo-strong'>Count</div>
                 {this.props.stats.map(x => {
-                    const thr = x.threshold === 'outlier' ? 'Outlier' : x.threshold;
+                    const thr = x.threshold === 'outlier' ? 'Outlier' : x.threshold.toFixed(4);
                     return (
                         <>
-                            <div>{thr}</div>
-                            <div style={{ textAlign: 'right' }}>{x.count}</div>
+                            <div className='rdo-monospace rdo-talgn-right'>{thr}</div>
+                            <div className='rdo-monospace rdo-talgn-right' style={{ textAlign: 'right' }}>{x.count}</div>
                         </>
                     );
                 })}
@@ -248,7 +252,7 @@ export class AnglesLengths extends View {
                     />
                 >
                     <div style={DetailsTableStyle}>
-                        <div style={{ gridColumnStart: 'span 3', ...DetailsCaptionStyle }}>Bond lengths</div>
+                        <div style={{ gridColumnStart: 'span 4', ...DetailsCaptionStyle }}>Bond lengths</div>
                         {residue.bondLengths.map(x => {
                             const pgrp = DAnglesLengths.lengthPGroup(residue.compound, x);
                             const clr = pgrp ? colorToTuple(pgrp.color) : OutlierColor;
@@ -272,14 +276,13 @@ export class AnglesLengths extends View {
                                         }
                                     </Tooltip>
                                     {bondName(x.pair)}
-                                    <div>{x.length.toFixed(3)}{'\u00A0\u212B'}</div>
+                                    <div className='rdo-monospace'>{x.length.toFixed(3)}{'\u00A0\u212B'}</div>
+                                    <div />
                                 </>
                             );
                         })}
-                    </div>
 
-                    <div style={DetailsTableStyle}>
-                        <div style={{ gridColumnStart: 'span 3', ...DetailsCaptionStyle }}>Bond angles</div>
+                        <div style={{ gridColumnStart: 'span 4', ...DetailsCaptionStyle }}>Bond angles</div>
                         {residue.bondAngles.map(x => {
                             const pgrp = DAnglesLengths.anglePGroup(residue.compound, x);
                             const clr = pgrp ? colorToTuple(pgrp.color) : OutlierColor;
@@ -294,8 +297,8 @@ export class AnglesLengths extends View {
                                             ? <IntervalSummary
                                                 caption={bondName(x.triplet)}
                                                 ranges={pgrp.groupedBins.map(x => ({
-                                                    from: M.r2d(x.from).toFixed(2).padStart(6, '\u00A0'),
-                                                    to: M.r2d(x.to).toFixed(2).padStart(6, '\u00A0'),
+                                                    from: M.r2d(x.from).toFixed(2),
+                                                    to: M.r2d(x.to).toFixed(2),
                                                     probability: x.probability,
                                                 }))}
                                                 unit={'\u00B0'} />
@@ -303,7 +306,8 @@ export class AnglesLengths extends View {
                                         }
                                     </Tooltip>
                                     {bondName(x.triplet)}
-                                    <div>{M.r2d(x.angle).toFixed(2)}{'\u00B0'}</div>
+                                    <div className='rdo-monospace rdo-talgn-right'>{M.r2d(x.angle).toFixed(2)}{'\u00B0'}</div>
+                                    <div />
                                 </>
                             );
                         })}
