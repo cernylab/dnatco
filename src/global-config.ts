@@ -3,11 +3,11 @@ import { UserRemoteDatabases } from './remote/db/register';
 import { StaticDb } from './remote/db/static-db';
 import { fromTemplate } from './util/json';
 
-export type AngleLengthInterval = {
+export type AngleLengthPGroup = {
     threshold: number,
     color: string,
 };
-export const AngleLengthInterval: AngleLengthInterval = {
+export const AngleLengthPGroup: AngleLengthPGroup = {
     threshold: 0,
     color: '#ffffff',
 };
@@ -16,13 +16,13 @@ export type GlobalConfigData = {
     isDevel: boolean,
     pathPrefix: string,
     userDatabases: StaticDb[],
-    angleLengthIntervals: AngleLengthInterval[],
+    angleLengthPGroups: AngleLengthPGroup[],
 };
 const GlobalConfigData: GlobalConfigData = {
     isDevel: false,
     pathPrefix: '.',
     userDatabases: [],
-    angleLengthIntervals: [
+    angleLengthPGroups: [
         { threshold: 80, color: '#006eff' },
         { threshold: 95, color: '#00ff00' },
         { threshold: 99.9, color: '#ffff00' },

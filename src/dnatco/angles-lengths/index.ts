@@ -1,4 +1,4 @@
-import { Bin, Bins, isWithin, isWireBin, toBins } from './bin';
+import { Bin, Bins, isWithin, isWireBins, toBins } from './bin';
 import { Angles, Triplet, tripletTag } from './angles';
 import { Grouping } from './grouping';
 import { Lengths, Pair, pairTag } from './lengths';
@@ -8,17 +8,26 @@ import { VoidResult, ErrorResult, Result } from '../';
 import { GlobalConfig } from '../../global-config';
 import { iterate, htmlColorAsNumber } from '../../util';
 
+/**
+ * Averaged values of how probable is a particular bond angle or length of a particular base
+ * to fall within a (narrow) range of values. These (narrow) ranges are expressed as an array of Bin objects.
+ * Averages are obtained from an external resources.
+ */
 type Average = [base: Residues.ElementaryResidue, tag: string, bins: Bins];
-type IntervalBins = Record<
+/**
+ * Aggregated probabilities for a particular bond angle or lenght of a particular base
+ * computed from the thresholds specified by PGroups.
+ */
+type PGroupData = Record<
     Residues.ElementaryResidue,
     Map<
         string, // Angle or length tag
-        [threshold: number, bin: Bin][] // Array of cumulative probability intervals and the "cumulative" bins that cover them
+        { pgroup: PGroup, groupedBins: Bin[] }[]
     >
 >;
 type Resource = [base: Residues.ElementaryResidue, tag: string, file: string];
 
-const AngleIntervalBins: IntervalBins = {
+const AnglePGroupData: PGroupData = {
     'A': new Map(),
     'C': new Map(),
     'G': new Map(),
@@ -29,7 +38,7 @@ const AngleIntervalBins: IntervalBins = {
     'DT': new Map(),
 };
 
-const LengthIntervalBins: IntervalBins = {
+const LengthPGroupData: PGroupData = {
     'A': new Map(),
     'C': new Map(),
     'G': new Map(),
@@ -40,7 +49,8 @@ const LengthIntervalBins: IntervalBins = {
     'DT': new Map(),
 };
 
-const Intervals = [] as { threshold: number, color: number }[];
+type PGroup = { threshold: number, color: number };
+const PGroups = new Array<PGroup>();
 
 async function fetchAverages(prefix: string, resources: Resource[]) {
     const averages = [] as Average[];
@@ -56,11 +66,19 @@ async function fetchAverages(prefix: string, resources: Resource[]) {
         if (!resp.ok)
             throw new Error(`Bad server response: ${resp.statusText}`);
 
-        const wireBin = await resp.json();
-        if (!isWireBin(wireBin))
+        const wireBins = await resp.json();
+        if (!isWireBins(wireBins))
             throw new Error('Invalid bond angle or length object type');
 
-        averages.push([base, tag, toBins(wireBin)]);
+        for (let idx = 0; idx < wireBins.from.length; idx++) {
+            if (wireBins.from[idx] >= wireBins.to[idx])
+                throw new Error('Bin has invalid range');
+
+            if (wireBins.binprob[idx] < 0.0)
+                throw new Error('Bin has invalid probability');
+        }
+
+        averages.push([base, tag, toBins(wireBins)]);
     }
 
     return averages;
@@ -70,28 +88,32 @@ function fileName(base: Residues.ElementaryResidue, data: { kind: 'length', v: P
     return `${base}_${data.kind}_${data.v.map(x => x.replace("'", "p")).join('_')}_prosco.json`;
 }
 
-function getInterval(intervalBins: [threshold: number, bin: Bin][], value: number) {
-    for (let idx = 0; idx < intervalBins.length; idx++) {
-        const intvl = intervalBins[idx];
-        if (isWithin(value, intvl[1]))
-            return {
-                threshold: intvl[0],
-                bin: { ...intvl[1] },
-                color: Intervals[idx].color,
-                index: idx,
-            };
+function getPGroup(data: { pgroup: PGroup, groupedBins: Bins }[], value: number) {
+    for (let idx = 0; idx < data.length; idx++) {
+        const pgrp = data[idx];
+        for (const b of pgrp.groupedBins) {
+            if (isWithin(value, b)) {
+                return {
+                    ...pgrp.pgroup,
+                    groupedBins: pgrp.groupedBins,
+                    index: idx
+                };
+            }
+        }
     }
 
     return void 0; // Outlier
 }
 
-function setIntervals(intervals: typeof Intervals, intervalBins: IntervalBins, averages: Average[]) {
+function setPGroupData(pgroups: typeof PGroups, data: PGroupData, averages: Average[]) {
     for (const [base, tag, bins] of averages) {
-        for (const cumul of intervals.map(x => x.threshold)) {
-            const bin = Grouping.cumulative(bins, cumul / 100.0);
-            const bond = intervalBins[base].get(tag) ?? [];
-            bond.push([cumul, bin]);
-            intervalBins[base].set(tag, bond);
+        for (const pgrp of pgroups) {
+            const pgbins = Grouping.aggregate(bins, pgrp.threshold / 100.0);
+
+            const bond = data[base].get(tag) ?? [];
+
+            bond.push({ pgroup: pgrp, groupedBins: pgbins });
+            data[base].set(tag, bond);
         }
     }
 }
@@ -100,16 +122,16 @@ export namespace AnglesLengths {
     export async function initialize(): Promise<Result<void>> {
         const prefix = `${GlobalConfig.data().pathPrefix}/angles_lengths`;
 
-        for (const intvl of GlobalConfig.data().angleLengthIntervals) {
+        for (const intvl of GlobalConfig.data().angleLengthPGroups) {
             const color = htmlColorAsNumber(intvl.color);
             if (!color)
                 throw new Error(`${intvl.color} is not a valid HTML color string`);
 
-            Intervals.push({ threshold: intvl.threshold, color });
+            PGroups.push({ threshold: intvl.threshold, color });
         }
-        if (Intervals.length === 0)
+        if (PGroups.length === 0)
             throw new Error('No probability intervals');
-        Intervals.sort((a, b) => a.threshold - b.threshold);
+        PGroups.sort((a, b) => a.threshold - b.threshold);
 
         try {
             const angleAverages = await fetchAverages(
@@ -121,8 +143,8 @@ export namespace AnglesLengths {
                 iterate(Lengths).flatMap(([base, pairs]) => pairs.map(p => ([base, pairTag(p), fileName(base, { kind: 'length', v: p })] as Resource)))
             );
 
-            setIntervals(Intervals, AngleIntervalBins, angleAverages);
-            setIntervals(Intervals, LengthIntervalBins, lengthAverages);
+            setPGroupData(PGroups, AnglePGroupData, angleAverages);
+            setPGroupData(PGroups, LengthPGroupData, lengthAverages);
 
             return VoidResult();
         } catch (e) {
@@ -130,49 +152,49 @@ export namespace AnglesLengths {
         }
     }
 
-    export function angleInterval(base: Residues.ElementaryResidue, angle: Measurements.BondAngle) {
+    export function anglePGroup(base: Residues.ElementaryResidue, angle: Measurements.BondAngle) {
         const tag = tripletTag(angle.triplet);
-        const intervals = AngleIntervalBins[base].get(tag);
+        const pgrps = AnglePGroupData[base].get(tag);
 
-        if (!intervals) {
+        if (!pgrps) {
             console.warn(`Unknown bond angle tag ${tag}`);
             return void 0;
         }
 
-        return getInterval(intervals, angle.angle);
+        return getPGroup(pgrps, angle.angle);
     }
 
-    export function angleIntervalBin(idx: number, base: Residues.ElementaryResidue, triplet: Triplet) {
+    export function anglePGroupData(idx: number, base: Residues.ElementaryResidue, triplet: Triplet) {
         const tag = tripletTag(triplet);
-        return AngleIntervalBins[base].get(tag)?.[idx];
+        return AnglePGroupData[base].get(tag)?.[idx];
     }
 
-    export function lengthInterval(base: Residues.ElementaryResidue, length: Measurements.BondLength) {
+    export function lengthPGroup(base: Residues.ElementaryResidue, length: Measurements.BondLength) {
         const tag = pairTag(length.pair);
-        const intervalBins = LengthIntervalBins[base].get(tag);
+        const pgrps = LengthPGroupData[base].get(tag);
 
-        if (!intervalBins) {
+        if (!pgrps) {
             console.warn(`Unknown bond length tag ${tag}`);
             return void 0;
         }
 
-        return getInterval(intervalBins, length.length);
+        return getPGroup(pgrps, length.length);
     }
 
-    export function lengthIntervalBin(idx: number, base: Residues.ElementaryResidue, pair: Pair) {
+    export function lengthPGroupData(idx: number, base: Residues.ElementaryResidue, pair: Pair) {
         const tag = pairTag(pair);
-        return LengthIntervalBins[base].get(tag)?.[idx];
+        return LengthPGroupData[base].get(tag)?.[idx];
     }
 
     export function intervalColor(idx: number) {
-        return Intervals[idx].color ?? 0;
+        return PGroups[idx].color ?? 0;
     }
 
     export function intervalCount() {
-        return Intervals.length;
+        return PGroups.length;
     }
 
     export function intervalThresholds() {
-        return Intervals.map(x => x.threshold);
+        return PGroups.map(x => x.threshold);
     }
 }

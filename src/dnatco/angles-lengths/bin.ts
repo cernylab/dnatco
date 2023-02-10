@@ -24,7 +24,7 @@ export const WireBins = {
     prosco: [] as number[],
 };
 export type WireBins = typeof WireBins;
-export function isWireBin(v: unknown): v is WireBins {
+export function isWireBins(v: unknown): v is WireBins {
     if (!isObj(v))
         return false;
 

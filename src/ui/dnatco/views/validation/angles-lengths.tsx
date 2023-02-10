@@ -158,13 +158,23 @@ class AnglesLengthsBar extends React.Component<{ caption?: string | React.ReactN
     }
 }
 
-class IntervalSummary extends React.Component<{ caption: string | JSX.Element, from: number, to: number, unit: string }> {
+class IntervalSummary extends React.Component<{
+    caption: string | JSX.Element,
+    ranges: { from: string, to: string, probability: number }[],
+    unit: string
+}> {
     render() {
         return (
-            <div style={{ display: 'grid', gridTemplateColumns: 'auto auto', columnGap: 'var(--h-gap)' }}>
-                <div className='rdo-strong' style={{ gridColumnStart: 'span 2', textAlign: 'center' }}>{this.props.caption}</div>
-                <div className='rdo-strong'>From</div><div>{`${this.props.from}\u00A0${this.props.unit}`}</div>
-                <div className='rdo-strong'>To</div><div>{`${this.props.to}\u00A0${this.props.unit}`}</div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'auto auto auto', columnGap: 'var(--h-gap)' }}>
+                <div className='rdo-strong' style={{ gridColumnStart: 'span 3', textAlign: 'center' }}>{this.props.caption}</div>
+                <div className='rdo-strong'>From</div><div className='rdo-strong'>To</div><div className='rdo-strong'>Probability (%)</div>
+                {this.props.ranges.map(x => (
+                    <>
+                        <div className='rdo-monospace'>{`${x.from}\u00A0${this.props.unit}`}</div>
+                        <div className='rdo-monospace'>{`${x.to}\u00A0${this.props.unit}`}</div>
+                        <div className='rdo-monospace'>{x.probability.toFixed(4)}</div>
+                    </>
+                ))}
             </div>
         )
     }
@@ -240,8 +250,8 @@ export class AnglesLengths extends View {
                     <div style={DetailsTableStyle}>
                         <div style={{ gridColumnStart: 'span 3', ...DetailsCaptionStyle }}>Bond lengths</div>
                         {residue.bondLengths.map(x => {
-                            const interval = DAnglesLengths.lengthInterval(residue.compound, x);
-                            const clr = interval ? colorToTuple(interval.color) : OutlierColor;
+                            const pgrp = DAnglesLengths.lengthPGroup(residue.compound, x);
+                            const clr = pgrp ? colorToTuple(pgrp.color) : OutlierColor;
                             return (
                                 <>
                                     <Tooltip
@@ -249,17 +259,20 @@ export class AnglesLengths extends View {
                                         delayMsec={Constants.TooltipDelayMSec}
                                         display='block'
                                     >
-                                        {interval
+                                        {pgrp
                                             ? <IntervalSummary
                                                 caption={bondName(x.pair)}
-                                                from={M.toDecimals(interval.bin.from, 2)}
-                                                to={M.toDecimals(interval.bin.to, 2)}
+                                                ranges={pgrp.groupedBins.map(x => ({
+                                                    from: x.from.toFixed(3),
+                                                    to: x.to.toFixed(3),
+                                                    probability: x.probability,
+                                                }))}
                                                 unit={'\u212B'} />
                                             : 'Outlier'
                                         }
                                     </Tooltip>
                                     {bondName(x.pair)}
-                                    <div>{x.length.toFixed(2)}{'\u00A0\u212B'}</div>
+                                    <div>{x.length.toFixed(3)}{'\u00A0\u212B'}</div>
                                 </>
                             );
                         })}
@@ -268,8 +281,8 @@ export class AnglesLengths extends View {
                     <div style={DetailsTableStyle}>
                         <div style={{ gridColumnStart: 'span 3', ...DetailsCaptionStyle }}>Bond angles</div>
                         {residue.bondAngles.map(x => {
-                            const interval = DAnglesLengths.angleInterval(residue.compound, x);
-                            const clr = interval ? colorToTuple(interval.color) : OutlierColor;
+                            const pgrp = DAnglesLengths.anglePGroup(residue.compound, x);
+                            const clr = pgrp ? colorToTuple(pgrp.color) : OutlierColor;
                             return (
                                 <>
                                     <Tooltip
@@ -277,17 +290,20 @@ export class AnglesLengths extends View {
                                         delayMsec={Constants.TooltipDelayMSec}
                                         display='block'
                                     >
-                                        {interval
+                                        {pgrp
                                             ? <IntervalSummary
                                                 caption={bondName(x.triplet)}
-                                                from={M.toDecimals(M.r2d(interval.bin.from), 1)}
-                                                to={M.toDecimals(M.r2d(interval.bin.to), 1)}
+                                                ranges={pgrp.groupedBins.map(x => ({
+                                                    from: M.r2d(x.from).toFixed(2).padStart(6, '\u00A0'),
+                                                    to: M.r2d(x.to).toFixed(2).padStart(6, '\u00A0'),
+                                                    probability: x.probability,
+                                                }))}
                                                 unit={'\u00B0'} />
                                             : 'Outlier'
                                         }
                                     </Tooltip>
                                     {bondName(x.triplet)}
-                                    <div>{M.r2d(x.angle).toFixed(1)}{'\u00B0'}</div>
+                                    <div>{M.r2d(x.angle).toFixed(2)}{'\u00B0'}</div>
                                 </>
                             );
                         })}

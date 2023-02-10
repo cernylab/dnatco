@@ -16,7 +16,7 @@ export namespace Summarize {
         const lengths = initedArray(0, nIntervals + 1);
 
         for (const angle of r.bondAngles) {
-            const intvl = AnglesLengths.angleInterval(r.compound, angle);
+            const intvl = AnglesLengths.anglePGroup(r.compound, angle);
             if (!intvl)
                 angles[nIntervals]++;
             else
@@ -24,7 +24,7 @@ export namespace Summarize {
         }
 
         for (const length of r.bondLengths) {
-            const intvl = AnglesLengths.lengthInterval(r.compound, length);
+            const intvl = AnglesLengths.lengthPGroup(r.compound, length);
             if (!intvl)
                 lengths[nIntervals]++;
             else

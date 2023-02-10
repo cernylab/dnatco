@@ -16,6 +16,11 @@ export namespace M {
         return neg * ((2.0*Math.PI) + angle) + (1.0 - neg) * angle;
     }
 
+    export function fuzzyCompare(a: number, b: number, prec = 1.0e-7) {
+        const c = (a / b) - 1.0;
+        return Math.abs(c) < prec;
+    }
+
     export function toDecimals(n: number, decimals: number) {
         const scale = Math.pow(10, decimals);
         return Math.round(n * scale) / scale;
