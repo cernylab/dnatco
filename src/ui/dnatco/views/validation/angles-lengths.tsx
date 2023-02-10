@@ -184,7 +184,7 @@ class IntervalSummary extends React.Component<{
     }
 }
 
-class ResidueHeader extends React.Component<{ caption: string, summary: Summarize.Summary, countsAngles: CountInInterval[], countsLengths: CountInInterval[] }> {
+class ResidueHeader extends React.Component<{ caption: string | JSX.Element, summary: Summarize.Summary, countsAngles: CountInInterval[], countsLengths: CountInInterval[] }> {
     private tainerRef = React.createRef<HTMLDivElement>();
 
     render() {
@@ -232,11 +232,6 @@ class SubstructureSummary extends React.Component<{ stats: { threshold: number|'
 
 export class AnglesLengths extends View {
     private renderResidue(residue: Measurements.Residue, multipleModels: boolean, thresholds: number[]) {
-        let residueName = multipleModels
-            ? `${residue.modelNum} ${residue.authChain}${residue.authSeqId}`
-            : `${residue.authChain}${residue.authSeqId}`;
-        residueName += residue.altId ? ` (alt. ${residue.altId})` : '';
-
         const summary = Summarize.residue(residue);
         const countsAngles = countsInIntervals(summary.angles, thresholds);
         const countsLenghts = countsInIntervals(summary.lengths, thresholds);
@@ -245,7 +240,7 @@ export class AnglesLengths extends View {
             <>
                 <CollapsibleVertical
                     header=<ResidueHeader
-                        caption={residueName}
+                        caption={this.renderResidueName(residue, multipleModels)}
                         summary={summary}
                         countsAngles={countsAngles}
                         countsLengths={countsLenghts}
@@ -316,6 +311,24 @@ export class AnglesLengths extends View {
                 <div style={{ height: 'calc(var(--v-gap) / 2)' }} />
             </>
         );
+    }
+
+    private renderResidueName(r: Measurements.Residue, multipleModels: boolean) {
+        let inner = [];
+
+        if (multipleModels) {
+            inner.push(<span className='rdo-nice-step-model'>M{r.modelNum}</span>);
+            inner.push(<span>{'\u00A0'}</span>);
+        }
+
+        inner.push(<span>{r.authChain}</span>);
+        inner.push(<span>{'\u00A0'}</span>);
+        inner.push(<span className='rdo-nice-step-base' style={{ fontWeight: BarCaptionStyle.fontWeight }}>{r.compound}</span>);
+        inner.push(<span>{r.authSeqId}</span>);
+        if (r.altId)
+            inner.push(<span className='rdo-nice-step-altpos'>(alt. {r.altId})</span>);
+
+        return <div>{inner}</div>;
     }
 
     private renderModel(modelIdx: number, chain: string, multipleModels: boolean, thresholds: number[]) {
