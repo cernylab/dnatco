@@ -764,7 +764,6 @@ th.rdo-data-table-small {
 }
 
 .rdo-tooltip {
-    display: inline-flex;
     position: relative;
 }
 

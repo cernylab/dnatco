@@ -142,6 +142,11 @@ export namespace AnglesLengths {
         return getInterval(intervals, angle.angle);
     }
 
+    export function angleIntervalBin(idx: number, base: Residues.ElementaryResidue, triplet: Triplet) {
+        const tag = tripletTag(triplet);
+        return AngleIntervalBins[base].get(tag)?.[idx];
+    }
+
     export function lengthInterval(base: Residues.ElementaryResidue, length: Measurements.BondLength) {
         const tag = pairTag(length.pair);
         const intervalBins = LengthIntervalBins[base].get(tag);
@@ -154,11 +159,20 @@ export namespace AnglesLengths {
         return getInterval(intervalBins, length.length);
     }
 
+    export function lengthIntervalBin(idx: number, base: Residues.ElementaryResidue, pair: Pair) {
+        const tag = pairTag(pair);
+        return LengthIntervalBins[base].get(tag)?.[idx];
+    }
+
     export function intervalColor(idx: number) {
         return Intervals[idx].color ?? 0;
     }
 
     export function intervalCount() {
         return Intervals.length;
+    }
+
+    export function intervalThresholds() {
+        return Intervals.map(x => x.threshold);
     }
 }

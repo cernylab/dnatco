@@ -145,6 +145,7 @@ export class Tooltip extends React.Component<Tooltip.Props> {
     render() {
         return (
             <span className='rdo-tooltip'
+                style={{ display: this.props.display ?? 'inline' }}
                 ref={this.ref}
                 onMouseEnter={e => this.scheduleDisplay(e.pageX, e.pageY, false, this.props.delayMsec ?? 0)}
                 onMouseLeave={() => {
@@ -175,5 +176,6 @@ export namespace Tooltip {
         children?: React.ReactNode;
         tag?: JSX.Element|string;
         delayMsec?: number;
+        display?: 'inline' | 'block';
     }
 }

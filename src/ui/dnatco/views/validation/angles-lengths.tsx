@@ -2,10 +2,12 @@ import type { StandardLonghandProperties } from 'csstype';
 import React from 'react';
 import { ChainSelect, ModelSelect } from '../structure-selectors';
 import { View } from '../view';
+import { Constants } from '../../constants';
 import { InvalidChain, InvalidModelIndex } from '../../structure-selection';
 import { ColorTuple, colorToRgb, colorToTuple } from '../../../util';
 import { CollapsibleVertical } from '../../../common/collapsible-vertical';
 import { NamedList, NamedListItem } from '../../../common/named-list';
+import { Tooltip } from '../../../common/tooltip';
 import { Dnatcofication  } from '../../../../dnatco/dnatcofication';
 import { AnglesLengths as DAnglesLengths } from '../../../../dnatco/angles-lengths';
 import { Measurements } from '../../../../dnatco/angles-lengths/measurements';
@@ -13,11 +15,6 @@ import { Summarize } from '../../../../dnatco/angles-lengths/summarize';
 import { rgbToHex } from '../../../util';
 import { M } from '../../../../util/math';
 
-const BarCaptionStyle = {
-    color: 'white',
-    fontWeight: 'bold',
-    textShadow: '0px 0px 3px #000'
-};
 const DetailsCaptionStyle = {
     alignItems: 'center',
     display: 'flex',
@@ -25,13 +22,19 @@ const DetailsCaptionStyle = {
     justifyContent: 'center',
 };
 const StayAboveStyle = { position: 'absolute', zIndex: 1 } as StandardLonghandProperties;
+const BarCaptionStyle = {
+    color: 'white',
+    fontWeight: 'bold',
+    textShadow: '0px 0px 3px #000',
+    ...StayAboveStyle,
+};
 const ResidueBarCaptionStyle = {
     height: '100%',
     width: '100%',
     textAlign: 'right',
     fontSize: 'var(--font-small)',
     top: 0,
-    right: 'var(--v-gap)',
+    right: 'calc(var(--h-gap) / 2)',
     ...BarCaptionStyle,
     ...StayAboveStyle,
 } as StandardLonghandProperties;
@@ -41,6 +44,33 @@ const OutlierColor = [0, 0, 0] as ColorTuple;
 
 function colorStyle(clr: [r: number, g: number, b: number]) {
     return `rgb(${clr.join(',')})`;
+}
+
+type CountInInterval = { threshold: number | 'outlier', count: number };
+function countsInIntervals(stats: number[], thresholds: number[]): CountInInterval[] {
+    return stats.map((v, idx) => {
+        const thr = thresholds[idx];
+        return { threshold: thr ?? 'outlier', count: v };
+    });
+}
+
+function renderSubstructureStats(caption: string | JSX.Element, summaryStats: number[], counts: CountInInterval[]) {
+    return (
+        <AnglesLengthsBar
+            caption={
+                <div style={{ ...StayAboveStyle, top: 0, width: '100%' }}>
+                    <Tooltip
+                        tag={caption}
+                        delayMsec={Constants.TooltipDelayMSec}
+                        display='block'
+                    >
+                        <SubstructureSummary stats={counts} />
+                    </Tooltip>
+                </div>
+            }
+            stats={summaryStats}
+        />
+    );
 }
 
 class AnglesLengthsBar extends React.Component<{ caption?: string | React.ReactNode, stats: number[] }> {
@@ -113,17 +143,16 @@ class AnglesLengthsBar extends React.Component<{ caption?: string | React.ReactN
     }
 }
 
-class ResidueHeader extends React.Component<{ caption: string, summary: Summarize.Summary }> {
+class ResidueHeader extends React.Component<{ caption: string, summary: Summarize.Summary, countsAngles: CountInInterval[], countsLengths: CountInInterval[] }> {
     private tainerRef = React.createRef<HTMLDivElement>();
 
     render() {
         return (
             <div style={{ position: 'relative', width: '100%', height: '100%' }} ref={this.tainerRef}>
                 <div style={{
-                        position: 'absolute',
-                        zIndex: 1,
+                        ...StayAboveStyle,
                         top: 0,
-                        left: 'var(--h-gap)',
+                        left: 'calc(var(--h-gap) / 2)',
                         ...BarCaptionStyle
                     }}
                 >
@@ -131,35 +160,55 @@ class ResidueHeader extends React.Component<{ caption: string, summary: Summariz
                 </div>
 
                 <div style={{ height: '1em' }}>
-                    <AnglesLengthsBar
-                        caption=<div style={ResidueBarCaptionStyle}>L</div>
-                        stats={this.props.summary.lengths}
-                    />
+                    {renderSubstructureStats(<div style={ResidueBarCaptionStyle}>L</div>, this.props.summary.lengths, this.props.countsLengths)}
                 </div>
                 <div style={{ height: '1em' }}>
-                    <AnglesLengthsBar
-                        caption=<div style={ResidueBarCaptionStyle}>A</div>
-                        stats={this.props.summary.angles}
-                    />
+                    {renderSubstructureStats(<div style={ResidueBarCaptionStyle}>A</div>, this.props.summary.angles, this.props.countsAngles)}
                 </div>
             </div>
         );
     }
 }
 
+class SubstructureSummary extends React.Component<{ stats: { threshold: number|'outlier', count: number }[] }> {
+    render() {
+        return (
+            <div style={{ display: 'grid', gridTemplateColumns: 'auto auto', columnGap: 'var(--h-gap)' }}>
+                <div className='rdo-strong'>Probability (%)</div><div className='rdo-strong'>Count</div>
+                {this.props.stats.map(x => {
+                    const thr = x.threshold === 'outlier' ? 'Outlier' : x.threshold;
+                    return (
+                        <>
+                            <div>{thr}</div>
+                            <div style={{ textAlign: 'right' }}>{x.count}</div>
+                        </>
+                    );
+                })}
+            </div>
+        );
+    }
+}
+
 export class AnglesLengths extends View {
-    private renderResidue(residue: Measurements.Residue, multipleModels: boolean) {
+    private renderResidue(residue: Measurements.Residue, multipleModels: boolean, thresholds: number[]) {
         let residueName = multipleModels
             ? `${residue.modelNum} ${residue.authChain}${residue.authSeqId}`
             : `${residue.authChain}${residue.authSeqId}`;
         residueName += residue.altId ? ` (alt. ${residue.altId})` : '';
 
         const summary = Summarize.residue(residue);
+        const countsAngles = countsInIntervals(summary.angles, thresholds);
+        const countsLenghts = countsInIntervals(summary.lengths, thresholds);
 
         return (
             <>
                 <CollapsibleVertical
-                    header=<ResidueHeader caption={residueName} summary={summary} />
+                    header=<ResidueHeader
+                        caption={residueName}
+                        summary={summary}
+                        countsAngles={countsAngles}
+                        countsLengths={countsLenghts}
+                    />
                 >
                     <div style={DetailsTableStyle}>
                         <div style={{ gridColumnStart: 'span 3', ...DetailsCaptionStyle }}>Bond lengths</div>
@@ -196,9 +245,9 @@ export class AnglesLengths extends View {
         );
     }
 
-    private renderModel(modelIdx: number, chain: string, multipleModels: boolean) {
+    private renderModel(modelIdx: number, chain: string, multipleModels: boolean, thresholds: number[]) {
         const residues = this.selectionToResidues(modelIdx, chain);
-        return residues.map(x => this.renderResidue(x, multipleModels));
+        return residues.map(x => this.renderResidue(x, multipleModels, thresholds));
     }
 
     private selectionToResidues(modelIdx: number, chain: string) {
@@ -225,6 +274,7 @@ export class AnglesLengths extends View {
         const chain = this.props.structureSelection.chain === InvalidChain ? '' : this.props.structureSelection.chain;
 
         const summary = Summarize.substructure(this.selectionToResidues(modelIdx, chain));
+        const thresholds = DAnglesLengths.intervalThresholds();
 
         return (
             <div>
@@ -251,14 +301,14 @@ export class AnglesLengths extends View {
 
                 <div className='rdo-secondary-caption'>Structure/Selection</div>
                 <div style={{ height: '2em' }}>
-                    <AnglesLengthsBar caption='Lengths' stats={summary.lengths} />
+                    {renderSubstructureStats(<div style={{ ...BarCaptionStyle, left: 'calc(var(--h-gap) / 2)' }}>Lengths</div>, summary.lengths, countsInIntervals(summary.lengths, thresholds))}
                 </div>
                 <div style={{ height: '2em' }}>
-                    <AnglesLengthsBar caption='Angles' stats={summary.angles} />
+                    {renderSubstructureStats(<div style={{ ...BarCaptionStyle, left: 'calc(var(--h-gap) / 2)' }}>Angles</div>, summary.angles, countsInIntervals(summary.angles, thresholds))}
                 </div>
 
                 <div className='rdo-secondary-caption'>Residues</div>
-                {this.renderModel(modelIdx, chain, multipleModels)}
+                {this.renderModel(modelIdx, chain, multipleModels, thresholds)}
             </div>
         );
     }

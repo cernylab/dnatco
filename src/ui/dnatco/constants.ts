@@ -16,4 +16,6 @@ export namespace Constants {
     export const DefaultSimilarityYRange = [0, 100];
 
     export const MinimumFlexiblePlotHeight = '20em';
+
+    export const TooltipDelayMSec = 300;
 }
