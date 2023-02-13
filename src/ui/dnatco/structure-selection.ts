@@ -46,7 +46,7 @@ export function EmptyStructureSelection(d: Dnatcofication): StructureSelection {
     };
 }
 
-export type StepSwitcher = (stepId: number, d: Dnatcofication, vi: ViewerInterop) => Promise<void>;
+export type StepSwitcher = (stepId: number, d: Dnatcofication, vi: ViewerInterop, customNtCSet: string) => Promise<void>;
 
 export type StructureSelectionSwitching = {
     switchModel: (modelIndex: number) => void,

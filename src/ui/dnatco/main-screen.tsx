@@ -14,7 +14,7 @@ import 'assets/molstar.css';
 export type MasterMode = 'annotation' | 'validation' | 'refinement';
 type ViewType = keyof typeof Register.Views;
 
-const AvailableViews = {
+const AvailableViews: Record<ViewType, { caption: string, visualizer: boolean }> = {
     'assigned-ntcs': { caption: 'Assigned NtCs', visualizer: true },
     'structure-info': { caption: 'Structure Info', visualizer: false },
     'change-ntcs': { caption: 'Change NtCs', visualizer: true },
@@ -128,7 +128,7 @@ export class MainScreen extends WithSubscriptions<MainScreen.Props, State> {
 
     private renderView() {
         const view = Register.Views[this.activeView()];
-        return view.render({
+        const rendered = view.render({
             dnatcofication: this.props.dnatcofication,
             viewerInterop: this.props.viewerInterop,
             structureSelection: this.state.structureSelection,
@@ -140,6 +140,22 @@ export class MainScreen extends WithSubscriptions<MainScreen.Props, State> {
                     this.setState({ ...this.state, selectedCustomNtCSet: set });
             }
         });
+
+        if (view.unscrollableContainer) {
+            return (
+                <div className='rdo-offset' style={{ overflow: 'hidden' }}>
+                    {rendered}
+                </div>
+            );
+        } else {
+            return (
+                <div className='rdo-offset' style={{ overflow: 'hidden' }}>
+                    <div className='rdo-scroll-vertically' ref={this.scrollableElemRef}>
+                        {rendered}
+                    </div>
+                </div>
+            );
+        }
     }
 
     componentDidMount() {
@@ -270,13 +286,7 @@ export class MainScreen extends WithSubscriptions<MainScreen.Props, State> {
                     <DynamicSplitView
                         containerClass='rdo-view-visualizer-container'
                         visible={AvailableViews[this.activeView()].visualizer ? 'both' : 'first'}
-                        first={
-                            <div className='rdo-offset' style={{ overflow: 'hidden' }}>
-                                <div className='rdo-scroll-vertically' ref={this.scrollableElemRef}>
-                                    {this.renderView()}
-                                </div>
-                            </div>
-                        }
+                        first={this.renderView()}
                         second={
                             <div className='rdo-offset' style={{ marginLeft: 0, overflow: 'hidden' }}>
                                 <div id='rdo-id-molstar-container' style={{ height: '100%', position: 'relative' }} />

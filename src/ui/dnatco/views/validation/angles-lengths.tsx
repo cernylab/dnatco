@@ -331,6 +331,8 @@ class SubstructureSummary extends React.Component<{ stats: { threshold: number|'
 }
 
 export class AnglesLengths extends View {
+    static readonly unscrollableContainer = true;
+
     private renderResidue(residue: Measurements.Residue, multipleModels: boolean, thresholds: number[]) {
         const summary = Summarize.residue(residue);
         const countsAngles = countsInGroups(summary.angles, thresholds);
@@ -481,7 +483,7 @@ export class AnglesLengths extends View {
         const countsLenghts = countsInGroups(summary.lengths, thresholds);
 
         return (
-            <div>
+            <div style={{ overflow: 'hidden', height: '100%', display: 'flex', flexDirection: 'column' }}>
                 <NamedList sizing='min-content' rowSpacing='half'>
                 {
                     multipleModels
@@ -522,7 +524,11 @@ export class AnglesLengths extends View {
                 </OverallStatsBar>
 
                 <div className='rdo-secondary-caption'>Residues</div>
-                {this.renderModel(modelIdx, chain, multipleModels, thresholds)}
+                <div style={{ flex: 1, overflow: 'hidden' }}>
+                    <div className='rdo-scroll-vertically'>
+                        {this.renderModel(modelIdx, chain, multipleModels, thresholds)}
+                    </div>
+                </div>
             </div>
         );
     }

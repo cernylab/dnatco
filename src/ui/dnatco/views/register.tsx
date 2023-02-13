@@ -17,19 +17,27 @@ import { StepTorsions } from './validation/step-torsions';
 import { StepSwitcher } from '../structure-selection';
 
 export namespace Register {
-    export type View = {
-        render: (props: View.Props) => React.ReactNode;
-        stepSwitcher: StepSwitcher;
+    type PropsType = {
+        annotation: View.Props,
+        refinement: Refinement.Props,
+        validation: View.Props,
     };
 
-    export const Views = {
+    export type View<Kind extends keyof PropsType> = {
+        render: (props: PropsType[Kind]) => React.ReactNode;
+        stepSwitcher?: StepSwitcher;
+        unscrollableContainer?: boolean;
+    };
+
+    export const Views: Record<string, View<any>> = {
         'assigned-ntcs': {
             render: (props: View.Props) => <AssignedNtCs {...props} />,
-            stepSwitcher: AssignedNtCs.StepSwitcher
+            stepSwitcher: AssignedNtCs.StepSwitcher,
         },
         'angles-lengths': {
             render:(props: View.Props) => <AnglesLengths {...props} />,
             stepSwitcher: void 0,
+            unscrollableContainer: AnglesLengths.unscrollableContainer,
         },
         'change-ntcs': {
             render: (props: Refinement.Props) => <ChangeNtCs {...props} />,
@@ -45,19 +53,19 @@ export namespace Register {
         },
         'downloads': {
             render: (props: View.Props) => <Downloads {...props} />,
-            stepSwitcher: Downloads.StepSwitcher
+            stepSwitcher: void 0,
         },
         'mmb-commands-file': {
             render: (props: Refinement.Props) => <MmbCommandsFile {...props} />,
-            stepSwitcher: MmbCommandsFile.StepSwitcher
+            stepSwitcher: void 0,
         },
         'phenix-restraints': {
             render: (props: Refinement.Props) => <PhenixRestraints {...props} />,
-            stepSwitcher: PhenixRestraints.StepSwitcher
+            stepSwitcher: void 0,
         },
         'refmac-restraints': {
             render: (props: Refinement.Props) => <RefmacRestraints {...props} />,
-            stepSwitcher: RefmacRestraints.StepSwitcher
+            stepSwitcher: void 0,
         },
         'rscc-plot': {
             render: (props: View.Props) => <RsccPlot {...props} />,
@@ -73,7 +81,7 @@ export namespace Register {
         },
         'structure-info': {
             render: (props: View.Props) => <StructureInfo {...props} />,
-            stepSwitcher: StructureInfo.StepSwitcher
+            stepSwitcher: void 0,
         },
     };
 }
