@@ -110,6 +110,9 @@ class AnglesLengthsBar extends React.Component<{ caption?: string | React.ReactN
         let x = 0;
         for (let idx = 0; idx < nIntervals; idx++) {
             const n = stats[idx];
+            if (n === 0)
+                continue;
+
             const w = Math.round(tw * n / sum);
 
             const clr = DAnglesLengths.intervalColor(idx);
@@ -118,7 +121,9 @@ class AnglesLengthsBar extends React.Component<{ caption?: string | React.ReactN
 
             x += w;
         }
-        ctx.fillStyle = rgbToHex(OutlierColor);
+
+        if (stats[nIntervals] > 0)
+            ctx.fillStyle = rgbToHex(OutlierColor);
         ctx.fillRect(x, 0, tw - x, th);
     }
 
