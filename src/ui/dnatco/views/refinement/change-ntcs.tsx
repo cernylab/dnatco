@@ -3,7 +3,7 @@ import { Refinement } from './common';
 import { CustomNtCSets } from './custom-ntc-sets';
 import { ChainSelect, ModelSelect } from '../structure-selectors';
 import { View } from '../view';
-import { niceStepName } from '../../common';
+import { Common, niceStepName } from '../../common';
 import { InvalidChain, InvalidModelIndex, InvalidStepId } from '../../structure-selection';
 import { DynamicTable } from '../../../common/dynamic-table';
 import { NamedList, NamedListItem } from '../../../common/named-list';
@@ -17,6 +17,7 @@ import { StepsMapper } from '../../../../dnatco/steps-mapper';
 interface State {
 }
 export class ChangeNtCs extends View<Refinement.Props, State> {
+    static readonly unscrollableContainer = true;
     private tableModel: DynamicTable.Model = new DynamicTable.Model([]);
 
     constructor(props: Refinement.Props) {
@@ -166,7 +167,7 @@ export class ChangeNtCs extends View<Refinement.Props, State> {
         const numModels = Dnatcofication.Structure.numberOfModels(this.props.dnatcofication);
 
         return (
-            <div>
+            <div style={ Common.VScrollJail }>
                 <NamedList sizing='min-content' rowSpacing='half'>
                 {
                     numModels > 1
@@ -195,8 +196,13 @@ export class ChangeNtCs extends View<Refinement.Props, State> {
                     selectedSet={this.props.selectedCustomNtCSet}
                     onSetChanged={this.props.onCustomNtCSetChanged}
                 />
+
                 <div className='rdo-line-spacer' />
-                {this.renderStepsTable()}
+                <div style={ Common.VScrollElement }>
+                    <div className='rdo-scroll-vertically'>
+                        {this.renderStepsTable()}
+                    </div>
+                </div>
             </div>
         );
     }

@@ -4,6 +4,7 @@ import { ChainSelect, ModelSelect } from '../structure-selectors';
 import { View } from '../view';
 import { Constants } from '../../constants';
 import { InvalidChain, InvalidModelIndex } from '../../structure-selection';
+import { Common } from '../../common';
 import { ColorTuple, colorToRgb, colorToTuple } from '../../../util';
 import { CollapsibleVertical } from '../../../common/collapsible-vertical';
 import { NamedList, NamedListItem } from '../../../common/named-list';
@@ -483,7 +484,7 @@ export class AnglesLengths extends View {
         const countsLenghts = countsInGroups(summary.lengths, thresholds);
 
         return (
-            <div style={{ overflow: 'hidden', height: '100%', display: 'flex', flexDirection: 'column' }}>
+            <div style={ Common.VScrollJail }>
                 <NamedList sizing='min-content' rowSpacing='half'>
                 {
                     multipleModels
@@ -524,7 +525,7 @@ export class AnglesLengths extends View {
                 </OverallStatsBar>
 
                 <div className='rdo-secondary-caption'>Residues</div>
-                <div style={{ flex: 1, overflow: 'hidden' }}>
+                <div style={ Common.VScrollElement }>
                     <div className='rdo-scroll-vertically'>
                         {this.renderModel(modelIdx, chain, multipleModels, thresholds)}
                     </div>

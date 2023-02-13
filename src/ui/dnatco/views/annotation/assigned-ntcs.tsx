@@ -3,7 +3,7 @@ import { Annotation } from './common';
 import { ChainSelect, ModelSelect } from '../structure-selectors';
 import { View } from '../view';
 import { InvalidChain, InvalidModelIndex, InvalidStepId } from '../../structure-selection';
-import { ConfalPercentileStats, StepsClassificationStats, StepRmsdStats, niceStepName } from '../../common';
+import { Common, ConfalPercentileStats, StepsClassificationStats, StepRmsdStats, niceStepName } from '../../common';
 import { Icon } from '../../../common/icon';
 import { SingleStepInfo } from '../../single-step-info';
 import { DynamicTable } from '../../../common/dynamic-table';
@@ -23,6 +23,7 @@ import 'assets/imgs/info.svg';
 import 'assets/imgs/info-inverse.svg';
 
 export class AssignedNtCs extends View<View.Props> {
+    static readonly unscrollableContainer = true;
     private tableModel: DynamicTable.Model = new DynamicTable.Model([]);
 
     private makeTableModel(selectedModelNum: number, selectedChain?: string) {
@@ -189,7 +190,7 @@ export class AssignedNtCs extends View<View.Props> {
         const modelIdx = this.props.structureSelection.modelIndex === InvalidModelIndex ? 0 : this.props.structureSelection.modelIndex;
 
         return (
-            <div>
+            <div style={ Common.VScrollJail }>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--v-gap)' }}>
                     <StepsClassificationStats
                         assigned={Cif.Column.value(overall.num_classified, 0)!}
@@ -225,7 +226,12 @@ export class AssignedNtCs extends View<View.Props> {
                     </NamedListItem>
                 </NamedList>
                 <div className='rdo-line-spacer' />
-                {this.renderStepsTable()}
+
+                <div style={ Common.VScrollElement }>
+                    <div className='rdo-scroll-vertically'>
+                        {this.renderStepsTable()}
+                    </div>
+                </div>
             </div>
         );
     }

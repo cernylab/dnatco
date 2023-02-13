@@ -41,11 +41,13 @@ export namespace Register {
         },
         'change-ntcs': {
             render: (props: Refinement.Props) => <ChangeNtCs {...props} />,
-            stepSwitcher: ChangeNtCs.StepSwitcher
+            stepSwitcher: ChangeNtCs.StepSwitcher,
+            unscrollableContainer: ChangeNtCs.unscrollableContainer,
         },
         'confals-rmsds': {
             render: (props: View.Props) => <ConfalsRmsds {...props} />,
-            stepSwitcher: ConfalsRmsds.StepSwitcher
+            stepSwitcher: ConfalsRmsds.StepSwitcher,
+            unscrollableContainer: ConfalsRmsds.unscrollableContainer,
         },
         'connectivity-plot': {
             render: (props: Refinement.Props) => <ConnectivityPlot {...props} />,

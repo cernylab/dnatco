@@ -12,6 +12,8 @@ export namespace Common {
     export const NA = 'N/A';
 
     export const BarHeightEm = 0.75;
+    export const VScrollElement = { overflow: 'hidden', flex: 1 } as StandardLonghandProperties;
+    export const VScrollJail = { overflow: 'hidden', height: '100%', display: 'flex', flexDirection: 'column' } as StandardLonghandProperties;
     export const StyleScoreBar = { width: '100%', height: `${BarHeightEm}em` };
     export const StyleTableSameColumnWidth = { tableLayout: 'fixed', width: '100%' } as StandardLonghandProperties;
 }
