@@ -5,24 +5,30 @@ const CSV_COL_SEP = ';';
 const ChopUrlTag = /(^[a-zA-Z0-9:./-]+);base64,/;
 
 export namespace Serialization {
-    type Serializable = {
+    export type Item = number|string|boolean;
+    export type Column = Item[];
+    export type Values = Column[];
+    export type Serializable = {
         tags: string[];     // Used as headers
-        values: string[][]; // Values by column -> row
+        values: Values; // Values by column -> row
     }
 
     export type OutputType = 'csv'|'json';
 
-    function toCsv(data: Serializable) {
+    export function toCsv(data: Serializable) {
         const NCols = data.tags.length;
         if (NCols === 0)
             return '';
-        const NRows = data.values[0].length;
+        const NRows = Math.max(...data.values.map(x => x.length));
 
         let text = data.tags.join(CSV_COL_SEP) + CSV_COL_SEP + '\n';
 
         for (let row = 0; row < NRows; row++) {
-            for (let col = 0; col < NCols; col++)
-                text += data.values[col][row] + CSV_COL_SEP;
+            for (let col = 0; col < NCols; col++) {
+                const v = data.values[col]?.[row] ?? '';
+                const tv = typeof v === 'number' ? v.toString() : v;
+                text += tv + CSV_COL_SEP;
+            }
             text += '\n';
         }
 
@@ -32,7 +38,7 @@ export namespace Serialization {
     function toJson(data: Serializable) {
         const NCols = data.tags.length;
 
-        let obj: Record<string, string[]> = {};
+        let obj: Record<string, (number|string|boolean)[]> = {};
         for (let col = 0; col < NCols; col++)
             obj[data.tags[col]] = data.values[col];
 
@@ -52,15 +58,15 @@ export namespace Serialization {
     export function dynamicTable(model: DynamicTable.Model, format: 'csv'|'json') {
         const tags = model.columns.filter(col => !col.noData).map(col => col.name);
         const N = tags.length;
-        const values = new Array<string[]>(N);
+        const values = new Array<Column>(N);
         for (let idx = 0; idx < N; idx++)
-            values[idx] = new Array<string>();
+            values[idx] = new Array<Item>();
 
         for (const row of model.rows) {
             for (let idx = 0; idx < N; idx++) {
                 if (model.columns[idx].noData)
                     continue;
-                values[idx].push(row[idx].data.toString());
+                values[idx].push(row[idx].data);
             }
         }
 

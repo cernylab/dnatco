@@ -7,6 +7,7 @@ import { InvalidChain, InvalidModelIndex } from '../../structure-selection';
 import { ColorTuple, colorToRgb, colorToTuple } from '../../../util';
 import { CollapsibleVertical } from '../../../common/collapsible-vertical';
 import { NamedList, NamedListItem } from '../../../common/named-list';
+import { Icon } from '../../../common/icon';
 import { Tooltip } from '../../../common/tooltip';
 import { Dnatcofication  } from '../../../../dnatco/dnatcofication';
 import { AnglesLengths as DAnglesLengths } from '../../../../dnatco/angles-lengths';
@@ -14,9 +15,13 @@ import { isShiftedName, unshiftName } from '../../../../dnatco/angles-lengths/at
 import { Triplet } from '../../../../dnatco/angles-lengths/angles';
 import { Pair } from '../../../../dnatco/angles-lengths/lengths';
 import { Measurements } from '../../../../dnatco/angles-lengths/measurements';
+import { Serialize } from '../../../../dnatco/angles-lengths/serialize';
 import { Summarize } from '../../../../dnatco/angles-lengths/summarize';
 import { rgbToHex } from '../../../util';
+import { GlobalConfig } from '../../../../global-config';
 import { M } from '../../../../util/math';
+import { Net } from '../../../../util/net';
+import 'assets/imgs/data-transfer-download.svg';
 
 const DetailsCaptionStyle = {
     alignItems: 'center',
@@ -41,13 +46,34 @@ const ResidueBarCaptionStyle = {
     ...BarCaptionStyle,
     ...StayAboveStyle,
 } as StandardLonghandProperties;
-
 const DetailsTableStyle = {
     display: 'grid',
     gridTemplateColumns: '1em auto auto 1fr',
     columnGap: '1em'
 };
 const OutlierColor = [0, 0, 0] as ColorTuple;
+
+type Downloader = {
+    caption: string;
+    download: (fileName: string, residues: Measurements.Residue[], counts: { angles: Summarize.CountInGroup[], lengths: Summarize.CountInGroup[] }) => void;
+    suffix: string,
+};
+const Downloaders = [
+    {
+        caption: 'CSV',
+        download: (fileName, residues, counts) => {
+            const text = Serialize.toCsv(counts.angles, counts.lengths, residues);
+            Net.serveFile('text/csv', text, `${fileName}.csv`);
+        },
+    },
+    {
+        caption: 'JSON',
+        download: (fileName, residues, counts) => {
+            const text = Serialize.toJson(counts.angles, counts.lengths, residues);
+            Net.serveFile('application/json', text, `${fileName}.json`);
+        },
+    }
+] as Downloader[];
 
 function bondName(bond: Pair | Triplet) {
     const toks = bond.map(x => isShiftedName(x) ? <span>{unshiftName(x)}<span className='rdo-sup'>(-1)</span></span> : <span>{x}</span>);
@@ -65,15 +91,14 @@ function colorStyle(clr: [r: number, g: number, b: number]) {
     return `rgb(${clr.join(',')})`;
 }
 
-type CountInInterval = { threshold: number | 'outlier', count: number };
-function countsInIntervals(stats: number[], thresholds: number[]): CountInInterval[] {
+function countsInGroups(stats: number[], thresholds: number[]): Summarize.CountInGroup[] {
     return stats.map((v, idx) => {
         const thr = thresholds[idx];
-        return { threshold: thr ?? 'outlier', count: v };
+        return { threshold: thr ?? 'outlier', count: v, group: idx };
     });
 }
 
-function renderSubstructureStats(caption: string | JSX.Element, summaryStats: number[], counts: CountInInterval[]) {
+function renderSubstructureStats(caption: string | JSX.Element, summaryStats: number[], counts: Summarize.CountInGroup[]) {
     return (
         <AnglesLengthsBar
             caption={
@@ -103,26 +128,26 @@ class AnglesLengthsBar extends React.Component<{ caption?: string | React.ReactN
             return;
 
         const sum = stats.reduce((p, c) => p + c, 0);
-        const nIntervals = DAnglesLengths.intervalCount();
+        const nGroups = DAnglesLengths.groupCount();
 
         const tw = canvas.width;
         const th = canvas.height;
         let x = 0;
-        for (let idx = 0; idx < nIntervals; idx++) {
+        for (let idx = 0; idx < nGroups; idx++) {
             const n = stats[idx];
             if (n === 0)
                 continue;
 
             const w = Math.round(tw * n / sum);
 
-            const clr = DAnglesLengths.intervalColor(idx);
+            const clr = DAnglesLengths.groupColor(idx);
             ctx.fillStyle = rgbToHex(colorToRgb(clr));
             ctx.fillRect(x, 0, w, th);
 
             x += w;
         }
 
-        if (stats[nIntervals] > 0)
+        if (stats[nGroups] > 0)
             ctx.fillStyle = rgbToHex(OutlierColor);
         ctx.fillRect(x, 0, tw - x, th);
     }
@@ -167,6 +192,35 @@ class AnglesLengthsBar extends React.Component<{ caption?: string | React.ReactN
     }
 }
 
+class DownloadButtons extends React.Component<{
+    counts: { angles: Summarize.CountInGroup[], lengths: Summarize.CountInGroup[] },
+    downloaders: Downloader[],
+    fileName: string,
+    residues: Measurements.Residue[],
+}> {
+    render() {
+        const prefix = GlobalConfig.data().pathPrefix;
+
+        return (
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+                {this.props.downloaders.map((dl, idx) => (
+                    <div
+                        key={idx}
+                        className='rdo-dynamic-table-download-button'
+                        style={{ flex: 1 }}
+                        onClick={e => {
+                            e.stopPropagation();
+                            dl.download(this.props.fileName, this.props.residues, this.props.counts);
+                    }}>
+                        <Icon img={`${prefix}/imgs/data-transfer-download.svg`} size='text' />
+                        {dl.caption}
+                    </div>
+                ))}
+            </div>
+        );
+    }
+}
+
 class IntervalSummary extends React.Component<{
     caption: string | JSX.Element,
     ranges: { from: string, to: string, probability: number }[],
@@ -189,10 +243,42 @@ class IntervalSummary extends React.Component<{
     }
 }
 
-class ResidueHeader extends React.Component<{ caption: string | JSX.Element, summary: Summarize.Summary, countsAngles: CountInInterval[], countsLengths: CountInInterval[] }> {
+class OverallStatsBar extends React.Component<{
+    children: React.ReactNode,
+    counts: { angles: Summarize.CountInGroup[], lengths: Summarize.CountInGroup[] },
+    downloaders: Downloader[],
+    name: string,
+    residues: Measurements.Residue[],
+    style?: StandardLonghandProperties
+}> {
+    render() {
+        return (
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', columnGap: 'calc(var(--v-gap) / 2)', ...this.props.style }}>
+                {this.props.children}
+                <DownloadButtons
+                    counts={this.props.counts}
+                    downloaders={this.props.downloaders}
+                    fileName={`${this.props.name}angles_lenghts`}
+                    residues={this.props.residues}
+                />
+            </div>
+        );
+    }
+}
+
+class ResidueHeader extends React.Component<{
+    caption: string | JSX.Element,
+    residue: Measurements.Residue,
+    structureName: string,
+    summary: Summarize.Summary,
+    countsAngles: Summarize.CountInGroup[],
+    countsLengths: Summarize.CountInGroup[]
+}> {
     private tainerRef = React.createRef<HTMLDivElement>();
 
     render() {
+        const r = this.props.residue;
+
         return (
             <div style={{ position: 'relative', width: '100%', height: '100%' }} ref={this.tainerRef}>
                 <div style={{
@@ -205,12 +291,21 @@ class ResidueHeader extends React.Component<{ caption: string | JSX.Element, sum
                     {this.props.caption}
                 </div>
 
-                <div style={{ height: '1em' }}>
-                    {renderSubstructureStats(<div style={ResidueBarCaptionStyle}>L</div>, this.props.summary.lengths, this.props.countsLengths)}
-                </div>
-                <div style={{ height: '1em' }}>
-                    {renderSubstructureStats(<div style={ResidueBarCaptionStyle}>A</div>, this.props.summary.angles, this.props.countsAngles)}
-                </div>
+                <OverallStatsBar
+                    counts={{ angles: this.props.countsAngles, lengths: this.props.countsLengths }}
+                    downloaders={Downloaders}
+                    name={`${this.props.structureName}-m${r.modelNum}-${r.chain}-${r.seqId}${r.insCode ? `.${r.insCode}` : ''}${r.altId ? `_alt${r.altId}` : ''}_`}
+                    residues={[this.props.residue]}
+                >
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                        <div style={{ flex: 1 }}>
+                            {renderSubstructureStats(<div style={ResidueBarCaptionStyle}>L</div>, this.props.summary.lengths, this.props.countsLengths)}
+                        </div>
+                        <div style={{ flex: '1' }}>
+                            {renderSubstructureStats(<div style={ResidueBarCaptionStyle}>A</div>, this.props.summary.angles, this.props.countsAngles)}
+                        </div>
+                    </div>
+                </OverallStatsBar>
             </div>
         );
     }
@@ -238,15 +333,17 @@ class SubstructureSummary extends React.Component<{ stats: { threshold: number|'
 export class AnglesLengths extends View {
     private renderResidue(residue: Measurements.Residue, multipleModels: boolean, thresholds: number[]) {
         const summary = Summarize.residue(residue);
-        const countsAngles = countsInIntervals(summary.angles, thresholds);
-        const countsLenghts = countsInIntervals(summary.lengths, thresholds);
+        const countsAngles = countsInGroups(summary.angles, thresholds);
+        const countsLenghts = countsInGroups(summary.lengths, thresholds);
 
         return (
             <>
                 <CollapsibleVertical
                     header=<ResidueHeader
                         caption={this.renderResidueName(residue, multipleModels)}
+                        residue={residue}
                         summary={summary}
+                        structureName={this.props.dnatcofication.identifyingName ?? this.props.dnatcofication.pdbId}
                         countsAngles={countsAngles}
                         countsLengths={countsLenghts}
                     />
@@ -341,6 +438,18 @@ export class AnglesLengths extends View {
         return residues.map(x => this.renderResidue(x, multipleModels, thresholds));
     }
 
+    private selectionName(multipleModels: boolean, modelIdx: number, chain: string) {
+        let name = multipleModels
+            ? modelIdx === InvalidModelIndex
+                ? '' : `m${this.props.dnatcofication.data.structures[0].models[modelIdx].num}`
+            : '';
+        name += chain === InvalidChain
+            ? ''
+            : name ? `-${chain}` : chain;
+
+        return `${this.props.dnatcofication.identifyingName ?? this.props.dnatcofication.pdbId}_${name ? `${name}_` : ''}`;
+    }
+
     private selectionToResidues(modelIdx: number, chain: string) {
         const alm = this.props.dnatcofication.data.alm;
         if (modelIdx === InvalidModelIndex) {
@@ -364,8 +473,12 @@ export class AnglesLengths extends View {
         const modelIdx = this.props.structureSelection.modelIndex;
         const chain = this.props.structureSelection.chain === InvalidChain ? '' : this.props.structureSelection.chain;
 
-        const summary = Summarize.substructure(this.selectionToResidues(modelIdx, chain));
-        const thresholds = DAnglesLengths.intervalThresholds();
+        const residues = this.selectionToResidues(modelIdx, chain)
+        const summary = Summarize.substructure(residues);
+        const thresholds = DAnglesLengths.groupThresholds();
+
+        const countsAngles = countsInGroups(summary.angles, thresholds);
+        const countsLenghts = countsInGroups(summary.lengths, thresholds);
 
         return (
             <div>
@@ -391,12 +504,22 @@ export class AnglesLengths extends View {
                 </NamedList>
 
                 <div className='rdo-secondary-caption'>Structure/Selection</div>
-                <div style={{ height: '2em' }}>
-                    {renderSubstructureStats(<div style={{ ...BarCaptionStyle, left: 'calc(var(--h-gap) / 2)' }}>Lengths</div>, summary.lengths, countsInIntervals(summary.lengths, thresholds))}
-                </div>
-                <div style={{ height: '2em' }}>
-                    {renderSubstructureStats(<div style={{ ...BarCaptionStyle, left: 'calc(var(--h-gap) / 2)' }}>Angles</div>, summary.angles, countsInIntervals(summary.angles, thresholds))}
-                </div>
+                <OverallStatsBar
+                    counts={{ angles: countsAngles, lengths: countsLenghts }}
+                    downloaders={Downloaders}
+                    name={this.selectionName(multipleModels, modelIdx, chain)}
+                    residues={residues}
+                    style={{ height: '4em' }}
+                >
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                        <div style={{ flex: 1 }}>
+                            {renderSubstructureStats(<div style={{ ...BarCaptionStyle, left: 'calc(var(--h-gap) / 2)' }}>Lengths</div>, summary.lengths, countsLenghts)}
+                        </div>
+                        <div style={{ flex: 1 }}>
+                            {renderSubstructureStats(<div style={{ ...BarCaptionStyle, left: 'calc(var(--h-gap) / 2)' }}>Angles</div>, summary.angles, countsAngles)}
+                        </div>
+                    </div>
+                </OverallStatsBar>
 
                 <div className='rdo-secondary-caption'>Residues</div>
                 {this.renderModel(modelIdx, chain, multipleModels, thresholds)}

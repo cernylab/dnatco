@@ -169,6 +169,18 @@ export namespace AnglesLengths {
         return AnglePGroupData[base].get(tag)?.[idx];
     }
 
+    export function groupColor(idx: number) {
+        return PGroups[idx].color ?? 0;
+    }
+
+    export function groupCount() {
+        return PGroups.length;
+    }
+
+    export function groupThresholds() {
+        return PGroups.map(x => x.threshold);
+    }
+
     export function lengthPGroup(base: Residues.ElementaryResidue, length: Measurements.BondLength) {
         const tag = pairTag(length.pair);
         const pgrps = LengthPGroupData[base].get(tag);
@@ -184,17 +196,5 @@ export namespace AnglesLengths {
     export function lengthPGroupData(idx: number, base: Residues.ElementaryResidue, pair: Pair) {
         const tag = pairTag(pair);
         return LengthPGroupData[base].get(tag)?.[idx];
-    }
-
-    export function intervalColor(idx: number) {
-        return PGroups[idx].color ?? 0;
-    }
-
-    export function intervalCount() {
-        return PGroups.length;
-    }
-
-    export function intervalThresholds() {
-        return PGroups.map(x => x.threshold);
     }
 }

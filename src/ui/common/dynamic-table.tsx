@@ -113,7 +113,10 @@ export class DynamicTable extends React.Component<DynamicTable.Props> {
                 <div
                     key={idx}
                     className='rdo-dynamic-table-download-button'
-                    onClick={() => dl.download(this.props.model)}
+                    onClick={e => {
+                        e.stopPropagation();
+                        dl.download(this.props.model);
+                    }}
                 >
                     <Icon img={`${prefix}/imgs/data-transfer-download.svg`} size='text' />
                     {dl.caption}
