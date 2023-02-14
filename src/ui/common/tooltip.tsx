@@ -56,12 +56,6 @@ export class Tooltip extends React.Component<Tooltip.Props> {
             else
                 removeEventListener('touchstart', hideTooltip);
         };
-        if (!fromTouchEvent) {
-            tainer.onclick = e => {
-                this.setInhibit(e.pageX, e.pageY);
-                hideTooltip();
-            };
-        }
 
         const hideFromOutside = (e: MouseEvent) => {
             const tainer = document.getElementById(this.contentId);
@@ -86,6 +80,14 @@ export class Tooltip extends React.Component<Tooltip.Props> {
             root.render(<>{this.props.children}</>);
 
             document.body.appendChild(tainer);
+
+            if (!fromTouchEvent) {
+                tainer.addEventListener('click', e => {
+                    this.setInhibit(e.pageX, e.pageY);
+                    hideTooltip();
+                });
+            }
+
             setTimeout(() => {
                 const bw = document.body.clientWidth;
                 const bh = document.body.clientHeight;
