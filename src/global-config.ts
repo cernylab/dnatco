@@ -16,22 +16,28 @@ export type GlobalConfigData = {
     isDevel: boolean,
     pathPrefix: string,
     userDatabases: StaticDb[],
-    angleLengthPGroups: AngleLengthPGroup[],
+    anglesLengths: {
+        pGroups: AngleLengthPGroup[],
+        outlierColor: string,
+    },
 };
 const GlobalConfigData: GlobalConfigData = {
     isDevel: false,
     pathPrefix: '.',
     userDatabases: [],
-    angleLengthPGroups: [
-        { threshold: 80, color: '#006eff' },
-        { threshold: 95, color: '#00ff00' },
-        { threshold: 99.9, color: '#ffff00' },
-    ],
+    anglesLengths: {
+        pGroups: [
+            { threshold: 80, color: '#006eff' },
+            { threshold: 95, color: '#00ff00' },
+            { threshold: 99.9, color: '#ffff00' },
+        ],
+        outlierColor: '#000000',
+    },
 };
 
 function checkAndSetEntry<K extends keyof GlobalConfigData>(data: GlobalConfigData, k: K, inputObj: any) {
     const to = data[k];
-    const obj = fromTemplate(inputObj, to);
+    const obj = fromTemplate(inputObj, to, true);
     if (obj)
         data[k] = obj;
 }

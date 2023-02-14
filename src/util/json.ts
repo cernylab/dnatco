@@ -39,7 +39,7 @@ export function isType<V>(v: unknown, checker: TypeChecker<V>) {
     return checker(v);
 }
 
-export function fromTemplate<T>(o: AnyObject, template: T): T|undefined {
+export function fromTemplate<T>(o: AnyObject, template: T, allowPartial = false): T|undefined {
     if (!isObj(template)) {
         // Template is a built-in type
         if (typeof template === 'number' && !isNum(o))
@@ -63,12 +63,21 @@ export function fromTemplate<T>(o: AnyObject, template: T): T|undefined {
             }
             return o as T;
         } else {
-            if (!checkProps(o, template))
-                return undefined;
-
-            for (const p in template) {
-                if (fromTemplate(o[p] as AnyObject, template[p]) === undefined)
+            if (allowPartial) {
+                for (const p in template) {
+                    if (o[p] === undefined)
+                        o[p] = template[p]; // WARNING: We should copy here to prevent accidental modifications of the template
+                    else if (fromTemplate(o[p] as AnyObject, template[p]) === undefined)
+                        return undefined;
+                }
+            } else {
+                if (!checkProps(o, template))
                     return undefined;
+
+                for (const p in template) {
+                    if (fromTemplate(o[p] as AnyObject, template[p]) === undefined)
+                        return undefined;
+                }
             }
 
             return o as T;

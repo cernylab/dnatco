@@ -5,7 +5,7 @@ import { View } from '../view';
 import { Constants } from '../../constants';
 import { InvalidChain, InvalidModelIndex } from '../../structure-selection';
 import { Common } from '../../common';
-import { ColorTuple, colorToRgb, colorToTuple } from '../../../util';
+import { colorToRgb, colorToTuple } from '../../../util';
 import { CollapsibleVertical } from '../../../common/collapsible-vertical';
 import { NamedList, NamedListItem } from '../../../common/named-list';
 import { Icon } from '../../../common/icon';
@@ -52,7 +52,6 @@ const DetailsTableStyle = {
     gridTemplateColumns: '1em auto auto 1fr',
     columnGap: '1em'
 };
-const OutlierColor = [0, 0, 0] as ColorTuple;
 
 type Downloader = {
     caption: string;
@@ -149,7 +148,7 @@ class AnglesLengthsBar extends React.Component<{ caption?: string | React.ReactN
         }
 
         if (stats[nGroups] > 0)
-            ctx.fillStyle = rgbToHex(OutlierColor);
+            ctx.fillStyle = rgbToHex(colorToRgb(DAnglesLengths.outlierColor()));
         ctx.fillRect(x, 0, tw - x, th);
     }
 
@@ -266,7 +265,7 @@ class PGroupSummary extends React.Component<{
     }
 
     private renderPGroup() {
-        const clr = this.props.pGroup ? colorToTuple(this.props.pGroup.color) : OutlierColor;
+        const clr = colorToTuple(this.props.pGroup ? this.props.pGroup.color : DAnglesLengths.outlierColor());
         const text = this.props.pGroup ? this.props.pGroup.threshold.toFixed(4) : 'Outlier';
 
         return (
@@ -360,13 +359,14 @@ class SubstructureSummary extends React.Component<{ stats: { threshold: number|'
             const dot = s.indexOf('.');
             return dot >= 0 ? s.substring(dot + 1).length : 0;
         }));
+        const outlierColor = DAnglesLengths.outlierColor();
 
         return (
             <div style={{ display: 'grid', gridTemplateColumns: '1em auto auto', columnGap: 'var(--h-gap)' }}>
                 <div className='rdo-strong' style={{ gridColumnStart: 'span 2 '}}>Probability (%)</div><div className='rdo-strong'>Count</div>
                 {this.props.stats.map((x, idx) => {
                     const thr = x.threshold === 'outlier' ? 'Outlier' : x.threshold.toFixed(maxDecimals);
-                    const clr = DAnglesLengths.pGroupColor(idx) ?? OutlierColor;
+                    const clr = DAnglesLengths.pGroupColor(idx) ?? outlierColor;
                     return (
                         <React.Fragment key={idx}>
                             <div style={{ backgroundColor: colorStyle(colorToTuple(clr)) }} />
@@ -388,6 +388,7 @@ export class AnglesLengths extends View {
         const countsAngles = countsInGroups(summary.angles, thresholds);
         const countsLenghts = countsInGroups(summary.lengths, thresholds);
         const residueName = this.renderResidueName(residue, multipleModels);
+        const outlierColor = colorToTuple(DAnglesLengths.outlierColor());
 
         return (
             <>
@@ -405,7 +406,7 @@ export class AnglesLengths extends View {
                         <div style={{ gridColumnStart: 'span 4', ...DetailsCaptionStyle }}>Bond lengths</div>
                         {residue.bondLengths.map((x, idx) => {
                             const pgrp = DAnglesLengths.lengthPGroup(residue.compound, x);
-                            const clr = pgrp ? colorToTuple(pgrp.color) : OutlierColor;
+                            const clr = pgrp ? colorToTuple(pgrp.color) : outlierColor;
                             return (
                                 <React.Fragment key={idx}>
                                     <Tooltip
@@ -438,7 +439,7 @@ export class AnglesLengths extends View {
                         <div style={{ gridColumnStart: 'span 4', ...DetailsCaptionStyle }}>Bond angles</div>
                         {residue.bondAngles.map((x, idx) => {
                             const pgrp = DAnglesLengths.anglePGroup(residue.compound, x);
-                            const clr = pgrp ? colorToTuple(pgrp.color) : OutlierColor;
+                            const clr = pgrp ? colorToTuple(pgrp.color) : outlierColor;
                             return (
                                 <React.Fragment key={idx}>
                                     <Tooltip

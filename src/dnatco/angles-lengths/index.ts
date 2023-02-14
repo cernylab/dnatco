@@ -51,6 +51,7 @@ const LengthPGroupData: PGroupData = {
 
 type PGroup = { threshold: number, color: number };
 const PGroups = new Array<PGroup>();
+let OutlierColor = 0;
 
 async function fetchAverages(prefix: string, resources: Resource[]) {
     const averages = [] as Average[];
@@ -124,16 +125,22 @@ export namespace AnglesLengths {
     export async function initialize(): Promise<Result<void>> {
         const prefix = `${GlobalConfig.data().pathPrefix}/angles_lengths`;
 
-        for (const intvl of GlobalConfig.data().angleLengthPGroups) {
-            const color = htmlColorAsNumber(intvl.color);
-            if (!color)
-                throw new Error(`${intvl.color} is not a valid HTML color string`);
+        for (const pgrp of GlobalConfig.data().anglesLengths.pGroups) {
+            const threshold = pgrp.threshold;
+            if (threshold <= 0.0 || threshold >= 100.0)
+                throw new Error(`Threshold value ${threshold} is not in the expected range (0 - 100)`);
 
-            PGroups.push({ threshold: intvl.threshold, color });
+            const color = htmlColorAsNumber(pgrp.color);
+            if (!color)
+                throw new Error(`${pgrp.color} is not a valid HTML color string`);
+
+            PGroups.push({ threshold, color });
         }
         if (PGroups.length === 0)
             throw new Error('No probability intervals');
+
         PGroups.sort((a, b) => a.threshold - b.threshold);
+        OutlierColor = htmlColorAsNumber(GlobalConfig.data().anglesLengths.outlierColor) ?? 0;
 
         try {
             const angleAverages = await fetchAverages(
@@ -186,6 +193,10 @@ export namespace AnglesLengths {
     export function lengthPGroupData(idx: number, base: Residues.ElementaryResidue, pair: Pair) {
         const tag = pairTag(pair);
         return LengthPGroupData[base].get(tag)?.[idx];
+    }
+
+    export function outlierColor() {
+        return OutlierColor;
     }
 
     export function pGroupColor(idx: number) {
