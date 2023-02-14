@@ -249,7 +249,7 @@ class PGroupSummary extends React.Component<{
     pGroup: DAnglesLengths.PGroup,
     ranges: { from: string, to: string, probability: number }[],
     residueName: JSX.Element,
-    unit: string
+    suffix?: string
 }> {
     private renderHeader() {
         return (
@@ -293,8 +293,8 @@ class PGroupSummary extends React.Component<{
                     <div className='rdo-strong'>From</div><div className='rdo-strong'>To</div><div className='rdo-strong'>Probability (%)</div>
                     {this.props.ranges.map((x, idx) => (
                         <React.Fragment key={idx}>
-                            <div className='rdo-monospace rdo-talgn-right'>{`${x.from}\u00A0${this.props.unit}`}</div>
-                            <div className='rdo-monospace rdo-talgn-right'>{`${x.to}\u00A0${this.props.unit}`}</div>
+                            <div className='rdo-monospace rdo-talgn-right'>{`${x.from}${this.props.suffix ?? ''}`}</div>
+                            <div className='rdo-monospace rdo-talgn-right'>{`${x.to}${this.props.suffix ?? ''}`}</div>
                             <div className='rdo-monospace rdo-talgn-right'>{x.probability.toFixed(4)}</div>
                         </React.Fragment>
                     ))}
@@ -426,7 +426,7 @@ export class AnglesLengths extends View {
                                                 : []
                                             }
                                             residueName={residueName}
-                                            unit={'\u212B'}
+                                            suffix={'\u00A0\u212B'}
                                         />
                                     </Tooltip>
                                     {bondName(x.pair)}
@@ -459,7 +459,7 @@ export class AnglesLengths extends View {
                                                 : []
                                             }
                                             residueName={residueName}
-                                            unit={'\u00B0'}
+                                            suffix={'\u00B0'}
                                         />
                                     </Tooltip>
                                     {bondName(x.triplet)}
