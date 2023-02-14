@@ -15,7 +15,7 @@ export namespace Summarize {
     };
 
     export function residue(r: Measurements.Residue): Summary {
-        const nGroups = AnglesLengths.groupCount();
+        const nGroups = AnglesLengths.pGroupCount();
 
         // +1 for outliers
         const angles = initedArray(0, nGroups + 1);
@@ -41,7 +41,7 @@ export namespace Summarize {
     }
 
     export function substructure(residues: Measurements.Residue[]): Summary {
-        const nGroups = AnglesLengths.groupCount();
+        const nGroups = AnglesLengths.pGroupCount();
 
         // +1 for outliers
         const angles = initedArray(0, nGroups + 1);

@@ -129,7 +129,7 @@ class AnglesLengthsBar extends React.Component<{ caption?: string | React.ReactN
             return;
 
         const sum = stats.reduce((p, c) => p + c, 0);
-        const nGroups = DAnglesLengths.groupCount();
+        const nGroups = DAnglesLengths.pGroupCount();
 
         const tw = canvas.width;
         const th = canvas.height;
@@ -141,7 +141,7 @@ class AnglesLengthsBar extends React.Component<{ caption?: string | React.ReactN
 
             const w = Math.round(tw * n / sum);
 
-            const clr = DAnglesLengths.groupColor(idx);
+            const clr = DAnglesLengths.pGroupColor(idx);
             ctx.fillStyle = rgbToHex(colorToRgb(clr));
             ctx.fillRect(x, 0, w, th);
 
@@ -222,28 +222,6 @@ class DownloadButtons extends React.Component<{
     }
 }
 
-class IntervalSummary extends React.Component<{
-    caption: string | JSX.Element,
-    ranges: { from: string, to: string, probability: number }[],
-    unit: string
-}> {
-    render() {
-        return (
-            <div style={{ display: 'grid', gridTemplateColumns: 'auto auto auto', columnGap: 'var(--h-gap)' }}>
-                <div className='rdo-strong' style={{ gridColumnStart: 'span 3', textAlign: 'center' }}>{this.props.caption}</div>
-                <div className='rdo-strong'>From</div><div className='rdo-strong'>To</div><div className='rdo-strong'>Probability (%)</div>
-                {this.props.ranges.map(x => (
-                    <>
-                        <div className='rdo-monospace rdo-talgn-right'>{`${x.from}\u00A0${this.props.unit}`}</div>
-                        <div className='rdo-monospace rdo-talgn-right'>{`${x.to}\u00A0${this.props.unit}`}</div>
-                        <div className='rdo-monospace rdo-talgn-right'>{x.probability.toFixed(4)}</div>
-                    </>
-                ))}
-            </div>
-        )
-    }
-}
-
 class OverallStatsBar extends React.Component<{
     children: React.ReactNode,
     counts: { angles: Summarize.CountInGroup[], lengths: Summarize.CountInGroup[] },
@@ -264,6 +242,28 @@ class OverallStatsBar extends React.Component<{
                 />
             </div>
         );
+    }
+}
+
+class PGroupSummary extends React.Component<{
+    caption: string | JSX.Element,
+    ranges: { from: string, to: string, probability: number }[],
+    unit: string
+}> {
+    render() {
+        return (
+            <div style={{ display: 'grid', gridTemplateColumns: 'auto auto auto', columnGap: 'var(--h-gap)' }}>
+                <div className='rdo-strong' style={{ gridColumnStart: 'span 3', textAlign: 'center' }}>{this.props.caption}</div>
+                <div className='rdo-strong'>From</div><div className='rdo-strong'>To</div><div className='rdo-strong'>Probability (%)</div>
+                {this.props.ranges.map(x => (
+                    <>
+                        <div className='rdo-monospace rdo-talgn-right'>{`${x.from}\u00A0${this.props.unit}`}</div>
+                        <div className='rdo-monospace rdo-talgn-right'>{`${x.to}\u00A0${this.props.unit}`}</div>
+                        <div className='rdo-monospace rdo-talgn-right'>{x.probability.toFixed(4)}</div>
+                    </>
+                ))}
+            </div>
+        )
     }
 }
 
@@ -314,16 +314,24 @@ class ResidueHeader extends React.Component<{
 
 class SubstructureSummary extends React.Component<{ stats: { threshold: number|'outlier', count: number }[] }> {
     render() {
+        const maxDecimals = Math.max(...this.props.stats.map(x => {
+            const s = x.threshold.toString();
+            const dot = s.indexOf('.');
+            return dot >= 0 ? s.substring(dot + 1).length : 0;
+        }));
+
         return (
-            <div style={{ display: 'grid', gridTemplateColumns: 'auto auto', columnGap: 'var(--h-gap)' }}>
-                <div className='rdo-strong'>Probability (%)</div><div className='rdo-strong'>Count</div>
-                {this.props.stats.map(x => {
-                    const thr = x.threshold === 'outlier' ? 'Outlier' : x.threshold.toFixed(4);
+            <div style={{ display: 'grid', gridTemplateColumns: '1em auto auto', columnGap: 'var(--h-gap)' }}>
+                <div className='rdo-strong' style={{ gridColumnStart: 'span 2 '}}>Probability (%)</div><div className='rdo-strong'>Count</div>
+                {this.props.stats.map((x, idx) => {
+                    const thr = x.threshold === 'outlier' ? 'Outlier' : x.threshold.toFixed(maxDecimals);
+                    const clr = DAnglesLengths.pGroupColor(idx) ?? OutlierColor;
                     return (
-                        <>
+                        <React.Fragment key={idx}>
+                            <div style={{ backgroundColor: colorStyle(colorToTuple(clr)) }} />
                             <div className='rdo-monospace rdo-talgn-right'>{thr}</div>
                             <div className='rdo-monospace rdo-talgn-right' style={{ textAlign: 'right' }}>{x.count}</div>
-                        </>
+                        </React.Fragment>
                     );
                 })}
             </div>
@@ -364,7 +372,7 @@ export class AnglesLengths extends View {
                                         display='block'
                                     >
                                         {pgrp
-                                            ? <IntervalSummary
+                                            ? <PGroupSummary
                                                 caption={bondName(x.pair)}
                                                 ranges={pgrp.groupedBins.map(x => ({
                                                     from: x.from.toFixed(3),
@@ -394,7 +402,7 @@ export class AnglesLengths extends View {
                                         display='block'
                                     >
                                         {pgrp
-                                            ? <IntervalSummary
+                                            ? <PGroupSummary
                                                 caption={bondName(x.triplet)}
                                                 ranges={pgrp.groupedBins.map(x => ({
                                                     from: M.r2d(x.from).toFixed(2),
@@ -478,7 +486,7 @@ export class AnglesLengths extends View {
 
         const residues = this.selectionToResidues(modelIdx, chain)
         const summary = Summarize.substructure(residues);
-        const thresholds = DAnglesLengths.groupThresholds();
+        const thresholds = DAnglesLengths.pGroupThresholds();
 
         const countsAngles = countsInGroups(summary.angles, thresholds);
         const countsLenghts = countsInGroups(summary.lengths, thresholds);
