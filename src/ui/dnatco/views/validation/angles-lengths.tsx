@@ -489,7 +489,7 @@ class ResidueHeader extends React.Component<{
                 <OverallStatsBar
                     counts={{ angles: this.props.countsAngles, lengths: this.props.countsLengths }}
                     downloaders={Downloaders}
-                    name={`${this.props.structureName}-m${r.modelNum}-${r.chain}-${r.seqId}${r.insCode ? `.${r.insCode}` : ''}${r.altId ? `_alt${r.altId}` : ''}_`}
+                    name={`${this.props.structureName}-m${r.modelNum}-${r.authChain}-${r.authSeqId}${r.insCode ? `.${r.insCode}` : ''}${r.altId ? `_alt${r.altId}` : ''}_`}
                     residues={[this.props.residue]}
                 >
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
