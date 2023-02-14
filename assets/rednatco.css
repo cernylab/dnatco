@@ -768,6 +768,14 @@ th.rdo-data-table-small {
     font-size: var(--font-uber);
 }
 
+.rdo-togglebutton-deselected {
+    background-color: var(--color-b);
+}
+
+.rdo-togglebutton-selected {
+    background-color: var(--color-c);
+}
+
 .rdo-tooltip {
     position: relative;
 }

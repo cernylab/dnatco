@@ -121,7 +121,50 @@ export class PushButton extends BasePushButton<PushButton.Props> {
 
     protected clsName() {
         if (this.props.enabled)
-            return this.props.className ?? 'rdo-pushbutton rdo-pushbutton-border';
+            return this.props.className ?? 'rdo-pushbutton rdo-pushbutton-border'
+        else
+            return this.props.classNameDisabled ?? 'rdo-pushbutton-disabled rdo-pushbutton-border';
+    }
+
+    render() {
+        return (
+            <div
+                className={this.clsName()}
+                onClick={(e: React.MouseEvent<HTMLInputElement>) => {
+                    if (this.props.enabled && this.props.onClick)
+                        this.props.onClick(e);
+                }}
+                onMouseDown={e => {
+                    if (this.props.enabled && this.props.onMouseDown)
+                        this.props.onMouseDown(e);
+                }}
+                onMouseUp={e => {
+                    if (this.props.enabled && this.props.onMouseUp)
+                        this.props.onMouseUp(e);
+                }}
+                onMouseEnter={e => {
+                    if (this.props.enabled && this.props.onMouseEnter)
+                        this.props.onMouseEnter(e);
+                }}
+                onMouseLeave={e => {
+                    if (this.props.enabled && this.props.onMouseLeave)
+                        this.props.onMouseLeave(e);
+                }}
+            >
+                <div className='rdo-pushbutton-text'>{this.props.caption}</div>
+            </div>
+        );
+    }
+}
+
+export class ToggleButton extends BasePushButton<ToggleButton.Props> {
+    static defaultProps = {
+        enabled: true,
+    };
+
+    protected clsName() {
+        if (this.props.enabled)
+            return this.props.className ?? `rdo-pushbutton rdo-pushbutton-border ${this.props.selected ? 'rdo-togglebutton-selected' : 'rdo-togglebutton-deselected'}`;
         else
             return this.props.classNameDisabled ?? 'rdo-pushbutton-disabled rdo-pushbutton-border';
     }
@@ -190,5 +233,12 @@ export namespace IconTextButton {
 export namespace PushButton {
     export interface Props extends BasePushButton.Props {
         caption: string;
+    }
+}
+
+export namespace ToggleButton {
+    export interface Props extends BasePushButton.Props {
+        caption: string;
+        selected: boolean;
     }
 }

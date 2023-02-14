@@ -1,4 +1,5 @@
 import type { StandardLonghandProperties } from 'csstype';
+import Plot from 'react-plotly.js';
 import React from 'react';
 import { ChainSelect, ModelSelect } from '../structure-selectors';
 import { View } from '../view';
@@ -9,17 +10,20 @@ import { colorToRgb, colorToTuple } from '../../../util';
 import { CollapsibleVertical } from '../../../common/collapsible-vertical';
 import { NamedList, NamedListItem } from '../../../common/named-list';
 import { Icon } from '../../../common/icon';
+import { ToggleButton } from '../../../common/push-button';
 import { Tooltip } from '../../../common/tooltip';
 import { Dnatcofication  } from '../../../../dnatco/dnatcofication';
 import { AnglesLengths as DAnglesLengths } from '../../../../dnatco/angles-lengths';
 import { isShiftedName, unshiftName } from '../../../../dnatco/angles-lengths/atoms';
 import { Triplet } from '../../../../dnatco/angles-lengths/angles';
+import { Bins, isWithin } from '../../../../dnatco/angles-lengths/bin';
 import { Pair } from '../../../../dnatco/angles-lengths/lengths';
 import { Measurements } from '../../../../dnatco/angles-lengths/measurements';
 import { Serialize } from '../../../../dnatco/angles-lengths/serialize';
 import { Summarize } from '../../../../dnatco/angles-lengths/summarize';
 import { rgbToHex } from '../../../util';
 import { GlobalConfig } from '../../../../global-config';
+import { sequence } from '../../../../util';
 import { M } from '../../../../util/math';
 import { Net } from '../../../../util/net';
 import 'assets/imgs/data-transfer-download.svg';
@@ -192,6 +196,89 @@ class AnglesLengthsBar extends React.Component<{ caption?: string | React.ReactN
     }
 }
 
+class AveragesChart extends React.Component<{
+    bins: Bins,
+    pGroupDatas: DAnglesLengths.PGroupData[],
+    mark: number,
+    xTitle: string,
+    yTitle: string,
+    xTransform?: (x: number) => number;
+    yTransform?: (y: number) => number;
+}> {
+    render() {
+        const outlierColor = DAnglesLengths.outlierColor();
+
+        const allGroupedBins = this.props.pGroupDatas.flatMap(
+            (x, idx) => x.groupedBins.map(
+                bin => ({ bin: bin, pGroupIdx: idx })
+            )
+        );
+        const color = this.props.bins.map(b => {
+            const mid = b.from + (b.to - b.from) / 2;
+
+            let clr = outlierColor;
+            for (const gb of allGroupedBins) {
+                if (isWithin(mid, gb.bin)) {
+                    clr = DAnglesLengths.pGroupColor(gb.pGroupIdx);
+                    break;
+                }
+            }
+
+            const tup = colorToTuple(clr);
+            return `$rgb(${tup[0]}, ${tup[1]}, ${tup[2]})`;
+        });
+
+        const yt = this.props.bins.map(b => this.props.yTransform ? this.props.yTransform(b.probability) : b.probability);
+        const yMax = Math.max(...yt);;
+
+        return (
+            <Plot
+                data={[
+                    {
+                        x: this.props.bins.map(b => this.props.xTransform ? this.props.xTransform(b.from) : b.from),
+                        y: yt,
+                        marker: { color: color },
+                        type: 'bar',
+                        showlegend: false,
+                    },
+                    {
+                        x: [this.props.mark, this.props.mark],
+                        y: [0, yMax],
+                        type: 'scattergl',
+                        mode: 'lines',
+                        line: {
+                            color: 'rgb(255, 3, 242)',
+                            width: 2,
+                        },
+                        hoverinfo: 'none',
+                        showlegend: false,
+                    },
+                ]}
+                layout={{
+                    autosize: true,
+                    bargap: 0,
+                    dragmode: 'pan',
+                    hovermode: 'closest',
+                    margin: { t: 0, l: 45, b: 45, r: 0 },
+                    xaxis: { title: this.props.xTitle },
+                    yaxis: { title: this.props.yTitle },
+                    plot_bgcolor: 'white',
+                    paper_bgcolor: 'white',
+                }}
+                config={{
+                    displayModeBar: false,
+                    scrollZoom: true,
+                }}
+                style={{
+                    width: '30em',
+                    height: '30em',
+                    margin: 0
+                }}
+            />
+        );
+    }
+}
+
 class DownloadButtons extends React.Component<{
     counts: { angles: Summarize.CountInGroup[], lengths: Summarize.CountInGroup[] },
     downloaders: Downloader[],
@@ -244,24 +331,96 @@ class OverallStatsBar extends React.Component<{
     }
 }
 
-class PGroupSummary extends React.Component<{
+type PGroupSummaryProps = {
+    bins: Bins,
     caption: string | JSX.Element,
     pGroup: DAnglesLengths.PGroup,
+    pGroupDatas: DAnglesLengths.PGroupData[],
     ranges: { from: string, to: string, probability: number }[],
     residueName: JSX.Element,
-    suffix?: string
-}> {
+    value: number,
+    xTitle: string,
+    yTitle: string,
+    suffix?: string,
+    xTransform?: (x: number) => number,
+    yTransform?: (y: number) => number,
+};
+class PGroupSummary extends React.Component<PGroupSummaryProps, { mode: 'chart'|'list' }> {
+    constructor(props: PGroupSummaryProps) {
+        super(props);
+
+        this.state = {
+            mode: 'chart',
+        };
+    }
+
+    private makeToggleButton(caption: string, mode: 'chart'|'list') {
+        return (
+            <ToggleButton
+                    caption={caption}
+                    onClick={e => {
+                        e.stopPropagation();
+                        e.nativeEvent.stopImmediatePropagation();
+                        if (mode !== this.state.mode)
+                            this.setState({ ...this.state, mode });
+                    }}
+                    selected={this.state.mode === mode}
+            />
+        );
+    }
+
+    private renderChart() {
+        return <AveragesChart
+            bins={this.props.bins}
+            mark={this.props.value}
+            pGroupDatas={this.props.pGroupDatas}
+            xTitle={this.props.xTitle}
+            yTitle={this.props.yTitle}
+            xTransform={this.props.xTransform}
+            yTransform={this.props.yTransform}
+        />;
+    }
+
     private renderHeader() {
         return (
-            <div className='rdo-strong' style={{ display: 'flex', flexDirection: 'row', gap: 'var(--h-gap)', width: '100%' }}>
-                <div style={{ textAlign: 'left' }}>
-                    {this.props.residueName}
-                </div>
-                <div style={{ flex: 1, textAlign: 'right' }}>
-                    {this.props.caption}
-                </div>
+            <div className='rdo-strong' style={{ display: 'flex', flexDirection: 'row', gap: '0.25em', alignItems: 'center' }}>
+                {this.props.residueName}
+                <div>|</div>
+                {this.props.caption}
+                <div style={{ flex: 1 }} />
+                <div className='rdo-monospace rdo-text-large'>{this.props.value.toFixed(3)}{this.props.suffix}</div>
             </div>
         );
+    }
+
+    private renderList() {
+        if (!this.props.pGroup)
+            return this.renderPGroup();
+
+        return (
+            <div style={{ display: 'grid', gridTemplateColumns: 'auto auto auto', columnGap: 'var(--h-gap)' }}>
+                <div className='rdo-strong'>From</div><div className='rdo-strong'>To</div><div className='rdo-strong'>Probability (%)</div>
+                {this.props.ranges.map((x, idx) => (
+                    <React.Fragment key={idx}>
+                        <div className='rdo-monospace rdo-talgn-right'>{`${x.from}${this.props.suffix ?? ''}`}</div>
+                        <div className='rdo-monospace rdo-talgn-right'>{`${x.to}${this.props.suffix ?? ''}`}</div>
+                        <div className='rdo-monospace rdo-talgn-right'>{x.probability.toFixed(4)}</div>
+                    </React.Fragment>
+                ))}
+                <div className='rdo-line-spacer' style={{ gridColumnStart: 'span 3' }} />
+                <div className='rdo-strong' style={{ gridColumnStart: 'span 2' }}>Total prob. (%)</div>
+                {this.renderPGroup()}
+            </div>
+        );
+    }
+
+    private renderMain() {
+        switch (this.state.mode) {
+        case 'chart':
+            return this.renderChart();
+        case 'list':
+            return this.renderList();
+        }
     }
 
     private renderPGroup() {
@@ -277,31 +436,25 @@ class PGroupSummary extends React.Component<{
     }
 
     render() {
-        if (!this.props.pGroup) {
-            return (
-                <div>
-                    {this.renderHeader()}
-                    {this.renderPGroup()}
-                </div>
-            );
-        }
-
         return (
             <div>
                 {this.renderHeader()}
-                <div style={{ display: 'grid', gridTemplateColumns: 'auto auto auto', columnGap: 'var(--h-gap)' }}>
-                    <div className='rdo-strong'>From</div><div className='rdo-strong'>To</div><div className='rdo-strong'>Probability (%)</div>
-                    {this.props.ranges.map((x, idx) => (
-                        <React.Fragment key={idx}>
-                            <div className='rdo-monospace rdo-talgn-right'>{`${x.from}${this.props.suffix ?? ''}`}</div>
-                            <div className='rdo-monospace rdo-talgn-right'>{`${x.to}${this.props.suffix ?? ''}`}</div>
-                            <div className='rdo-monospace rdo-talgn-right'>{x.probability.toFixed(4)}</div>
-                        </React.Fragment>
-                    ))}
-                    <div className='rdo-line-spacer' style={{ gridColumnStart: 'span 3' }} />
-                    <div className='rdo-strong' style={{ gridColumnStart: 'span 2' }}>Total prob. (%)</div>
-                    {this.renderPGroup()}
+                <div style={{ height: 'calc(var(--h-gap) / 2)' }} />
+
+                <div style={{ display: 'flex' }}>
+                    <div style={{ display: 'flex' }}>
+                        <div style={{ flex: 1 }}>
+                            {this.makeToggleButton('Chart', 'chart')}
+                        </div>
+                        <div style={{ flex: 1 }}>
+                            {this.makeToggleButton('List', 'list')}
+                        </div>
+                    </div>
+                    <div style={{ flex: 1 }} />
                 </div>
+
+                <div style={{ height: 'calc(var(--h-gap) / 2)' }} />
+                {this.renderMain()}
             </div>
         );
     }
@@ -389,6 +542,7 @@ export class AnglesLengths extends View {
         const countsLenghts = countsInGroups(summary.lengths, thresholds);
         const residueName = this.renderResidueName(residue, multipleModels);
         const outlierColor = colorToTuple(DAnglesLengths.outlierColor());
+        const pgrpIndices = sequence(0, DAnglesLengths.pGroupCount() - 1);
 
         return (
             <>
@@ -407,6 +561,8 @@ export class AnglesLengths extends View {
                         {residue.bondLengths.map((x, idx) => {
                             const pgrp = DAnglesLengths.lengthPGroup(residue.compound, x);
                             const clr = pgrp ? colorToTuple(pgrp.color) : outlierColor;
+                            const pgrpDatas = pgrpIndices.map(idx => DAnglesLengths.lengthPGroupData(idx, residue.compound, x.pair)!);
+
                             return (
                                 <React.Fragment key={idx}>
                                     <Tooltip
@@ -415,8 +571,10 @@ export class AnglesLengths extends View {
                                         display='block'
                                     >
                                         <PGroupSummary
+                                            bins={DAnglesLengths.lengthAverages(residue.compound, x.pair)!}
                                             caption={bondName(x.pair)}
                                             pGroup={pgrp}
+                                            pGroupDatas={pgrpDatas}
                                             ranges={pgrp
                                                 ? pgrp.groupedBins.map(x => ({
                                                     from: x.from.toFixed(3),
@@ -427,6 +585,10 @@ export class AnglesLengths extends View {
                                             }
                                             residueName={residueName}
                                             suffix={'\u00A0\u212B'}
+                                            value={x.length}
+                                            xTitle={'Length (\u212B)'}
+                                            yTitle='Prob. (%)'
+                                            yTransform={(y) => y * 100}
                                         />
                                     </Tooltip>
                                     {bondName(x.pair)}
@@ -440,6 +602,8 @@ export class AnglesLengths extends View {
                         {residue.bondAngles.map((x, idx) => {
                             const pgrp = DAnglesLengths.anglePGroup(residue.compound, x);
                             const clr = pgrp ? colorToTuple(pgrp.color) : outlierColor;
+                            const pgrpDatas = pgrpIndices.map(idx => DAnglesLengths.anglePGroupData(idx, residue.compound, x.triplet)!);
+
                             return (
                                 <React.Fragment key={idx}>
                                     <Tooltip
@@ -448,8 +612,10 @@ export class AnglesLengths extends View {
                                         display='block'
                                     >
                                         <PGroupSummary
+                                            bins={DAnglesLengths.angleAverages(residue.compound, x.triplet)!}
                                             caption={bondName(x.triplet)}
                                             pGroup={pgrp}
+                                            pGroupDatas={pgrpDatas}
                                             ranges={pgrp
                                                 ? pgrp.groupedBins.map(x => ({
                                                     from: M.r2d(x.from).toFixed(2),
@@ -460,6 +626,11 @@ export class AnglesLengths extends View {
                                             }
                                             residueName={residueName}
                                             suffix={'\u00B0'}
+                                            value={M.r2d(x.angle)}
+                                            xTitle={'Angle (\u00B0)'}
+                                            yTitle='Prob. (%)'
+                                            xTransform={(x) => M.r2d(x)}
+                                            yTransform={(y) => y * 100}
                                         />
                                     </Tooltip>
                                     {bondName(x.triplet)}
