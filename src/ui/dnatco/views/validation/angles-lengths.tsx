@@ -85,7 +85,7 @@ function bondName(bond: Pair | Triplet) {
         idx += 2;
     }
 
-    return <span>{toks}</span>;
+    return <span>{...toks}</span>;
 }
 
 function colorStyle(clr: [r: number, g: number, b: number]) {
@@ -255,12 +255,12 @@ class PGroupSummary extends React.Component<{
             <div style={{ display: 'grid', gridTemplateColumns: 'auto auto auto', columnGap: 'var(--h-gap)' }}>
                 <div className='rdo-strong' style={{ gridColumnStart: 'span 3', textAlign: 'center' }}>{this.props.caption}</div>
                 <div className='rdo-strong'>From</div><div className='rdo-strong'>To</div><div className='rdo-strong'>Probability (%)</div>
-                {this.props.ranges.map(x => (
-                    <>
+                {this.props.ranges.map((x, idx) => (
+                    <React.Fragment key={idx}>
                         <div className='rdo-monospace rdo-talgn-right'>{`${x.from}\u00A0${this.props.unit}`}</div>
                         <div className='rdo-monospace rdo-talgn-right'>{`${x.to}\u00A0${this.props.unit}`}</div>
                         <div className='rdo-monospace rdo-talgn-right'>{x.probability.toFixed(4)}</div>
-                    </>
+                    </React.Fragment>
                 ))}
             </div>
         )
@@ -361,11 +361,11 @@ export class AnglesLengths extends View {
                 >
                     <div style={DetailsTableStyle}>
                         <div style={{ gridColumnStart: 'span 4', ...DetailsCaptionStyle }}>Bond lengths</div>
-                        {residue.bondLengths.map(x => {
+                        {residue.bondLengths.map((x, idx) => {
                             const pgrp = DAnglesLengths.lengthPGroup(residue.compound, x);
                             const clr = pgrp ? colorToTuple(pgrp.color) : OutlierColor;
                             return (
-                                <>
+                                <React.Fragment key={idx}>
                                     <Tooltip
                                         tag=<div style={{ width: '100%', height: '100%', backgroundColor: colorStyle(clr) }} />
                                         delayMsec={Constants.TooltipDelayMSec}
@@ -386,16 +386,16 @@ export class AnglesLengths extends View {
                                     {bondName(x.pair)}
                                     <div className='rdo-monospace'>{x.length.toFixed(3)}{'\u00A0\u212B'}</div>
                                     <div />
-                                </>
+                                </React.Fragment>
                             );
                         })}
 
                         <div style={{ gridColumnStart: 'span 4', ...DetailsCaptionStyle }}>Bond angles</div>
-                        {residue.bondAngles.map(x => {
+                        {residue.bondAngles.map((x, idx) => {
                             const pgrp = DAnglesLengths.anglePGroup(residue.compound, x);
                             const clr = pgrp ? colorToTuple(pgrp.color) : OutlierColor;
                             return (
-                                <>
+                                <React.Fragment key={idx}>
                                     <Tooltip
                                         tag=<div style={{ width: '100%', height: '100%', backgroundColor: colorStyle(clr) }} />
                                         delayMsec={Constants.TooltipDelayMSec}
@@ -416,7 +416,7 @@ export class AnglesLengths extends View {
                                     {bondName(x.triplet)}
                                     <div className='rdo-monospace rdo-talgn-right'>{M.r2d(x.angle).toFixed(2)}{'\u00B0'}</div>
                                     <div />
-                                </>
+                                </React.Fragment>
                             );
                         })}
                     </div>
@@ -441,7 +441,7 @@ export class AnglesLengths extends View {
         if (r.altId)
             inner.push(<span className='rdo-nice-step-altpos'>(alt. {r.altId})</span>);
 
-        return <div>{inner}</div>;
+        return <div>{...inner}</div>;
     }
 
     private renderModel(modelIdx: number, chain: string, multipleModels: boolean, thresholds: number[]) {
@@ -535,7 +535,7 @@ export class AnglesLengths extends View {
                 <div className='rdo-secondary-caption'>Residues</div>
                 <div style={ Common.VScrollElement }>
                     <div className='rdo-scroll-vertically'>
-                        {this.renderModel(modelIdx, chain, multipleModels, thresholds)}
+                        {...this.renderModel(modelIdx, chain, multipleModels, thresholds)}
                     </div>
                 </div>
             </div>
