@@ -247,23 +247,64 @@ class OverallStatsBar extends React.Component<{
 
 class PGroupSummary extends React.Component<{
     caption: string | JSX.Element,
+    pGroup: DAnglesLengths.PGroup,
     ranges: { from: string, to: string, probability: number }[],
+    residueName: JSX.Element,
     unit: string
 }> {
-    render() {
+    private renderHeader() {
         return (
-            <div style={{ display: 'grid', gridTemplateColumns: 'auto auto auto', columnGap: 'var(--h-gap)' }}>
-                <div className='rdo-strong' style={{ gridColumnStart: 'span 3', textAlign: 'center' }}>{this.props.caption}</div>
-                <div className='rdo-strong'>From</div><div className='rdo-strong'>To</div><div className='rdo-strong'>Probability (%)</div>
-                {this.props.ranges.map((x, idx) => (
-                    <React.Fragment key={idx}>
-                        <div className='rdo-monospace rdo-talgn-right'>{`${x.from}\u00A0${this.props.unit}`}</div>
-                        <div className='rdo-monospace rdo-talgn-right'>{`${x.to}\u00A0${this.props.unit}`}</div>
-                        <div className='rdo-monospace rdo-talgn-right'>{x.probability.toFixed(4)}</div>
-                    </React.Fragment>
-                ))}
+            <div className='rdo-strong' style={{ display: 'flex', flexDirection: 'row', gap: 'var(--h-gap)', width: '100%' }}>
+                <div style={{ textAlign: 'left' }}>
+                    {this.props.residueName}
+                </div>
+                <div style={{ flex: 1, textAlign: 'right' }}>
+                    {this.props.caption}
+                </div>
             </div>
-        )
+        );
+    }
+
+    private renderPGroup() {
+        const clr = this.props.pGroup ? colorToTuple(this.props.pGroup.color) : OutlierColor;
+        const text = this.props.pGroup ? this.props.pGroup.threshold.toFixed(4) : 'Outlier';
+
+        return (
+            <div style={{ display: 'grid', gridTemplateColumns: '1em 1fr' }}>
+                <div style={{ backgroundColor: colorStyle(clr) }} />
+                <div className='rdo-monospace rdo-talgn-right'>{text}</div>
+            </div>
+        );
+    }
+
+    render() {
+        if (!this.props.pGroup) {
+            return (
+                <div>
+                    {this.renderHeader()}
+                    {this.renderPGroup()}
+                </div>
+            );
+        }
+
+        return (
+            <div>
+                {this.renderHeader()}
+                <div style={{ display: 'grid', gridTemplateColumns: 'auto auto auto', columnGap: 'var(--h-gap)' }}>
+                    <div className='rdo-strong'>From</div><div className='rdo-strong'>To</div><div className='rdo-strong'>Probability (%)</div>
+                    {this.props.ranges.map((x, idx) => (
+                        <React.Fragment key={idx}>
+                            <div className='rdo-monospace rdo-talgn-right'>{`${x.from}\u00A0${this.props.unit}`}</div>
+                            <div className='rdo-monospace rdo-talgn-right'>{`${x.to}\u00A0${this.props.unit}`}</div>
+                            <div className='rdo-monospace rdo-talgn-right'>{x.probability.toFixed(4)}</div>
+                        </React.Fragment>
+                    ))}
+                    <div className='rdo-line-spacer' style={{ gridColumnStart: 'span 3' }} />
+                    <div className='rdo-strong' style={{ gridColumnStart: 'span 2' }}>Total prob. (%)</div>
+                    {this.renderPGroup()}
+                </div>
+            </div>
+        );
     }
 }
 
@@ -346,12 +387,13 @@ export class AnglesLengths extends View {
         const summary = Summarize.residue(residue);
         const countsAngles = countsInGroups(summary.angles, thresholds);
         const countsLenghts = countsInGroups(summary.lengths, thresholds);
+        const residueName = this.renderResidueName(residue, multipleModels);
 
         return (
             <>
                 <CollapsibleVertical
                     header=<ResidueHeader
-                        caption={this.renderResidueName(residue, multipleModels)}
+                        caption={residueName}
                         residue={residue}
                         summary={summary}
                         structureName={this.props.dnatcofication.identifyingName ?? this.props.dnatcofication.pdbId}
@@ -371,17 +413,20 @@ export class AnglesLengths extends View {
                                         delayMsec={Constants.TooltipDelayMSec}
                                         display='block'
                                     >
-                                        {pgrp
-                                            ? <PGroupSummary
-                                                caption={bondName(x.pair)}
-                                                ranges={pgrp.groupedBins.map(x => ({
+                                        <PGroupSummary
+                                            caption={bondName(x.pair)}
+                                            pGroup={pgrp}
+                                            ranges={pgrp
+                                                ? pgrp.groupedBins.map(x => ({
                                                     from: x.from.toFixed(3),
                                                     to: x.to.toFixed(3),
                                                     probability: x.probability,
-                                                }))}
-                                                unit={'\u212B'} />
-                                            : 'Outlier'
-                                        }
+                                                }))
+                                                : []
+                                            }
+                                            residueName={residueName}
+                                            unit={'\u212B'}
+                                        />
                                     </Tooltip>
                                     {bondName(x.pair)}
                                     <div className='rdo-monospace'>{x.length.toFixed(3)}{'\u00A0\u212B'}</div>
@@ -401,17 +446,20 @@ export class AnglesLengths extends View {
                                         delayMsec={Constants.TooltipDelayMSec}
                                         display='block'
                                     >
-                                        {pgrp
-                                            ? <PGroupSummary
-                                                caption={bondName(x.triplet)}
-                                                ranges={pgrp.groupedBins.map(x => ({
+                                        <PGroupSummary
+                                            caption={bondName(x.triplet)}
+                                            pGroup={pgrp}
+                                            ranges={pgrp
+                                                ? pgrp.groupedBins.map(x => ({
                                                     from: M.r2d(x.from).toFixed(2),
                                                     to: M.r2d(x.to).toFixed(2),
                                                     probability: x.probability,
-                                                }))}
-                                                unit={'\u00B0'} />
-                                            : 'Outlier'
-                                        }
+                                                }))
+                                                : []
+                                            }
+                                            residueName={residueName}
+                                            unit={'\u00B0'}
+                                        />
                                     </Tooltip>
                                     {bondName(x.triplet)}
                                     <div className='rdo-monospace rdo-talgn-right'>{M.r2d(x.angle).toFixed(2)}{'\u00B0'}</div>

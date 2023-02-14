@@ -119,6 +119,8 @@ function setPGroupData(pgroups: typeof PGroups, data: PGroupData, averages: Aver
 }
 
 export namespace AnglesLengths {
+    export type PGroup = ReturnType<typeof getPGroup>;
+
     export async function initialize(): Promise<Result<void>> {
         const prefix = `${GlobalConfig.data().pathPrefix}/angles_lengths`;
 
