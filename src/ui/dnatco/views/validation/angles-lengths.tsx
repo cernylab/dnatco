@@ -23,7 +23,7 @@ import { Serialize } from '../../../../dnatco/angles-lengths/serialize';
 import { Summarize } from '../../../../dnatco/angles-lengths/summarize';
 import { rgbToHex } from '../../../util';
 import { GlobalConfig } from '../../../../global-config';
-import { sequence } from '../../../../util';
+import { htmlColorAsNumber, sequence } from '../../../../util';
 import { M } from '../../../../util/math';
 import { Net } from '../../../../util/net';
 import 'assets/imgs/data-transfer-download.svg';
@@ -206,6 +206,7 @@ class AveragesChart extends React.Component<{
     yTransform?: (y: number) => number;
 }> {
     render() {
+        const markerColorTup = colorToTuple(htmlColorAsNumber(GlobalConfig.data().anglesLengths.chartMarkerColor) ?? 0);
         const outlierColor = DAnglesLengths.outlierColor();
 
         const allGroupedBins = this.props.pGroupDatas.flatMap(
@@ -247,7 +248,7 @@ class AveragesChart extends React.Component<{
                         type: 'scattergl',
                         mode: 'lines',
                         line: {
-                            color: 'rgb(255, 3, 242)',
+                            color: `rgb(${markerColorTup[0]}, ${markerColorTup[1]}, ${markerColorTup[2]})`,
                             width: 2,
                         },
                         hoverinfo: 'none',

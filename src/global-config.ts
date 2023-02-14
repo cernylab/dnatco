@@ -17,6 +17,7 @@ export type GlobalConfigData = {
     pathPrefix: string,
     userDatabases: StaticDb[],
     anglesLengths: {
+        chartMarkerColor: string,
         pGroups: AngleLengthPGroup[],
         outlierColor: string,
     },
@@ -26,6 +27,7 @@ const GlobalConfigData: GlobalConfigData = {
     pathPrefix: '.',
     userDatabases: [],
     anglesLengths: {
+        chartMarkerColor: '#ff03f2',
         pGroups: [
             { threshold: 80, color: '#006eff' },
             { threshold: 95, color: '#00ff00' },
