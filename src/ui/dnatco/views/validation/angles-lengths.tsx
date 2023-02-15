@@ -271,7 +271,8 @@ class AveragesChart extends React.Component<{
     render() {
         const markerColorTup = colorToTuple(htmlColorAsNumber(GlobalConfig.data().anglesLengths.chartMarkerColor) ?? 0);
         const outlierColor = DAnglesLengths.outlierColor();
-        const pGroupIndices = this.binsToPGroupIndices(this.props.bins, this.props.pGroupDatas)
+        const pGroupIndices = this.binsToPGroupIndices(this.props.bins, this.props.pGroupDatas);
+        const thresholds = DAnglesLengths.pGroupThresholds();
 
         const color = pGroupIndices.map(pgIdx => {
             const tup = colorToTuple(pgIdx === -1 ? outlierColor : DAnglesLengths.pGroupColor(pgIdx));
@@ -327,6 +328,8 @@ class AveragesChart extends React.Component<{
                             x: xt,
                             y: yt,
                             marker: { color: color },
+                            hovertemplate: `${this.props.xTitle}: %{x}<br>${this.props.yTitle}: %{y}<br>%{hovertext}<extra></extra>`,
+                            hovertext: pGroupIndices.map(pgIdx => pgIdx === -1 ? 'Outlier' : `Percentile: ${thresholds[pgIdx].toString()}`),
                             type: 'bar',
                             showlegend: false,
                         },
