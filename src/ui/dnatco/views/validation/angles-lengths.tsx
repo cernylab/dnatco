@@ -503,7 +503,7 @@ class PGroupSummary extends React.Component<PGroupSummaryProps, { mode: 'chart'|
                     </React.Fragment>
                 ))}
                 <div className='rdo-line-spacer' style={{ gridColumnStart: 'span 3' }} />
-                <div className='rdo-strong' style={{ gridColumnStart: 'span 2' }}>Total prob. (%)</div>
+                <div className='rdo-strong' style={{ gridColumnStart: 'span 2' }}>Percentile</div>
                 {this.renderPGroup()}
             </div>
         );
@@ -611,7 +611,7 @@ class SubstructureSummary extends React.Component<{ stats: { threshold: number|'
 
         return (
             <div style={{ display: 'grid', gridTemplateColumns: '1em auto auto', columnGap: 'var(--h-gap)' }}>
-                <div className='rdo-strong' style={{ gridColumnStart: 'span 2 '}}>Probability (%)</div><div className='rdo-strong'>Count</div>
+                <div className='rdo-strong' style={{ gridColumnStart: 'span 2 '}}>Percentile</div><div className='rdo-strong'>Count</div>
                 {this.props.stats.map((x, idx) => {
                     const thr = x.threshold === 'outlier' ? 'Outlier' : x.threshold.toFixed(maxDecimals);
                     const clr = DAnglesLengths.pGroupColor(idx) ?? outlierColor;
