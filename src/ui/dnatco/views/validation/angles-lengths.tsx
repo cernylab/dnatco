@@ -439,7 +439,7 @@ type PGroupSummaryProps = {
     yTransform?: (y: number) => number,
     downloadFileName?: string,
 };
-class PGroupSummary extends React.Component<PGroupSummaryProps, { mode: 'chart'|'list' }> {
+class PGroupSummary extends React.Component<PGroupSummaryProps, { mode: 'chart'|'percentile' }> {
     constructor(props: PGroupSummaryProps) {
         super(props);
 
@@ -448,7 +448,7 @@ class PGroupSummary extends React.Component<PGroupSummaryProps, { mode: 'chart'|
         };
     }
 
-    private makeToggleButton(caption: string, mode: 'chart'|'list') {
+    private makeToggleButton(caption: string, mode: typeof this.state.mode) {
         return (
             <ToggleButton
                     caption={caption}
@@ -488,7 +488,7 @@ class PGroupSummary extends React.Component<PGroupSummaryProps, { mode: 'chart'|
         );
     }
 
-    private renderList() {
+    private renderPercentile() {
         if (!this.props.pGroup)
             return this.renderPGroup();
 
@@ -513,8 +513,8 @@ class PGroupSummary extends React.Component<PGroupSummaryProps, { mode: 'chart'|
         switch (this.state.mode) {
         case 'chart':
             return this.renderChart();
-        case 'list':
-            return this.renderList();
+        case 'percentile':
+            return this.renderPercentile();
         }
     }
 
@@ -542,7 +542,7 @@ class PGroupSummary extends React.Component<PGroupSummaryProps, { mode: 'chart'|
                             {this.makeToggleButton('Chart', 'chart')}
                         </div>
                         <div style={{ flex: 1 }}>
-                            {this.makeToggleButton('List', 'list')}
+                            {this.makeToggleButton('Percentile', 'percentile')}
                         </div>
                     </div>
                     <div style={{ flex: 1 }} />
