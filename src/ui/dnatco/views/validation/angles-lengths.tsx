@@ -294,19 +294,41 @@ class AveragesChart extends React.Component<{
                                     e.nativeEvent.stopImmediatePropagation();
                                     e.stopPropagation();
 
+                                    let markInRange = false;
                                     const actual = new Array<number>();
                                     this.props.bins.forEach(bin => {
-                                        if (isWithin(this.props.mark, bin))
+                                        if (isWithin(this.props.mark, bin)) {
                                             actual.push(yMax);
-                                        else
+                                            markInRange = true;
+                                        } else
                                             actual.push(0);
                                     });
 
+                                    const _xt = [...xt];
+                                    const _yt = [...yt];
+                                    const _pGroupIndices = [...pGroupIndices];
+
+                                    if (!markInRange) {
+                                        const bf = this.props.bins[0];
+
+                                        if (this.props.mark < bf.from) {
+                                            _xt.unshift(this.props.mark);
+                                            _yt.unshift(0);
+                                            _pGroupIndices.unshift(-1);
+                                            actual.unshift(yMax);
+                                        } else {
+                                            _xt.push(this.props.mark);
+                                            _yt.push(0);
+                                            _pGroupIndices.push(-1);
+                                            actual.push(yMax);
+                                        }
+                                    }
+
                                     const tags = ['x', 'y', 'pGroupIndex', 'actual'];
                                     const values = [
-                                        xt,
-                                        yt,
-                                        pGroupIndices,
+                                        _xt,
+                                        _yt,
+                                        _pGroupIndices,
                                         actual
                                     ];
 
