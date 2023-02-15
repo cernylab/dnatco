@@ -17,7 +17,7 @@ import {
 import { Dnatcofication } from '../../../../dnatco/dnatcofication';
 import { StepsMapper } from '../../../../dnatco/steps-mapper';
 import { GlobalConfig } from '../../../../global-config';
-import { Net } from '../../../../util/net';
+import { doDownload, FileTypes } from '../../../../util/downloader';
 import { Serialization } from '../../../../util/serialization';
 import 'assets/imgs/info.svg';
 import 'assets/imgs/info-inverse.svg';
@@ -154,9 +154,6 @@ export class AssignedNtCs extends View<View.Props> {
         this.tableModel = this.makeTableModel(modelNum, this.props.structureSelection.chain === InvalidChain ? void 0 : this.props.structureSelection.chain);
         const stepName = this.props.structureSelection.stepId === InvalidStepId ? '' : StepsMapper.byId(this.props.dnatcofication, this.props.structureSelection.stepId).name;
 
-        const filenameCsv = `${this.props.dnatcofication.identifyingName}_assigned_ntcs.csv`;
-        const filenameJson = `${this.props.dnatcofication.identifyingName}_assigned_ntcs.json`;
-
         return (
             <DynamicTable
                 model={this.tableModel}
@@ -170,16 +167,27 @@ export class AssignedNtCs extends View<View.Props> {
                 highlightedTag={stepName}
                 scrollTainer={this.props.scrollableParent}
                 style='wide'
-                downloaders={[
-                    { caption: 'CSV', download: (model) => {
-                        const text = Serialization.dynamicTable(model, 'csv');
-                        Net.serveFile('text/csv', text, filenameCsv);
-                    }},
-                    { caption: 'JSON', download: (model) => {
-                        const text = Serialization.dynamicTable(model, 'json');
-                        Net.serveFile('application/json', text, filenameJson);
-                    }},
-                ]}
+                download={{
+                    downloaders: [
+                        {
+                            caption: 'CSV',
+                            download: function(fileNameStem, model) {
+                                const text = Serialization.dynamicTable(model, 'csv');
+                                doDownload(fileNameStem, text, this.fileType);
+                            },
+                            fileType: FileTypes.csv,
+                        },
+                        {
+                            caption: 'JSON',
+                            download: function(fileNameStem, model) {
+                                const text = Serialization.dynamicTable(model, 'json');
+                                doDownload(fileNameStem, text, this.fileType);
+                            },
+                            fileType: FileTypes.json,
+                        },
+                    ],
+                    fileName: `${this.props.dnatcofication.identifyingName}_assigned_ntcs`,
+                }}
             />
         );
     }

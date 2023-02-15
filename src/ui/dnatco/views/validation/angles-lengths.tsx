@@ -24,8 +24,8 @@ import { Summarize } from '../../../../dnatco/angles-lengths/summarize';
 import { rgbToHex } from '../../../util';
 import { GlobalConfig } from '../../../../global-config';
 import { htmlColorAsNumber, sequence } from '../../../../util';
+import { doDownload, Downloader, FileTypes } from '../../../../util/downloader';
 import { M } from '../../../../util/math';
-import { Net } from '../../../../util/net';
 import 'assets/imgs/data-transfer-download.svg';
 
 const DetailsCaptionStyle = {
@@ -57,27 +57,31 @@ const DetailsTableStyle = {
     columnGap: '1em'
 };
 
-type Downloader = {
-    caption: string;
-    download: (fileName: string, residues: Measurements.Residue[], counts: { angles: Summarize.CountInGroup[], lengths: Summarize.CountInGroup[] }) => void;
-    suffix: string,
-};
-const Downloaders = [
+type StatsDownloader = Downloader<{
+    residues: Measurements.Residue[],
+    counts: {
+        angles: Summarize.CountInGroup[],
+        lengths: Summarize.CountInGroup[]
+    }
+}>;
+const StatsDownloaders = [
     {
         caption: 'CSV',
-        download: (fileName, residues, counts) => {
-            const text = Serialize.toCsv(counts.angles, counts.lengths, residues);
-            Net.serveFile('text/csv', text, `${fileName}.csv`);
+        download: function(fileNameStem, data) {
+            const text = Serialize.toCsv(data.counts.angles, data.counts.lengths, data.residues);
+            doDownload(fileNameStem, text, this.fileType);
         },
+        fileType: FileTypes.csv,
     },
     {
         caption: 'JSON',
-        download: (fileName, residues, counts) => {
-            const text = Serialize.toJson(counts.angles, counts.lengths, residues);
-            Net.serveFile('application/json', text, `${fileName}.json`);
+        download: function(fileNameStem, data) {
+            const text = Serialize.toJson(data.counts.angles, data.counts.lengths, data.residues);
+            doDownload(fileNameStem, text, this.fileType);
         },
+        fileType: FileTypes.json,
     }
-] as Downloader[];
+] as StatsDownloader[];
 
 function bondName(bond: Pair | Triplet) {
     const toks = bond.map(x => isShiftedName(x) ? <span>{unshiftName(x)}<span className='rdo-sup'>(-1)</span></span> : <span>{x}</span>);
@@ -282,7 +286,7 @@ class AveragesChart extends React.Component<{
 
 class DownloadButtons extends React.Component<{
     counts: { angles: Summarize.CountInGroup[], lengths: Summarize.CountInGroup[] },
-    downloaders: Downloader[],
+    downloaders: StatsDownloader[],
     fileName: string,
     residues: Measurements.Residue[],
 }> {
@@ -298,7 +302,7 @@ class DownloadButtons extends React.Component<{
                         style={{ flex: 1 }}
                         onClick={e => {
                             e.stopPropagation();
-                            dl.download(this.props.fileName, this.props.residues, this.props.counts);
+                            dl.download(this.props.fileName, { residues: this.props.residues, counts: this.props.counts });
                     }}>
                         <Icon img={`${prefix}/imgs/data-transfer-download.svg`} size='text' />
                         {dl.caption}
@@ -312,7 +316,7 @@ class DownloadButtons extends React.Component<{
 class OverallStatsBar extends React.Component<{
     children: React.ReactNode,
     counts: { angles: Summarize.CountInGroup[], lengths: Summarize.CountInGroup[] },
-    downloaders: Downloader[],
+    downloaders: StatsDownloader[],
     name: string,
     residues: Measurements.Residue[],
     style?: StandardLonghandProperties
@@ -488,7 +492,7 @@ class ResidueHeader extends React.Component<{
 
                 <OverallStatsBar
                     counts={{ angles: this.props.countsAngles, lengths: this.props.countsLengths }}
-                    downloaders={Downloaders}
+                    downloaders={StatsDownloaders}
                     name={`${this.props.structureName}-m${r.modelNum}-${r.authChain}-${r.authSeqId}${r.insCode ? `.${r.insCode}` : ''}${r.altId ? `_alt${r.altId}` : ''}_`}
                     residues={[this.props.residue]}
                 >
@@ -738,7 +742,7 @@ export class AnglesLengths extends View {
                 <div className='rdo-secondary-caption'>Structure/Selection</div>
                 <OverallStatsBar
                     counts={{ angles: countsAngles, lengths: countsLenghts }}
-                    downloaders={Downloaders}
+                    downloaders={StatsDownloaders}
                     name={this.selectionName(multipleModels, modelIdx, chain)}
                     residues={residues}
                     style={{ height: '4em' }}

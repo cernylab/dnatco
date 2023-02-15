@@ -3,6 +3,7 @@ import { Icon } from './icon';
 import { Tooltip } from './tooltip';
 import { scrollIntoViewIfNeeded } from '../util';
 import { GlobalConfig } from '../../global-config';
+import { Downloader as _Downloader } from '../../util/downloader';
 import 'assets/imgs/data-transfer-download.svg';
 import 'assets/imgs/sort.svg';
 import 'assets/imgs/sorted-ascending.svg';
@@ -102,20 +103,21 @@ export class DynamicTable extends React.Component<DynamicTable.Props> {
     }
 
     private renderDownloadBar() {
-        if (!this.props.downloaders || this.props.downloaders.length === 0)
+        if (!this.props.download)
             return void 0;
 
         const prefix = GlobalConfig.data().pathPrefix;
         const buttons = new Array<JSX.Element>();
+        const fileName = this.props.download.fileName;
 
-        this.props.downloaders.forEach((dl, idx) => {
+        this.props.download.downloaders.forEach((dl, idx) => {
             buttons.push(
                 <div
                     key={idx}
                     className='rdo-dynamic-table-download-button'
                     onClick={e => {
                         e.stopPropagation();
-                        dl.download(this.props.model);
+                        dl.download(fileName, this.props.model);
                     }}
                 >
                     <Icon img={`${prefix}/imgs/data-transfer-download.svg`} size='text' />
@@ -268,16 +270,16 @@ export namespace DynamicTable {
         }
     }
 
-    export type Downloader = {
-        caption: string;
-        download: (model: Model) => void;
-    }
+    export type Downloader = _Downloader<Model>;
     export interface Props {
         model: Model;
         onCellClicked?: (row: number, column: string, value: string) => void;
         highlightedTag?: string;
         scrollTainer?: string|HTMLElement; // This needs to be se to a reasonable element to make autoscrolling work reliably
         style?: Style;
-        downloaders?: Downloader[];
+        download?: {
+            downloaders: Downloader[];
+            fileName: string;
+        };
     }
 }
