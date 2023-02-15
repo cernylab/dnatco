@@ -35,7 +35,7 @@ export namespace Serialization {
         return text;
     }
 
-    function toJson(data: Serializable) {
+    export function toJson(data: Serializable) {
         const NCols = data.tags.length;
 
         let obj: Record<string, (number|string|boolean)[]> = {};

@@ -15,16 +15,17 @@ import { Tooltip } from '../../../common/tooltip';
 import { Dnatcofication  } from '../../../../dnatco/dnatcofication';
 import { AnglesLengths as DAnglesLengths } from '../../../../dnatco/angles-lengths';
 import { isShiftedName, unshiftName } from '../../../../dnatco/angles-lengths/atoms';
-import { Triplet } from '../../../../dnatco/angles-lengths/angles';
-import { Bins, isWithin } from '../../../../dnatco/angles-lengths/bin';
-import { Pair } from '../../../../dnatco/angles-lengths/lengths';
+import { tripletTag, Triplet } from '../../../../dnatco/angles-lengths/angles';
+import { isWithin, Bins } from '../../../../dnatco/angles-lengths/bin';
+import { pairTag, Pair } from '../../../../dnatco/angles-lengths/lengths';
 import { Measurements } from '../../../../dnatco/angles-lengths/measurements';
 import { Serialize } from '../../../../dnatco/angles-lengths/serialize';
 import { Summarize } from '../../../../dnatco/angles-lengths/summarize';
 import { rgbToHex } from '../../../util';
 import { GlobalConfig } from '../../../../global-config';
-import { htmlColorAsNumber, sequence } from '../../../../util';
+import { htmlColorAsNumber, replaceAll, sequence } from '../../../../util';
 import { doDownload, Downloader, FileTypes } from '../../../../util/downloader';
+import { Serialization } from '../../../../util/serialization';
 import { M } from '../../../../util/math';
 import 'assets/imgs/data-transfer-download.svg';
 
@@ -56,6 +57,26 @@ const DetailsTableStyle = {
     gridTemplateColumns: '1em auto auto 1fr',
     columnGap: '1em'
 };
+
+type AveragesChartDownloader = Downloader<Serialization.Serializable>;
+const AveragesChartDownloaders = [
+    {
+        caption: 'CSV',
+        download: function(fileNameStem, data) {
+            const text = Serialization.toCsv(data);
+            doDownload(fileNameStem, text, this.fileType);
+        },
+        fileType: FileTypes.csv,
+    },
+    {
+        caption: 'JSON',
+        download: function(fileNameStem, data) {
+            const text = Serialization.toJson(data);
+            doDownload(fileNameStem, text, this.fileType);
+        },
+        fileType: FileTypes.json,
+    },
+] as AveragesChartDownloader[];
 
 type StatsDownloader = Downloader<{
     residues: Measurements.Residue[],
@@ -106,6 +127,14 @@ function countsInGroups(stats: number[], thresholds: number[]): Summarize.CountI
     });
 }
 
+function fileNameFriendlyTag(tag: string) {
+    return replaceAll(
+        replaceAll(tag, '^', '_'),
+        "'",
+        'p'
+    );
+}
+
 function renderSubstructureStats(caption: string | JSX.Element, summaryStats: number[], counts: Summarize.CountInGroup[]) {
     return (
         <AnglesLengthsBar
@@ -123,6 +152,10 @@ function renderSubstructureStats(caption: string | JSX.Element, summaryStats: nu
             stats={summaryStats}
         />
     );
+}
+
+function residueIdentifyingName(structureName: string, r: Measurements.Residue) {
+    return `${structureName}-m${r.modelNum}-${r.authChain}-${r.authSeqId}${r.insCode ? `.${r.insCode}` : ''}${r.altId ? `_alt${r.altId}` : ''}_`;
 }
 
 class AnglesLengthsBar extends React.Component<{ caption?: string | React.ReactNode, stats: number[] }> {
@@ -208,78 +241,130 @@ class AveragesChart extends React.Component<{
     yTitle: string,
     xTransform?: (x: number) => number;
     yTransform?: (y: number) => number;
+    downloadFileName?: string,
 }> {
-    render() {
-        const markerColorTup = colorToTuple(htmlColorAsNumber(GlobalConfig.data().anglesLengths.chartMarkerColor) ?? 0);
-        const outlierColor = DAnglesLengths.outlierColor();
-
-        const allGroupedBins = this.props.pGroupDatas.flatMap(
+    private binsToPGroupIndices(bins: Bins, pGroupDatas: DAnglesLengths.PGroupData[]) {
+        const allGroupedBins = pGroupDatas.flatMap(
             (x, idx) => x.groupedBins.map(
                 bin => ({ bin: bin, pGroupIdx: idx })
             )
         );
-        const color = this.props.bins.map(b => {
+
+        const indices = [];
+        for (const b of bins) {
             const mid = b.from + (b.to - b.from) / 2;
 
-            let clr = outlierColor;
+            let pgIdx = -1;
             for (const gb of allGroupedBins) {
                 if (isWithin(mid, gb.bin)) {
-                    clr = DAnglesLengths.pGroupColor(gb.pGroupIdx);
+                    pgIdx = gb.pGroupIdx;
                     break;
                 }
             }
 
-            const tup = colorToTuple(clr);
+            indices.push(pgIdx);
+        }
+
+        return indices;
+    }
+
+    render() {
+        const markerColorTup = colorToTuple(htmlColorAsNumber(GlobalConfig.data().anglesLengths.chartMarkerColor) ?? 0);
+        const outlierColor = DAnglesLengths.outlierColor();
+        const pGroupIndices = this.binsToPGroupIndices(this.props.bins, this.props.pGroupDatas)
+
+        const color = pGroupIndices.map(pgIdx => {
+            const tup = colorToTuple(pgIdx === -1 ? outlierColor : DAnglesLengths.pGroupColor(pgIdx));
             return `$rgb(${tup[0]}, ${tup[1]}, ${tup[2]})`;
         });
 
+        const xt = this.props.bins.map(b => this.props.xTransform ? this.props.xTransform(b.from) : b.from);
         const yt = this.props.bins.map(b => this.props.yTransform ? this.props.yTransform(b.probability) : b.probability);
-        const yMax = Math.max(...yt);;
+        const yMax = Math.max(...yt);
 
         return (
-            <Plot
-                data={[
-                    {
-                        x: this.props.bins.map(b => this.props.xTransform ? this.props.xTransform(b.from) : b.from),
-                        y: yt,
-                        marker: { color: color },
-                        type: 'bar',
-                        showlegend: false,
-                    },
-                    {
-                        x: [this.props.mark, this.props.mark],
-                        y: [0, yMax],
-                        type: 'scattergl',
-                        mode: 'lines',
-                        line: {
-                            color: `rgb(${markerColorTup[0]}, ${markerColorTup[1]}, ${markerColorTup[2]})`,
-                            width: 2,
+            <div>
+                <div className='rdo-dynamic-table-download-bar'>
+                    {AveragesChartDownloaders.map((dl, idx) => {
+                        return (
+                            <div
+                                className='rdo-dynamic-table-download-button'
+                                onClick={(e) => {
+                                    e.nativeEvent.stopImmediatePropagation();
+                                    e.stopPropagation();
+
+                                    const actual = new Array<number>();
+                                    this.props.bins.forEach(bin => {
+                                        if (isWithin(this.props.mark, bin))
+                                            actual.push(yMax);
+                                        else
+                                            actual.push(0);
+                                    });
+
+                                    const tags = ['x', 'y', 'pGroupIndex', 'actual'];
+                                    const values = [
+                                        xt,
+                                        yt,
+                                        pGroupIndices,
+                                        actual
+                                    ];
+
+                                    dl.download(this.props.downloadFileName ?? 'angle_length_prob_chart', { tags, values });
+                                }}
+                                key={idx}
+                            >
+                                <Icon img={`${GlobalConfig.data().pathPrefix}/imgs/data-transfer-download.svg`} size='text' />
+                                {dl.caption}
+                            </div>
+                        );
+                    })}
+                    <div style={{ flex: 1 }} />
+                </div>
+
+                <Plot
+                    data={[
+                        {
+                            x: xt,
+                            y: yt,
+                            marker: { color: color },
+                            type: 'bar',
+                            showlegend: false,
                         },
-                        hoverinfo: 'none',
-                        showlegend: false,
-                    },
-                ]}
-                layout={{
-                    autosize: true,
-                    bargap: 0,
-                    dragmode: 'pan',
-                    hovermode: 'closest',
-                    margin: { t: 0, l: 45, b: 45, r: 0 },
-                    xaxis: { title: this.props.xTitle },
-                    yaxis: { title: this.props.yTitle },
-                    plot_bgcolor: 'white',
-                    paper_bgcolor: 'white',
-                }}
-                config={{
-                    displayModeBar: false,
-                    scrollZoom: true,
-                }}
-                style={{
-                    width: '30em',
-                    height: '30em',
-                    margin: 0
-                }}
-            />
+                        {
+                            x: [this.props.mark, this.props.mark],
+                            y: [0, yMax],
+                            type: 'scattergl',
+                            mode: 'lines',
+                            line: {
+                                color: `rgb(${markerColorTup[0]}, ${markerColorTup[1]}, ${markerColorTup[2]})`,
+                                width: 2,
+                            },
+                            hoverinfo: 'none',
+                            showlegend: false,
+                        },
+                    ]}
+                    layout={{
+                        autosize: true,
+                        bargap: 0,
+                        dragmode: 'pan',
+                        hovermode: 'closest',
+                        margin: { t: 0, l: 45, b: 45, r: 0 },
+                        xaxis: { title: this.props.xTitle },
+                        yaxis: { title: this.props.yTitle },
+                        plot_bgcolor: 'white',
+                        paper_bgcolor: 'white',
+                    }}
+                    config={{
+                        displayModeBar: false,
+                        scrollZoom: true,
+                    }}
+                    style={{
+                        width: '30em',
+                        height: '30em',
+                        margin: 0
+                    }}
+                />
+            </div>
         );
     }
 }
@@ -349,6 +434,7 @@ type PGroupSummaryProps = {
     suffix?: string,
     xTransform?: (x: number) => number,
     yTransform?: (y: number) => number,
+    downloadFileName?: string,
 };
 class PGroupSummary extends React.Component<PGroupSummaryProps, { mode: 'chart'|'list' }> {
     constructor(props: PGroupSummaryProps) {
@@ -383,6 +469,7 @@ class PGroupSummary extends React.Component<PGroupSummaryProps, { mode: 'chart'|
             yTitle={this.props.yTitle}
             xTransform={this.props.xTransform}
             yTransform={this.props.yTransform}
+            downloadFileName={this.props.downloadFileName}
         />;
     }
 
@@ -493,7 +580,7 @@ class ResidueHeader extends React.Component<{
                 <OverallStatsBar
                     counts={{ angles: this.props.countsAngles, lengths: this.props.countsLengths }}
                     downloaders={StatsDownloaders}
-                    name={`${this.props.structureName}-m${r.modelNum}-${r.authChain}-${r.authSeqId}${r.insCode ? `.${r.insCode}` : ''}${r.altId ? `_alt${r.altId}` : ''}_`}
+                    name={residueIdentifyingName(this.props.structureName, r)}
                     residues={[this.props.residue]}
                 >
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
@@ -548,6 +635,7 @@ export class AnglesLengths extends View {
         const residueName = this.renderResidueName(residue, multipleModels);
         const outlierColor = colorToTuple(DAnglesLengths.outlierColor());
         const pgrpIndices = sequence(0, DAnglesLengths.pGroupCount() - 1);
+        const structureName = this.props.dnatcofication.identifyingName ?? this.props.dnatcofication.pdbId;
 
         return (
             <>
@@ -556,7 +644,7 @@ export class AnglesLengths extends View {
                         caption={residueName}
                         residue={residue}
                         summary={summary}
-                        structureName={this.props.dnatcofication.identifyingName ?? this.props.dnatcofication.pdbId}
+                        structureName={structureName}
                         countsAngles={countsAngles}
                         countsLengths={countsLenghts}
                     />
@@ -567,6 +655,7 @@ export class AnglesLengths extends View {
                             const pgrp = DAnglesLengths.lengthPGroup(residue.compound, x);
                             const clr = pgrp ? colorToTuple(pgrp.color) : outlierColor;
                             const pgrpDatas = pgrpIndices.map(idx => DAnglesLengths.lengthPGroupData(idx, residue.compound, x.pair)!);
+                            const dlName = `${residueIdentifyingName(structureName, residue)}${fileNameFriendlyTag(pairTag(x.pair))}`;
 
                             return (
                                 <React.Fragment key={idx}>
@@ -594,6 +683,7 @@ export class AnglesLengths extends View {
                                             xTitle={'Length (\u212B)'}
                                             yTitle='Prob. (%)'
                                             yTransform={(y) => y * 100}
+                                            downloadFileName={dlName}
                                         />
                                     </Tooltip>
                                     {bondName(x.pair)}
@@ -608,6 +698,7 @@ export class AnglesLengths extends View {
                             const pgrp = DAnglesLengths.anglePGroup(residue.compound, x);
                             const clr = pgrp ? colorToTuple(pgrp.color) : outlierColor;
                             const pgrpDatas = pgrpIndices.map(idx => DAnglesLengths.anglePGroupData(idx, residue.compound, x.triplet)!);
+                            const dlName = `${residueIdentifyingName(structureName, residue)}_${fileNameFriendlyTag(tripletTag(x.triplet))}`;
 
                             return (
                                 <React.Fragment key={idx}>
@@ -636,6 +727,7 @@ export class AnglesLengths extends View {
                                             yTitle='Prob. (%)'
                                             xTransform={(x) => M.r2d(x)}
                                             yTransform={(y) => y * 100}
+                                            downloadFileName={dlName}
                                         />
                                     </Tooltip>
                                     {bondName(x.triplet)}
