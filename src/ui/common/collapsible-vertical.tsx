@@ -1,3 +1,4 @@
+import type { StandardLonghandProperties } from 'csstype';
 import * as React from 'react';
 
 interface State {
@@ -36,7 +37,7 @@ export class CollapsibleVertical extends React.Component<CollapsibleVertical.Pro
 
     render() {
         return (
-            <div className='rdo-collapsible-vertical'>
+            <div className='rdo-collapsible-vertical' style={this.props.style}>
                 {this.renderHeader()}
                 {this.state.collapsed ? undefined : this.props.children}
             </div>
@@ -48,5 +49,6 @@ export namespace CollapsibleVertical {
     export interface Props {
         header: string | React.ReactNode;
         children?: React.ReactNode;
+        style?: StandardLonghandProperties;
     }
 }

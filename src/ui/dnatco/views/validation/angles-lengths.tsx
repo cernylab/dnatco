@@ -874,11 +874,17 @@ export class AnglesLengths extends View {
                     </div>
                 </OverallStatsBar>
 
-                <div className='rdo-secondary-caption'>Residues</div>
                 <div style={ Common.VScrollElement }>
-                    <div className='rdo-scroll-vertically'>
-                        {...this.renderModel(modelIdx, chain, multipleModels, thresholds)}
-                    </div>
+                    <CollapsibleVertical
+                        header=<div className='rdo-secondary-caption'>Residues</div>
+                        style={ Common.VScrollJail }
+                    >
+                        <div style={ Common.VScrollElement }>
+                            <div className='rdo-scroll-vertically'>
+                                {...this.renderModel(modelIdx, chain, multipleModels, thresholds)}
+                            </div>
+                        </div>
+                    </CollapsibleVertical>
                 </div>
             </div>
         );
