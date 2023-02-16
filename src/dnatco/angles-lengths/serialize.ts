@@ -83,18 +83,19 @@ export namespace Serialize {
         };
     }
 
-    function statsToSerializable(counts: Summarize.CountInGroup[], kind: 'a'|'l'): Serialization.Serializable {
-        const tags = ['kind', 'threshold', 'count'];
+    function statsToSerializable(counts: Summarize.CountsInGroup[], kind: 'a'|'l'): Serialization.Serializable {
+        const tags = ['kind', 'threshold', 'cumulative_count', 'exclusive_count'];
         const values = new Array<(number|string)[]>();
 
         values.push((new Array<string>(counts.length)).fill(kind));
         values.push(counts.map(x => x.threshold));
-        values.push(counts.map(x => x.count));
+        values.push(counts.map(x => x.cumulative));
+        values.push(counts.map(x => x.exclusive));
 
         return { tags, values };
     }
 
-    export function toCsv(countsAngles: Summarize.CountInGroup[], countsLengths: Summarize.CountInGroup[], residues: Measurements.Residue[]) {
+    export function toCsv(countsAngles: Summarize.CountsInGroup[], countsLengths: Summarize.CountsInGroup[], residues: Measurements.Residue[]) {
         const statsAngles = Serialization.toCsv(statsToSerializable(countsAngles, 'a'));
         const statsLengths = Serialization.toCsv(statsToSerializable(countsLengths, 'l'));
         const angles = Serialization.toCsv(anglesToSerializable(residues));
@@ -103,11 +104,11 @@ export namespace Serialize {
         return statsLengths + '\n' + statsAngles + '\n' + lengths + '\n' + angles;
     }
 
-    export function toJson(countsAngles: Summarize.CountInGroup[], countsLengths: Summarize.CountInGroup[], residues: Measurements.Residue[]) {
-        type Stats = { threshold: number|null, count: number };
+    export function toJson(countsAngles: Summarize.CountsInGroup[], countsLengths: Summarize.CountsInGroup[], residues: Measurements.Residue[]) {
+        type Stats = { threshold: number|null, cumulativeCount: number, exclusiveCount: number };
 
-        const anglesStats: Stats[] = countsAngles.map(x => ({ threshold: x.threshold, count: x.count }));
-        const lengthsStats: Stats[] = countsLengths.map(x => ({ threshold: x.threshold, count: x.count }));
+        const anglesStats: Stats[] = countsAngles.map(x => ({ threshold: x.threshold, cumulativeCount: x.cumulative, exclusiveCount: x.exclusive}));
+        const lengthsStats: Stats[] = countsLengths.map(x => ({ threshold: x.threshold, cumulativeCount: x.cumulative, exclusiveCount: x.exclusive }));
 
         const angles = new Array<Residue>();
         const lengths = new Array<Residue>();

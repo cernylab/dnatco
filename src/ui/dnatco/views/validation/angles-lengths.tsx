@@ -81,8 +81,8 @@ const AveragesChartDownloaders = [
 type StatsDownloader = Downloader<{
     residues: Measurements.Residue[],
     counts: {
-        angles: Summarize.CountInGroup[],
-        lengths: Summarize.CountInGroup[]
+        angles: Summarize.CountsInGroup[],
+        lengths: Summarize.CountsInGroup[]
     }
 }>;
 const StatsDownloaders = [
@@ -120,11 +120,20 @@ function colorStyle(clr: [r: number, g: number, b: number]) {
     return `rgb(${clr.join(',')})`;
 }
 
-function countsInGroups(stats: number[], thresholds: number[]): Summarize.CountInGroup[] {
-    return stats.map((v, idx) => {
+function countsInGroups(counts: Summarize.Counts, thresholds: number[]): Summarize.CountsInGroup[] {
+    const cig = [];
+
+    for (let idx = 0; idx <= thresholds.length; idx++) {
         const thr = thresholds[idx];
-        return { threshold: thr ?? 'outlier', count: v, group: idx };
-    });
+        cig.push({
+            threshold: thr ?? 100,
+            exclusive: counts.exclusive[idx],
+            cumulative: counts.cumulative[idx],
+            pGroupIdx: (thr ? idx : 'outlier') as Summarize.CountsInGroup['pGroupIdx'],
+        });
+    }
+
+    return cig;
 }
 
 function fileNameFriendlyTag(tag: string) {
@@ -135,7 +144,7 @@ function fileNameFriendlyTag(tag: string) {
     );
 }
 
-function renderSubstructureStats(caption: string | JSX.Element, summaryStats: number[], counts: Summarize.CountInGroup[]) {
+function renderSubstructureStats(caption: string | JSX.Element, summaryCounts: Summarize.Counts, countsInGroups: Summarize.CountsInGroup[]) {
     return (
         <AnglesLengthsBar
             caption={
@@ -145,11 +154,11 @@ function renderSubstructureStats(caption: string | JSX.Element, summaryStats: nu
                         delayMsec={Constants.TooltipDelayMSec}
                         display='block'
                     >
-                        <SubstructureSummary stats={counts} />
+                        <SubstructureSummary countsInGroups={countsInGroups} />
                     </Tooltip>
                 </div>
             }
-            stats={summaryStats}
+            counts={summaryCounts}
         />
     );
 }
@@ -158,24 +167,24 @@ function residueIdentifyingName(structureName: string, r: Measurements.Residue) 
     return `${structureName}-m${r.modelNum}-${r.authChain}-${r.authSeqId}${r.insCode ? `.${r.insCode}` : ''}${r.altId ? `_alt${r.altId}` : ''}_`;
 }
 
-class AnglesLengthsBar extends React.Component<{ caption?: string | React.ReactNode, stats: number[] }> {
+class AnglesLengthsBar extends React.Component<{ caption?: string | React.ReactNode, counts: Summarize.Counts }> {
     private readonly Width = 300;
     private barRef = React.createRef<HTMLCanvasElement>();
 
 
-    private drawBar(canvas: HTMLCanvasElement, stats: number[]) {
+    private drawBar(canvas: HTMLCanvasElement, counts: number[]) {
         const ctx = canvas.getContext('2d');
         if (!ctx)
             return;
 
-        const sum = stats.reduce((p, c) => p + c, 0);
+        const sum = counts.reduce((p, c) => p + c, 0);
         const nGroups = DAnglesLengths.pGroupCount();
 
         const tw = canvas.width;
         const th = canvas.height;
         let x = 0;
         for (let idx = 0; idx < nGroups; idx++) {
-            const n = stats[idx];
+            const n = counts[idx];
             if (n === 0)
                 continue;
 
@@ -188,7 +197,7 @@ class AnglesLengthsBar extends React.Component<{ caption?: string | React.ReactN
             x += w;
         }
 
-        if (stats[nGroups] > 0)
+        if (counts[nGroups] > 0)
             ctx.fillStyle = rgbToHex(colorToRgb(DAnglesLengths.outlierColor()));
         ctx.fillRect(x, 0, tw - x, th);
     }
@@ -207,7 +216,7 @@ class AnglesLengthsBar extends React.Component<{ caption?: string | React.ReactN
     private tryDrawBar() {
         const ref = this.barRef.current;
         if (ref)
-            this.drawBar(ref, this.props.stats);
+            this.drawBar(ref, this.props.counts.exclusive);
     }
 
     componentDidMount() {
@@ -395,7 +404,7 @@ class AveragesChart extends React.Component<{
 }
 
 class DownloadButtons extends React.Component<{
-    counts: { angles: Summarize.CountInGroup[], lengths: Summarize.CountInGroup[] },
+    counts: { angles: Summarize.CountsInGroup[], lengths: Summarize.CountsInGroup[] },
     downloaders: StatsDownloader[],
     fileName: string,
     residues: Measurements.Residue[],
@@ -425,7 +434,7 @@ class DownloadButtons extends React.Component<{
 
 class OverallStatsBar extends React.Component<{
     children: React.ReactNode,
-    counts: { angles: Summarize.CountInGroup[], lengths: Summarize.CountInGroup[] },
+    counts: { angles: Summarize.CountsInGroup[], lengths: Summarize.CountsInGroup[] },
     downloaders: StatsDownloader[],
     name: string,
     residues: Measurements.Residue[],
@@ -582,8 +591,8 @@ class ResidueHeader extends React.Component<{
     residue: Measurements.Residue,
     structureName: string,
     summary: Summarize.Summary,
-    countsAngles: Summarize.CountInGroup[],
-    countsLengths: Summarize.CountInGroup[]
+    countsAngles: Summarize.CountsInGroup[],
+    countsLengths: Summarize.CountsInGroup[]
 }> {
     private tainerRef = React.createRef<HTMLDivElement>();
 
@@ -622,9 +631,9 @@ class ResidueHeader extends React.Component<{
     }
 }
 
-class SubstructureSummary extends React.Component<{ stats: { threshold: number|'outlier', count: number }[] }> {
+class SubstructureSummary extends React.Component<{ countsInGroups: Summarize.CountsInGroup[] }> {
     render() {
-        const maxDecimals = Math.max(...this.props.stats.map(x => {
+        const maxDecimals = Math.max(...this.props.countsInGroups.map(x => {
             const s = x.threshold.toString();
             const dot = s.indexOf('.');
             return dot >= 0 ? s.substring(dot + 1).length : 0;
@@ -632,16 +641,28 @@ class SubstructureSummary extends React.Component<{ stats: { threshold: number|'
         const outlierColor = DAnglesLengths.outlierColor();
 
         return (
-            <div style={{ display: 'grid', gridTemplateColumns: '1em auto auto', columnGap: 'var(--h-gap)' }}>
-                <div className='rdo-strong' style={{ gridColumnStart: 'span 2 '}}>Percentile</div><div className='rdo-strong'>Count</div>
-                {this.props.stats.map((x, idx) => {
-                    const thr = x.threshold === 'outlier' ? 'Outlier' : x.threshold.toFixed(maxDecimals);
+            <div style={{ display: 'grid', gridTemplateColumns: '1em auto auto auto', columnGap: 'var(--h-gap)' }}>
+                <div style={{ gridColumnStart: 'span 2' }} />
+                <div className='rdo-strong' style={{ gridColumn: '3 / span 2', textAlign: 'center', display: 'flex', justifyContent: 'center' }}>Counts</div>
+
+                <div className='rdo-strong' style={{ gridColumnStart: 'span 2 '}}>
+                    Percentile
+                </div>
+                <div className='rdo-strong'>
+                    Exclusive
+                </div>
+                <div className='rdo-strong'>
+                    Cumulative
+                </div>
+                {this.props.countsInGroups.map((x, idx) => {
+                    const thr = x.pGroupIdx === 'outlier' ? 'Outliers' : x.threshold.toFixed(maxDecimals);
                     const clr = DAnglesLengths.pGroupColor(idx) ?? outlierColor;
                     return (
                         <React.Fragment key={idx}>
                             <div style={{ backgroundColor: colorStyle(colorToTuple(clr)) }} />
                             <div className='rdo-monospace rdo-talgn-right'>{thr}</div>
-                            <div className='rdo-monospace rdo-talgn-right' style={{ textAlign: 'right' }}>{x.count}</div>
+                            <div className='rdo-monospace rdo-talgn-right' style={{ textAlign: 'right' }}>{x.exclusive}</div>
+                            <div className='rdo-monospace rdo-talgn-right' style={{ textAlign: 'right' }}>{x.cumulative}</div>
                         </React.Fragment>
                     );
                 })}

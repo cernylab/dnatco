@@ -3,55 +3,71 @@ import { Measurements } from './measurements';
 import { initedArray } from '../../util';
 
 export namespace Summarize {
-    export type CountInGroup = {
+    export type CountsInGroup = {
         threshold: number,
-        count: number,
-        group: number|'outlier',
+        exclusive: number,
+        cumulative: number,
+        pGroupIdx: number|'outlier',
     };
+
+    export type Counts = {
+        exclusive: number[],
+        cumulative: number[],
+    };
+    function Counts(nPGroups: number): Counts {
+        // +1 for outliers
+        return {
+            exclusive: initedArray(0, nPGroups + 1),
+            cumulative: initedArray(0, nPGroups + 1),
+        } as Counts;
+    }
 
     export type Summary = {
-        angles: number[],
-        lengths: number[],
+        angles: Counts;
+        lengths: Counts;
     };
 
-    export function residue(r: Measurements.Residue): Summary {
-        const nGroups = AnglesLengths.pGroupCount();
+    function count(counts: Counts, nPGroups: number, pgrp?: AnglesLengths.PGroup) {
+        let accumulateTo = pgrp ? pgrp.index : nPGroups;
+        for (let idx = nPGroups; idx >= accumulateTo; idx--)
+            counts.cumulative[idx]++;
 
-        // +1 for outliers
-        const angles = initedArray(0, nGroups + 1);
-        const lengths = initedArray(0, nGroups + 1);
+        counts.exclusive[pgrp ? pgrp.index : nPGroups]++;
+    }
+
+    export function residue(r: Measurements.Residue): Summary {
+        const nPGroups = AnglesLengths.pGroupCount();
+
+        const angles = Counts(nPGroups);
+        const lengths = Counts(nPGroups);
 
         for (const angle of r.bondAngles) {
-            const intvl = AnglesLengths.anglePGroup(r.compound, angle);
-            if (!intvl)
-                angles[nGroups]++;
-            else
-                angles[intvl.index]++;
+            const pgrp = AnglesLengths.anglePGroup(r.compound, angle);
+            count(angles, nPGroups, pgrp);
         }
 
         for (const length of r.bondLengths) {
-            const intvl = AnglesLengths.lengthPGroup(r.compound, length);
-            if (!intvl)
-                lengths[nGroups]++;
-            else
-                lengths[intvl.index]++;
+            const pgrp = AnglesLengths.lengthPGroup(r.compound, length);
+            count(lengths, nPGroups, pgrp);
         }
 
         return { angles, lengths };
     }
 
     export function substructure(residues: Measurements.Residue[]): Summary {
-        const nGroups = AnglesLengths.pGroupCount();
+        const nPGroups = AnglesLengths.pGroupCount();
 
-        // +1 for outliers
-        const angles = initedArray(0, nGroups + 1);
-        const lengths = initedArray(0, nGroups + 1);
+        const angles = Counts(nPGroups);
+        const lengths = Counts(nPGroups);
 
         for (const r of residues) {
             const rs = residue(r);
-            for (let idx = 0; idx <= nGroups; idx++) {
-                angles[idx] += rs.angles[idx];
-                lengths[idx] += rs.lengths[idx];
+            for (let idx = 0; idx <= nPGroups; idx++) {
+                angles.exclusive[idx] += rs.angles.exclusive[idx];
+                angles.cumulative[idx] += rs.angles.cumulative[idx];
+
+                lengths.exclusive[idx] += rs.lengths.exclusive[idx];
+                lengths.cumulative[idx] += rs.lengths.cumulative[idx];
             }
         }
 
