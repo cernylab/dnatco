@@ -27,7 +27,7 @@ const AvailableViews: Record<ViewType, { caption: string, visualizer: boolean }>
     'mmb-commands-file': { caption: 'MMB commands file', visualizer: false },
     'connectivity-plot': { caption: 'Connectivity plot', visualizer: true },
     'rscc-plot': { caption: 'RSCC plot', visualizer: true },
-    'angles-lengths': { caption: 'Bond Angles & Lengths', visualizer: true },
+    'angles-lengths': { caption: 'Bond Lengths & Angles', visualizer: true },
 };
 const AnnotationViews: ViewType[] = ['assigned-ntcs', 'structure-info', 'downloads'];
 const ValidationViews: ViewType[] = ['confals-rmsds', 'step-torsions', 'similarity-plot', 'rscc-plot', 'angles-lengths'];
