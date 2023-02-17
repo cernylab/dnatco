@@ -1,4 +1,5 @@
 import { OkResult, Result, isError, isOk } from './';
+import { AnglesLengthsContext } from './angles-lengths';
 import { ClassificationResources } from './classification-resources';
 import { Coordinates } from './coordinates';
 import { DensityMap } from './density-map';
@@ -36,7 +37,7 @@ async function tryGetRscc(coords: File, coeffs: File, ctx: DnatcoficationTaskCon
     }
 }
 
-async function tryIngestData(coordsResult: Result<Coordinates>, densityMapsResult: Result<DensityMap[]>[], sourceFileName: string|null, clsfResData: ClassificationResources.Data, isCustomStructure: boolean, ctx: DnatcoficationTaskContext) {
+async function tryIngestData(coordsResult: Result<Coordinates>, densityMapsResult: Result<DensityMap[]>[], sourceFileName: string|null, clsfResData: ClassificationResources.Data, alCtx: AnglesLengthsContext, isCustomStructure: boolean, ctx: DnatcoficationTaskContext) {
     const errors = new Array<string>();
     const densityMaps = [];
 
@@ -50,7 +51,7 @@ async function tryIngestData(coordsResult: Result<Coordinates>, densityMapsResul
     }
 
     if (errors.length === 0) {
-        return Dnatcofication.ingest((coordsResult as OkResult<Coordinates>).data, densityMaps, sourceFileName, clsfResData, isCustomStructure, ctx);
+        return Dnatcofication.ingest((coordsResult as OkResult<Coordinates>).data, densityMaps, sourceFileName, clsfResData, alCtx, isCustomStructure, ctx);
     } else {
         ctx.events.finished.next({ state: 'failed', message: errors.join(', ') });
 
@@ -66,13 +67,14 @@ export const Tasks = {
             densityMaps: { file: File, kind: DensityMap['kind'] }[],
             densityMapCoeffs: File|null,
             clsfResData: ClassificationResources.Data,
+            alCtx: AnglesLengthsContext,
         }
     ) {
         ctx.status = 'Reading data';
         const coordsResult = await Coordinates.fromFile(payload.coords.file, payload.coords.type);
         const densityMaps = await tryGetDensityMaps(payload.densityMaps);
 
-        const data = await tryIngestData(coordsResult, densityMaps, payload.coords.file.name, payload.clsfResData, true, ctx);
+        const data = await tryIngestData(coordsResult, densityMaps, payload.coords.file.name, payload.clsfResData, payload.alCtx, true, ctx);
         if (!data)
             return;
 
@@ -88,6 +90,7 @@ export const Tasks = {
             pdbId: string,
             dbId: string,
             clsfResData: ClassificationResources.Data,
+            alCtx: AnglesLengthsContext,
             userDatabases: StaticDb[],
         }
     ) {
@@ -108,7 +111,7 @@ export const Tasks = {
         if (isError(densityMapResult))
             console.warn(densityMapResult.message); // Log a warning because we do not consider a density map fetch failure a hard failure
 
-        let data = await tryIngestData(coordsResult, isOk(densityMapResult) ? [densityMapResult] : [], null, payload.clsfResData, false, ctx);
+        let data = await tryIngestData(coordsResult, isOk(densityMapResult) ? [densityMapResult] : [], null, payload.clsfResData, payload.alCtx, false, ctx);
         if (data)
             ctx.events.finished.next({ state: 'succeeded', data });
     },
@@ -118,12 +121,13 @@ export const Tasks = {
             coords: { link: string, type: Coordinates['type'] },
             densityMap: { link: string, type: DensityMap['type'], kind: DensityMap['kind'] }|null,
             clsfResData: ClassificationResources.Data,
+            alCtx: AnglesLengthsContext,
         }
     ) {
         ctx.status = 'Downloading data';
         const coordsResult = await Coordinates.fromLink(payload.coords.link, payload.coords.type);
         const densityMapResult = payload.densityMap ? await DensityMap.fromLink(payload.densityMap.link, payload.densityMap.type, payload.densityMap.kind) : null;
-        const data = await tryIngestData(coordsResult, densityMapResult ? [densityMapResult] : [], null, payload.clsfResData, false, ctx);
+        const data = await tryIngestData(coordsResult, densityMapResult ? [densityMapResult] : [], null, payload.clsfResData, payload.alCtx, false, ctx);
         if (data)
             ctx.events.finished.next({ state: 'succeeded', data });
     }

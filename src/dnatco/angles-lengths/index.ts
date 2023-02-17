@@ -6,7 +6,7 @@ import { Measurements } from './measurements';
 import { Residues } from '../residues';
 import { VoidResult, ErrorResult, Result } from '../';
 import { GlobalConfig } from '../../global-config';
-import { iterate, htmlColorAsNumber } from '../../util';
+import { htmlColorAsNumber, iterate, objKeys } from '../../util';
 
 /**
  * Averaged values of how probable is a particular bond angle or length of a particular base
@@ -78,6 +78,15 @@ const LengthPGroupData: PGroupData = {
     'DG': new Map(),
     'DT': new Map(),
 };
+
+export type AnglesLengthsContext = {
+    angleData: AverageData;
+    lengthData: AverageData;
+    anglePGroupData: PGroupData;
+    lengthPGroupData: PGroupData;
+    pGroups: PGroup[];
+    outlierColor: number;
+}
 
 type PGroup = { threshold: number, color: number };
 const PGroups = new Array<PGroup>();
@@ -183,6 +192,17 @@ export namespace AnglesLengths {
     export type PGroup = ReturnType<typeof getPGroup>;
     export type PGroupData = NonNullable<ReturnType<typeof lengthPGroupData>>;
 
+    export function context(): AnglesLengthsContext {
+        return {
+            angleData: { ...AngleAverageData },
+            lengthData: { ...LengthAverageData },
+            anglePGroupData: { ...AnglePGroupData },
+            lengthPGroupData: { ...LengthPGroupData },
+            pGroups: [...PGroups],
+            outlierColor: OutlierColor,
+        }
+    }
+
     export async function initialize(): Promise<Result<void>> {
         const prefix = `${GlobalConfig.data().pathPrefix}/angles_lengths`;
 
@@ -223,6 +243,15 @@ export namespace AnglesLengths {
         } catch (e) {
             return ErrorResult((e as Error).message);
         }
+    }
+
+    export function initializeFromContext(ctx: AnglesLengthsContext) {
+        objKeys(ctx.angleData).map((k) => AngleAverageData[k] = ctx.angleData[k]);
+        objKeys(ctx.lengthData).map((k) => LengthAverageData[k] = ctx.lengthData[k]);
+        objKeys(ctx.anglePGroupData).map((k) => AnglePGroupData[k] = ctx.anglePGroupData[k]);
+        objKeys(ctx.lengthPGroupData).map((k) => LengthPGroupData[k] = ctx.lengthPGroupData[k]);
+        ctx.pGroups.map((x, idx) => PGroups[idx] = x);
+        OutlierColor = ctx.outlierColor;
     }
 
     export function angleAverages(base: Residues.ElementaryResidue, triplet: Triplet) {

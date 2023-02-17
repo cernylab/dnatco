@@ -1,6 +1,8 @@
 import * as ConnSimil from './connectivity-similarity';
 import { PdbParser } from 'tspdb';
 import { MmCifConverter } from 'tspdb';
+import { AnglesLengths, AnglesLengthsContext } from './angles-lengths';
+import { Bin } from './angles-lengths/bin';
 import { Coordinates } from './coordinates';
 import { ClassificationResources } from './classification-resources';
 import { CustomNtCs } from './custom-ntcs';
@@ -26,10 +28,12 @@ import { Globals } from '../globals';
 function mapALM(residues: Measurements.Residue[]): MappedALM {
     const models = new Map<number, number[]>();
     const chains = new Map<number, Map<string, number[]>>();
+    const stats = [] as ALMResidueStats[];
 
     for (let idx = 0; idx < residues.length; idx++) {
         const r = residues[idx];
 
+        // Create mapping
         const m = r.modelNum;
         if (models.has(m))
             models.get(m)!.push(idx);
@@ -46,9 +50,27 @@ function mapALM(residues: Measurements.Residue[]): MappedALM {
             const cm = new Map([[r.chain, [idx]]]);
             chains.set(m, cm);
         }
+
+        // Precompute stats
+        const angles = [];
+        for (const a of r.bondAngles) {
+            const pgrp = AnglesLengths.anglePGroup(r.compound, a);
+            const bin = AnglesLengths.angleBin(r.compound, a) ?? 'no-data' as MaybeBin;
+
+            angles.push({ pGroup: pgrp, bin });
+        }
+
+        const lengths = [];
+        for (const l of r.bondLengths) {
+            const pgrp = AnglesLengths.lengthPGroup(r.compound, l);
+            const bin = AnglesLengths.lengthBin(r.compound, l) ?? 'no-data' as MaybeBin;
+
+            lengths.push({ pGroup: pgrp, bin });
+        }
+        stats.push({ angles, lengths });
     }
 
-    return { models, chains, residues };
+    return { models, chains, residues, stats };
 }
 
 function pdbToCif(data: string) {
@@ -69,7 +91,17 @@ const RequiredDnatcoCategories: Category<any>[] = [
 ];
 
 export type DnatcoficationTaskContext = TaskContext<DnatcoficationData>;
-export type MappedALM = { models: Map<number, number[]>, chains: Map<number, Map<string, number[]>>, residues: Measurements.Residue[] };
+export type MaybeBin = Bin|'below'|'above'|'no-data';
+export type ALMResidueStats = {
+    angles: { pGroup?: AnglesLengths.PGroup, bin: MaybeBin }[],
+    lengths: { pGroup?: AnglesLengths.PGroup, bin: MaybeBin }[],
+};
+export type MappedALM = {
+    models: Map<number, number[]>,
+    chains: Map<number, Map<string, number[]>>,
+    residues: Measurements.Residue[],
+    stats: ALMResidueStats[],
+};
 export type StepRmsdStats = { rmsdThreshold: number, count: number };
 
 export const DnatcoficationData = {
@@ -213,7 +245,7 @@ export namespace Dnatcofication {
         data.rscc = rscc;
     }
 
-    export function ingest(coordinates: Coordinates, densityMaps: DensityMap[]|null, sourceFileName: string|null, clsfResData: ClassificationResources.Data, isCustomStructure: boolean, ctx: DnatcoficationTaskContext) {
+    export function ingest(coordinates: Coordinates, densityMaps: DensityMap[]|null, sourceFileName: string|null, clsfResData: ClassificationResources.Data, alCtx: AnglesLengthsContext, isCustomStructure: boolean, ctx: DnatcoficationTaskContext) {
         const tStart = performance.now();
 
         try {
@@ -257,7 +289,7 @@ export namespace Dnatcofication {
 
             let alm;
             try {
-                alm = Dnatcofier.measureAnglesAndLengths(llkaSteps, ctx);
+                alm = Dnatcofier.measureAnglesAndLengths(llkaSteps, alCtx, ctx);
             } catch (e) {
                 llkaSteps.delete();
                 Dnatcofier.destroyImported(llkaImported);

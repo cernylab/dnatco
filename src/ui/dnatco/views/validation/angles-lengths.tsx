@@ -12,7 +12,7 @@ import { NamedList, NamedListItem } from '../../../common/named-list';
 import { Icon } from '../../../common/icon';
 import { ToggleButton } from '../../../common/push-button';
 import { Tooltip } from '../../../common/tooltip';
-import { Dnatcofication  } from '../../../../dnatco/dnatcofication';
+import { ALMResidueStats, Dnatcofication } from '../../../../dnatco/dnatcofication';
 import { AnglesLengths as DAnglesLengths } from '../../../../dnatco/angles-lengths';
 import { isShiftedName, unshiftName } from '../../../../dnatco/angles-lengths/atoms';
 import { tripletTag, Triplet } from '../../../../dnatco/angles-lengths/angles';
@@ -28,6 +28,9 @@ import { doDownload, Downloader, FileTypes } from '../../../../util/downloader';
 import { Serialization } from '../../../../util/serialization';
 import { M } from '../../../../util/math';
 import 'assets/imgs/data-transfer-download.svg';
+
+const PairBondNameCache: Map<string, React.ReactElement> = new Map();
+const TripletBondNameCache: Map<string, React.ReactElement> = new Map();
 
 const DetailsCaptionStyle = {
     alignItems: 'center',
@@ -104,18 +107,6 @@ const StatsDownloaders = [
     }
 ] as StatsDownloader[];
 
-function bondName(bond: Pair | Triplet) {
-    const toks = bond.map(x => isShiftedName(x) ? <span>{unshiftName(x)}<span className='rdo-sup'>(-1)</span></span> : <span>{x}</span>);
-    let idx = 1;
-    while (idx < toks.length) {
-        const tail = toks.splice(idx, toks.length - idx, <span>-</span>);
-        toks.push(...tail);
-        idx += 2;
-    }
-
-    return <span>{...toks}</span>;
-}
-
 function colorStyle(clr: [r: number, g: number, b: number]) {
     return `rgb(${clr.join(',')})`;
 }
@@ -149,6 +140,29 @@ function fileNameFriendlyTag(tag: string) {
     );
 }
 
+function makeBondName(bond: Pair | Triplet) {
+    const toks = bond.map(x => isShiftedName(x) ? <span>{unshiftName(x)}<span className='rdo-sup'>(-1)</span></span> : <span>{x}</span>);
+    let idx = 1;
+    while (idx < toks.length) {
+        const tail = toks.splice(idx, toks.length - idx, <span>-</span>);
+        toks.push(...tail);
+        idx += 2;
+    }
+
+    return <span>{...toks}</span>;
+}
+
+function pairBondName(p: Pair) {
+    const tag = pairTag(p);
+    let name = PairBondNameCache.get(tag);
+    if (!name) {
+        name = makeBondName(p);
+        PairBondNameCache.set(tag, name);
+    }
+
+    return name;
+}
+
 function renderSubstructureStats(caption: string | JSX.Element, summaryCounts: Summarize.Counts, countsInGroups: Summarize.CountsInGroup[]) {
     return (
         <AnglesLengthsBar
@@ -170,6 +184,17 @@ function renderSubstructureStats(caption: string | JSX.Element, summaryCounts: S
 
 function residueIdentifyingName(structureName: string, r: Measurements.Residue) {
     return `${structureName}-m${r.modelNum}-${r.authChain}-${r.authSeqId}${r.insCode ? `.${r.insCode}` : ''}${r.altId ? `_alt${r.altId}` : ''}_`;
+}
+
+function tripletBondName(t: Triplet) {
+    const tag = tripletTag(t);
+    let name = TripletBondNameCache.get(tag);
+    if (!name) {
+        name = makeBondName(t);
+        TripletBondNameCache.set(tag, name);
+    }
+
+    return name;
 }
 
 class AnglesLengthsBar extends React.Component<{ caption?: string | React.ReactNode, counts: Summarize.Counts }> {
@@ -722,7 +747,7 @@ class SubstructureSummary extends React.Component<{ countsInGroups: Summarize.Co
 export class AnglesLengths extends View {
     static readonly unscrollableContainer = true;
 
-    private renderResidue(residue: Measurements.Residue, multipleModels: boolean, thresholds: number[]) {
+    private renderResidue(residue: Measurements.Residue, residueStats: ALMResidueStats, multipleModels: boolean, thresholds: number[]) {
         const summary = Summarize.residue(residue);
         const countsAngles = countsInGroups(summary.angles, thresholds);
         const countsLenghts = countsInGroups(summary.lengths, thresholds);
@@ -746,11 +771,11 @@ export class AnglesLengths extends View {
                     <div style={DetailsTableStyle}>
                         <div style={{ gridColumnStart: 'span 5', ...DetailsCaptionStyle }}>Bond lengths</div>
                         {residue.bondLengths.map((x, idx) => {
-                            const pgrp = DAnglesLengths.lengthPGroup(residue.compound, x);
+                            const bin = residueStats.lengths[idx].bin;
+                            const pgrp = residueStats.lengths[idx].pGroup;
                             const clr = pgrp ? colorToTuple(pgrp.color) : outlierColor;
                             const pgrpDatas = pgrpIndices.map(idx => DAnglesLengths.lengthPGroupData(idx, residue.compound, x.pair)!);
                             const dlName = `${residueIdentifyingName(structureName, residue)}${fileNameFriendlyTag(pairTag(x.pair))}`;
-                            const bin = DAnglesLengths.lengthBin(residue.compound, x) ?? 'no-data';
 
                             return (
                                 <React.Fragment key={idx}>
@@ -761,7 +786,7 @@ export class AnglesLengths extends View {
                                     >
                                         <PGroupSummary
                                             bins={DAnglesLengths.lengthAverages(residue.compound, x.pair)!}
-                                            caption={bondName(x.pair)}
+                                            caption={pairBondName(x.pair)}
                                             pGroup={pgrp}
                                             pGroupDatas={pgrpDatas}
                                             ranges={pgrp
@@ -781,7 +806,7 @@ export class AnglesLengths extends View {
                                             downloadFileName={dlName}
                                         />
                                     </Tooltip>
-                                    {bondName(x.pair)}
+                                    {pairBondName(x.pair)}
                                     <div className='rdo-monospace rdo-talgn-right'>
                                         {x.length.toFixed(3)}{'\u00A0\u212B'}
                                     </div>
@@ -793,11 +818,11 @@ export class AnglesLengths extends View {
 
                         <div style={{ gridColumnStart: 'span 5', ...DetailsCaptionStyle }}>Bond angles</div>
                         {residue.bondAngles.map((x, idx) => {
-                            const pgrp = DAnglesLengths.anglePGroup(residue.compound, x);
+                            const bin = residueStats.angles[idx].bin;
+                            const pgrp = residueStats.angles[idx].pGroup;
                             const clr = pgrp ? colorToTuple(pgrp.color) : outlierColor;
                             const pgrpDatas = pgrpIndices.map(idx => DAnglesLengths.anglePGroupData(idx, residue.compound, x.triplet)!);
                             const dlName = `${residueIdentifyingName(structureName, residue)}_${fileNameFriendlyTag(tripletTag(x.triplet))}`;
-                            const bin = DAnglesLengths.angleBin(residue.compound, x) ?? 'no-data';
 
                             return (
                                 <React.Fragment key={idx}>
@@ -808,7 +833,7 @@ export class AnglesLengths extends View {
                                     >
                                         <PGroupSummary
                                             bins={DAnglesLengths.angleAverages(residue.compound, x.triplet)!}
-                                            caption={bondName(x.triplet)}
+                                            caption={tripletBondName(x.triplet)}
                                             pGroup={pgrp}
                                             pGroupDatas={pgrpDatas}
                                             ranges={pgrp
@@ -829,7 +854,7 @@ export class AnglesLengths extends View {
                                             downloadFileName={dlName}
                                         />
                                     </Tooltip>
-                                    {bondName(x.triplet)}
+                                    {tripletBondName(x.triplet)}
                                     <div className='rdo-monospace rdo-talgn-right'>
                                         {M.r2d(x.angle).toFixed(2)}{'\u00B0'}
                                     </div>
@@ -863,9 +888,17 @@ export class AnglesLengths extends View {
         return <div>{...inner}</div>;
     }
 
-    private renderModel(modelIdx: number, chain: string, multipleModels: boolean, thresholds: number[]) {
-        const residues = this.selectionToResidues(modelIdx, chain);
-        return residues.map(x => this.renderResidue(x, multipleModels, thresholds));
+    private renderModel(resSel: { residues: Measurements.Residue[], stats: ALMResidueStats[] }, multipleModels: boolean, thresholds: number[]) {
+        const elems = [];
+        for (let idx = 0; idx < resSel.residues.length; idx++) {
+            const residue = resSel.residues[idx];
+            const stats = resSel.stats[idx];
+
+            const e = this.renderResidue(residue, stats, multipleModels, thresholds);
+            elems.push(e);
+        }
+
+        return elems;
     }
 
     private selectionName(multipleModels: boolean, modelIdx: number, chain: string) {
@@ -880,22 +913,37 @@ export class AnglesLengths extends View {
         return `${this.props.dnatcofication.identifyingName ?? this.props.dnatcofication.pdbId}_${name ? `${name}_` : ''}`;
     }
 
-    private selectionToResidues(modelIdx: number, chain: string) {
+    private selectionToResidues(modelIdx: number, chain: string): { residues: Measurements.Residue[], stats: ALMResidueStats[] } {
         const alm = this.props.dnatcofication.data.alm;
         if (modelIdx === InvalidModelIndex) {
-            return alm.residues;
+            return { residues: alm.residues, stats: alm.stats };
         } else {
             const modelNum = this.props.dnatcofication.data.structures[0].models[modelIdx].num;
 
             if (chain) {
                 const cm = alm.chains.get(modelNum)?.get(chain) ?? [];
-                return cm.map(x => alm.residues[x]);
+
+                const residues = [];
+                const stats  = [];
+                for (const x of cm) {
+                    residues.push(alm.residues[x]);
+                    stats.push(alm.stats[x]);
+                }
+
+                return { residues, stats };
             } else {
                 const mm = alm.models.get(modelNum) ?? [];
-                return mm.map(x => alm.residues[x]);
+
+                const residues = [];
+                const stats  = [];
+                for (const x of mm) {
+                    residues.push(alm.residues[x]);
+                    stats.push(alm.stats[x]);
+                }
+
+                return { residues, stats };
             }
         }
-
     }
 
     render() {
@@ -903,8 +951,8 @@ export class AnglesLengths extends View {
         const modelIdx = this.props.structureSelection.modelIndex;
         const chain = this.props.structureSelection.chain === InvalidChain ? '' : this.props.structureSelection.chain;
 
-        const residues = this.selectionToResidues(modelIdx, chain)
-        const summary = Summarize.substructure(residues);
+        const resSel = this.selectionToResidues(modelIdx, chain)
+        const summary = Summarize.substructure(resSel.residues);
         const thresholds = DAnglesLengths.pGroupThresholds();
 
         const countsAngles = countsInGroups(summary.angles, thresholds);
@@ -938,7 +986,7 @@ export class AnglesLengths extends View {
                     counts={{ angles: countsAngles, lengths: countsLenghts }}
                     downloaders={StatsDownloaders}
                     name={this.selectionName(multipleModels, modelIdx, chain)}
-                    residues={residues}
+                    residues={resSel.residues}
                     style={{ height: '4em' }}
                 >
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
@@ -958,7 +1006,7 @@ export class AnglesLengths extends View {
                     >
                         <div style={ Common.VScrollElement }>
                             <div className='rdo-scroll-vertically'>
-                                {...this.renderModel(modelIdx, chain, multipleModels, thresholds)}
+                                {...this.renderModel(resSel, multipleModels, thresholds)}
                             </div>
                         </div>
                     </CollapsibleVertical>

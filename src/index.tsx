@@ -4,7 +4,7 @@ import { GlobalConfig } from './global-config';
 import { isPdbId } from './util';
 import { Net } from './util/net';
 import { isError } from './dnatco';
-import { AnglesLengths } from './dnatco/angles-lengths';
+import { AnglesLengths, AnglesLengthsContext } from './dnatco/angles-lengths';
 import { ClassificationContext } from './dnatco/classification-context';
 import { ClassificationResources } from './dnatco/classification-resources';
 import { Coordinates } from './dnatco/coordinates';
@@ -203,13 +203,15 @@ export class App extends WithSubscriptions<{}, State> {
                 densityMaps: { file: File, kind: DensityMap['kind'] }[],
                 densityMapCoeffs: File|null,
                 clsfResData: ClassificationResources.Data
+                alCtx: AnglesLengthsContext,
             }> = {
                 taskFunc: 'dnatco-from-custom-structure',
                 payload: {
                     coords: { file: coordsFile, type: coordsType },
                     densityMaps,
                     densityMapCoeffs: coeffs,
-                    clsfResData: ClassificationContext.data()
+                    clsfResData: ClassificationContext.data(),
+                    alCtx: AnglesLengths.context(),
                 },
                 initialStatus: ''
             };
@@ -238,9 +240,9 @@ export class App extends WithSubscriptions<{}, State> {
     }
 
     private fromPdbId(pdbId: string, dbId: string, onSuccess: () => void) {
-        const task: Task<{ pdbId: string, dbId: string, clsfResData: ClassificationResources.Data, userDatabases: StaticDb[] }> = {
+        const task: Task<{ pdbId: string, dbId: string, clsfResData: ClassificationResources.Data, alCtx: AnglesLengthsContext, userDatabases: StaticDb[] }> = {
             taskFunc: 'dnatco-from-pdb-id',
-            payload: { pdbId, dbId, clsfResData: ClassificationContext.data(), userDatabases: UserRemoteDatabases._export() },
+            payload: { pdbId, dbId, clsfResData: ClassificationContext.data(), alCtx: AnglesLengths.context(), userDatabases: UserRemoteDatabases._export() },
             initialStatus: ''
         };
 
@@ -248,9 +250,9 @@ export class App extends WithSubscriptions<{}, State> {
     }
 
     private async fromRawLink(link: string, onSuccess: () => void) {
-        const task: Task<{ link: string, clsfResData: ClassificationResources.Data }> = {
+        const task: Task<{ link: string, clsfResData: ClassificationResources.Data, alCtx: AnglesLengthsContext }> = {
             taskFunc: 'dnatco-from-raw-link',
-            payload: { link, clsfResData: ClassificationContext.data() },
+            payload: { link, clsfResData: ClassificationContext.data(), alCtx: AnglesLengths.context() },
             initialStatus: ''
         };
 
