@@ -16,6 +16,16 @@ export namespace M {
         return neg * ((2.0*Math.PI) + angle) + (1.0 - neg) * angle;
     }
 
+    export function firstValidDecimalDigit(n: number) {
+        const an = Math.abs(n);
+        if (an > 1.0)
+            return 0;
+
+        const ani = Math.floor(an);
+        const and = an - ani;
+        return and <= 0 ? 0 : -Math.log10(and);
+    }
+
     export function fuzzyCompare(a: number, b: number, prec = 1.0e-7) {
         const c = (a / b) - 1.0;
         return Math.abs(c) < prec;

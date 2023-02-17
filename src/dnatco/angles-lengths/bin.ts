@@ -15,6 +15,14 @@ export function isWithin(value: number, bin: Bin) {
     return bin.from <= value && value <= bin.to;
 }
 
+export function isWithinTri(value: number, bin: Bin) {
+    if (bin.from <= value && value <= bin.to)
+        return 0; // Inside
+    if (value < bin.from)
+        return -1; // Below
+    return 1; // Above
+}
+
 export type Bins = Bin[];
 
 export const WireBins = {

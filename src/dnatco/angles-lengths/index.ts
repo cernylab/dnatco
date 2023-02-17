@@ -1,4 +1,4 @@
-import { Bin, Bins, isWithin, isWireBins, toBins } from './bin';
+import { Bin, Bins, isWithin, isWireBins, toBins, isWithinTri } from './bin';
 import { Angles, Triplet, tripletTag } from './angles';
 import { Grouping } from './grouping';
 import { Lengths, Pair, pairTag } from './lengths';
@@ -119,6 +119,30 @@ function fileName(base: Residues.ElementaryResidue, data: { kind: 'length', v: P
     return `${base}_${data.kind}_${data.v.map(x => x.replace("'", "p")).join('_')}_prosco.json`;
 }
 
+function getBin(bins: Bins, value: number): Bin|'below'|'above' {
+    let left = 0;
+    let right = bins.length - 1;
+
+    while (true) {
+        const idx = Math.floor((right - left) / 2) + left;
+
+        const b = bins[idx];
+        const pos = isWithinTri(value, b);
+
+        if (pos === 0) {
+            return b;
+        } else if (pos < 0) {
+            if (idx === right)
+                return 'below';
+            right = idx;
+        } else {
+            if (idx === left)
+                return 'above';
+            left = idx;
+        }
+    }
+}
+
 function getPGroup(data: { pgroup: PGroup, groupedBins: Bins }[], value: number) {
     for (let idx = 0; idx < data.length; idx++) {
         const pgrp = data[idx];
@@ -206,6 +230,14 @@ export namespace AnglesLengths {
         return AngleAverageData[base].get(tag);
     }
 
+    export function angleBin(base: Residues.ElementaryResidue, angle: Measurements.BondAngle) {
+        const bins = AngleAverageData[base].get(tripletTag(angle.triplet));
+        if (!bins)
+            return void 0;
+
+        return getBin(bins, angle.angle);
+    }
+
     export function anglePGroup(base: Residues.ElementaryResidue, angle: Measurements.BondAngle) {
         const tag = tripletTag(angle.triplet);
         const pgrps = AnglePGroupData[base].get(tag);
@@ -216,6 +248,14 @@ export namespace AnglesLengths {
         }
 
         return getPGroup(pgrps, angle.angle);
+    }
+
+    export function lengthBin(base: Residues.ElementaryResidue, length: Measurements.BondLength) {
+        const bins = LengthAverageData[base].get(pairTag(length.pair));
+        if (!bins)
+            return void 0;
+
+        return getBin(bins, length.length);
     }
 
     export function anglePGroupData(idx: number, base: Residues.ElementaryResidue, triplet: Triplet) {

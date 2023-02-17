@@ -16,7 +16,7 @@ import { Dnatcofication  } from '../../../../dnatco/dnatcofication';
 import { AnglesLengths as DAnglesLengths } from '../../../../dnatco/angles-lengths';
 import { isShiftedName, unshiftName } from '../../../../dnatco/angles-lengths/atoms';
 import { tripletTag, Triplet } from '../../../../dnatco/angles-lengths/angles';
-import { isWithin, Bins } from '../../../../dnatco/angles-lengths/bin';
+import { isWithin, Bin, Bins } from '../../../../dnatco/angles-lengths/bin';
 import { pairTag, Pair } from '../../../../dnatco/angles-lengths/lengths';
 import { Measurements } from '../../../../dnatco/angles-lengths/measurements';
 import { Serialize } from '../../../../dnatco/angles-lengths/serialize';
@@ -54,7 +54,7 @@ const ResidueBarCaptionStyle = {
 } as StandardLonghandProperties;
 const DetailsTableStyle = {
     display: 'grid',
-    gridTemplateColumns: '1em auto auto 1fr',
+    gridTemplateColumns: '1em auto auto auto 1fr',
     columnGap: '1em'
 };
 
@@ -134,6 +134,11 @@ function countsInGroups(counts: Summarize.Counts, thresholds: number[]): Summari
     }
 
     return cig;
+}
+
+function fmtDecimal(n: number, decimals: number) {
+    const fvdd = M.firstValidDecimalDigit(n);
+    return fvdd > decimals ? n.toExponential(decimals - 1) : n.toFixed(decimals);
 }
 
 function fileNameFriendlyTag(tag: string) {
@@ -530,7 +535,7 @@ class PGroupSummary extends React.Component<PGroupSummaryProps, { mode: 'chart'|
                     <React.Fragment key={idx}>
                         <div className='rdo-monospace rdo-talgn-right'>{`${x.from}${this.props.suffix ?? ''}`}</div>
                         <div className='rdo-monospace rdo-talgn-right'>{`${x.to}${this.props.suffix ?? ''}`}</div>
-                        <div className='rdo-monospace rdo-talgn-right'>{x.probability.toFixed(4)}</div>
+                        <div className='rdo-monospace rdo-talgn-right'>{(x.probability * 100).toFixed(2)}</div>
                     </React.Fragment>
                 ))}
                 <div className='rdo-line-spacer' style={{ gridColumnStart: 'span 3' }} />
@@ -583,6 +588,47 @@ class PGroupSummary extends React.Component<PGroupSummaryProps, { mode: 'chart'|
                 {this.renderMain()}
             </div>
         );
+    }
+}
+
+class Prosco extends React.Component<{ bin: Bin|'below'|'above'|'no-data' }> {
+    private renderUnavailable(belowAbove: 'below'|'above') {
+        return (
+            <Tooltip
+                tag=<div className='rdo-monospace rdo-talgn-right'>
+                    {belowAbove === 'below' ? 'N/A (<)' : 'N/A (>)'}
+                </div>
+            >
+                <div>
+                    Relative probability is unavailable because the value is outside the range of values observed in the reference dataset.
+                </div>
+            </Tooltip>
+        );
+    }
+
+    render() {
+        const bin = this.props.bin;
+
+        if (bin === 'no-data') {
+            <div className='rdo-monospace rdo-talgn-right'>No data</div>
+        } else if (bin === 'below' || bin === 'above')
+            return this.renderUnavailable(bin);
+        else {
+            return (
+                <Tooltip
+                    tag=<div className='rdo-monospace rdo-talgn-right'>
+                        {fmtDecimal(bin.prosco, 3)}
+                    </div>
+                >
+                    <div>
+                        {this.props.bin
+                            ? `Relative probability of bin [${bin.from}\u00A0-\u00A0${bin.to}] within its respective distribution.`
+                            : 'Relative probability is unavailable because the value is outside the range of values observed in the reference dataset.'
+                        }
+                    </div>
+                </Tooltip>
+            );
+        }
     }
 }
 
@@ -696,12 +742,13 @@ export class AnglesLengths extends View {
                     />
                 >
                     <div style={DetailsTableStyle}>
-                        <div style={{ gridColumnStart: 'span 4', ...DetailsCaptionStyle }}>Bond lengths</div>
+                        <div style={{ gridColumnStart: 'span 5', ...DetailsCaptionStyle }}>Bond lengths</div>
                         {residue.bondLengths.map((x, idx) => {
                             const pgrp = DAnglesLengths.lengthPGroup(residue.compound, x);
                             const clr = pgrp ? colorToTuple(pgrp.color) : outlierColor;
                             const pgrpDatas = pgrpIndices.map(idx => DAnglesLengths.lengthPGroupData(idx, residue.compound, x.pair)!);
                             const dlName = `${residueIdentifyingName(structureName, residue)}${fileNameFriendlyTag(pairTag(x.pair))}`;
+                            const bin = DAnglesLengths.lengthBin(residue.compound, x) ?? 'no-data';
 
                             return (
                                 <React.Fragment key={idx}>
@@ -733,18 +780,22 @@ export class AnglesLengths extends View {
                                         />
                                     </Tooltip>
                                     {bondName(x.pair)}
-                                    <div className='rdo-monospace'>{x.length.toFixed(3)}{'\u00A0\u212B'}</div>
+                                    <div className='rdo-monospace rdo-talgn-right'>
+                                        {x.length.toFixed(3)}{'\u00A0\u212B'}
+                                    </div>
+                                    <Prosco bin={bin} />
                                     <div />
                                 </React.Fragment>
                             );
                         })}
 
-                        <div style={{ gridColumnStart: 'span 4', ...DetailsCaptionStyle }}>Bond angles</div>
+                        <div style={{ gridColumnStart: 'span 5', ...DetailsCaptionStyle }}>Bond angles</div>
                         {residue.bondAngles.map((x, idx) => {
                             const pgrp = DAnglesLengths.anglePGroup(residue.compound, x);
                             const clr = pgrp ? colorToTuple(pgrp.color) : outlierColor;
                             const pgrpDatas = pgrpIndices.map(idx => DAnglesLengths.anglePGroupData(idx, residue.compound, x.triplet)!);
                             const dlName = `${residueIdentifyingName(structureName, residue)}_${fileNameFriendlyTag(tripletTag(x.triplet))}`;
+                            const bin = DAnglesLengths.angleBin(residue.compound, x) ?? 'no-data';
 
                             return (
                                 <React.Fragment key={idx}>
@@ -777,7 +828,10 @@ export class AnglesLengths extends View {
                                         />
                                     </Tooltip>
                                     {bondName(x.triplet)}
-                                    <div className='rdo-monospace rdo-talgn-right'>{M.r2d(x.angle).toFixed(2)}{'\u00B0'}</div>
+                                    <div className='rdo-monospace rdo-talgn-right'>
+                                        {M.r2d(x.angle).toFixed(2)}{'\u00B0'}
+                                    </div>
+                                    <Prosco bin={bin} />
                                     <div />
                                 </React.Fragment>
                             );
