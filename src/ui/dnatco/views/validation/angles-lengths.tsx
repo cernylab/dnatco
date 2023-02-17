@@ -315,6 +315,7 @@ class AveragesChart extends React.Component<{
             return `$rgb(${tup[0]}, ${tup[1]}, ${tup[2]})`;
         });
 
+        const tm = this.props.xTransform ? this.props.xTransform(this.props.mark) : this.props.mark;
         const xt = this.props.bins.map(b => this.props.xTransform ? this.props.xTransform(b.from) : b.from);
         const yt = this.props.bins.map(b => this.props.yTransform ? this.props.yTransform(b.probability) : b.probability);
         const yMax = Math.max(...yt);
@@ -348,12 +349,12 @@ class AveragesChart extends React.Component<{
                                         const bf = this.props.bins[0];
 
                                         if (this.props.mark < bf.from) {
-                                            _xt.unshift(this.props.mark);
+                                            _xt.unshift(tm);
                                             _yt.unshift(0);
                                             _pGroupIndices.unshift(-1);
                                             actual.unshift(yMax);
                                         } else {
-                                            _xt.push(this.props.mark);
+                                            _xt.push(tm);
                                             _yt.push(0);
                                             _pGroupIndices.push(-1);
                                             actual.push(yMax);
@@ -391,7 +392,7 @@ class AveragesChart extends React.Component<{
                             showlegend: false,
                         },
                         {
-                            x: [this.props.mark, this.props.mark],
+                            x: [tm, tm],
                             y: [0, yMax],
                             type: 'scattergl',
                             mode: 'lines',
