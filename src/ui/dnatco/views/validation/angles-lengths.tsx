@@ -152,8 +152,7 @@ function makeBondName(bond: Pair | Triplet) {
     return <span>{...toks}</span>;
 }
 
-function pairBondName(p: Pair) {
-    const tag = pairTag(p);
+function pairBondName(p: Pair, tag: string) {
     let name = PairBondNameCache.get(tag);
     if (!name) {
         name = makeBondName(p);
@@ -186,8 +185,7 @@ function residueIdentifyingName(structureName: string, r: Measurements.Residue) 
     return `${structureName}-m${r.modelNum}-${r.authChain}-${r.authSeqId}${r.insCode ? `.${r.insCode}` : ''}${r.altId ? `_alt${r.altId}` : ''}_`;
 }
 
-function tripletBondName(t: Triplet) {
-    const tag = tripletTag(t);
+function tripletBondName(t: Triplet, tag: string) {
     let name = TripletBondNameCache.get(tag);
     if (!name) {
         name = makeBondName(t);
@@ -786,7 +784,7 @@ export class AnglesLengths extends View {
                                     >
                                         <PGroupSummary
                                             bins={DAnglesLengths.lengthAverages(residue.compound, x.pair)!}
-                                            caption={pairBondName(x.pair)}
+                                            caption={pairBondName(x.pair, x.tag)}
                                             pGroup={pgrp}
                                             pGroupDatas={pgrpDatas}
                                             ranges={pgrp
@@ -806,7 +804,7 @@ export class AnglesLengths extends View {
                                             downloadFileName={dlName}
                                         />
                                     </Tooltip>
-                                    {pairBondName(x.pair)}
+                                    {pairBondName(x.pair, x.tag)}
                                     <div className='rdo-monospace rdo-talgn-right'>
                                         {x.length.toFixed(3)}{'\u00A0\u212B'}
                                     </div>
@@ -833,7 +831,7 @@ export class AnglesLengths extends View {
                                     >
                                         <PGroupSummary
                                             bins={DAnglesLengths.angleAverages(residue.compound, x.triplet)!}
-                                            caption={tripletBondName(x.triplet)}
+                                            caption={tripletBondName(x.triplet, x.tag)}
                                             pGroup={pgrp}
                                             pGroupDatas={pgrpDatas}
                                             ranges={pgrp
@@ -854,7 +852,7 @@ export class AnglesLengths extends View {
                                             downloadFileName={dlName}
                                         />
                                     </Tooltip>
-                                    {tripletBondName(x.triplet)}
+                                    {tripletBondName(x.triplet, x.tag)}
                                     <div className='rdo-monospace rdo-talgn-right'>
                                         {M.r2d(x.angle).toFixed(2)}{'\u00B0'}
                                     </div>

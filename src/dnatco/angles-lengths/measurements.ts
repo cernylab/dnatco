@@ -1,8 +1,8 @@
 import * as jsLLKA from 'jsllka';
 import { Residues } from '../residues';
-import { Angles, Triplet } from './angles';
-import { Atoms, shiftedName } from './atoms';
-import { Lengths, Pair } from './lengths';
+import { tripletTag, Angles, Triplet } from './angles';
+import { shiftedName, Atoms } from './atoms';
+import { pairTag, Lengths, Pair } from './lengths';
 
 export namespace Measurements {
     function expandAltId(step: jsLLKA.LLKAStructure, seqId: number) {
@@ -40,7 +40,7 @@ export namespace Measurements {
                 return void 0;
 
             const angle = jsLLKA.measureAngle(a, b, c);
-            bondAngles.push({ triplet, angle });
+            bondAngles.push({ triplet, angle, tag: tripletTag(triplet) });
         }
 
         return bondAngles;
@@ -56,7 +56,7 @@ export namespace Measurements {
                 return void 0;
 
             const length = jsLLKA.measureDistance(a, b);
-            lengths.push({ pair, length });
+            lengths.push({ pair, length, tag: pairTag(pair) });
         }
 
         return lengths;
@@ -118,11 +118,13 @@ export namespace Measurements {
     export type BondAngle = {
         triplet: Triplet,
         angle: number,
+        tag: string,
     };
 
     export type BondLength = {
         pair: Pair,
         length: number,
+        tag: string,
     };
 
     export type Residue = {
