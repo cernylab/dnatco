@@ -685,6 +685,7 @@ class SubstructureSummary extends React.Component<{ countsInGroups: Summarize.Co
             return dot >= 0 ? s.substring(dot + 1).length : 0;
         }));
         const outlierColor = DAnglesLengths.outlierColor();
+        const total = this.props.countsInGroups[this.props.countsInGroups.length - 1].cumulative;
 
         return (
             <div style={{ display: 'grid', gridTemplateColumns: '1em auto auto auto', columnGap: 'var(--h-gap)' }}>
@@ -703,12 +704,13 @@ class SubstructureSummary extends React.Component<{ countsInGroups: Summarize.Co
                 {this.props.countsInGroups.map((x, idx) => {
                     const thr = x.pGroupIdx === 'outlier' ? 'Outliers' : x.threshold.toFixed(maxDecimals);
                     const clr = DAnglesLengths.pGroupColor(idx) ?? outlierColor;
+                    const perc = 100 * (x.cumulative / total);
                     return (
                         <React.Fragment key={idx}>
                             <div style={{ backgroundColor: colorStyle(colorToTuple(clr)) }} />
                             <div className='rdo-monospace rdo-talgn-right'>{thr}</div>
                             <div className='rdo-monospace rdo-talgn-right' style={{ textAlign: 'right' }}>{x.exclusive}</div>
-                            <div className='rdo-monospace rdo-talgn-right' style={{ textAlign: 'right' }}>{x.cumulative}</div>
+                            <div className='rdo-monospace rdo-talgn-right' style={{ textAlign: 'right' }}>{`${x.cumulative}\u00A0(${perc.toFixed(2)}\u00A0%)`}</div>
                         </React.Fragment>
                     );
                 })}

@@ -5,7 +5,7 @@ import { Measurements } from './measurements';
 import { Serialization } from '../../util/serialization';
 import { Summarize } from './summarize';
 
-const DetailsHeader = ['kind', 'model', 'chain', 'seqid', 'inscode', 'altid', 'auth_chain', 'auth_seqid', 'compound', 'p_group', 'name', 'value'];
+const DetailsHeader = ['kind', 'model', 'chain', 'seqid', 'inscode', 'altid', 'auth_chain', 'auth_seqid', 'compound', 'percentile', 'name', 'value'];
 
 export namespace Serialize {
     type Detail = { name: string, value: number, threshold: number|null };
@@ -84,7 +84,7 @@ export namespace Serialize {
     }
 
     function statsToSerializable(counts: Summarize.CountsInGroup[], kind: 'a'|'l'): Serialization.Serializable {
-        const tags = ['kind', 'threshold', 'cumulative_count', 'exclusive_count'];
+        const tags = ['kind', 'percentile', 'cumulative_count', 'exclusive_count'];
         const values = new Array<(number|string)[]>();
 
         values.push((new Array<string>(counts.length)).fill(kind));
@@ -105,10 +105,10 @@ export namespace Serialize {
     }
 
     export function toJson(countsAngles: Summarize.CountsInGroup[], countsLengths: Summarize.CountsInGroup[], residues: Measurements.Residue[]) {
-        type Stats = { threshold: number|null, cumulativeCount: number, exclusiveCount: number };
+        type Stats = { percentile: number|null, cumulativeCount: number, exclusiveCount: number };
 
-        const anglesStats: Stats[] = countsAngles.map(x => ({ threshold: x.threshold, cumulativeCount: x.cumulative, exclusiveCount: x.exclusive}));
-        const lengthsStats: Stats[] = countsLengths.map(x => ({ threshold: x.threshold, cumulativeCount: x.cumulative, exclusiveCount: x.exclusive }));
+        const anglesStats: Stats[] = countsAngles.map(x => ({ percentile: x.threshold, cumulativeCount: x.cumulative, exclusiveCount: x.exclusive }));
+        const lengthsStats: Stats[] = countsLengths.map(x => ({ percentile: x.threshold, cumulativeCount: x.cumulative, exclusiveCount: x.exclusive }));
 
         const angles = new Array<Residue>();
         const lengths = new Array<Residue>();
