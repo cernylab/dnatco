@@ -4,11 +4,12 @@ import { Pair } from './lengths';
 import { Measurements } from './measurements';
 import { Serialization } from '../../util/serialization';
 import { Summarize } from './summarize';
+import {ALMResidueStats, MaybeBin} from '../dnatcofication';
 
-const DetailsHeader = ['kind', 'model', 'chain', 'seqid', 'inscode', 'altid', 'auth_chain', 'auth_seqid', 'compound', 'percentile', 'name', 'value'];
+const DetailsHeader = ['kind', 'model', 'chain', 'seqid', 'inscode', 'altid', 'auth_chain', 'auth_seqid', 'compound', 'percentile', 'name', 'value', 'prosco'];
 
 export namespace Serialize {
-    type Detail = { name: string, value: number, threshold: number|null };
+    type Detail = { name: string, value: number, threshold: number|null, prosco: number|null };
     type Residue = {
         model: number,
         chain: string,
@@ -25,7 +26,7 @@ export namespace Serialize {
         return t.join('-');
     }
 
-    function anglesToSerializable(residues: Measurements.Residue[]): Serialization.Serializable {
+    function anglesToSerializable(residues: Measurements.Residue[], stats: ALMResidueStats[]): Serialization.Serializable {
         const tags = DetailsHeader;
         const values = new Array<(number|string)[]>();
 
@@ -41,6 +42,10 @@ export namespace Serialize {
         values.push(residues.flatMap(x => x.bondAngles.map(a => AnglesLengths.anglePGroup(x.compound, a)?.threshold ?? 'outlier')));
         values.push(residues.flatMap(x => x.bondAngles.map(a => angleName(a.triplet))));
         values.push(residues.flatMap(x => x.bondAngles.map(a => a.angle)));
+        values.push(residues.flatMap((x, idx) => x.bondAngles.map((_y, jdx) => {
+            const mb = stats[idx].angles[jdx].bin;
+            return maybeBinValue(mb)?.prosco ?? mb as string;
+        })));
 
         return { tags, values };
     }
@@ -49,7 +54,7 @@ export namespace Serialize {
         return p.join('-');
     }
 
-    function lengthsToSerializable(residues: Measurements.Residue[]): Serialization.Serializable {
+    function lengthsToSerializable(residues: Measurements.Residue[], stats: ALMResidueStats[]): Serialization.Serializable {
         const tags = DetailsHeader;
         const values = new Array<(number|string)[]>();
 
@@ -65,8 +70,15 @@ export namespace Serialize {
         values.push(residues.flatMap(x => x.bondLengths.map(l => AnglesLengths.lengthPGroup(x.compound, l)?.threshold ?? 'outlier')));
         values.push(residues.flatMap(x => x.bondLengths.map(l => lengthName(l.pair))));
         values.push(residues.flatMap(x => x.bondLengths.map(l => l.length)));
-
+        values.push(residues.flatMap((x, idx) => x.bondLengths.map((_y, jdx) => {
+            const mb = stats[idx].lengths[jdx].bin;
+            return maybeBinValue(mb)?.prosco ?? mb as string;
+        })));
         return { tags, values };
+    }
+
+    function maybeBinValue(mb: MaybeBin) {
+        return (mb === 'below' || mb === 'above' || mb === 'no-data') ? null : mb;
     }
 
     function residueWithDetails(r: Measurements.Residue, details: Detail[]): Residue {
@@ -95,16 +107,16 @@ export namespace Serialize {
         return { tags, values };
     }
 
-    export function toCsv(countsAngles: Summarize.CountsInGroup[], countsLengths: Summarize.CountsInGroup[], residues: Measurements.Residue[]) {
+    export function toCsv(countsAngles: Summarize.CountsInGroup[], countsLengths: Summarize.CountsInGroup[], residues: Measurements.Residue[], stats: ALMResidueStats[]) {
         const statsAngles = Serialization.toCsv(statsToSerializable(countsAngles, 'a'));
         const statsLengths = Serialization.toCsv(statsToSerializable(countsLengths, 'l'));
-        const angles = Serialization.toCsv(anglesToSerializable(residues));
-        const lengths = Serialization.toCsv(lengthsToSerializable(residues));
+        const angles = Serialization.toCsv(anglesToSerializable(residues, stats));
+        const lengths = Serialization.toCsv(lengthsToSerializable(residues, stats));
 
         return statsLengths + '\n' + statsAngles + '\n' + lengths + '\n' + angles;
     }
 
-    export function toJson(countsAngles: Summarize.CountsInGroup[], countsLengths: Summarize.CountsInGroup[], residues: Measurements.Residue[]) {
+    export function toJson(countsAngles: Summarize.CountsInGroup[], countsLengths: Summarize.CountsInGroup[], residues: Measurements.Residue[], stats: ALMResidueStats[]) {
         type Stats = { percentile: number|null, cumulativeCount: number, exclusiveCount: number };
 
         const anglesStats: Stats[] = countsAngles.map(x => ({ percentile: x.threshold, cumulativeCount: x.cumulative, exclusiveCount: x.exclusive }));
@@ -112,9 +124,17 @@ export namespace Serialize {
 
         const angles = new Array<Residue>();
         const lengths = new Array<Residue>();
-        for (const r of residues) {
-            const anglesDetails: Detail[] = r.bondAngles.map(x => ({ name: angleName(x.triplet), value: x.angle, threshold: AnglesLengths.anglePGroup(r.compound, x)?.threshold ?? null }));
-            const lengthsDetails: Detail[] = r.bondLengths.map(x => ({ name: lengthName(x.pair), value: x.length, threshold: AnglesLengths.lengthPGroup(r.compound, x)?.threshold ?? null }));
+
+        for (let idx = 0; idx < residues.length; idx++) {
+            const r = residues[idx];
+            const s = stats[idx];
+
+            const anglesDetails: Detail[] = r.bondAngles.map((x, jdx) => ({
+                name: angleName(x.triplet), value: x.angle, threshold: AnglesLengths.anglePGroup(r.compound, x)?.threshold ?? null, prosco: maybeBinValue(s.angles[jdx].bin)?.prosco ?? null,
+            }));
+            const lengthsDetails: Detail[] = r.bondLengths.map((x, jdx) => ({
+                name: lengthName(x.pair), value: x.length, threshold: AnglesLengths.lengthPGroup(r.compound, x)?.threshold ?? null, prosco: maybeBinValue(s.lengths[jdx].bin)?.prosco ?? null,
+            }));
 
             angles.push(residueWithDetails(r, anglesDetails));
             lengths.push(residueWithDetails(r, lengthsDetails));

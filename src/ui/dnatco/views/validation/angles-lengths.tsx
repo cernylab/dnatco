@@ -87,12 +87,13 @@ type StatsDownloader = Downloader<{
         angles: Summarize.CountsInGroup[],
         lengths: Summarize.CountsInGroup[]
     }
+    stats: ALMResidueStats[],
 }>;
 const StatsDownloaders = [
     {
         caption: 'CSV',
         download: function(fileNameStem, data) {
-            const text = Serialize.toCsv(data.counts.angles, data.counts.lengths, data.residues);
+            const text = Serialize.toCsv(data.counts.angles, data.counts.lengths, data.residues, data.stats);
             doDownload(fileNameStem, text, this.fileType);
         },
         fileType: FileTypes.csv,
@@ -100,7 +101,7 @@ const StatsDownloaders = [
     {
         caption: 'JSON',
         download: function(fileNameStem, data) {
-            const text = Serialize.toJson(data.counts.angles, data.counts.lengths, data.residues);
+            const text = Serialize.toJson(data.counts.angles, data.counts.lengths, data.residues, data.stats);
             doDownload(fileNameStem, text, this.fileType);
         },
         fileType: FileTypes.json,
@@ -435,6 +436,7 @@ class DownloadButtons extends React.Component<{
     downloaders: StatsDownloader[],
     fileName: string,
     residues: Measurements.Residue[],
+    stats: ALMResidueStats[],
 }> {
     render() {
         const prefix = GlobalConfig.data().pathPrefix;
@@ -448,7 +450,7 @@ class DownloadButtons extends React.Component<{
                         style={{ flex: 1 }}
                         onClick={e => {
                             e.stopPropagation();
-                            dl.download(this.props.fileName, { residues: this.props.residues, counts: this.props.counts });
+                            dl.download(this.props.fileName, { residues: this.props.residues, counts: this.props.counts, stats: this.props.stats });
                     }}>
                         <Icon img={`${prefix}/imgs/data-transfer-download.svg`} size='text' />
                         {dl.caption}
@@ -465,6 +467,7 @@ class OverallStatsBar extends React.Component<{
     downloaders: StatsDownloader[],
     name: string,
     residues: Measurements.Residue[],
+    stats: ALMResidueStats[],
     style?: StandardLonghandProperties
 }> {
     render() {
@@ -476,6 +479,7 @@ class OverallStatsBar extends React.Component<{
                     downloaders={this.props.downloaders}
                     fileName={`${this.props.name}angles_lenghts`}
                     residues={this.props.residues}
+                    stats={this.props.stats}
                 />
             </div>
         );
@@ -666,6 +670,7 @@ class Prosco extends React.Component<{ bin: Bin|'below'|'above'|'no-data' }> {
 class ResidueHeader extends React.Component<{
     caption: string | JSX.Element,
     residue: Measurements.Residue,
+    stats: ALMResidueStats,
     structureName: string,
     summary: Summarize.Summary,
     countsAngles: Summarize.CountsInGroup[],
@@ -693,6 +698,7 @@ class ResidueHeader extends React.Component<{
                     downloaders={StatsDownloaders}
                     name={residueIdentifyingName(this.props.structureName, r)}
                     residues={[this.props.residue]}
+                    stats={[this.props.stats]}
                 >
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
                         <div style={{ flex: 1 }}>
@@ -753,9 +759,9 @@ class SubstructureSummary extends React.Component<{ countsInGroups: Summarize.Co
 export class AnglesLengths extends View {
     static readonly unscrollableContainer = true;
 
-    private renderResidue(residue: Measurements.Residue, residueStats: ALMResidueStats, multipleModels: boolean, thresholds: number[]) {
-        const countsAngles = countsInGroups(residueStats.summary.angles, thresholds);
-        const countsLenghts = countsInGroups(residueStats.summary.lengths, thresholds);
+    private renderResidue(residue: Measurements.Residue, stats: ALMResidueStats, multipleModels: boolean, thresholds: number[]) {
+        const countsAngles = countsInGroups(stats.summary.angles, thresholds);
+        const countsLenghts = countsInGroups(stats.summary.lengths, thresholds);
         const residueName = this.renderResidueName(residue, multipleModels);
         const outlierColor = colorToTuple(DAnglesLengths.outlierColor());
         const pgrpIndices = sequence(0, DAnglesLengths.pGroupCount() - 1);
@@ -767,7 +773,8 @@ export class AnglesLengths extends View {
                     header=<ResidueHeader
                         caption={residueName}
                         residue={residue}
-                        summary={residueStats.summary}
+                        stats={stats}
+                        summary={stats.summary}
                         structureName={structureName}
                         countsAngles={countsAngles}
                         countsLengths={countsLenghts}
@@ -776,8 +783,8 @@ export class AnglesLengths extends View {
                     <div style={DetailsTableStyle}>
                         <div style={{ gridColumnStart: 'span 5', ...DetailsCaptionStyle }}>Bond lengths</div>
                         {residue.bondLengths.map((x, idx) => {
-                            const bin = residueStats.lengths[idx].bin;
-                            const pgrp = residueStats.lengths[idx].pGroup;
+                            const bin = stats.lengths[idx].bin;
+                            const pgrp = stats.lengths[idx].pGroup;
                             const clr = pgrp ? colorToTuple(pgrp.color) : outlierColor;
                             const pgrpDatas = pgrpIndices.map(idx => DAnglesLengths.lengthPGroupData(idx, residue.compound, x.pair)!);
                             const dlName = `${residueIdentifyingName(structureName, residue)}${fileNameFriendlyTag(pairTag(x.pair))}`;
@@ -817,8 +824,8 @@ export class AnglesLengths extends View {
 
                         <div style={{ gridColumnStart: 'span 5', ...DetailsCaptionStyle }}>Bond angles</div>
                         {residue.bondAngles.map((x, idx) => {
-                            const bin = residueStats.angles[idx].bin;
-                            const pgrp = residueStats.angles[idx].pGroup;
+                            const bin = stats.angles[idx].bin;
+                            const pgrp = stats.angles[idx].pGroup;
                             const clr = pgrp ? colorToTuple(pgrp.color) : outlierColor;
                             const pgrpDatas = pgrpIndices.map(idx => DAnglesLengths.anglePGroupData(idx, residue.compound, x.triplet)!);
                             const dlName = `${residueIdentifyingName(structureName, residue)}_${fileNameFriendlyTag(tripletTag(x.triplet))}`;
@@ -980,6 +987,7 @@ export class AnglesLengths extends View {
                     downloaders={StatsDownloaders}
                     name={this.selectionName(multipleModels, modelIdx, chain)}
                     residues={resSel.residues}
+                    stats={resSel.stats}
                     style={{ height: '4em' }}
                 >
                     <div style={{ display: 'flex', flexDirection: 'column' }}>

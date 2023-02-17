@@ -24,14 +24,16 @@ import { Serialization } from '../../../../util/serialization';
 import 'assets/imgs/info.svg';
 import 'assets/imgs/info-inverse.svg'
 
+const CellBgAlpha = 0.5;
+
 function confalToColor(rmsd: number): React.CSSProperties  {
     const clr = valueToSemaphore(rmsd, Constants.GreenConfal, Constants.GreenRMSD);
-    return { backgroundColor: `rgb(${clr.r},${clr.g},${clr.b})` };
+    return { backgroundColor: `rgba(${clr.r},${clr.g},${clr.b},${CellBgAlpha})` };
 }
 
 function rmsdToColor(rmsd: number): React.CSSProperties  {
     const clr = valueToSemaphore(rmsd, Constants.GreenRMSD, Constants.RedRMSD);
-    return { backgroundColor: `rgb(${clr.r},${clr.g},${clr.b})` };
+    return { backgroundColor: `rgba(${clr.r},${clr.g},${clr.b},${CellBgAlpha})` };
 }
 
 export class ConfalsRmsds extends View<View.Props> {
