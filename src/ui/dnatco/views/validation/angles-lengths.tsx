@@ -410,7 +410,7 @@ class AveragesChart extends React.Component<{
                         hovermode: 'closest',
                         margin: { t: 0, l: 45, b: 45, r: 0 },
                         xaxis: { title: this.props.xTitle },
-                        yaxis: { visible: false },
+                        yaxis: { showticklabels: false },
                         plot_bgcolor: 'white',
                         paper_bgcolor: 'white',
                     }}
