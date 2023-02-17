@@ -3,6 +3,7 @@ import { PdbParser } from 'tspdb';
 import { MmCifConverter } from 'tspdb';
 import { AnglesLengths, AnglesLengthsContext } from './angles-lengths';
 import { Bin } from './angles-lengths/bin';
+import { Summarize } from './angles-lengths/summarize';
 import { Coordinates } from './coordinates';
 import { ClassificationResources } from './classification-resources';
 import { CustomNtCs } from './custom-ntcs';
@@ -67,7 +68,8 @@ function mapALM(residues: Measurements.Residue[]): MappedALM {
 
             lengths.push({ pGroup: pgrp, bin });
         }
-        stats.push({ angles, lengths });
+
+        stats.push({ angles, lengths, summary: Summarize.residue(r) });
     }
 
     return { models, chains, residues, stats };
@@ -95,6 +97,7 @@ export type MaybeBin = Bin|'below'|'above'|'no-data';
 export type ALMResidueStats = {
     angles: { pGroup?: AnglesLengths.PGroup, bin: MaybeBin }[],
     lengths: { pGroup?: AnglesLengths.PGroup, bin: MaybeBin }[],
+    summary: Summarize.Summary;
 };
 export type MappedALM = {
     models: Map<number, number[]>,

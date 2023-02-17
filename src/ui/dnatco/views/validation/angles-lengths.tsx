@@ -746,9 +746,8 @@ export class AnglesLengths extends View {
     static readonly unscrollableContainer = true;
 
     private renderResidue(residue: Measurements.Residue, residueStats: ALMResidueStats, multipleModels: boolean, thresholds: number[]) {
-        const summary = Summarize.residue(residue);
-        const countsAngles = countsInGroups(summary.angles, thresholds);
-        const countsLenghts = countsInGroups(summary.lengths, thresholds);
+        const countsAngles = countsInGroups(residueStats.summary.angles, thresholds);
+        const countsLenghts = countsInGroups(residueStats.summary.lengths, thresholds);
         const residueName = this.renderResidueName(residue, multipleModels);
         const outlierColor = colorToTuple(DAnglesLengths.outlierColor());
         const pgrpIndices = sequence(0, DAnglesLengths.pGroupCount() - 1);
@@ -760,7 +759,7 @@ export class AnglesLengths extends View {
                     header=<ResidueHeader
                         caption={residueName}
                         residue={residue}
-                        summary={summary}
+                        summary={residueStats.summary}
                         structureName={structureName}
                         countsAngles={countsAngles}
                         countsLengths={countsLenghts}
