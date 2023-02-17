@@ -488,9 +488,10 @@ type PGroupSummaryProps = {
     caption: string | JSX.Element,
     pGroup: DAnglesLengths.PGroup,
     pGroupDatas: DAnglesLengths.PGroupData[],
-    ranges: { from: string, to: string, probability: number }[],
+    rangeFormatter: (v: number) => string,
     residueName: JSX.Element,
     value: number,
+    valueFormatter: (v: number) => string,
     xTitle: string,
     yTitle: string,
     suffix?: string,
@@ -542,7 +543,9 @@ class PGroupSummary extends React.Component<PGroupSummaryProps, { mode: 'chart'|
                 <div>|</div>
                 {this.props.caption}
                 <div style={{ flex: 1 }} />
-                <div className='rdo-monospace rdo-text-large'>{this.props.value.toFixed(3)}{this.props.suffix}</div>
+                <div className='rdo-monospace rdo-text-large'>
+                    {this.props.valueFormatter(this.props.value)}{this.props.suffix}
+                </div>
             </div>
         );
     }
@@ -554,13 +557,19 @@ class PGroupSummary extends React.Component<PGroupSummaryProps, { mode: 'chart'|
         return (
             <div style={{ display: 'grid', gridTemplateColumns: 'auto auto auto', columnGap: 'var(--h-gap)' }}>
                 <div className='rdo-strong'>From</div><div className='rdo-strong'>To</div><div className='rdo-strong'>Probability (%)</div>
-                {this.props.ranges.map((x, idx) => (
-                    <React.Fragment key={idx}>
-                        <div className='rdo-monospace rdo-talgn-right'>{`${x.from}${this.props.suffix ?? ''}`}</div>
-                        <div className='rdo-monospace rdo-talgn-right'>{`${x.to}${this.props.suffix ?? ''}`}</div>
-                        <div className='rdo-monospace rdo-talgn-right'>{(x.probability * 100).toFixed(2)}</div>
-                    </React.Fragment>
-                ))}
+                {this.props.pGroup.groupedBins.map((x, idx) => {
+                    const strg = isWithin(this.props.value, x) ? 'rdo-strong' : '';
+                    const from = this.props.rangeFormatter(x.from);
+                    const to = this.props.rangeFormatter(x.to);
+
+                    return (
+                        <React.Fragment key={idx}>
+                            <div className={`rdo-monospace rdo-talgn-right ${strg}`}>{`${from}${this.props.suffix ?? ''}`}</div>
+                            <div className={`rdo-monospace rdo-talgn-right ${strg}`}>{`${to}${this.props.suffix ?? ''}`}</div>
+                            <div className={`rdo-monospace rdo-talgn-right ${strg}`}>{(x.probability * 100).toFixed(2)}</div>
+                        </React.Fragment>
+                    );
+                })}
                 <div className='rdo-line-spacer' style={{ gridColumnStart: 'span 3' }} />
                 <div className='rdo-strong' style={{ gridColumnStart: 'span 2' }}>Percentile</div>
                 {this.renderPGroup()}
@@ -786,17 +795,11 @@ export class AnglesLengths extends View {
                                             caption={pairBondName(x.pair, x.tag)}
                                             pGroup={pgrp}
                                             pGroupDatas={pgrpDatas}
-                                            ranges={pgrp
-                                                ? pgrp.groupedBins.map(x => ({
-                                                    from: x.from.toFixed(3),
-                                                    to: x.to.toFixed(3),
-                                                    probability: x.probability,
-                                                }))
-                                                : []
-                                            }
+                                            rangeFormatter={(v) => v.toFixed(3)}
                                             residueName={residueName}
                                             suffix={'\u00A0\u212B'}
                                             value={x.length}
+                                            valueFormatter={(v) => v.toFixed(3)}
                                             xTitle={'Length (\u212B)'}
                                             yTitle='Prob. (%)'
                                             yTransform={(y) => y * 100}
@@ -833,17 +836,11 @@ export class AnglesLengths extends View {
                                             caption={tripletBondName(x.triplet, x.tag)}
                                             pGroup={pgrp}
                                             pGroupDatas={pgrpDatas}
-                                            ranges={pgrp
-                                                ? pgrp.groupedBins.map(x => ({
-                                                    from: M.r2d(x.from).toFixed(2),
-                                                    to: M.r2d(x.to).toFixed(2),
-                                                    probability: x.probability,
-                                                }))
-                                                : []
-                                            }
+                                            rangeFormatter={(v) => M.r2d(v).toFixed(2)}
                                             residueName={residueName}
                                             suffix={'\u00B0'}
-                                            value={M.r2d(x.angle)}
+                                            value={x.angle}
+                                            valueFormatter={(v) => M.r2d(v).toFixed(2)}
                                             xTitle={'Angle (\u00B0)'}
                                             yTitle='Prob. (%)'
                                             xTransform={(x) => M.r2d(x)}
