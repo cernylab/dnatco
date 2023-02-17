@@ -193,26 +193,10 @@ export class AssignedNtCs extends View<View.Props> {
     }
 
     render() {
-        const overall = this.props.dnatcofication.table(NdbStructNtcOverall);
         const numModels = Dnatcofication.Structure.numberOfModels(this.props.dnatcofication);
-        const modelIdx = this.props.structureSelection.modelIndex === InvalidModelIndex ? 0 : this.props.structureSelection.modelIndex;
 
         return (
             <div style={ Common.VScrollJail }>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--v-gap)' }}>
-                    <StepsClassificationStats
-                        assigned={Cif.Column.value(overall.num_classified, 0)!}
-                        close={Cif.Column.value(overall.num_unclassified_rmsd_close, 0)!}
-                        unassigned={Cif.Column.value(overall.num_unclassified, 0)!}
-                    />
-                    <StepRmsdStats stats={this.props.dnatcofication.data.stepRmsdStats[modelIdx]} />
-                    <ConfalPercentileStats
-                        avgConfal={this.props.dnatcofication.data.averageConfals[modelIdx]}
-                        modelNum={this.props.dnatcofication.data.structures[0].models[modelIdx].num}
-                        showModelNum={this.props.structureSelection.modelIndex === InvalidModelIndex}
-                    />
-                </div>
-                <div className='rdo-line-spacer' />
                 <NamedList sizing='min-content' rowSpacing='half'>
                 {
                     numModels > 1
