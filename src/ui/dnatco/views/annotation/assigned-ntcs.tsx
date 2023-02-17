@@ -3,7 +3,7 @@ import { Annotation } from './common';
 import { ChainSelect, ModelSelect } from '../structure-selectors';
 import { View } from '../view';
 import { InvalidChain, InvalidModelIndex, InvalidStepId } from '../../structure-selection';
-import { Common, ConfalPercentileStats, StepsClassificationStats, StepRmsdStats, niceStepName } from '../../common';
+import { niceStepName, Common } from '../../common';
 import { Icon } from '../../../common/icon';
 import { SingleStepInfo } from '../../single-step-info';
 import { DynamicTable } from '../../../common/dynamic-table';
@@ -11,7 +11,7 @@ import { NamedList, NamedListItem } from '../../../common/named-list';
 import { Tooltip } from '../../../common/tooltip';
 import { Cif } from '../../../../cif';
 import {
-    NdbStructNtcOverall, NdbStructNtcStep, NdbStructNtcStepSummary,
+    NdbStructNtcStep, NdbStructNtcStepSummary,
     NdbStructNtcStepParameters
 } from '../../../../cif/categories/ndb-struct-ntc';
 import { Dnatcofication } from '../../../../dnatco/dnatcofication';
