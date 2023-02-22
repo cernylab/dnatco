@@ -154,6 +154,14 @@ tr.rdo-list-of-conformers-alternate-clr {
     height: 100%;
 }
 
+.rdo-active {
+    transition: background-color var(--anim-speed);
+}
+
+.rdo-active:hover {
+    background-color: var(--color-b);
+}
+
 .rdo-big-logo-container {
     background-color: var(--color-f);
     display: flex;

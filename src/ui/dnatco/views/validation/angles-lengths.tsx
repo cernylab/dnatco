@@ -1265,7 +1265,7 @@ export class AnglesLengths extends View<
 
                 <div style={ Common.VScrollElement }>
                     <CollapsibleVertical
-                        header=<div className='rdo-secondary-caption'>Residues</div>
+                        header=<div className='rdo-secondary-caption rdo-active'>Residues</div>
                         style={ Common.VScrollJail }
                     >
                         <div style={ Common.VScrollElement }>
@@ -1278,7 +1278,7 @@ export class AnglesLengths extends View<
 
                 <div style={ Common.VScrollElement }>
                     <CollapsibleVertical
-                        header=<div className='rdo-secondary-caption'>Worst lengths</div>
+                        header=<div className='rdo-secondary-caption rdo-active'>Worst lengths</div>
                         style={ Common.VScrollJail }
                     >
                         <NamedList sizing='min-content' rowSpacing='half'>
@@ -1316,7 +1316,7 @@ export class AnglesLengths extends View<
 
                 <div style={ Common.VScrollElement }>
                     <CollapsibleVertical
-                        header=<div className='rdo-secondary-caption'>Worst angles</div>
+                        header=<div className='rdo-secondary-caption rdo-active'>Worst angles</div>
                         style={ Common.VScrollJail }
                     >
                         <NamedList sizing='min-content' rowSpacing='half'>
