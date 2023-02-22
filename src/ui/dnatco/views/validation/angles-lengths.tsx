@@ -758,8 +758,22 @@ class SubstructureSummary extends React.Component<{ countsInGroups: Summarize.Co
 
 export class AnglesLengths extends View {
     static readonly unscrollableContainer = true;
+    private residuesCache = new Array<React.ReactElement>();
 
-    private renderResidue(residue: Measurements.Residue, stats: ALMResidueStats, multipleModels: boolean, thresholds: number[]) {
+    private fillResidueElementsCache(multipleModels: boolean, thresholds: number[]) {
+        this.residuesCache = [];
+
+        const alm = this.props.dnatcofication.data.alm;
+
+        for (let idx = 0; idx < alm.residues.length; idx++) {
+            const r = alm.residues[idx];
+            const s = alm.stats[idx];
+
+            this.residuesCache.push(this.renderResidue(r, s, multipleModels, thresholds, idx));
+        }
+    }
+
+    private renderResidue(residue: Measurements.Residue, stats: ALMResidueStats, multipleModels: boolean, thresholds: number[], idx = 0) {
         const countsAngles = countsInGroups(stats.summary.angles, thresholds);
         const countsLenghts = countsInGroups(stats.summary.lengths, thresholds);
         const residueName = this.renderResidueName(residue, multipleModels);
@@ -768,7 +782,7 @@ export class AnglesLengths extends View {
         const structureName = this.props.dnatcofication.identifyingName ?? this.props.dnatcofication.pdbId;
 
         return (
-            <>
+            <React.Fragment key={idx}>
                 <CollapsibleVertical
                     header=<ResidueHeader
                         caption={residueName}
@@ -866,7 +880,7 @@ export class AnglesLengths extends View {
                     </div>
                 </CollapsibleVertical>
                 <div style={{ height: 'calc(var(--v-gap) / 2)' }} />
-            </>
+            </React.Fragment>
         );
     }
 
@@ -888,15 +902,11 @@ export class AnglesLengths extends View {
         return <div>{...inner}</div>;
     }
 
-    private renderModel(resSel: { residues: Measurements.Residue[], stats: ALMResidueStats[] }, multipleModels: boolean, thresholds: number[]) {
+    private renderSelection(indices: number[]) {
         const elems = [];
-        for (let idx = 0; idx < resSel.residues.length; idx++) {
-            const residue = resSel.residues[idx];
-            const stats = resSel.stats[idx];
 
-            const e = this.renderResidue(residue, stats, multipleModels, thresholds);
-            elems.push(e);
-        }
+        for (const idx of indices)
+            elems.push(this.residuesCache[idx]);
 
         return elems;
     }
@@ -913,47 +923,48 @@ export class AnglesLengths extends View {
         return `${this.props.dnatcofication.identifyingName ?? this.props.dnatcofication.pdbId}_${name ? `${name}_` : ''}`;
     }
 
-    private selectionToResidues(modelIdx: number, chain: string): { residues: Measurements.Residue[], stats: ALMResidueStats[] } {
+    private selectionToIndices(modelIdx: number, chain: string) {
         const alm = this.props.dnatcofication.data.alm;
         if (modelIdx === InvalidModelIndex) {
-            return { residues: alm.residues, stats: alm.stats };
+            return sequence(0, alm.residues.length);
         } else {
             const modelNum = this.props.dnatcofication.data.structures[0].models[modelIdx].num;
 
-            if (chain) {
-                const cm = alm.chains.get(modelNum)?.get(chain) ?? [];
-
-                const residues = [];
-                const stats  = [];
-                for (const x of cm) {
-                    residues.push(alm.residues[x]);
-                    stats.push(alm.stats[x]);
-                }
-
-                return { residues, stats };
-            } else {
-                const mm = alm.models.get(modelNum) ?? [];
-
-                const residues = [];
-                const stats  = [];
-                for (const x of mm) {
-                    residues.push(alm.residues[x]);
-                    stats.push(alm.stats[x]);
-                }
-
-                return { residues, stats };
-            }
+            if (chain)
+                return alm.chains.get(modelNum)?.get(chain) ?? [];
+            else
+                return alm.models.get(modelNum) ?? [];
         }
+    }
+
+    componentDidMount() {
+        this.subscribe(this.props.dnatcofication.events.structureChanged, () => {
+            const multipleModels = Dnatcofication.Structure.numberOfModels(this.props.dnatcofication) > 1;
+            const thresholds = DAnglesLengths.pGroupThresholds();
+
+            this.fillResidueElementsCache(multipleModels, thresholds);
+        });
+    }
+
+    componentWillUnmount() {
+        this.unsubscribeAll();
     }
 
     render() {
         const multipleModels = Dnatcofication.Structure.numberOfModels(this.props.dnatcofication) > 1;
         const modelIdx = this.props.structureSelection.modelIndex;
         const chain = this.props.structureSelection.chain === InvalidChain ? '' : this.props.structureSelection.chain;
+        const alm = this.props.dnatcofication.data.alm;
 
-        const resSel = this.selectionToResidues(modelIdx, chain)
-        const summary = Summarize.substructure(resSel.residues);
+        const selectedIndices = this.selectionToIndices(modelIdx, chain);
+        const selectedResidues = selectedIndices.map(x => alm.residues[x]);
+        const selectedResidueStats = selectedIndices.map(x => alm.stats[x]);
+
+        const summary = Summarize.substructure(selectedResidues);
         const thresholds = DAnglesLengths.pGroupThresholds();
+
+        if (this.residuesCache.length === 0)
+            this.fillResidueElementsCache(multipleModels, thresholds);
 
         const countsAngles = countsInGroups(summary.angles, thresholds);
         const countsLenghts = countsInGroups(summary.lengths, thresholds);
@@ -986,8 +997,8 @@ export class AnglesLengths extends View {
                     counts={{ angles: countsAngles, lengths: countsLenghts }}
                     downloaders={StatsDownloaders}
                     name={this.selectionName(multipleModels, modelIdx, chain)}
-                    residues={resSel.residues}
-                    stats={resSel.stats}
+                    residues={selectedResidues}
+                    stats={selectedResidueStats}
                     style={{ height: '4em' }}
                 >
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
@@ -1007,7 +1018,7 @@ export class AnglesLengths extends View {
                     >
                         <div style={ Common.VScrollElement }>
                             <div className='rdo-scroll-vertically'>
-                                {...this.renderModel(resSel, multipleModels, thresholds)}
+                                {this.renderSelection(selectedIndices)}
                             </div>
                         </div>
                     </CollapsibleVertical>
