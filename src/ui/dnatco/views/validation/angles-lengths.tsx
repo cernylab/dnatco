@@ -8,11 +8,13 @@ import { InvalidChain, InvalidModelIndex } from '../../structure-selection';
 import { Common } from '../../common';
 import { colorToRgb, colorToTuple } from '../../../util';
 import { CollapsibleVertical } from '../../../common/collapsible-vertical';
+import { ComboBox } from '../../../common/combo-box';
 import { NamedList, NamedListItem } from '../../../common/named-list';
 import { Icon } from '../../../common/icon';
 import { ToggleButton } from '../../../common/push-button';
+import { SpinBox } from '../../../common/spin-box';
 import { Tooltip } from '../../../common/tooltip';
-import { ALMResidueStats, Dnatcofication } from '../../../../dnatco/dnatcofication';
+import { ALMResidueStats, Dnatcofication, MaybeBin } from '../../../../dnatco/dnatcofication';
 import { AnglesLengths as DAnglesLengths } from '../../../../dnatco/angles-lengths';
 import { isShiftedName, unshiftName } from '../../../../dnatco/angles-lengths/atoms';
 import { tripletTag, Triplet } from '../../../../dnatco/angles-lengths/angles';
@@ -28,6 +30,8 @@ import { doDownload, Downloader, FileTypes } from '../../../../util/downloader';
 import { Serialization } from '../../../../util/serialization';
 import { M } from '../../../../util/math';
 import 'assets/imgs/data-transfer-download.svg';
+
+type EmptiableMaybeBin = MaybeBin|'no-data';
 
 const PairBondNameCache: Map<string, React.ReactElement> = new Map();
 const TripletBondNameCache: Map<string, React.ReactElement> = new Map();
@@ -112,6 +116,21 @@ function colorStyle(clr: [r: number, g: number, b: number]) {
     return `rgb(${clr.join(',')})`;
 }
 
+function compareMaybeBins(a: EmptiableMaybeBin, b: EmptiableMaybeBin) {
+    const aOut = a === 'above' || a === 'below' || a === 'no-data';
+    const bOut = b === 'above' || b === 'below' || b === 'no-data';
+
+    if (aOut) {
+        if (bOut)
+            return 0;
+        else
+            return -1;
+    } else if (bOut) {
+        return 1;
+    } else
+        return (a as Bin).prosco - (b as Bin).prosco;
+}
+
 function countsInGroups(counts: Summarize.Counts, thresholds: number[]): Summarize.CountsInGroup[] {
     const cig = [];
 
@@ -140,6 +159,75 @@ function fileNameFriendlyTag(tag: string) {
         'p'
     );
 }
+
+type GatherWorst = {
+    angles: {
+        bond: (r: Measurements.Residue) => Measurements.BondAngle[],
+        stats: (s: ALMResidueStats, idx: number) => ALMResidueStats['angles'][number],
+    },
+    lengths: {
+        bond: (r: Measurements.Residue) => Measurements.BondLength[],
+        stats: (s: ALMResidueStats, idx: number) => ALMResidueStats['lengths'][number],
+    },
+};
+const GatherWorst: GatherWorst = {
+    angles: {
+        bond: (r) => r.bondAngles,
+        stats: (s, idx) => s.angles[idx],
+    },
+    lengths: {
+        bond: (r) => r.bondLengths,
+        stats: (s, idx) => s.lengths[idx],
+    },
+
+};
+function gatherWorst<T extends keyof GatherWorst>(gather: T, residues: Measurements.Residue[], stats: ALMResidueStats[], threshold: number|'outlier', maxCount: number) {
+    type PT = ReturnType<GatherWorst[T]['bond']>[number];
+    const worst = new Array<{
+        bond: PT,
+        residue: Measurements.Residue,
+        maybeBin: EmptiableMaybeBin,
+        pGroup: DAnglesLengths.PGroup,
+    }>();
+    const getter = GatherWorst[gather];
+
+    for (let idx = 0; idx < residues.length; idx++) {
+        const r = residues[idx];
+        const s = stats[idx];
+
+        for (let jdx = 0; jdx < r.bondLengths.length; jdx++) {
+            const x = getter.bond(r)[jdx];
+            const ls = getter.stats(s, jdx);
+            const thr = ls.pGroup?.threshold ?? 'outlier';
+
+            if (thr === 'outlier' || thr >= threshold) {
+                let kdx = 0;
+                for (; kdx < worst.length; kdx++) {
+                    if (compareMaybeBins(ls.bin, worst[kdx].maybeBin) <= 0)
+                        break;
+                }
+
+                const tail = worst.splice(
+                    kdx,
+                    worst.length - kdx,
+                    {
+                        bond: x,
+                        residue: r,
+                        maybeBin: ls.bin,
+                        pGroup: ls.pGroup
+                    }
+                );
+                worst.push(...tail);
+            }
+        }
+    }
+
+    if (worst.length > maxCount)
+        worst.length = maxCount;
+
+    return worst;
+}
+
 
 function makeBondName(bond: Pair | Triplet) {
     const toks = bond.map(x => isShiftedName(x) ? <span>{unshiftName(x)}<span className='rdo-sup'>(-1)</span></span> : <span>{x}</span>);
@@ -427,6 +515,101 @@ class AveragesChart extends React.Component<{
                     }}
                 />
             </div>
+        );
+    }
+}
+
+class BondAngleDetails extends React.Component<{
+    bondAngle: Measurements.BondAngle,
+    downloadName: string,
+    maybeBin: EmptiableMaybeBin,
+    outlierColor: [r: number, g: number, b: number],
+    pGroup: DAnglesLengths.PGroup,
+    pGroupDatas: DAnglesLengths.PGroupData[],
+    residue: Measurements.Residue,
+    residueName: JSX.Element,
+}> {
+    render() {
+        const ba = this.props.bondAngle;
+        const clr = this.props.pGroup ? colorToTuple(this.props.pGroup.color) : this.props.outlierColor;
+
+        return (
+            <>
+                <Tooltip
+                    tag=<div style={{ width: '100%', height: '100%', backgroundColor: colorStyle(clr) }} />
+                    delayMsec={Constants.TooltipDelayMSec}
+                    display='block'
+                >
+                    <PGroupSummary
+                        bins={DAnglesLengths.angleAverages(this.props.residue.compound, ba.triplet)!}
+                        caption={tripletBondName(ba.triplet, ba.tag)}
+                        pGroup={this.props.pGroup}
+                        pGroupDatas={this.props.pGroupDatas}
+                        rangeFormatter={(v) => M.r2d(v).toFixed(2)}
+                        residueName={this.props.residueName}
+                        suffix={'\u00B0'}
+                        value={ba.angle}
+                        valueFormatter={(v) => M.r2d(v).toFixed(2)}
+                        xTitle={'Angle (\u00B0)'}
+                        yTitle='Prob. (%)'
+                        xTransform={(x) => M.r2d(x)}
+                        yTransform={(y) => y * 100}
+                        downloadFileName={this.props.downloadName}
+                    />
+                </Tooltip>
+                {tripletBondName(ba.triplet, ba.tag)}
+                <div className='rdo-monospace rdo-talgn-right'>
+                    {M.r2d(ba.angle).toFixed(2)}{'\u00B0'}
+                </div>
+                <Prosco bin={this.props.maybeBin} />
+            </>
+        );
+    }
+}
+
+class BondLengthDetails extends React.Component<{
+    bondLength: Measurements.BondLength,
+    downloadName: string,
+    maybeBin: EmptiableMaybeBin,
+    outlierColor: [r: number, g: number, b: number],
+    pGroup: DAnglesLengths.PGroup,
+    pGroupDatas: DAnglesLengths.PGroupData[],
+    residue: Measurements.Residue,
+    residueName: JSX.Element,
+}> {
+    render() {
+        const bl = this.props.bondLength;
+        const clr = this.props.pGroup ? colorToTuple(this.props.pGroup.color) : this.props.outlierColor;
+
+        return (
+            <>
+                <Tooltip
+                    tag=<div style={{ width: '100%', height: '100%', backgroundColor: colorStyle(clr) }} />
+                    delayMsec={Constants.TooltipDelayMSec}
+                    display='block'
+                >
+                    <PGroupSummary
+                        bins={DAnglesLengths.lengthAverages(this.props.residue.compound, bl.pair)!}
+                        caption={pairBondName(bl.pair, bl.tag)}
+                        pGroup={this.props.pGroup}
+                        pGroupDatas={this.props.pGroupDatas}
+                        rangeFormatter={(v) => v.toFixed(3)}
+                        residueName={this.props.residueName}
+                        suffix={'\u00A0\u212B'}
+                        value={bl.length}
+                        valueFormatter={(v) => v.toFixed(3)}
+                        xTitle={'Length (\u212B)'}
+                        yTitle='Prob. (%)'
+                        yTransform={(y) => y * 100}
+                        downloadFileName={this.props.downloadName}
+                    />
+                </Tooltip>
+                {pairBondName(bl.pair, bl.tag)}
+                <div className='rdo-monospace rdo-talgn-right'>
+                    {bl.length.toFixed(3)}{'\u00A0\u212B'}
+                </div>
+                <Prosco bin={this.props.maybeBin} />
+            </>
         );
     }
 }
@@ -756,9 +939,28 @@ class SubstructureSummary extends React.Component<{ countsInGroups: Summarize.Co
     }
 }
 
-export class AnglesLengths extends View {
+export class AnglesLengths extends View<
+    View.Props,
+    {
+        maxWorstAngles: number,
+        worstAnglesThreshold: string,
+        maxWorstLengths: number,
+        worstLengthsThreshold: string,
+    }
+> {
     static readonly unscrollableContainer = true;
     private residuesCache = new Array<React.ReactElement>();
+
+    constructor(props: View.Props) {
+        super(props);
+
+        this.state = {
+            maxWorstAngles: GlobalConfig.data().anglesLengths.maxWorst,
+            worstAnglesThreshold: '',
+            maxWorstLengths: GlobalConfig.data().anglesLengths.maxWorst,
+            worstLengthsThreshold: '',
+        };
+    }
 
     private fillResidueElementsCache(multipleModels: boolean, thresholds: number[]) {
         this.residuesCache = [];
@@ -797,40 +999,9 @@ export class AnglesLengths extends View {
                     <div style={DetailsTableStyle}>
                         <div style={{ gridColumnStart: 'span 5', ...DetailsCaptionStyle }}>Bond lengths</div>
                         {residue.bondLengths.map((x, idx) => {
-                            const bin = stats.lengths[idx].bin;
-                            const pgrp = stats.lengths[idx].pGroup;
-                            const clr = pgrp ? colorToTuple(pgrp.color) : outlierColor;
-                            const pgrpDatas = pgrpIndices.map(idx => DAnglesLengths.lengthPGroupData(idx, residue.compound, x.pair)!);
-                            const dlName = `${residueIdentifyingName(structureName, residue)}${fileNameFriendlyTag(pairTag(x.pair))}`;
-
                             return (
                                 <React.Fragment key={idx}>
-                                    <Tooltip
-                                        tag=<div style={{ width: '100%', height: '100%', backgroundColor: colorStyle(clr) }} />
-                                        delayMsec={Constants.TooltipDelayMSec}
-                                        display='block'
-                                    >
-                                        <PGroupSummary
-                                            bins={DAnglesLengths.lengthAverages(residue.compound, x.pair)!}
-                                            caption={pairBondName(x.pair, x.tag)}
-                                            pGroup={pgrp}
-                                            pGroupDatas={pgrpDatas}
-                                            rangeFormatter={(v) => v.toFixed(3)}
-                                            residueName={residueName}
-                                            suffix={'\u00A0\u212B'}
-                                            value={x.length}
-                                            valueFormatter={(v) => v.toFixed(3)}
-                                            xTitle={'Length (\u212B)'}
-                                            yTitle='Prob. (%)'
-                                            yTransform={(y) => y * 100}
-                                            downloadFileName={dlName}
-                                        />
-                                    </Tooltip>
-                                    {pairBondName(x.pair, x.tag)}
-                                    <div className='rdo-monospace rdo-talgn-right'>
-                                        {x.length.toFixed(3)}{'\u00A0\u212B'}
-                                    </div>
-                                    <Prosco bin={bin} />
+                                    {this.renderBondLengthDetail(x, stats.lengths[idx].bin, stats.lengths[idx].pGroup, residue, residueName, structureName, outlierColor, pgrpIndices)}
                                     <div />
                                 </React.Fragment>
                             );
@@ -838,41 +1009,9 @@ export class AnglesLengths extends View {
 
                         <div style={{ gridColumnStart: 'span 5', ...DetailsCaptionStyle }}>Bond angles</div>
                         {residue.bondAngles.map((x, idx) => {
-                            const bin = stats.angles[idx].bin;
-                            const pgrp = stats.angles[idx].pGroup;
-                            const clr = pgrp ? colorToTuple(pgrp.color) : outlierColor;
-                            const pgrpDatas = pgrpIndices.map(idx => DAnglesLengths.anglePGroupData(idx, residue.compound, x.triplet)!);
-                            const dlName = `${residueIdentifyingName(structureName, residue)}_${fileNameFriendlyTag(tripletTag(x.triplet))}`;
-
                             return (
                                 <React.Fragment key={idx}>
-                                    <Tooltip
-                                        tag=<div style={{ width: '100%', height: '100%', backgroundColor: colorStyle(clr) }} />
-                                        delayMsec={Constants.TooltipDelayMSec}
-                                        display='block'
-                                    >
-                                        <PGroupSummary
-                                            bins={DAnglesLengths.angleAverages(residue.compound, x.triplet)!}
-                                            caption={tripletBondName(x.triplet, x.tag)}
-                                            pGroup={pgrp}
-                                            pGroupDatas={pgrpDatas}
-                                            rangeFormatter={(v) => M.r2d(v).toFixed(2)}
-                                            residueName={residueName}
-                                            suffix={'\u00B0'}
-                                            value={x.angle}
-                                            valueFormatter={(v) => M.r2d(v).toFixed(2)}
-                                            xTitle={'Angle (\u00B0)'}
-                                            yTitle='Prob. (%)'
-                                            xTransform={(x) => M.r2d(x)}
-                                            yTransform={(y) => y * 100}
-                                            downloadFileName={dlName}
-                                        />
-                                    </Tooltip>
-                                    {tripletBondName(x.triplet, x.tag)}
-                                    <div className='rdo-monospace rdo-talgn-right'>
-                                        {M.r2d(x.angle).toFixed(2)}{'\u00B0'}
-                                    </div>
-                                    <Prosco bin={bin} />
+                                    {this.renderBondAngleDetail(x, stats.angles[idx].bin, stats.angles[idx].pGroup, residue, residueName, structureName, outlierColor, pgrpIndices)}
                                     <div />
                                 </React.Fragment>
                             );
@@ -881,6 +1020,60 @@ export class AnglesLengths extends View {
                 </CollapsibleVertical>
                 <div style={{ height: 'calc(var(--v-gap) / 2)' }} />
             </React.Fragment>
+        );
+    }
+
+    private renderBondAngleDetail(
+        bondAngle: Measurements.BondAngle,
+        maybeBin: EmptiableMaybeBin,
+        pGroup: DAnglesLengths.PGroup,
+        residue: Measurements.Residue,
+        residueName: JSX.Element,
+        structureName: string,
+        outlierColor: [r: number, g: number, b: number],
+        pgrpIndices: number[]
+    ) {
+        const pgrpDatas = pgrpIndices.map(idx => DAnglesLengths.anglePGroupData(idx, residue.compound, bondAngle.triplet)!);
+        const dlName = `${residueIdentifyingName(structureName, residue)}_${fileNameFriendlyTag(tripletTag(bondAngle.triplet))}`;
+
+        return (
+            <BondAngleDetails
+                bondAngle={bondAngle}
+                downloadName={dlName}
+                maybeBin={maybeBin}
+                outlierColor={outlierColor}
+                pGroup={pGroup}
+                pGroupDatas={pgrpDatas}
+                residue={residue}
+                residueName={residueName}
+            />
+        );
+    }
+
+    private renderBondLengthDetail(
+        bondLength: Measurements.BondLength,
+        maybeBin: EmptiableMaybeBin,
+        pGroup: DAnglesLengths.PGroup,
+        residue: Measurements.Residue,
+        residueName: JSX.Element,
+        structureName: string,
+        outlierColor: [r: number, g: number, b: number],
+        pgrpIndices: number[]
+    ) {
+        const pgrpDatas = pgrpIndices.map(idx => DAnglesLengths.lengthPGroupData(idx, residue.compound, bondLength.pair)!);
+        const dlName = `${residueIdentifyingName(structureName, residue)}${fileNameFriendlyTag(pairTag(bondLength.pair))}`;
+
+        return (
+            <BondLengthDetails
+                bondLength={bondLength}
+                downloadName={dlName}
+                maybeBin={maybeBin}
+                outlierColor={outlierColor}
+                pGroup={pGroup}
+                pGroupDatas={pgrpDatas}
+                residue={residue}
+                residueName={residueName}
+            />
         );
     }
 
@@ -903,12 +1096,63 @@ export class AnglesLengths extends View {
     }
 
     private renderSelection(indices: number[]) {
-        const elems = [];
+        return indices.map(idx => this.residuesCache[idx]);
+    }
 
-        for (const idx of indices)
-            elems.push(this.residuesCache[idx]);
+    private renderWorstAngles(residues: Measurements.Residue[], stats: ALMResidueStats[], maxCount: number, threshold: number|'outlier', structureName: string, multipleModels: boolean) {
+        const worst = gatherWorst('angles', residues, stats, threshold, maxCount);
+        const outlierColor = colorToTuple(DAnglesLengths.outlierColor());
+        const pgrpIndices = sequence(0, DAnglesLengths.pGroupCount() - 1);
 
-        return elems;
+        return (
+            <div style={ DetailsTableStyle }>
+                {...worst.map((x, idx) => {
+                    return (
+                        <React.Fragment key={idx}>
+                            {this.renderBondAngleDetail(
+                                x.bond,
+                                x.maybeBin,
+                                x.pGroup,
+                                x.residue,
+                                this.renderResidueName(x.residue, multipleModels),
+                                structureName,
+                                outlierColor,
+                                pgrpIndices
+                            )}
+                            <div />
+                        </React.Fragment>
+                    );
+                })}
+            </div>
+        );
+    }
+
+    private renderWorstLengths(residues: Measurements.Residue[], stats: ALMResidueStats[], maxCount: number, threshold: number|'outlier', structureName: string, multipleModels: boolean) {
+        const worst = gatherWorst('lengths', residues, stats, threshold, maxCount);
+        const outlierColor = colorToTuple(DAnglesLengths.outlierColor());
+        const pgrpIndices = sequence(0, DAnglesLengths.pGroupCount() - 1);
+
+        return (
+            <div style={ DetailsTableStyle }>
+                {...worst.map((x, idx) => {
+                    return (
+                        <React.Fragment key={idx}>
+                            {this.renderBondLengthDetail(
+                                x.bond,
+                                x.maybeBin,
+                                x.pGroup,
+                                x.residue,
+                                this.renderResidueName(x.residue, multipleModels),
+                                structureName,
+                                outlierColor,
+                                pgrpIndices
+                            )}
+                            <div />
+                        </React.Fragment>
+                    );
+                })}
+            </div>
+        );
     }
 
     private selectionName(multipleModels: boolean, modelIdx: number, chain: string) {
@@ -969,8 +1213,16 @@ export class AnglesLengths extends View {
         const countsAngles = countsInGroups(summary.angles, thresholds);
         const countsLenghts = countsInGroups(summary.lengths, thresholds);
 
+        const percentileOptions = [
+            { caption: 'Outliers', value: '' },
+            ...thresholds.reverse().map(thr => {
+                const v = thr.toString();
+                return { caption: v, value: v };
+            })
+        ];
+
         return (
-            <div style={ Common.VScrollJail }>
+            <div style={{ ...Common.VScrollGridJail, gridTemplateRows: 'auto auto auto auto auto 1fr' }}>
                 <NamedList sizing='min-content' rowSpacing='half'>
                 {
                     multipleModels
@@ -1023,6 +1275,83 @@ export class AnglesLengths extends View {
                         </div>
                     </CollapsibleVertical>
                 </div>
+
+                <div style={ Common.VScrollElement }>
+                    <CollapsibleVertical
+                        header=<div className='rdo-secondary-caption'>Worst lengths</div>
+                        style={ Common.VScrollJail }
+                    >
+                        <NamedList sizing='min-content' rowSpacing='half'>
+                            <NamedListItem name='Percentile'>
+                                <ComboBox
+                                    options={percentileOptions}
+                                    value={this.state.worstLengthsThreshold}
+                                    onChange={(v) => this.setState({ ...this.state, worstLengthsThreshold: v }) }
+                                />
+                            </NamedListItem>
+                            <NamedListItem name='Max. count'>
+                                <SpinBox
+                                    min={1}
+                                    max={100}
+                                    step={1}
+                                    value={this.state.maxWorstLengths}
+                                    onChange={(v) => this.setState({ ...this.state, maxWorstLengths: v })}
+                                />
+                            </NamedListItem>
+                        </NamedList>
+                        <div style={ Common.VScrollElement }>
+                            <div className='rdo-scroll-vertically'>
+                                {this.renderWorstLengths(
+                                    selectedResidues,
+                                    selectedResidueStats,
+                                    this.state.maxWorstLengths,
+                                    this.state.worstLengthsThreshold ? parseFloat(this.state.worstLengthsThreshold) : 'outlier',
+                                    this.props.dnatcofication.identifyingName ?? this.props.dnatcofication.pdbId,
+                                    multipleModels
+                                )}
+                            </div>
+                        </div>
+                    </CollapsibleVertical>
+                </div>
+
+                <div style={ Common.VScrollElement }>
+                    <CollapsibleVertical
+                        header=<div className='rdo-secondary-caption'>Worst angles</div>
+                        style={ Common.VScrollJail }
+                    >
+                        <NamedList sizing='min-content' rowSpacing='half'>
+                            <NamedListItem name='Percentile'>
+                                <ComboBox
+                                    options={percentileOptions}
+                                    value={this.state.worstAnglesThreshold}
+                                    onChange={(v) => this.setState({ ...this.state, worstAnglesThreshold: v }) }
+                                />
+                            </NamedListItem>
+                            <NamedListItem name='Max. count'>
+                                <SpinBox
+                                    min={1}
+                                    max={100}
+                                    step={1}
+                                    value={this.state.maxWorstAngles}
+                                    onChange={(v) => this.setState({ ...this.state, maxWorstAngles: v })}
+                                />
+                            </NamedListItem>
+                        </NamedList>
+                        <div style={ Common.VScrollElement }>
+                            <div className='rdo-scroll-vertically'>
+                                {this.renderWorstAngles(
+                                    selectedResidues,
+                                    selectedResidueStats,
+                                    this.state.maxWorstAngles,
+                                    this.state.worstAnglesThreshold ? parseFloat(this.state.worstAnglesThreshold) : 'outlier',
+                                    this.props.dnatcofication.identifyingName ?? this.props.dnatcofication.pdbId,
+                                    multipleModels
+                                )}
+                            </div>
+                        </div>
+                    </CollapsibleVertical>
+                </div>
+
             </div>
         );
     }

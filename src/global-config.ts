@@ -18,6 +18,7 @@ export type GlobalConfigData = {
     userDatabases: StaticDb[],
     anglesLengths: {
         chartMarkerColor: string,
+        maxWorst: number,
         pGroups: AngleLengthPGroup[],
         outlierColor: string,
     },
@@ -28,12 +29,13 @@ const GlobalConfigData: GlobalConfigData = {
     userDatabases: [],
     anglesLengths: {
         chartMarkerColor: '#ff03f2',
+        maxWorst: 30,
+        outlierColor: '#000000',
         pGroups: [
             { threshold: 80, color: '#006eff' },
             { threshold: 95, color: '#00ff00' },
             { threshold: 99.9, color: '#ffff00' },
         ],
-        outlierColor: '#000000',
     },
 };
 
