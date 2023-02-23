@@ -483,6 +483,8 @@ export class StepTorsions extends View<View.Props> {
         const stepInfo = this.stepInfo(this.props.structureSelection.stepId);
         const numModels = Dnatcofication.Structure.numberOfModels(this.props.dnatcofication);
 
+        const torDistWidth = this.torDistTableRef.current?.clientWidth;
+
         return (
             <div>
                 <NamedList sizing='min-content' rowSpacing='half'>
@@ -532,10 +534,10 @@ export class StepTorsions extends View<View.Props> {
                     NtC={stepInfo.conformer}
                     torsions={torsionInfo.actual}
                     distances={distanceInfo.actual}
-                    maxWidth={this.torDistTableRef.current?.clientWidth ?? void 0}
+                    maxWidth={torDistWidth}
                 />
 
-                Torsions and distances
+                <div className='rdo-strong rdo-talgn-center' style={{ maxWidth: torDistWidth ? `${torDistWidth}px` : 'auto' }}>Torsions and distances</div>
                 <table
                     ref={this.torDistTableRef}
                     className='rdo-data-table'
