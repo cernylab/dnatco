@@ -409,6 +409,14 @@ class AveragesChart extends React.Component<{
         const yt = this.props.bins.map(b => this.props.yTransform ? this.props.yTransform(b.probability) : b.probability);
         const yMax = Math.max(...yt);
 
+        const xtFrom = xt[0];
+        const xtTo = xt[xt.length - 1];
+        const xAxisMargin = (xtTo - xtFrom) * 0.05;
+        const xRange = [
+            (xtFrom > tm ? tm : xtFrom) - xAxisMargin,
+            (xtTo < tm ? tm : xtTo) + xAxisMargin
+        ];
+
         return (
             <div>
                 <div className='rdo-dynamic-table-download-bar'>
@@ -499,7 +507,7 @@ class AveragesChart extends React.Component<{
                         dragmode: 'pan',
                         hovermode: 'closest',
                         margin: { t: 0, l: 45, b: 45, r: 0 },
-                        xaxis: { title: this.props.xTitle },
+                        xaxis: { title: this.props.xTitle, range: xRange},
                         yaxis: { showticklabels: false },
                         plot_bgcolor: 'white',
                         paper_bgcolor: 'white',
