@@ -242,7 +242,12 @@ const ViolinBackdropTickSize = 10;
 const ViolinBackdropTickThickness = 2;
 const ViolinMarkerDefaultColor = 16774924; // RGB 255, 247, 12
 
-class ViolinPlot extends React.Component<{ NtC: string, torsions: TorsionInfo['actual'], distances: DistanceInfo['actual'] }> {
+class ViolinPlot extends React.Component<{
+    NtC: string,
+    torsions: TorsionInfo['actual'],
+    distances: DistanceInfo['actual'],
+    maxWidth?: number,
+}> {
     private canvasRef = React.createRef<HTMLCanvasElement>();
 
     private drawTick(ctx: CanvasRenderingContext2D, x: number, y: number, tickSize: number, tickThickness: number, colorA: string, colorB: string) {
@@ -350,7 +355,7 @@ class ViolinPlot extends React.Component<{ NtC: string, torsions: TorsionInfo['a
                 ref={this.canvasRef}
                 width={1000}
                 height={1000}
-                style={{ width: '100%' }}
+                style={{ width: '100%', maxWidth: `${this.props.maxWidth ? `${this.props.maxWidth}px` : 'auto'}`} }
             />
         );
     }
@@ -360,6 +365,7 @@ export class StepTorsions extends View<View.Props> {
     private stepParamsTable: Cif.Table<NdbStructNtcStepParameters_Schema>|null;
     private stepSumTable: Cif.Table<NdbStructNtcStepSummary_Schema>|null;
     private sugarStepParamsTable: Cif.Table<NdbStructSugarStepParameters_Schema>|null;
+    private torDistTableRef = React.createRef<HTMLTableElement>(); // Nasty hack to limit the width of the violin plot to the tor/dist table
 
     constructor(props: View.Props) {
         super(props);
@@ -526,10 +532,14 @@ export class StepTorsions extends View<View.Props> {
                     NtC={stepInfo.conformer}
                     torsions={torsionInfo.actual}
                     distances={distanceInfo.actual}
+                    maxWidth={this.torDistTableRef.current?.clientWidth ?? void 0}
                 />
 
                 Torsions and distances
-                <table className='rdo-data-table'>
+                <table
+                    ref={this.torDistTableRef}
+                    className='rdo-data-table'
+                >
                     <thead>
                         <tr>
                             <th className='rdo-data-table'></th>
