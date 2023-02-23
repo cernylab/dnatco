@@ -5,6 +5,7 @@ import { View } from '../view';
 import { Common as C } from '../../common';
 import { NamedList, NamedListItem } from '../../../common/named-list';
 import { Tooltip } from '../../../common/tooltip';
+import { colorToRgb, rgbToHex } from '../../../util';
 import { Cif } from '../../../../cif';
 import {
     NdbStructNtcStepParameters, NdbStructNtcStepParameters_Schema,
@@ -13,9 +14,10 @@ import {
 } from '../../../../cif/categories/ndb-struct-ntc';
 import { Dnatcofication } from '../../../../dnatco/dnatcofication';
 import { Step } from '../../../../dnatco/step';
-import { toFixed } from '../../../../util';
+import { htmlColorAsNumber, toFixed } from '../../../../util';
+import { GlobalConfig } from '../../../../global-config';
 
-const TorsionsDisplayOrder: Step.Torsion[] = ['delta1', 'epsilon1', 'zeta1', 'alpha2', 'beta2', 'gamma2', 'delta2', 'chi1', 'chi2'];
+const TorsionsDisplayOrder: Step.Torsion[] = ['delta1', 'epsilon1', 'zeta1', 'alpha2', 'beta2', 'gamma2', 'delta2', 'chi1', 'chi2', 'nccn'];
 const TorsionsCaptions = {
     delta1: 'δ1',
     epsilon1: 'ε1',
@@ -183,6 +185,7 @@ const TorsionNames = [
     { tag: 'd2', name: 'δ2' },
     { tag: 'ch1', name: 'χ1' },
     { tag: 'ch2', name: 'χ2' },
+    { tag: 'mu', name: 'μ' },
 ];
 function mkViolationDetailsToolip(details: string|null) {
     if (details === null)
@@ -220,6 +223,137 @@ function mkViolationDetailsToolip(details: string|null) {
 
 function numOrNA(n: number, decimals = 2, padding = 7) {
     return isNaN(n) ? C.NA : toFixed(n, decimals, { char: '\u00A0', length: padding });
+}
+
+const ViolinBackdropWidth = 600;
+const ViolinBackdropHeight = 509;
+
+const ViolinBackdropTorXOffset = 78;
+const ViolinBackdropTorXLength = 371;
+const ViolinBackdropTorXScale = ViolinBackdropTorXLength / 9;
+const ViolinBackdropDistXOffset = 513;
+
+const ViolinBackdropTorYOffset = 93;
+const ViolinBackdropTorYLength = 327;
+const ViolinBackdropTorYScale = ViolinBackdropTorYLength / 360;
+const ViolinBackdropDistYScale = ViolinBackdropTorYLength / 12;
+
+const ViolinBackdropTickSize = 10;
+const ViolinBackdropTickThickness = 2;
+const ViolinMarkerDefaultColor = 16774924; // RGB 255, 247, 12
+
+class ViolinPlot extends React.Component<{ NtC: string, torsions: TorsionInfo['actual'], distances: DistanceInfo['actual'] }> {
+    private canvasRef = React.createRef<HTMLCanvasElement>();
+
+    private drawTick(ctx: CanvasRenderingContext2D, x: number, y: number, tickSize: number, tickThickness: number, colorA: string, colorB: string) {
+        const Ext = 1;
+        ctx.beginPath();
+        ctx.strokeStyle = colorB;
+        ctx.lineWidth = tickThickness + 2 * Ext;
+        ctx.moveTo(x - tickSize - Ext, y);
+        ctx.lineTo(x + tickSize + Ext, y);
+        ctx.moveTo(x, y - tickSize - Ext);
+        ctx.lineTo(x, y + tickSize + Ext);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.strokeStyle = colorA;
+        ctx.lineWidth = tickThickness;
+        ctx.moveTo(x - tickSize, y);
+        ctx.lineTo(x + tickSize, y);
+        ctx.moveTo(x, y - tickSize);
+        ctx.lineTo(x, y + tickSize);
+        ctx.stroke();
+    }
+
+    private async draw() {
+        const canvas = this.canvasRef.current;
+        if (!canvas)
+            return;
+        const ctx = canvas.getContext('2d');
+        if (!ctx)
+            return;
+
+        const markerColorA = colorToRgb(htmlColorAsNumber(GlobalConfig.data().violinPlotMarkerColorA) ?? ViolinMarkerDefaultColor);
+        const markerColorB = colorToRgb(htmlColorAsNumber(GlobalConfig.data().violinPlotMarkerColorB) ?? 0);
+        const w = canvas.width;
+        const h = canvas.height;
+
+        const xOffsetTor = ViolinBackdropTorXOffset * w / ViolinBackdropWidth;
+        const xOffsetDist = ViolinBackdropDistXOffset * w / ViolinBackdropWidth;
+        const xScale = ViolinBackdropTorXScale * w / ViolinBackdropWidth;
+
+        const yOffset = ViolinBackdropTorYOffset * h / ViolinBackdropHeight;
+        const yLength = ViolinBackdropTorYLength * h / ViolinBackdropHeight;
+        const yScaleTor = ViolinBackdropTorYScale * h / ViolinBackdropHeight;
+        const yScaleDist = ViolinBackdropDistYScale * h / ViolinBackdropHeight;
+        const tickSize = ViolinBackdropTickSize * w / ViolinBackdropWidth;
+        const tickThickness = ViolinBackdropTickThickness * w / ViolinBackdropWidth;
+
+        const clrA = rgbToHex(markerColorA);
+        const clrB = rgbToHex(markerColorB);
+
+        try {
+            const req = await fetch(`${GlobalConfig.data().pathPrefix}/violin_plots/${this.props.NtC}.png`);
+            if (!req.ok)
+                throw new Error('Cannot download plot');
+
+            const imgBlob = await req.blob();
+            const bitmap = await createImageBitmap(imgBlob);
+
+            // Backdrop
+            ctx.drawImage(bitmap, 0, 0, w, h);
+
+            let x = xOffsetTor;
+            let y = 0;
+            for (const tor of ['delta1', 'epsilon1', 'zeta1', 'alpha2', 'beta2', 'gamma2', 'delta2', 'chi1', 'chi2', 'nccn'] as (keyof TorsionInfo['actual'])[]) {
+                const v = this.props.torsions[tor];
+
+                y = (yLength - v * yScaleTor) + yOffset;
+
+                console.log(x, y, v);
+                this.drawTick(ctx, x, y, tickSize, tickThickness, clrA, clrB);
+
+                x += xScale;
+            }
+
+            x = xOffsetDist;
+            for (const dist of ['nn', 'cc'] as (keyof DistanceInfo['actual'])[]) {
+                const v = this.props.distances[dist];
+
+                y = (yLength - v * yScaleDist) + yOffset;
+                this.drawTick(ctx, x, y, tickSize, tickThickness, clrA, clrB);
+
+                x += xScale;
+            }
+        } catch (e) {
+            ctx.fillStyle = '#ff0000';
+            ctx.font = '16pt monospace';
+            ctx.fillText(`${e}`, 10, h / 2);
+        }
+    }
+
+    componentDidMount() {
+        this.draw();
+    }
+
+    componentDidUpdate() {
+        this.draw();
+    }
+
+    render() {
+        if (this.props.NtC === C.NA)
+            return undefined;
+
+        return (
+            <canvas
+                ref={this.canvasRef}
+                width={1000}
+                height={1000}
+                style={{ width: '100%' }}
+            />
+        );
+    }
 }
 
 export class StepTorsions extends View<View.Props> {
@@ -372,7 +506,28 @@ export class StepTorsions extends View<View.Props> {
                         />
                     </NamedListItem>
                 </NamedList>
+
                 <div className='rdo-line-spacer' />
+                <NamedList>
+                    <NamedListItem name='Step conformer'>{stepInfo.conformer}</NamedListItem>
+                    <NamedListItem name='Cartesian RMSD'>{`${stepInfo.cartesianRmsd!.toFixed(2)} Å`}</NamedListItem>
+                    <NamedListItem name='Pseudorotation'>{`${stepInfo.p1}, ${stepInfo.tau1}, ${stepInfo.pn1} / ${stepInfo.p2}, ${stepInfo.tau2}, ${stepInfo.pn2}`}</NamedListItem>
+                    <NamedListItem name='Details'>
+                        <Tooltip
+                            tag={stepInfo.details}
+                        >
+                            {mkViolationDetailsToolip(stepInfo.details)}
+                        </Tooltip>
+                    </NamedListItem>
+                </NamedList>
+                <div className='rdo-line-spacer' />
+
+                <ViolinPlot
+                    NtC={stepInfo.conformer}
+                    torsions={torsionInfo.actual}
+                    distances={distanceInfo.actual}
+                />
+
                 Torsions and distances
                 <table className='rdo-data-table'>
                     <thead>
@@ -405,19 +560,6 @@ export class StepTorsions extends View<View.Props> {
                         ))}
                     </tbody>
                 </table>
-                <div className='rdo-line-spacer' />
-                <NamedList>
-                    <NamedListItem name='Step conformer'>{stepInfo.conformer}</NamedListItem>
-                    <NamedListItem name='Cartesian RMSD'>{`${stepInfo.cartesianRmsd!.toFixed(2)} Å`}</NamedListItem>
-                    <NamedListItem name='Pseudorotation'>{`${stepInfo.p1}, ${stepInfo.tau1}, ${stepInfo.pn1} / ${stepInfo.p2}, ${stepInfo.tau2}, ${stepInfo.pn2}`}</NamedListItem>
-                    <NamedListItem name='Details'>
-                        <Tooltip
-                            tag={stepInfo.details}
-                        >
-                            {mkViolationDetailsToolip(stepInfo.details)}
-                        </Tooltip>
-                    </NamedListItem>
-                </NamedList>
             </div>
         );
     }

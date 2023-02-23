@@ -22,6 +22,8 @@ export type GlobalConfigData = {
         pGroups: AngleLengthPGroup[],
         outlierColor: string,
     },
+    violinPlotMarkerColorA: string,
+    violinPlotMarkerColorB: string,
 };
 const GlobalConfigData: GlobalConfigData = {
     isDevel: false,
@@ -37,6 +39,8 @@ const GlobalConfigData: GlobalConfigData = {
             { threshold: 99.9, color: '#ffff00' },
         ],
     },
+    violinPlotMarkerColorA: '#fff70c',
+    violinPlotMarkerColorB: '#000',
 };
 
 function checkAndSetEntry<K extends keyof GlobalConfigData>(data: GlobalConfigData, k: K, inputObj: any) {
