@@ -483,8 +483,6 @@ export class StepTorsions extends View<View.Props> {
         const stepInfo = this.stepInfo(this.props.structureSelection.stepId);
         const numModels = Dnatcofication.Structure.numberOfModels(this.props.dnatcofication);
 
-        const torDistWidth = this.torDistTableRef.current?.clientWidth;
-
         return (
             <div>
                 <NamedList sizing='min-content' rowSpacing='half'>
@@ -530,19 +528,13 @@ export class StepTorsions extends View<View.Props> {
                 </NamedList>
                 <div className='rdo-line-spacer' />
 
-                <ViolinPlot
-                    NtC={stepInfo.conformer}
-                    torsions={torsionInfo.actual}
-                    distances={distanceInfo.actual}
-                    maxWidth={torDistWidth}
-                />
-
-                <div className='rdo-strong rdo-talgn-center' style={{ maxWidth: torDistWidth ? `${torDistWidth}px` : 'auto' }}>Torsions and distances</div>
-                <table
-                    ref={this.torDistTableRef}
-                    className='rdo-data-table'
-                >
+                <table className='rdo-data-table' ref={this.torDistTableRef}>
                     <thead>
+                        <tr>
+                            <td colSpan={5}>
+                                <div className='rdo-strong rdo-talgn-center'>Torsions and distances</div>
+                            </td>
+                        </tr>
                         <tr>
                             <th className='rdo-data-table'></th>
                             <th className='rdo-data-table'>Actual</th>
@@ -572,6 +564,13 @@ export class StepTorsions extends View<View.Props> {
                         ))}
                     </tbody>
                 </table>
+
+                <ViolinPlot
+                    NtC={stepInfo.conformer}
+                    torsions={torsionInfo.actual}
+                    distances={distanceInfo.actual}
+                    maxWidth={this.torDistTableRef.current?.clientWidth}
+                />
             </div>
         );
     }
