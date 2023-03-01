@@ -109,6 +109,10 @@ export class SimilarityPlots extends View<View.Props, State> {
 
         return (
             <div>
+                <div className='rdo-view-caption'>
+                    Similarity of selected steps to NtC class averages
+                </div>
+
                 <NamedList sizing='min-content' rowSpacing='half'>
                 {
                     numModels > 1

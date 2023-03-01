@@ -197,6 +197,8 @@ export class AssignedNtCs extends View<View.Props> {
 
         return (
             <div style={ Common.VScrollJail }>
+                <div className='rdo-view-caption'>Assigned NtCs</div>
+
                 <NamedList sizing='min-content' rowSpacing='half'>
                 {
                     numModels > 1

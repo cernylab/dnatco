@@ -611,6 +611,10 @@ th.rdo-data-table-small {
     width: 100%;
 }
 
+.rdo-side-offset {
+    margin: 0 var(--x-gap) 0 var(--x-gap);
+}
+
 .rdo-side-switching-panel {
     display: flex;
     flex-direction: column;
@@ -817,6 +821,15 @@ th.rdo-data-table-small {
 .rdo-vertical-text {
     writing-mode: vertical-rl;
     transform: rotate(180deg);
+}
+
+.rdo-view-caption {
+    background-color: var(--color-a);
+    font-size: var(--font-large);
+    font-weight: bold;
+    margin-bottom: var(--h-gap);
+    padding: calc(var(--x-gap) / 2);
+    text-align: center;
 }
 
 .rdo-view-visualizer-container {

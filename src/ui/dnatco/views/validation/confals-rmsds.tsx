@@ -415,6 +415,8 @@ export class ConfalsRmsds extends View<View.Props> {
 
         return (
             <div style={ Common.VScrollJail }>
+                <div className='rdo-view-caption'>Overall structure quality</div>
+
                 <Stats
                     assigned={Cif.Column.value(overall.num_classified, 0)!}
                     close={Cif.Column.value(overall.num_unclassified_rmsd_close, 0)!}

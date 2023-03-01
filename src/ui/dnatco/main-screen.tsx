@@ -28,7 +28,7 @@ const AvailableViews: Record<ViewType, { caption: string, visualizer: boolean }>
     'phenix-restraints': { caption: 'Phenix restraints', visualizer: false },
     'mmb-commands-file': { caption: 'MMB commands file', visualizer: false },
     'connectivity-plot': { caption: 'Connectivity plot', visualizer: true },
-    'rscc-plot': { caption: 'RSCC plot', visualizer: true },
+    'rscc-plot': { caption: 'RSCC/RMSD plot', visualizer: true },
     'angles-lengths': { caption: 'Bond Lengths & Angles', visualizer: true },
 };
 const AnnotationViews: ViewType[] = ['assigned-ntcs', 'structure-info', 'downloads'];
@@ -145,13 +145,13 @@ export class MainScreen extends WithSubscriptions<MainScreen.Props, State> {
 
         if (view.unscrollableContainer) {
             return (
-                <div className='rdo-offset' style={{ overflow: 'hidden' }}>
+                <div className='rdo-side-offset' style={{ overflow: 'hidden' }}>
                     {rendered}
                 </div>
             );
         } else {
             return (
-                <div className='rdo-offset' style={{ overflow: 'hidden' }}>
+                <div className='rdo-side-offset' style={{ overflow: 'hidden' }}>
                     <div className='rdo-scroll-vertically' ref={this.scrollableElemRef}>
                         {rendered}
                     </div>
