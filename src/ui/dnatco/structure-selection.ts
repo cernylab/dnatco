@@ -1,3 +1,4 @@
+import { Subject } from 'rxjs';
 import { filterToChain }  from './util';
 import { ViewerInterop } from '../../viewer/viewer-interop';
 import { Dnatcofication } from '../../dnatco/dnatcofication';
@@ -26,7 +27,6 @@ export function StructureSelection(viewerInterop: ViewerInterop, dnatcofication:
         if (chain === InvalidChain)
             return { modelIndex, chain, stepId: InvalidStepId };
 
-
         const stepName = viewerInterop.api.query('selected-step').selected?.name
         const step = stepName ? StepsMapper.byName(dnatcofication, stepName) : void 0;
         if (step) {
@@ -52,4 +52,8 @@ export type StructureSelectionSwitching = {
     switchModel: (modelIndex: number) => void,
     switchChain: (chain: string) => void,
     switchStepId: (stepId: number) => void,
+    events: {
+        modelSwitched: Subject<StructureSelection>,
+        chainSwitched: Subject<StructureSelection>,
+    },
 }

@@ -4,7 +4,7 @@ import { CustomNtCSets } from './custom-ntc-sets';
 import { ChainSelect, ModelSelect } from '../structure-selectors';
 import { View } from '../view';
 import { Common, niceStepName } from '../../common';
-import { InvalidChain, InvalidModelIndex, InvalidStepId } from '../../structure-selection';
+import { EmptyStructureSelection, InvalidChain, InvalidModelIndex, InvalidStepId, StructureSelection } from '../../structure-selection';
 import { DynamicTable } from '../../../common/dynamic-table';
 import { NamedList, NamedListItem } from '../../../common/named-list';
 import { IconButton } from '../../../common/push-button';
@@ -14,17 +14,14 @@ import { NdbStructNtcStep, NdbStructNtcStepSummary } from '../../../../cif/categ
 import { Dnatcofication } from '../../../../dnatco/dnatcofication';
 import { StepsMapper } from '../../../../dnatco/steps-mapper';
 
-interface State {
-}
-export class ChangeNtCs extends View<Refinement.Props, State> {
+export class ChangeNtCs extends View<Refinement.Props> {
     static readonly unscrollableContainer = true;
     private tableModel: DynamicTable.Model = new DynamicTable.Model([]);
 
     constructor(props: Refinement.Props) {
         super(props);
 
-        this.state = {
-        };
+        this.setTableModel(EmptyStructureSelection(props.dnatcofication));
     }
 
     private makeTableModel(selectedModelNum: number, selectedChain?: string) {
@@ -129,10 +126,6 @@ export class ChangeNtCs extends View<Refinement.Props, State> {
     }
 
     private renderStepsTable() {
-        const modelNum = this.props.structureSelection.modelIndex !== InvalidModelIndex
-            ? this.props.dnatcofication.data.structures[0].models[this.props.structureSelection.modelIndex].num
-            : InvalidModelIndex;
-        this.tableModel = this.makeTableModel(modelNum, this.props.structureSelection.chain === InvalidChain ? void 0 : this.props.structureSelection.chain);
         const stepName = this.props.structureSelection.stepId === InvalidStepId ? '' : StepsMapper.byId(this.props.dnatcofication, this.props.structureSelection.stepId).name;
 
         return (
@@ -158,11 +151,22 @@ export class ChangeNtCs extends View<Refinement.Props, State> {
         );
     }
 
+    private setTableModel(sel: StructureSelection) {
+        const modelNum = sel.modelIndex !== InvalidModelIndex
+            ? this.props.dnatcofication.data.structures[0].models[this.props.structureSelection.modelIndex].num
+            : InvalidModelIndex;
+        this.tableModel = this.makeTableModel(modelNum, sel.chain === InvalidChain ? void 0 : sel.chain);
+    }
+
     componentDidMount() {
         this.subscribe(
             this.props.dnatcofication.customNtCs.events.changed,
             () => this.forceUpdate()
         );
+
+        this.subscribe(this.props.switching.events.modelSwitched, (sel) =>  this.setTableModel(sel));
+        this.subscribe(this.props.switching.events.chainSwitched, (sel) =>  this.setTableModel(sel));
+
     }
 
     componentWillUnmount() {

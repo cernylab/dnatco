@@ -2,7 +2,7 @@ import React from 'react';
 import { Annotation } from './common';
 import { ChainSelect, ModelSelect } from '../structure-selectors';
 import { View } from '../view';
-import { InvalidChain, InvalidModelIndex, InvalidStepId } from '../../structure-selection';
+import { EmptyStructureSelection, InvalidChain, InvalidModelIndex, InvalidStepId, StructureSelection } from '../../structure-selection';
 import { niceStepName, Common } from '../../common';
 import { DynamicTable } from '../../../common/dynamic-table';
 import { NamedList, NamedListItem } from '../../../common/named-list';
@@ -19,6 +19,12 @@ import 'assets/imgs/info-inverse.svg';
 export class AssignedNtCs extends View<View.Props> {
     static readonly unscrollableContainer = true;
     private tableModel: DynamicTable.Model = new DynamicTable.Model([]);
+
+    constructor(props: View.Props) {
+        super(props);
+
+        this.setTableModel(EmptyStructureSelection(props.dnatcofication));
+    }
 
     private makeTableModel(selectedModelNum: number, selectedChain?: string) {
         const steps = this.props.dnatcofication.table(NdbStructNtcStep);
@@ -101,10 +107,6 @@ export class AssignedNtCs extends View<View.Props> {
     }
 
     private renderStepsTable() {
-        const modelNum = this.props.structureSelection.modelIndex !== InvalidModelIndex
-            ? this.props.dnatcofication.data.structures[0].models[this.props.structureSelection.modelIndex].num
-            : InvalidModelIndex;
-        this.tableModel = this.makeTableModel(modelNum, this.props.structureSelection.chain === InvalidChain ? void 0 : this.props.structureSelection.chain);
         const stepName = this.props.structureSelection.stepId === InvalidStepId ? '' : StepsMapper.byId(this.props.dnatcofication, this.props.structureSelection.stepId).name;
 
         return (
@@ -146,6 +148,26 @@ export class AssignedNtCs extends View<View.Props> {
                 }}
             />
         );
+    }
+
+    private setTableModel(sel: StructureSelection) {
+        const modelNum = sel.modelIndex !== InvalidModelIndex
+            ? this.props.dnatcofication.data.structures[0].models[this.props.structureSelection.modelIndex].num
+            : InvalidModelIndex;
+        this.tableModel = this.makeTableModel(
+            modelNum,
+            sel.chain === InvalidChain ? void 0 : sel.chain
+        );
+    }
+
+    componentDidMount() {
+        this.subscribe(this.props.dnatcofication.events.structureChanged, () => this.setTableModel(EmptyStructureSelection(this.props.dnatcofication)));
+        this.subscribe(this.props.switching.events.modelSwitched, (sel) =>  this.setTableModel(sel));
+        this.subscribe(this.props.switching.events.chainSwitched, (sel) =>  this.setTableModel(sel));
+    }
+
+    componentWillUnmount() {
+        this.unsubscribeAll();
     }
 
     render() {

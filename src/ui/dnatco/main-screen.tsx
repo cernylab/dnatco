@@ -1,6 +1,6 @@
 import React from 'react';
 import { getCifValue } from './util';
-import { InvalidChain, InvalidModelIndex, InvalidStepId, StructureSelection } from './structure-selection';
+import { InvalidChain, InvalidModelIndex, InvalidStepId, StructureSelection, StructureSelectionSwitching } from './structure-selection';
 import { ViewsList } from './views-list';
 import { Register } from './views/register';
 import { DynamicSplitView } from '../common/dynamic-split-view';
@@ -9,6 +9,7 @@ import { ViewerInterop, ViewerApi } from '../../viewer/viewer-interop';
 import { Refine } from '../../cif/categories/refine';
 import { Dnatcofication } from '../../dnatco/dnatcofication';
 import { StepsMapper } from '../../dnatco/steps-mapper';
+import { EventsKeeper } from '../../util/events-keeper';
 import { Filters } from 'viewer-filters';
 import 'assets/molstar.js';
 import 'assets/molstar.css';
@@ -57,6 +58,7 @@ interface State {
     initializationError?: string;
 }
 export class MainScreen extends WithSubscriptions<MainScreen.Props, State> {
+    private ek = new EventsKeeper();
     private scrollableElemRef = React.createRef<HTMLDivElement>();
 
     readonly switchChain = async (chain: string) => {
@@ -72,6 +74,8 @@ export class MainScreen extends WithSubscriptions<MainScreen.Props, State> {
         // Invalidate step selection when switching chains
         const structureSelection = { ...this.state.structureSelection, chain, stepId: InvalidStepId };
         this.setState({ ...this.state, structureSelection });
+
+        this.viewerSwitching.events.chainSwitched.next(structureSelection);
     }
 
     readonly switchModel = async (modelIndex: number) => {
@@ -86,6 +90,8 @@ export class MainScreen extends WithSubscriptions<MainScreen.Props, State> {
         // Invalidate chain and step selection when switching model
         const structureSelection = { ...this.state.structureSelection, modelIndex, chain: InvalidChain, stepId: InvalidStepId };
         this.setState({ ...this.state, structureSelection });
+
+        this.viewerSwitching.events.modelSwitched.next(structureSelection);
     }
 
     readonly switchStepId = async (stepId: number) => {
@@ -102,10 +108,14 @@ export class MainScreen extends WithSubscriptions<MainScreen.Props, State> {
         this.setState({ ...this.state, structureSelection });
     }
 
-    readonly viewerSwitching = {
+    readonly viewerSwitching: StructureSelectionSwitching = {
         switchChain: this.switchChain,
         switchModel: this.switchModel,
         switchStepId:  this.switchStepId,
+        events: {
+            modelSwitched: this.ek.subject<StructureSelection>(),
+            chainSwitched: this.ek.subject<StructureSelection>(),
+        },
     }
 
     constructor(props: MainScreen.Props) {
