@@ -136,7 +136,9 @@ export namespace GappedSemaphore {
         const normalized = clamp(Inv + (v - Min) / Span, 0.0, 1.0);
 
         // Find the mapped segment
-        const ms = mapping.find((ms) => normalized >= ms.mappedFrom && normalized < ms.mappedTo);
+        const ms = normalized === 1.0
+            ? mapping[mapping.length - 1]
+            : mapping.find((ms) => normalized >= ms.mappedFrom && normalized < ms.mappedTo);
         if (!ms)
             throw new Error('No mapping for value ' + normalized);
 

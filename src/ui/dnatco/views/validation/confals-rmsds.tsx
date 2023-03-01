@@ -116,7 +116,7 @@ class StepRmsdStatsBar extends React.Component<{ stats: DnatcoStepRmsdStats[] }>
             const v = s.rmsdThreshold === -1 ? red + 0.1 : thrPrev + (s.rmsdThreshold - thrPrev) / 2.0;
 
             const w = Math.round(tw * s.count / total);
-            const rgb = valueToSemaphore(v, green ,red);
+            const rgb = GappedSemaphore.toSemaphore(v, green, red, GSMapping);
 
             ctx.fillStyle = rgbToHex(rgb);
             ctx.fillRect(fx, 0, w, th);
