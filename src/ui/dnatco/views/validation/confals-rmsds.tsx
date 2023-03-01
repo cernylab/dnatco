@@ -163,7 +163,7 @@ class Stats extends React.Component<{
     private readonly Value = { flex: 1, textAlign: 'center' } as StandardLonghandProperties;
     render() {
         return (
-            <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr', columnGap: 'var(--h-gap)', rowGap: 'var(--v-gap)' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr', columnGap: 'var(--h-gap)', rowGap: 'calc(var(--v-gap) / 2)' }}>
                 <div className='rdo-strong'>NtC</div>
                 <div style={this.ValuesCell}>
                     <div style={this.Value}>{`Assigned:\u00A0${this.props.assigned}`}</div>
