@@ -536,11 +536,6 @@ export class StepTorsions extends View<View.Props> {
                 <table className='rdo-data-table' ref={this.torDistTableRef}>
                     <thead>
                         <tr>
-                            <td colSpan={5}>
-                                <div className='rdo-strong rdo-talgn-center'>Torsions and distances</div>
-                            </td>
-                        </tr>
-                        <tr>
                             <th className='rdo-data-table'></th>
                             <th className='rdo-data-table'>Actual</th>
                             <th className='rdo-data-table'>{`Reference ${stepInfo.NtC}`}</th>
