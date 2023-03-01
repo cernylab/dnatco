@@ -17,6 +17,7 @@ import { StepsMapper } from '../../../../dnatco/steps-mapper';
 export class ChangeNtCs extends View<Refinement.Props> {
     static readonly unscrollableContainer = true;
     private tableModel: DynamicTable.Model = new DynamicTable.Model([]);
+    private tableTainer = React.createRef<HTMLDivElement>();
 
     constructor(props: Refinement.Props) {
         super(props);
@@ -145,7 +146,7 @@ export class ChangeNtCs extends View<Refinement.Props> {
                         this.props.switching.switchStepId(stepId);
                 }}
                 highlightedTag={stepName}
-                scrollTainer={this.props.scrollableParent}
+                scrollTainer={this.tableTainer.current ?? void 0}
                 style='wide'
             />
         );
@@ -208,7 +209,7 @@ export class ChangeNtCs extends View<Refinement.Props> {
                 />
 
                 <div className='rdo-line-spacer' />
-                <div style={ Common.VScrollElement }>
+                <div style={ Common.VScrollElement } ref={this.tableTainer}>
                     <div className='rdo-scroll-vertically'>
                         {this.renderStepsTable()}
                     </div>

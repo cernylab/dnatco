@@ -19,6 +19,7 @@ import 'assets/imgs/info-inverse.svg';
 export class AssignedNtCs extends View<View.Props> {
     static readonly unscrollableContainer = true;
     private tableModel: DynamicTable.Model = new DynamicTable.Model([]);
+    private tableTainer = React.createRef<HTMLDivElement>();
 
     constructor(props: View.Props) {
         super(props);
@@ -123,7 +124,7 @@ export class AssignedNtCs extends View<View.Props> {
                         this.props.switching.switchStepId(stepId);
                 }}
                 highlightedTag={stepName}
-                scrollTainer={this.props.scrollableParent}
+                scrollTainer={this.tableTainer.current ?? void 0}
                 style='wide'
                 download={{
                     downloaders: [
@@ -199,7 +200,7 @@ export class AssignedNtCs extends View<View.Props> {
                 </NamedList>
                 <div className='rdo-line-spacer' />
 
-                <div style={ Common.VScrollElement }>
+                <div style={ Common.VScrollElement } ref={this.tableTainer}>
                     <div className='rdo-scroll-vertically'>
                         {this.renderStepsTable()}
                     </div>
