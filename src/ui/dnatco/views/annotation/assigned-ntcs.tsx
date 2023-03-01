@@ -4,19 +4,13 @@ import { ChainSelect, ModelSelect } from '../structure-selectors';
 import { View } from '../view';
 import { InvalidChain, InvalidModelIndex, InvalidStepId } from '../../structure-selection';
 import { niceStepName, Common } from '../../common';
-import { Icon } from '../../../common/icon';
-import { SingleStepInfo } from '../../single-step-info';
 import { DynamicTable } from '../../../common/dynamic-table';
 import { NamedList, NamedListItem } from '../../../common/named-list';
 import { Tooltip } from '../../../common/tooltip';
 import { Cif } from '../../../../cif';
-import {
-    NdbStructNtcStep, NdbStructNtcStepSummary,
-    NdbStructNtcStepParameters
-} from '../../../../cif/categories/ndb-struct-ntc';
+import { NdbStructNtcStep, NdbStructNtcStepSummary } from '../../../../cif/categories/ndb-struct-ntc';
 import { Dnatcofication } from '../../../../dnatco/dnatcofication';
 import { StepsMapper } from '../../../../dnatco/steps-mapper';
-import { GlobalConfig } from '../../../../global-config';
 import { doDownload, FileTypes } from '../../../../util/downloader';
 import { Serialization } from '../../../../util/serialization';
 import 'assets/imgs/info.svg';
@@ -27,19 +21,11 @@ export class AssignedNtCs extends View<View.Props> {
     private tableModel: DynamicTable.Model = new DynamicTable.Model([]);
 
     private makeTableModel(selectedModelNum: number, selectedChain?: string) {
-        const pathPrefix = GlobalConfig.data().pathPrefix;
         const steps = this.props.dnatcofication.table(NdbStructNtcStep);
         const summary = this.props.dnatcofication.table(NdbStructNtcStepSummary);
-        const params = this.props.dnatcofication.table(NdbStructNtcStepParameters);
 
         const { PDB_model_number, label_asym_id_1, name } = steps;
         const { assigned_NtC, assigned_CANA, closest_NtC, closest_CANA } = summary;
-        const {
-            tor_delta_1, tor_epsilon_1, tor_zeta_1,
-            tor_alpha_2, tor_beta_2, tor_gamma_2,
-            tor_delta_2, tor_chi_1, tor_chi_2,
-            tor_NCCN, dist_CC, dist_NN
-        } = params;
 
         const chainColumn: DynamicTable.Column<string> = {
             name: 'Chain', cells: new Array<DynamicTable.Cell<string>>(), alignment: 'center',
@@ -58,11 +44,6 @@ export class AssignedNtCs extends View<View.Props> {
             name: 'CANA', cells: new Array<DynamicTable.Cell<string>>(), alignment: 'center',
             tooltip: <div><span className='rdo-emphasize'>C</span>onformational <span className='rdo-emphasize'>A</span>lphabet of <span className='rdo-emphasize'>N</span>ucleic <span className='rdo-emphasize'>A</span>cids</div>,
         };
-        const torsionsColumn: DynamicTable.Column<string> = {
-            name: '?', cells: new Array<DynamicTable.Cell<string>>(), alignment: 'center', notSortable: true, noData: true,
-            tooltip: <div>Hover over the <Icon img={`${pathPrefix}/imgs/info.svg`} size='text' /> to get details about torsions and distances.</div>,
-            elem: <Icon img={`${pathPrefix}/imgs/info.svg`} size='text' />
-        };
 
         for (let row = 0; row < steps._rowCount; row++) {
             const modelNum = Cif.Column.value(PDB_model_number, row)!;
@@ -74,7 +55,6 @@ export class AssignedNtCs extends View<View.Props> {
                 continue;
 
             const tag = Cif.Column.value(name, row)!;
-            const NtC = Cif.Column.value(assigned_NtC, row)!;
             const _step = StepsMapper.byName(this.props.dnatcofication, tag)!; // tag is the internal step name
 
             chainColumn.cells.push({ data: chain, tag });
@@ -115,36 +95,9 @@ export class AssignedNtCs extends View<View.Props> {
                 })(),
                 tag
             });
-            torsionsColumn.cells.push({
-                data: '',
-                tag,
-                tooltip:
-                    <Tooltip
-                        tag={
-                            <Icon img={`${pathPrefix}/imgs/info-inverse.svg`} size='text' />
-                        }
-                        delayMsec={300}
-                    >
-                        <SingleStepInfo
-                            NtC={NtC}
-                            delta1={Cif.Column.value(tor_delta_1, row)!}
-                            epsilon1={Cif.Column.value(tor_epsilon_1, row)!}
-                            zeta1={Cif.Column.value(tor_zeta_1, row)!}
-                            alpha2={Cif.Column.value(tor_alpha_2, row)!}
-                            beta2={Cif.Column.value(tor_beta_2, row)!}
-                            gamma2={Cif.Column.value(tor_gamma_2, row)!}
-                            delta2={Cif.Column.value(tor_delta_2, row)!}
-                            chi1={Cif.Column.value(tor_chi_1, row)!}
-                            chi2={Cif.Column.value(tor_chi_2, row)!}
-                            mu={Cif.Column.value(tor_NCCN, row)!}
-                            CC={Cif.Column.value(dist_CC, row)!}
-                            NN={Cif.Column.value(dist_NN, row)!}
-                        />
-                    </Tooltip>,
-            });
         }
 
-        return new DynamicTable.Model([chainColumn, stepColumn, ntcColumn, canaColumn, torsionsColumn]);
+        return new DynamicTable.Model([chainColumn, stepColumn, ntcColumn, canaColumn]);
     }
 
     private renderStepsTable() {
