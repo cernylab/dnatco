@@ -187,7 +187,7 @@ export class SimilarityPlots extends View<View.Props, State> {
                                 dragmode: 'pan',
                                 hovermode: 'closest',
                                 xaxis: { range: Constants.DefaultSimilarityXRange, title: 'Cartesian RMSD [Å]', automargin: true },
-                                yaxis: { range: Constants.DefaultSimilarityYRange, title: 'Euclidean distance [Å]', automargin: true },
+                                yaxis: { range: Constants.DefaultSimilarityYRange, title: 'Euclidean distance', automargin: true },
                                 plot_bgcolor: 'white',
                                 paper_bgcolor: 'white',
                                 margin: {
