@@ -403,7 +403,7 @@ export class ConfalsRmsds extends View<View.Props> {
 
     private setTableModel(sel: StructureSelection) {
         const modelNum = sel.modelIndex !== InvalidModelIndex
-            ? this.props.dnatcofication.data.structures[0].models[this.props.structureSelection.modelIndex].num
+            ? this.props.dnatcofication.data.structures[0].models[sel.modelIndex].num
             : -1;
         this.tableModel = this.makeTableModel(modelNum, sel.chain === InvalidChain ? void 0 : sel.chain);
     }

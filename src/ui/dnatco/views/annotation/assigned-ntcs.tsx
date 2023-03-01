@@ -153,7 +153,7 @@ export class AssignedNtCs extends View<View.Props> {
 
     private setTableModel(sel: StructureSelection) {
         const modelNum = sel.modelIndex !== InvalidModelIndex
-            ? this.props.dnatcofication.data.structures[0].models[this.props.structureSelection.modelIndex].num
+            ? this.props.dnatcofication.data.structures[0].models[sel.modelIndex].num
             : InvalidModelIndex;
         this.tableModel = this.makeTableModel(
             modelNum,
