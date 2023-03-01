@@ -1,10 +1,10 @@
 import * as React from 'react';
 import { View } from '../view';
+import { getCifValue, niceCifDate } from '../../util';
 import { CollapsibleVertical } from '../../../common/collapsible-vertical';
 import { NamedList, NamedListItem } from '../../../common/named-list';
 import { Cif } from '../../../../cif';
 import { Citation } from '../../../../cif/categories/citation';
-import { Category, Schema } from '../../../../cif/categories';
 import { CitationAuthor } from '../../../../cif/categories/citation-author';
 import { Exptl } from '../../../../cif/categories/experimental';
 import { PdbxDatabaseStatus } from '../../../../cif/categories/pdbx-database-status';
@@ -14,22 +14,6 @@ import { Dnatcofication } from '../../../../dnatco/dnatcofication';
 import { doiLink, pubmedLink } from '../../../../util/resources';
 
 const NA = 'N/A';
-
-function formatDate(date?: Schema.CifDate) {
-    if (!date)
-        return 'N/A';
-    return `${date.year}-${date.month.toString().padStart(2, '0')}-${date.day.toString().padStart(2, '0')}`;
-}
-
-function getIfAvail<S extends Schema.Schema, K extends keyof S>(d: Dnatcofication, category: Category<S>, column: K, row = 0): S[K]['T'] {
-    if (d.hasTable(category)) {
-        const col = d.table(category)[column];
-        if (Cif.Column.hasValues(col))
-            return Cif.Column.value(col, row);
-        return undefined;
-    } else
-        return undefined;
-}
 
 function listAuthors(d: Dnatcofication) {
     if (!d.hasTable(CitationAuthor))
@@ -73,9 +57,9 @@ export class StructureInfo extends View {
         return (
             <div>
                 <NamedList>
-                    <NamedListItem name='Structure ID'>{getIfAvail(this.props.dnatcofication, Struct, 'entry_id') ?? NA }</NamedListItem>
-                    <NamedListItem name='Structure title'>{getIfAvail(this.props.dnatcofication, Struct, 'title') ?? NA }</NamedListItem>
-                    <NamedListItem name='Deposited to PDB'>{formatDate(getIfAvail(this.props.dnatcofication, PdbxDatabaseStatus, 'recvd_initial_deposition_date'))}</NamedListItem>
+                    <NamedListItem name='Structure ID'>{getCifValue(this.props.dnatcofication, Struct, 'entry_id') ?? NA }</NamedListItem>
+                    <NamedListItem name='Structure title'>{getCifValue(this.props.dnatcofication, Struct, 'title') ?? NA }</NamedListItem>
+                    <NamedListItem name='Deposited to PDB'>{niceCifDate(getCifValue(this.props.dnatcofication, PdbxDatabaseStatus, 'recvd_initial_deposition_date'))}</NamedListItem>
                 </NamedList>
                 <div className='rdo-line-spacer' />
                 <CollapsibleVertical
@@ -95,9 +79,9 @@ export class StructureInfo extends View {
                 >
                     <div className='rdo-offset'>
                         <NamedList>
-                            <NamedListItem name='Method'>{getIfAvail(this.props.dnatcofication, Exptl, 'method') ?? NA }</NamedListItem>
-                            <NamedListItem name='Resolution'>{`Low: ${getIfAvail(this.props.dnatcofication, Refine, 'ls_d_res_low')?.toFixed(3) ?? NA}, High: ${getIfAvail(this.props.dnatcofication, Refine, 'ls_d_res_high')?.toFixed(3) ?? NA}`}</NamedListItem>
-                            <NamedListItem name='R-free'>{getIfAvail(this.props.dnatcofication, Refine, 'ls_R_factor_R_free')?.toFixed(3) ?? NA }</NamedListItem>
+                            <NamedListItem name='Method'>{getCifValue(this.props.dnatcofication, Exptl, 'method') ?? NA }</NamedListItem>
+                            <NamedListItem name='Resolution'>{`Low: ${getCifValue(this.props.dnatcofication, Refine, 'ls_d_res_low')?.toFixed(3) ?? NA}, High: ${getCifValue(this.props.dnatcofication, Refine, 'ls_d_res_high')?.toFixed(3) ?? NA}`}</NamedListItem>
+                            <NamedListItem name='R-free'>{getCifValue(this.props.dnatcofication, Refine, 'ls_R_factor_R_free')?.toFixed(3) ?? NA }</NamedListItem>
                         </NamedList>
                     </div>
                 </CollapsibleVertical>

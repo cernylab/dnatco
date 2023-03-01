@@ -1,10 +1,12 @@
 import React from 'react';
+import { getCifValue } from './util';
 import { InvalidChain, InvalidModelIndex, InvalidStepId, StructureSelection } from './structure-selection';
 import { ViewsList } from './views-list';
 import { Register } from './views/register';
 import { DynamicSplitView } from '../common/dynamic-split-view';
 import { WithSubscriptions } from '../service/with-subscriptions';
 import { ViewerInterop, ViewerApi } from '../../viewer/viewer-interop';
+import { Refine } from '../../cif/categories/refine';
 import { Dnatcofication } from '../../dnatco/dnatcofication';
 import { StepsMapper } from '../../dnatco/steps-mapper';
 import { Filters } from 'viewer-filters';
@@ -275,12 +277,22 @@ export class MainScreen extends WithSubscriptions<MainScreen.Props, State> {
                     selected={this.activeView()}
                 />
                 <div style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr', marginLeft: 'auto', marginRight: 'auto', alignItems: 'center' }}>
-                        <div className='rdo-structure-id'>
-                            {this.props.dnatcofication.identifyingName}
+                    <div className='rdo-structure-caption'>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'auto auto', alignItems: 'center' }}>
+                            <div className='rdo-structure-id'>
+                                {this.props.dnatcofication.identifyingName}
+                            </div>
+                            <div className='rdo-structure-title'>
+                               {this.props.dnatcofication.identifyingTitle}
+                            </div>
                         </div>
-                        <div className='rdo-structure-title'>
-                           {this.props.dnatcofication.identifyingTitle}
+                        <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center', gap: 'var(--h-gap)' }}>
+                            <div className='rdo-strong'>Resolution</div>
+                            <div>
+                                <span className='rdo-emphasize'>Low:{'\u00A0'}</span><span>{getCifValue(this.props.dnatcofication, Refine, 'ls_d_res_low')?.toFixed(3) ?? 'N/A'}</span>
+                                {',\u00A0'}
+                                <span className='rdo-emphasize'>High:{'\u00A0'}</span><span>{getCifValue(this.props.dnatcofication, Refine, 'ls_d_res_high')?.toFixed(3) ?? 'N/A'}</span>
+                            </div>
                         </div>
                     </div>
                     <DynamicSplitView

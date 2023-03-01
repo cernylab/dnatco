@@ -694,10 +694,18 @@ th.rdo-data-table-small {
     font-weight: bold;
 }
 
+.rdo-structure-caption {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding-bottom: calc(var(--x-gap) / 2);
+}
+
 .rdo-structure-id {
     font-size: var(--font-xxlarge);
     font-weight: bold;
-    padding: calc(var(--x-gap) / 2);
+    padding-left: calc(var(--x-gap) / 2);
+    padding-right: calc(var(--x-gap) / 2);
     text-align: right;
 }
 

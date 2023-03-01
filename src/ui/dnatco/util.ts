@@ -1,4 +1,6 @@
 import { InvalidModelIndex, InvalidStepId } from './structure-selection';
+import { Cif } from '../../cif';
+import { Category, Schema } from '../../cif/categories';
 import { ComboBox } from '../common/combo-box';
 import { Dnatcofication } from '../../dnatco/dnatcofication';
 import { Chain, Structure } from '../../dnatco/structure';
@@ -53,6 +55,16 @@ export function filterToChain(dnatcofication: Dnatcofication, modelIndex: number
     return found ? chain : '';
 }
 
+export function getCifValue<S extends Schema.Schema, K extends keyof S>(d: Dnatcofication, category: Category<S>, column: K, row = 0): S[K]['T'] {
+    if (d.hasTable(category)) {
+        const col = d.table(category)[column];
+        if (Cif.Column.hasValues(col))
+            return Cif.Column.value(col, row);
+        return void 0;
+    } else
+        return void 0;
+}
+
 export function listOfChains(modelIndex: number, structure: Structure, entityKinds: Dnatcofication.EntityKinds) {
     if (modelIndex === InvalidModelIndex)
         return [];
@@ -96,7 +108,13 @@ export function makeStepSelection(dnatcofication: Dnatcofication, stepId: number
     };
 }
 
-export function valueToSemaphore(v: number, greenValue: number, redValue: number): Rgb {
+export function niceCifDate(date: Schema.CifDate) {
+    if (!date)
+        return 'N/A';
+    return `${date.year}-${date.month.toString().padStart(2, '0')}-${date.day.toString().padStart(2, '0')}`;
+}
+
+export function valueToSemaphore(v: number, greenValue: number, redValue: number) {
     const reverse = redValue < greenValue;
     const Inv = reverse ? 1.0 : 0.0;
     const Min = reverse ? redValue : greenValue;
