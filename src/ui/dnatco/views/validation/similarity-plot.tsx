@@ -9,6 +9,7 @@ import { NamedList, NamedListItem } from '../../../common/named-list';
 import { Constants } from '../../../dnatco/constants';
 import { rgbToHex } from '../../../util';
 import { Dnatcofication } from '../../../../dnatco/dnatcofication';
+import { Step } from '../../../../dnatco/step';
 import { StepsMapper } from '../../../../dnatco/steps-mapper';
 
 const PlotData = {
@@ -101,10 +102,14 @@ export class SimilarityPlots extends View<View.Props, State> {
     render() {
         const numModels = Dnatcofication.Structure.numberOfModels(this.props.dnatcofication);
 
-        let plotData = PlotData;
+        let plotData;
+        let step: Step|undefined = void 0;
         if (this.props.structureSelection.stepId !== InvalidStepId) {
             const stepIdx = StepsMapper.idToIndex(this.props.dnatcofication, this.props.structureSelection.stepId);
             plotData = this.plotData(stepIdx);
+            step = StepsMapper.byId(this.props.dnatcofication, this.props.structureSelection.stepId);
+        } else {
+            plotData = PlotData;
         }
 
         return (
@@ -140,6 +145,16 @@ export class SimilarityPlots extends View<View.Props, State> {
                         />
                     </NamedListItem>
                 </NamedList>
+
+                <div className='rdo-line-spacer' />
+                <NamedList>
+                    <NamedListItem name='Step NtC'>
+                        {step
+                            ? `${step.NtC} ${step.NtC === 'NANT' ? `(closest ${step.closestNtC})` : ''}`
+                            : '-'
+                        }
+                    </NamedListItem>
+                </NamedList>
                 <div className='rdo-offset'>
                     <div className='rdo-plot-container'>
                         <Plot
@@ -151,6 +166,7 @@ export class SimilarityPlots extends View<View.Props, State> {
                                     mode: 'text+markers',
                                     textposition: 'top center',
                                     text: plotData.tags,
+                                    hovertemplate: '<i>RMSD</i>: %{x:.3f}, <i>ED</i>: %{y:.3f}<br />%{text}',
                                     type: 'scattergl',
                                     showlegend: false,
                                 },
@@ -161,6 +177,7 @@ export class SimilarityPlots extends View<View.Props, State> {
                                     mode: 'text+markers',
                                     textposition: 'top center',
                                     text: plotData.tagsSel,
+                                    hovertemplate: 'RMSD: %{x:.3f}, ED: %{y:.3f}<br />%{text}',
                                     type: 'scattergl',
                                     showlegend: false,
                                 },
@@ -170,7 +187,7 @@ export class SimilarityPlots extends View<View.Props, State> {
                                 dragmode: 'pan',
                                 hovermode: 'closest',
                                 xaxis: { range: Constants.DefaultSimilarityXRange, title: 'Cartesian RMSD [Å]', automargin: true },
-                                yaxis: { range: Constants.DefaultSimilarityYRange, title: 'Euclidean distance', automargin: true },
+                                yaxis: { range: Constants.DefaultSimilarityYRange, title: 'Euclidean distance [Å]', automargin: true },
                                 plot_bgcolor: 'white',
                                 paper_bgcolor: 'white',
                                 margin: {
