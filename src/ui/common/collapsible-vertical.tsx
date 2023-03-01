@@ -29,7 +29,7 @@ export class CollapsibleVertical extends React.Component<CollapsibleVertical.Pro
                 <div
                     onClick={() => this.setState({ ...this.state, collapsed: !this.state.collapsed })}
                 >
-                    {this.props.header}
+                    {this.state.collapsed ? this.props.header.collapsed : this.props.header.expanded}
                 </div>
             );
         }
@@ -47,7 +47,7 @@ export class CollapsibleVertical extends React.Component<CollapsibleVertical.Pro
 
 export namespace CollapsibleVertical {
     export interface Props {
-        header: string | React.ReactNode;
+        header: string | { expanded: React.ReactNode, collapsed: React.ReactNode },
         children?: React.ReactNode;
         style?: StandardLonghandProperties;
     }

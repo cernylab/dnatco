@@ -30,6 +30,8 @@ import { doDownload, Downloader, FileTypes } from '../../../../util/downloader';
 import { Serialization } from '../../../../util/serialization';
 import { M } from '../../../../util/math';
 import 'assets/imgs/data-transfer-download.svg';
+import 'assets/imgs/triangle-down.svg';
+import 'assets/imgs/triangle-up.svg';
 
 type EmptiableMaybeBin = MaybeBin|'no-data';
 
@@ -158,6 +160,10 @@ function fileNameFriendlyTag(tag: string) {
         "'",
         'p'
     );
+}
+
+function makeCollapsibleHeader(collapsed: React.ReactNode, expanded?: React.ReactNode): { collapsed: React.ReactNode, expanded: React.ReactNode } {
+    return { collapsed, expanded: expanded ? expanded : collapsed };
 }
 
 type GatherWorst = {
@@ -994,15 +1000,17 @@ export class AnglesLengths extends View<
         return (
             <React.Fragment key={idx}>
                 <CollapsibleVertical
-                    header=<ResidueHeader
-                        caption={residueName}
-                        residue={residue}
-                        stats={stats}
-                        summary={stats.summary}
-                        structureName={structureName}
-                        countsAngles={countsAngles}
-                        countsLengths={countsLenghts}
-                    />
+                    header={makeCollapsibleHeader(
+                        <ResidueHeader
+                            caption={residueName}
+                            residue={residue}
+                            stats={stats}
+                            summary={stats.summary}
+                            structureName={structureName}
+                            countsAngles={countsAngles}
+                            countsLengths={countsLenghts}
+                        />
+                    )}
                 >
                     <div style={DetailsTableStyle}>
                         <div style={{ gridColumnStart: 'span 5', ...DetailsCaptionStyle }}>Bond lengths</div>
@@ -1229,6 +1237,26 @@ export class AnglesLengths extends View<
             })
         ];
 
+        const pathPrefix = GlobalConfig.data().pathPrefix;
+        const mkHeader = (text: string) => {
+            const Style = { display: 'flex', flexDirection: 'row', alignItems: 'center' } as StandardLonghandProperties;
+
+            return {
+                collapsed: (
+                    <div className='rdo-secondary-caption rdo-active' style={Style}>
+                        <div style={{ flex: 1 }}>{text}</div>
+                        <Icon img={`${pathPrefix}/imgs/triangle-up.svg`} size='text' />
+                    </div>
+                ),
+                expanded: (
+                    <div className='rdo-secondary-caption rdo-active' style={Style}>
+                        <div style={{ flex: 1 }}>{text}</div>
+                        <Icon img={`${pathPrefix}/imgs/triangle-down.svg`} size='text' />
+                    </div>
+                )
+            };
+        };
+
         return (
             <div style={{ ...Common.VScrollGridJail, gridTemplateRows: 'auto auto auto auto auto 1fr' }}>
                 <NamedList sizing='min-content' rowSpacing='half'>
@@ -1273,7 +1301,7 @@ export class AnglesLengths extends View<
 
                 <div style={ Common.VScrollElement }>
                     <CollapsibleVertical
-                        header=<div className='rdo-secondary-caption rdo-active'>Residues</div>
+                        header={mkHeader('Residues')}
                         style={ Common.VScrollJail }
                     >
                         <div style={ Common.VScrollElement }>
@@ -1286,7 +1314,7 @@ export class AnglesLengths extends View<
 
                 <div style={ Common.VScrollElement }>
                     <CollapsibleVertical
-                        header=<div className='rdo-secondary-caption rdo-active'>Worst lengths</div>
+                        header={mkHeader('Worst lengths')}
                         style={ Common.VScrollJail }
                     >
                         <NamedList sizing='min-content' rowSpacing='half'>
@@ -1324,7 +1352,7 @@ export class AnglesLengths extends View<
 
                 <div style={ Common.VScrollElement }>
                     <CollapsibleVertical
-                        header=<div className='rdo-secondary-caption rdo-active'>Worst angles</div>
+                        header={mkHeader('Worst angles')}
                         style={ Common.VScrollJail }
                     >
                         <NamedList sizing='min-content' rowSpacing='half'>
