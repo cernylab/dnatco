@@ -138,12 +138,18 @@ export class ChangeNtCs extends View<Refinement.Props, State> {
         return (
             <DynamicTable
                 model={this.tableModel}
-                onCellClicked={(row, col, item) => {
-                    if (col === 'Step') {
-                        const stepId = StepsMapper.byName(this.props.dnatcofication, item)?.id ?? InvalidStepId;
-                        if (stepId !== InvalidStepId)
-                            this.props.switching.switchStepId(stepId);
-                    }
+                onCellClicked={(data, row, colName) => {
+                    if (colName === 'Custom NtC')
+                        return;
+
+                    const cIdx = this.tableModel.columnNames.findIndex(cn => cn === 'Step');
+                    if (cIdx === -1)
+                        return;
+
+                    const stepName = row[cIdx].data;
+                    const stepId = StepsMapper.byName(this.props.dnatcofication, stepName)?.id ?? InvalidStepId;
+                    if (stepId !== InvalidStepId)
+                        this.props.switching.switchStepId(stepId);
                 }}
                 highlightedTag={stepName}
                 scrollTainer={this.props.scrollableParent}

@@ -67,7 +67,7 @@ export class DynamicTable extends React.Component<DynamicTable.Props> {
                                     }}
                                     onClick={() => {
                                         if (this.props.onCellClicked)
-                                            this.props.onCellClicked(rowIdx, col.name, item.data.toString());
+                                            this.props.onCellClicked(item.data, row, col.name);
                                     }}
                                 >
                                     {item.tooltip
@@ -273,7 +273,7 @@ export namespace DynamicTable {
     export type Downloader = _Downloader<Model>;
     export interface Props {
         model: Model;
-        onCellClicked?: (row: number, column: string, value: string) => void;
+        onCellClicked?: (data: any, row: Cell<any>[], columnName: string) => void;
         highlightedTag?: string;
         scrollTainer?: string|HTMLElement; // This needs to be se to a reasonable element to make autoscrolling work reliably
         style?: Style;
