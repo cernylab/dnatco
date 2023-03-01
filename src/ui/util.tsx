@@ -38,6 +38,19 @@ export function formatErrorText(text: string) {
     return <div>{elems}</div>;
 }
 
+/* https://alienryderflex.com/hsp.html */
+export function luminance(clr: number) {
+    let [r, g, b] = colorToTuple(clr);
+    r /= 255.0;
+    g /= 255.0;
+    b /= 255.0;
+    return Math.sqrt(0.299 * r * r + 0.587 * g * g + 0.114 * b * b);
+}
+
+export function rgbToColor(r: number, g: number, b: number) {
+    return (r << 16) | (g << 8) | b;
+}
+
 export function rgbToHex(rgb: Rgb | ColorTuple) {
     return Array.isArray(rgb)
         ? '#' + rgb.map(x => componentToHex(x)).join('')

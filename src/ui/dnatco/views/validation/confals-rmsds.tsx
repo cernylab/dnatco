@@ -1,13 +1,15 @@
-import  React from 'react';
+import type { StandardLonghandProperties } from 'csstype';
+import React from 'react';
 import { Validation } from './common';
 import { ChainSelect, ModelSelect } from '../structure-selectors';
 import { InvalidChain, InvalidModelIndex, InvalidStepId } from '../../structure-selection';
 import { View } from '../view';
-import { Common, ConfalPercentileStats, StepsClassificationStats, StepRmsdStats, niceStepName } from '../../common';
+import { confalPercentile, niceStepName, Common } from '../../common';
 import { SingleStepInfo } from '../../single-step-info';
 import { Constants } from '../../constants';
+import { valueToSemaphore, GappedSemaphore } from '../../util';
 import { Icon } from '../../../common/icon';
-import { valueToSemaphore } from '../../util';
+import { rgbToHex } from '../../../util';
 import { DynamicTable } from '../../../common/dynamic-table';
 import { NamedList, NamedListItem } from '../../../common/named-list';
 import { Tooltip } from '../../../common/tooltip';
@@ -16,24 +18,199 @@ import {
     NdbStructNtcOverall, NdbStructNtcStep, NdbStructNtcStepSummary,
     NdbStructNtcStepParameters
 } from '../../../../cif/categories/ndb-struct-ntc';
-import { Dnatcofication } from '../../../../dnatco/dnatcofication';
+import { Dnatcofication, StepRmsdStats as DnatcoStepRmsdStats } from '../../../../dnatco/dnatcofication';
 import { StepsMapper } from '../../../../dnatco/steps-mapper';
 import { GlobalConfig } from '../../../../global-config';
 import { doDownload, FileTypes } from '../../../../util/downloader';
 import { Serialization } from '../../../../util/serialization';
 import 'assets/imgs/info.svg';
-import 'assets/imgs/info-inverse.svg'
+import 'assets/imgs/info-inverse.svg';
 
 const CellBgAlpha = 0.5;
 
-function confalToColor(rmsd: number): React.CSSProperties  {
+function confalToColor(rmsd: number): React.CSSProperties {
     const clr = valueToSemaphore(rmsd, Constants.GreenConfal, Constants.GreenRMSD);
     return { backgroundColor: `rgba(${clr.r},${clr.g},${clr.b},${CellBgAlpha})` };
 }
 
-function rmsdToColor(rmsd: number): React.CSSProperties  {
+function rmsdToColor(rmsd: number): React.CSSProperties {
     const clr = valueToSemaphore(rmsd, Constants.GreenRMSD, Constants.RedRMSD);
     return { backgroundColor: `rgba(${clr.r},${clr.g},${clr.b},${CellBgAlpha})` };
+}
+
+const GSMapping = GappedSemaphore.makeMapping([
+    { from: 0, to: 0.3 }, { from: 0.6, to: 1.0 },
+]);
+
+class ConfalPercentileStatsBar extends React.Component<{ percentile: number }> {
+    private readonly MarkerWidthRatio = 0.005;
+    private readonly MarkerOverdrawRatio = 0.8; // How much smaller is the background gradient than the marker.
+    private barRef = React.createRef<HTMLCanvasElement>();
+
+    private drawBar(canvas: HTMLCanvasElement, perc: number) {
+        let ctx = canvas.getContext('2d');
+        if (!ctx)
+            return;
+
+        const tw = canvas.width;
+        const th = canvas.height;
+
+        ctx.clearRect(0, 0, tw, th);
+
+        const gh = Math.round(0.8 * th);
+        const grad = ctx.createLinearGradient(0, 0, tw, 0);
+        grad.addColorStop(0.0, 'rgba(255,   0,   0, 1.0)');
+        grad.addColorStop(0.5, 'rgba(255, 255, 255, 1.0)');
+        grad.addColorStop(1.0, 'rgba(0,     0, 255, 1.0)');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, (th - gh) / 2.0, tw, gh);
+
+        const mx = tw * perc / 100.0;
+        const mwx = Math.round(this.MarkerWidthRatio * tw);
+        const fx = Math.round(mx - this.MarkerWidthRatio / 2.0);
+
+        /* Firefox refuses to change fillStyle from CanvasGradient to rgba color
+         * specified by rgba() string. Encode the color differently. */
+        ctx.fillStyle = '#000000';
+        ctx.fillRect(fx, 0, mwx, th);
+    }
+
+    private tryDrawBar() {
+        const ref = this.barRef.current;
+        if (ref)
+            this.drawBar(ref, this.props.percentile);
+    }
+
+    componentDidMount() {
+        this.tryDrawBar();
+    }
+
+    componentDidUpdate() {
+        this.tryDrawBar();
+    }
+
+    render() {
+        return <canvas width={300} height={30} style={{ ...Common.StyleScoreBar, height: `${Common.BarHeightEm / this.MarkerOverdrawRatio}em` }} ref={this.barRef} />;
+    }
+}
+
+class StepRmsdStatsBar extends React.Component<{ stats: DnatcoStepRmsdStats[] }> {
+    private barRef = React.createRef<HTMLCanvasElement>();
+
+    private drawBar(canvas: HTMLCanvasElement, stats: DnatcoStepRmsdStats[]) {
+        const ctx = canvas.getContext('2d');
+        if (!ctx || stats.length < 3)
+            return;
+
+        const tw = canvas.width;
+        const th = canvas.height;
+        const green = stats[0].rmsdThreshold;
+        const red = stats[stats.length - 2].rmsdThreshold;
+
+        const total = stats.reduce((p, c) => p + c.count, 0);
+
+        let fx = 0;
+        for (let idx = 0; idx < stats.length; idx++) {
+            const s = stats[idx];
+            const thrPrev = stats[idx - 1]?.rmsdThreshold ?? 0;
+            const v = s.rmsdThreshold === -1 ? red + 0.1 : thrPrev + (s.rmsdThreshold - thrPrev) / 2.0;
+
+            const w = Math.round(tw * s.count / total);
+            const rgb = valueToSemaphore(v, green ,red);
+
+            ctx.fillStyle = rgbToHex(rgb);
+            ctx.fillRect(fx, 0, w, th);
+            if (w >= tw)
+                return;
+
+            fx += w;
+        }
+    }
+
+    private tryDrawBar() {
+        const ref = this.barRef.current;
+        if (ref)
+            this.drawBar(ref, this.props.stats);
+    }
+
+    componentDidMount() {
+        this.tryDrawBar();
+    }
+
+    componentDidUpdate() {
+        this.tryDrawBar();
+    }
+
+    render() {
+        const stats = this.props.stats;
+
+        if (stats.length < 2)
+            return void 0;
+
+        return <canvas width={300} height={1} style={ Common.StyleScoreBar } ref={this.barRef} />;
+    }
+}
+
+class Stats extends React.Component<{
+    assigned: number,
+    close: number,
+    unassigned: number
+    rmsdStats: DnatcoStepRmsdStats[]
+    confalAverage: number,
+    confalPercentile: number,
+}>{
+    private readonly ValuesCell = { display: 'flex', flexDirection: 'row', width: '100%' } as StandardLonghandProperties;
+    private readonly Value = { flex: 1, textAlign: 'center' } as StandardLonghandProperties;
+    render() {
+        return (
+            <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr', columnGap: 'var(--h-gap)', rowGap: 'var(--v-gap)' }}>
+                <div className='rdo-strong'>NtC</div>
+                <div style={this.ValuesCell}>
+                    <div style={this.Value}>{`Assigned:\u00A0${this.props.assigned}`}</div>
+                    <div style={this.Value}>{`Close:\u00A0${this.props.close}`}</div>
+                    <div style={this.Value}>{`Unassigned:\u00A0${this.props.unassigned}`}</div>
+                </div>
+
+                <div className='rdo-strong'>RMSD [{'\u212B'}]</div>
+                <div style={this.ValuesCell}>
+                    {this.props.rmsdStats.slice(0, this.props.rmsdStats.length - 1).map((s, idx, stats) => {
+                        const green = stats[0].rmsdThreshold; // First
+                        const red = stats[stats.length - 1].rmsdThreshold; // Last (mind that we sliced off the last element of the original array)
+                        const tprev = stats[idx - 1]?.rmsdThreshold ?? 0;
+                        const v = s.rmsdThreshold === -1 ? red + 0.1 : tprev + (s.rmsdThreshold - tprev) / 2.0;
+                        const clr = GappedSemaphore.toSemaphore(v, green, red, GSMapping);
+
+                        return (
+                            <div
+                                key={idx}
+                                style={{
+                                    color: rgbToHex(clr),
+                                    ...this.Value
+                                }}
+                            >
+                                {`<\u00A0${s.rmsdThreshold.toFixed(1)}:\u00A0${s.count}`}
+                            </div>
+                        );
+                    })}
+                    <div
+                        style={{ color: rgbToHex({ r: 255, g: 0, b: 0}), ...this.Value }}
+                    >
+                        {`>\u00A0${this.props.rmsdStats[this.props.rmsdStats.length - 2].rmsdThreshold.toFixed(1)}:\u00A0${this.props.rmsdStats[this.props.rmsdStats.length - 1].count}`}
+                    </div>
+                </div>
+                <div />
+                <StepRmsdStatsBar stats={this.props.rmsdStats} />
+
+                <div className='rdo-strong'>Confal score</div>
+                <div style={this.ValuesCell}>
+                    <div style={this.Value}>{`Average value:\u00A0${this.props.confalAverage.toFixed(0)}`}</div>
+                    <div style={this.Value}>{`Percentile:\u00A0${this.props.confalPercentile.toFixed(0)}`}</div>
+                </div>
+                <div />
+                <ConfalPercentileStatsBar percentile={this.props.confalPercentile} />
+            </div>
+        );
+    }
 }
 
 export class ConfalsRmsds extends View<View.Props> {
@@ -234,22 +411,19 @@ export class ConfalsRmsds extends View<View.Props> {
         const overall = this.props.dnatcofication.table(NdbStructNtcOverall);
         const numModels = Dnatcofication.Structure.numberOfModels(this.props.dnatcofication);
         const modelIdx = this.props.structureSelection.modelIndex === InvalidModelIndex ? 0 : this.props.structureSelection.modelIndex;
+        const confalAverage = this.props.dnatcofication.data.averageConfals[modelIdx];
 
         return (
             <div style={ Common.VScrollJail }>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--v-gap)' }}>
-                    <StepsClassificationStats
-                        assigned={Cif.Column.value(overall.num_classified, 0)!}
-                        close={Cif.Column.value(overall.num_unclassified_rmsd_close, 0)!}
-                        unassigned={Cif.Column.value(overall.num_unclassified, 0)!}
-                    />
-                    <StepRmsdStats stats={this.props.dnatcofication.data.stepRmsdStats[modelIdx]} />
-                    <ConfalPercentileStats
-                        avgConfal={this.props.dnatcofication.data.averageConfals[modelIdx]}
-                        modelNum={this.props.dnatcofication.data.structures[0].models[modelIdx].num}
-                        showModelNum={this.props.structureSelection.modelIndex === InvalidModelIndex}
-                    />
-                </div>
+                <Stats
+                    assigned={Cif.Column.value(overall.num_classified, 0)!}
+                    close={Cif.Column.value(overall.num_unclassified_rmsd_close, 0)!}
+                    unassigned={Cif.Column.value(overall.num_unclassified, 0)!}
+                    rmsdStats={this.props.dnatcofication.data.stepRmsdStats[modelIdx]}
+                    confalAverage={confalAverage}
+                    confalPercentile={confalPercentile(confalAverage)}
+                />
+
                 <div className='rdo-line-spacer' />
                 <NamedList sizing='min-content' rowSpacing='half'>
                 {

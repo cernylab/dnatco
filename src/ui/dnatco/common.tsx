@@ -19,6 +19,22 @@ export namespace Common {
     export const StyleTableSameColumnWidth = { tableLayout: 'fixed', width: '100%' } as StandardLonghandProperties;
 }
 
+// NO NO NO: This is just a very interim solution to check that we're correct
+export function confalPercentile(confal: number) {
+    // TODO: Better function
+    const x = clamp(confal, 0.0, 100.0);
+    const Coeffs = [
+        -8.43983519489781E-13, 2.99903652081687E-10, -4.04702262570393E-08, 2.54732719424787E-06, -7.55126681196185E-05, 0.00111573721670155, -0.00220044745406717, 0.0259204823080706
+    ];
+    const N = Coeffs.length - 1;
+
+    let y = 0;
+    for (let idx = 0; idx < Coeffs.length; idx++)
+        y += Coeffs[idx] * Math.pow(x, N - idx);
+
+    return y * 100.0;
+}
+
 export function niceStepName(step: Step, showModelNum = false) {
     return (
         <span>
@@ -56,93 +72,6 @@ export function niceStepNameText(step: Step, showModelNum = false) {
     return (showModelNum ? `M${step.model} ` : '') + nice;
 }
 
-// NO NO NO: This is just a very interim solution to check that we're correct
-function percentile(confal: number) {
-    // TODO: Better function
-    const x = clamp(confal, 0.0, 100.0);
-    const Coeffs = [
-        -8.43983519489781E-13, 2.99903652081687E-10, -4.04702262570393E-08, 2.54732719424787E-06, -7.55126681196185E-05, 0.00111573721670155, -0.00220044745406717, 0.0259204823080706
-    ];
-    const N = Coeffs.length - 1;
-
-    let y = 0;
-    for (let idx = 0; idx < Coeffs.length; idx++)
-        y += Coeffs[idx] * Math.pow(x, N - idx);
-
-    return y * 100.0;
-}
-export class ConfalPercentileStats extends React.Component<{ avgConfal: number, modelNum: number, showModelNum: boolean }> {
-    private readonly MarkerWidthRatio = 0.005;
-    private readonly MarkerOverdrawRatio = 0.8; // How much smaller is the background gradient than the marker.
-    private barRef = React.createRef<HTMLCanvasElement>();
-
-    private drawBar(canvas: HTMLCanvasElement, perc: number) {
-        let ctx = canvas.getContext('2d');
-        if (!ctx)
-            return;
-
-        const tw = canvas.width;
-        const th = canvas.height;
-
-        ctx.clearRect(0, 0, tw, th);
-
-        const gh = Math.round(0.8 * th);
-        const grad = ctx.createLinearGradient(0, 0, tw, 0);
-        grad.addColorStop(0.0, 'rgba(255,   0,   0, 1.0)');
-        grad.addColorStop(0.5, 'rgba(255, 255, 255, 1.0)');
-        grad.addColorStop(1.0, 'rgba(0,     0, 255, 1.0)');
-        ctx.fillStyle = grad;
-        ctx.fillRect(0, (th - gh) / 2.0, tw, gh);
-
-        const mx = tw * perc / 100.0;
-        const mwx = Math.round(this.MarkerWidthRatio * tw);
-        const fx = Math.round(mx - this.MarkerWidthRatio / 2.0);
-
-        /* Firefox refuses to change fillStyle from CanvasGradient to rgba color
-         * specified by rgba() string. Encode the color differently. */
-        ctx.fillStyle = '#000000';
-        ctx.fillRect(fx, 0, mwx, th);
-    }
-
-    private renderAverageConfal(avgConfal: number, modelNum: number, showModelNum: boolean) {
-        const avg = avgConfal.toFixed(0);
-        if (!showModelNum)
-            return `${avg}`;
-        else
-            return `${avg} (model ${modelNum})`;
-    }
-
-    private tryDrawBar() {
-        const ref = this.barRef.current;
-        if (ref)
-            this.drawBar(ref, percentile(this.props.avgConfal));
-    }
-
-    componentDidMount() {
-        this.tryDrawBar();
-    }
-
-    componentDidUpdate() {
-        this.tryDrawBar();
-    }
-
-    render() {
-        return (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--v-gap)' }}>
-                <div style={{ display: 'flex', gap: 'var(--h-gap)' }}>
-                    <div>
-                        <span className='rdo-named-list-name'>Avg. confal: </span>{this.renderAverageConfal(this.props.avgConfal, this.props.modelNum, this.props.showModelNum)}
-                    </div>
-                    <div>
-                        <span className='rdo-named-list-name'>Percentile: </span>{percentile(this.props.avgConfal).toFixed(0)}
-                    </div>
-                </div>
-                <canvas width={300} height={30} style={{ ...Common.StyleScoreBar, height: `${Common.BarHeightEm / this.MarkerOverdrawRatio}em` }} ref={this.barRef} />
-            </div>
-        );
-    }
-}
-
 export class DownloadButton extends React.Component<DownloadButton.Props> {
     render() {
         const prefix = GlobalConfig.data().pathPrefix;
@@ -160,41 +89,6 @@ export namespace DownloadButton {
     export interface Props {
         caption: string;
         onClick: (e: React.MouseEvent) => void;
-    }
-}
-
-export class StepsClassificationStats extends React.Component<{ assigned: number, close: number, unassigned: number }> {
-    render() {
-        return (
-            <table className='rdo-data-table-small' style={ Common.StyleTableSameColumnWidth }>
-                <thead>
-                    <tr>
-                        <th className='rdo-data-table-small'>
-                            Assigned
-                        </th>
-                        <th className='rdo-data-table-small'>
-                            Close
-                        </th>
-                        <th className='rdo-data-table-small'>
-                            Unassigned
-                        </th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td className='rdo-numeric-table-small'>
-                            {this.props.assigned}
-                        </td>
-                        <td className='rdo-numeric-table-small'>
-                            {this.props.close}
-                        </td>
-                        <td className='rdo-numeric-table-small'>
-                            {this.props.unassigned}
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        );
     }
 }
 
