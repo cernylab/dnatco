@@ -150,7 +150,8 @@ function DistanceInfo(): DistanceInfo {
 
 const StepInfo = {
     cartesianRmsd: 0,
-    conformer: C.NA,
+    NtC: C.NA,
+    confal: 0,
     p1: 0,
     tau1: 0,
     pn1: C.NA,
@@ -408,7 +409,7 @@ export class StepTorsions extends View<View.Props> {
         if (!this.stepSumTable || !this.sugarStepParamsTable || !this.stepParamsTable)
             return StepInfo;
 
-        const { assigned_NtC, cartesian_rmsd_closest_NtC_representative } = this.stepSumTable;
+        const { assigned_NtC, cartesian_rmsd_closest_NtC_representative, confal_score } = this.stepSumTable;
         let index = this.stepSumTable.step_id.values?.indexOf(stepId) ?? -1;
         if (index === -1)
             return StepInfo;
@@ -425,7 +426,8 @@ export class StepTorsions extends View<View.Props> {
 
         return {
             cartesianRmsd: Cif.Column.value(cartesian_rmsd_closest_NtC_representative, index),
-            conformer: Cif.Column.value(assigned_NtC, index)!,
+            NtC: Cif.Column.value(assigned_NtC, index)!,
+            confal: Cif.Column.value(confal_score, index)!,
             p1: Cif.Column.value(P_1, index)!,
             tau1: Cif.Column.value(tau_1, index)!,
             pn1: Cif.Column.value(Pn_1, index)!,
@@ -517,7 +519,8 @@ export class StepTorsions extends View<View.Props> {
 
                 <div className='rdo-line-spacer' />
                 <NamedList>
-                    <NamedListItem name='Step conformer'>{stepInfo.conformer}</NamedListItem>
+                    <NamedListItem name='Step NtC'>{stepInfo.NtC}</NamedListItem>
+                    <NamedListItem name='Step confal'>{stepInfo.confal}</NamedListItem>
                     <NamedListItem name='Cartesian RMSD'>{`${stepInfo.cartesianRmsd!.toFixed(2)} Å`}</NamedListItem>
                     <NamedListItem name='Pseudorotation'>{`${stepInfo.p1}, ${stepInfo.tau1}, ${stepInfo.pn1} / ${stepInfo.p2}, ${stepInfo.tau2}, ${stepInfo.pn2}`}</NamedListItem>
                     <NamedListItem name='Details'>
@@ -540,7 +543,7 @@ export class StepTorsions extends View<View.Props> {
                         <tr>
                             <th className='rdo-data-table'></th>
                             <th className='rdo-data-table'>Actual</th>
-                            <th className='rdo-data-table'>{`Reference ${stepInfo.conformer}`}</th>
+                            <th className='rdo-data-table'>{`Reference ${stepInfo.NtC}`}</th>
                             <th className='rdo-data-table'>Δ actual vs. ref.</th>
                             <th className='rdo-data-table'>Confal</th>
                         </tr>
@@ -568,7 +571,7 @@ export class StepTorsions extends View<View.Props> {
                 </table>
 
                 <ViolinPlot
-                    NtC={stepInfo.conformer}
+                    NtC={stepInfo.NtC}
                     torsions={torsionInfo.actual}
                     distances={distanceInfo.actual}
                     maxWidth={this.torDistTableRef.current?.clientWidth}
