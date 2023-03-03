@@ -1,5 +1,6 @@
 import React from 'react';
 import Plot from 'react-plotly.js';
+import { Data as PlotlyData } from 'plotly.js';
 import { Validation } from './common';
 import { ModelSelect } from '../structure-selectors';
 import { View } from '../view';
@@ -12,7 +13,7 @@ import { Dnatcofication } from '../../../../dnatco/dnatcofication';
 import { Rscc } from '../../../../dnatco/rscc';
 import { StepsMapper } from '../../../../dnatco/steps-mapper';
 
-const Colorscale = [
+/*const Colorscale = [
     [0, 'rgb(210, 210, 210)'],
     [0.17, 'rgb(183, 183, 183)'],
     [0.33, 'rgb(156, 156, 156)'],
@@ -20,7 +21,7 @@ const Colorscale = [
     [0.67, 'rgb(102, 102, 102)'],
     [0.83, 'rgb(75, 75, 75)'],
     [1, 'rgb(48, 48, 48)']
-] as Plotly.ColorScale;
+] as Plotly.ColorScale;*/
 const CrossColorHappySalmon = 'rgb(111, 227, 0)';
 const CrossColorSadSalmon = 'rgb(253, 66, 0)';
 
@@ -28,6 +29,7 @@ const RsccContourData = {
     x: [] as number[],
     y: [] as number[],
     z: [[]] as number[][],
+    levels: [] as number[],
     distribution: [0, 0, 0, 0] as Rscc.BackdropRscc['distribution'],
 };
 type RsccContourData = typeof RsccContourData;
@@ -109,23 +111,14 @@ function makeData(stru: Rscc.StepRscc[], backdrop: Rscc.BackdropRscc, selectedSt
 }
 
 function makeRsccContourData(backdrop: Rscc.BackdropRscc): RsccContourData {
-    const MinRscc = backdrop.rsccMinPlotted;
-    const MaxRscc = backdrop.rsccMaxPlotted;
-    const SpanRscc = MaxRscc - MinRscc;
-
-    const MinRmsd = backdrop.rmsdMinPlotted;
-    const MaxRmsd = backdrop.rmsdMaxPlotted;
-    const SpanRmsd = MaxRmsd - MinRmsd;
-
-    const x = new Array<number>(backdrop.rsccCells);
-    for (let idx = 0; idx < backdrop.rsccCells; idx++)
-        x[idx] = MinRscc + idx * SpanRscc / (backdrop.rsccCells - 1); // -1 to inclusively cover the entire range
-
-    const y = new Array<number>(backdrop.rmsdCells);
-    for (let idx = 0; idx < backdrop.rmsdCells; idx++)
-        y[idx] = MinRmsd + idx * SpanRmsd / (backdrop.rmsdCells - 1); // -1 to inclusively cover the entire range
-
-    return { x, y, z: backdrop.z, distribution: backdrop.distribution };
+    // This now just copies the content of what we got from
+    return {
+        x: [...backdrop.x],
+        y: [...backdrop.y],
+        z: [...backdrop.z.map(zr => [...zr])],
+        levels: [...backdrop.levels],
+        distribution: { ...backdrop.distribution }
+    };
 }
 
 function minAndMax(arr: number[][]): { min: number, max: number } {
@@ -238,29 +231,38 @@ export class RsccPlot extends View<View.Props, State> {
     }
 
     private renderPlot(xy: RsccXYData, contour: RsccContourData) {
-        const zRng = minAndMax(contour.z);
-        const ContourStep = (zRng.max - zRng.min) / 6;
+        const zMinMax = minAndMax(contour.z);
+        const zRng = zMinMax.max - zMinMax.min;
+
+        const allContours = contour.levels.map(v => {
+            const clr = 128 - Math.round(128 * (v - zMinMax.min) / zRng);
+            const clrstr = `rgb(${clr}, ${clr}, ${clr})`;
+
+            return {
+                ...contour,
+                type: 'contour',
+                contours: {
+                    coloring: 'lines',
+                    type: 'levels',
+                    start: v,
+                    end: v,
+                },
+                autocontour: false,
+                colorscale: [[0, clrstr], [1, clrstr]],
+                hoverinfo: 'none',
+                line: {
+                    width: 2,
+                },
+                showscale: false,
+                showlegend: false,
+                automargin: false,
+            } as PlotlyData;
+        });
 
         return (
             <Plot
                 data={[
-                    {
-                        ...contour,
-                        type: 'contour',
-                        contours: {
-                            coloring: 'lines',
-                            size: ContourStep,
-                            start: zRng.min,
-                            end: zRng.max,
-                        },
-                        autocontour: false,
-                        colorscale: Colorscale,
-                        hoverinfo: 'none',
-                        line: {
-                            width: 2,
-                        },
-                        showscale: false,
-                    },
+                    ...allContours,
                     {
                         x: xy.x,
                         y: xy.y,
@@ -271,6 +273,7 @@ export class RsccPlot extends View<View.Props, State> {
                         marker: { size: 7, color: xy.colors, symbol: 'x' },
                         hoverinfo: 'text',
                         showlegend: false,
+                        automargin: false,
                     },
                     {
                         x: xy.xSel,
@@ -282,6 +285,7 @@ export class RsccPlot extends View<View.Props, State> {
                         marker: { size: 7, color: xy.colorsSel, symbol: 'x' },
                         hoverinfo: 'text',
                         showlegend: false,
+                        automargin: false,
                     },
                     {
                         x: headAndTail(contour.x),
@@ -294,6 +298,7 @@ export class RsccPlot extends View<View.Props, State> {
                         },
                         hoverinfo: 'none',
                         showlegend: false,
+                        automargin: false,
                     },
                     {
                         x: [0.8, 0.8],

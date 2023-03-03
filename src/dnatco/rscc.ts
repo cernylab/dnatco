@@ -16,19 +16,10 @@ import { StepsMapper } from './steps-mapper';
 import { fromTemplate, isObj, isType } from '../util/json';
 
 const BackdropRscc = {
-    rsccMinActual: 0,
-    rsccMaxActual: 0,
-    rmsdMinActual: 0,
-    rmsdMaxActual: 0,
-
-    rsccMinPlotted: 0,
-    rsccMaxPlotted: 0,
-    rmsdMinPlotted: 0,
-    rmsdMaxPlotted: 0,
-
-    rsccCells: 0,
-    rmsdCells: 0,
+    x: [] as number[],
+    y: [] as number[],
     z: [] as number[][],
+    levels: [] as number[],
 
     distribution: [0, 0, 0, 0] as [ q1: number, q2: number, q3: number, q4: number ],
 };
@@ -53,18 +44,13 @@ function isBackdropRscc(v: unknown): v is Rscc.BackdropRscc {
 }
 
 function isBackdropRsccSane(bdrop: Rscc.BackdropRscc) {
-    if (bdrop.rsccMinActual >= bdrop.rsccMaxActual ||
-        bdrop.rmsdMinActual >= bdrop.rmsdMaxActual ||
-        bdrop.rsccMinPlotted >= bdrop.rsccMaxPlotted ||
-        bdrop.rmsdMinPlotted >= bdrop.rmsdMaxPlotted ||
-        bdrop.rsccCells < 2 || bdrop.rmsdCells < 2 || bdrop.distribution.length !== 4)
+    if (bdrop.z.length !== bdrop.y.length)
+        return false;
+    if (bdrop.levels.length === 0)
         return false;
 
-    if (bdrop.z.length !== bdrop.rsccCells)
-        return false;
-
-    for (const _z of bdrop.z) {
-        if (_z.length !== bdrop.rmsdCells)
+    for (const zr of bdrop.z) {
+        if (zr.length !== bdrop.x.length)
             return false;
     }
 
