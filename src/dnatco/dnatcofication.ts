@@ -10,6 +10,7 @@ import { CustomNtCs } from './custom-ntcs';
 import { DensityMap } from './density-map';
 import { Dnatcofier } from './dnatcofier';
 import { ExtractInfo } from './extract-info';
+import { NavalContext, NavalResult } from './naval';
 import { Measurements } from './angles-lengths/measurements';
 import { StepsMapper } from './steps-mapper';
 import { Chain, Structure as _Structure } from './structure';
@@ -123,6 +124,7 @@ export const DnatcoficationData = {
     stepRmsdStats: new Array<StepRmsdStats[]>(),
 
     alm: { models: new Map(), chains: new Map() } as MappedALM,
+    naval: { angles: [], bonds: [], geometry: [] } as NavalResult,
     rscc: new Array<Rscc.Rscc>(),
 };
 export type DnatcoficationData = typeof DnatcoficationData;
@@ -248,7 +250,16 @@ export namespace Dnatcofication {
         data.rscc = rscc;
     }
 
-    export function ingest(coordinates: Coordinates, densityMaps: DensityMap[]|null, sourceFileName: string|null, clsfResData: ClassificationResources.Data, alCtx: AnglesLengthsContext, isCustomStructure: boolean, ctx: DnatcoficationTaskContext) {
+    export function ingest(
+        coordinates: Coordinates,
+        densityMaps: DensityMap[]|null,
+        sourceFileName: string|null,
+        clsfResData: ClassificationResources.Data,
+        alCtx: AnglesLengthsContext,
+        nvCtx: NavalContext,
+        isCustomStructure: boolean,
+        ctx: DnatcoficationTaskContext
+    ) {
         const tStart = performance.now();
 
         try {
@@ -297,7 +308,17 @@ export namespace Dnatcofication {
                 llkaSteps.delete();
                 Dnatcofier.destroyImported(llkaImported);
 
-                throw new Error(`Failed to bond lengths and angles: ${e}`);
+                throw new Error(`Failed to measure bond lengths and angles: ${e}`);
+            }
+
+            let naval;
+            try {
+                naval = Dnatcofier.makeNavalValidation(llkaImported, nvCtx, ctx);
+            } catch (e) {
+                llkaSteps.delete();
+                Dnatcofier.destroyImported(llkaImported);
+
+                throw new Error(`Failed to calculate Naval validation: ${e}`);
             }
 
             const structures = new Array<_Structure>();
@@ -346,6 +367,7 @@ export namespace Dnatcofication {
                 averageConfals: ExtractInfo.averageConfals(steps),
                 stepRmsdStats: ExtractInfo.stepRmsdStats([0.5, 1.0], steps),
                 alm: mapALM(alm),
+                naval,
                 rscc: [],
             };
 

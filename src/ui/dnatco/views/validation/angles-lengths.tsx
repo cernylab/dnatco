@@ -18,17 +18,20 @@ import { ALMResidueStats, Dnatcofication, MaybeBin } from '../../../../dnatco/dn
 import { AnglesLengths as DAnglesLengths } from '../../../../dnatco/angles-lengths';
 import { isShiftedName, unshiftName } from '../../../../dnatco/angles-lengths/atoms';
 import { tripletTag, Triplet } from '../../../../dnatco/angles-lengths/angles';
-import { isWithin, Bin, Bins } from '../../../../dnatco/angles-lengths/bin';
+import { Bin, Bins } from '../../../../dnatco/angles-lengths/bin';
 import { pairTag, Pair } from '../../../../dnatco/angles-lengths/lengths';
 import { Measurements } from '../../../../dnatco/angles-lengths/measurements';
 import { Serialize } from '../../../../dnatco/angles-lengths/serialize';
 import { Summarize } from '../../../../dnatco/angles-lengths/summarize';
+import { Naval } from '../../../../dnatco/naval';
 import { rgbToHex } from '../../../util';
 import { GlobalConfig } from '../../../../global-config';
 import { htmlColorAsNumber, replaceAll, sequence } from '../../../../util';
 import { doDownload, Downloader, FileTypes } from '../../../../util/downloader';
 import { Serialization } from '../../../../util/serialization';
+import { isWithin } from '../../../../util';
 import { M } from '../../../../util/math';
+import { Net } from '../../../../util/net';
 import 'assets/imgs/data-transfer-download.svg';
 import 'assets/imgs/triangle-down.svg';
 import 'assets/imgs/triangle-up.svg';
@@ -1388,6 +1391,47 @@ export class AnglesLengths extends View<
                     </CollapsibleVertical>
                 </div>
 
+                <div style={{ width: '100%' }}>
+                    <div className='rdo-talgn-center rdo-strong'>Naval validation reports</div>
+                    <div style={{ display: 'flex', flexDirection: 'row', width: '100%' }}>
+                        <div
+                            className='rdo-dynamic-table-download-button'
+                            style={{ flex: 1 }}
+                            onClick={() => Net.serveFile(
+                                FileTypes['csv'].mimeType,
+                                Naval.bondsAsCsv(this.props.dnatcofication.data.naval.bonds),
+                                `naval-bonds-report-${this.props.dnatcofication.pdbId}.csv`
+                            )}
+                        >
+                            <Icon img={`${pathPrefix}/imgs/data-transfer-download.svg`} size='text' />
+                            Bond lengths
+                        </div>
+                        <div
+                            className='rdo-dynamic-table-download-button'
+                            style={{ flex: 1 }}
+                            onClick={() => Net.serveFile(
+                                FileTypes['csv'].mimeType,
+                                Naval.anglesAsCsv(this.props.dnatcofication.data.naval.angles),
+                                `naval-angles-report-${this.props.dnatcofication.pdbId}.csv`
+                            )}
+                        >
+                            <Icon img={`${pathPrefix}/imgs/data-transfer-download.svg`} size='text' />
+                            Bond angles
+                        </div>
+                        <div
+                            className='rdo-dynamic-table-download-button'
+                            style={{ flex: 1 }}
+                            onClick={() => Net.serveFile(
+                                FileTypes['csv'].mimeType,
+                                Naval.geometryAsCsv(this.props.dnatcofication.data.naval.geometry),
+                                `naval-geometry-report-${this.props.dnatcofication.pdbId}.csv`
+                            )}
+                        >
+                            <Icon img={`${pathPrefix}/imgs/data-transfer-download.svg`} size='text' />
+                            Geometry
+                        </div>
+                    </div>
+                </div>
             </div>
         );
     }

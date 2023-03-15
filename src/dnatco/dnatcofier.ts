@@ -4,6 +4,7 @@ import { ClassificationResources } from './classification-resources';
 import { DnatcoficationTaskContext } from './dnatcofication';
 import { AnglesLengths, AnglesLengthsContext } from './angles-lengths';
 import { Measurements } from './angles-lengths/measurements';
+import { Naval, NavalContext } from './naval';
 
 export namespace Dnatcofier {
     export function destroyImported(imported: jsLLKA.LLKAImportedStructure) {
@@ -70,6 +71,12 @@ export namespace Dnatcofier {
         AnglesLengths.initializeFromContext(alCtx);
 
         return Measurements.allSteps(steps);
+    }
+
+    export function makeNavalValidation(imported: jsLLKA.LLKAImportedStructure, nvCtx: NavalContext, ctx: DnatcoficationTaskContext) {
+        ctx.status = 'Preparing Naval validation report';
+
+        return Naval.validate(imported.structure, imported.id, nvCtx.angles, nvCtx.bonds)
     }
 
     export function steps(stru: jsLLKA.LLKAStructure, ctx: DnatcoficationTaskContext) {

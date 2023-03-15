@@ -77,6 +77,21 @@ export function initedArray<T>(initialValue: T, length: number) {
     return arr;
 }
 
+export type Interval = { from: number, to: number };
+export function Interval(from: number, to: number): Interval {
+    return { from, to };
+}
+export function isWithin(value: number, intvl: Interval) {
+    return intvl.from <= value && value <= intvl.to;
+}
+export function isWithinTri(value: number, intvl: Interval) {
+    if (intvl.from <= value && value <= intvl.to)
+        return 0; // Inside
+    if (value < intvl.from)
+        return -1; // Below
+    return 1; // Above
+}
+
 export function isPdbId(v: string) {
     return v.length === 4 && PdbIdRegex.test(v);
 }

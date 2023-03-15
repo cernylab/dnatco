@@ -7,6 +7,7 @@ import { isError } from './dnatco';
 import { AnglesLengths, AnglesLengthsContext } from './dnatco/angles-lengths';
 import { ClassificationContext } from './dnatco/classification-context';
 import { ClassificationResources } from './dnatco/classification-resources';
+import { Naval, NavalContext } from './dnatco/naval';
 import { Coordinates } from './dnatco/coordinates';
 import { DensityMap } from './dnatco/density-map';
 import { Dnatcofication, DnatcoficationData } from './dnatco/dnatcofication';
@@ -204,6 +205,7 @@ export class App extends WithSubscriptions<{}, State> {
                 densityMapCoeffs: File|null,
                 clsfResData: ClassificationResources.Data
                 alCtx: AnglesLengthsContext,
+                nvCtx: NavalContext,
             }> = {
                 taskFunc: 'dnatco-from-custom-structure',
                 payload: {
@@ -212,6 +214,7 @@ export class App extends WithSubscriptions<{}, State> {
                     densityMapCoeffs: coeffs,
                     clsfResData: ClassificationContext.data(),
                     alCtx: AnglesLengths.context(),
+                    nvCtx: Naval.context(),
                 },
                 initialStatus: ''
             };
@@ -240,9 +243,9 @@ export class App extends WithSubscriptions<{}, State> {
     }
 
     private fromPdbId(pdbId: string, dbId: string, onSuccess: () => void) {
-        const task: Task<{ pdbId: string, dbId: string, clsfResData: ClassificationResources.Data, alCtx: AnglesLengthsContext, userDatabases: StaticDb[] }> = {
+        const task: Task<{ pdbId: string, dbId: string, clsfResData: ClassificationResources.Data, alCtx: AnglesLengthsContext, nvCtx: NavalContext, userDatabases: StaticDb[] }> = {
             taskFunc: 'dnatco-from-pdb-id',
-            payload: { pdbId, dbId, clsfResData: ClassificationContext.data(), alCtx: AnglesLengths.context(), userDatabases: UserRemoteDatabases._export() },
+            payload: { pdbId, dbId, clsfResData: ClassificationContext.data(), alCtx: AnglesLengths.context(), nvCtx: Naval.context(), userDatabases: UserRemoteDatabases._export() },
             initialStatus: ''
         };
 
@@ -250,9 +253,9 @@ export class App extends WithSubscriptions<{}, State> {
     }
 
     private async fromRawLink(link: string, onSuccess: () => void) {
-        const task: Task<{ link: string, clsfResData: ClassificationResources.Data, alCtx: AnglesLengthsContext }> = {
+        const task: Task<{ link: string, clsfResData: ClassificationResources.Data, alCtx: AnglesLengthsContext, nvCtx: NavalContext }> = {
             taskFunc: 'dnatco-from-raw-link',
-            payload: { link, clsfResData: ClassificationContext.data(), alCtx: AnglesLengths.context() },
+            payload: { link, clsfResData: ClassificationContext.data(), alCtx: AnglesLengths.context(), nvCtx: Naval.context() },
             initialStatus: ''
         };
 
@@ -481,6 +484,31 @@ export class App extends WithSubscriptions<{}, State> {
                 Popup.create(
                     <div className='rdo-error-text'>
                         <div>Angles and lengths - {e.toString()}</div>
+                        <div>{Globals.ProductName} cannot function when its engine fails to initialize. Try to refresh the page...</div>
+                    </div>
+                );
+            });
+
+            Naval.initialize(
+                './naval/angle_restraints.csv',
+                './naval/bond_restraints.csv',
+            ).then(res => {
+                if (isError(res)) {
+                    this.setState({ ...this.state, dnatcofierState: 'failed' });
+                    Popup.create(
+                        <div className='rdo-error-text'>
+                            <div>Naval - {res.message}</div>
+                            <div>{Globals.ProductName} cannot function when its engine fails to initialize. Try to refresh the page...</div>
+                        </div>
+                    );
+                } else
+                    this.setState({ ...this.state, dnatcofierState: 'ready' });
+            }).catch(e => {
+                // We should not really get here but let's catch just in case
+                this.setState({ ...this.state, dnatcofierState: 'failed' });
+                Popup.create(
+                    <div className='rdo-error-text'>
+                        <div>Naval - {e.toString()}</div>
                         <div>{Globals.ProductName} cannot function when its engine fails to initialize. Try to refresh the page...</div>
                     </div>
                 );

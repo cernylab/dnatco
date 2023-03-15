@@ -1,4 +1,4 @@
-import { Bin, Bins, isWithin, isWireBins, toBins, isWithinTri } from './bin';
+import { Bin, Bins, isWireBins, toBins } from './bin';
 import { Angles, Triplet, tripletTag } from './angles';
 import { Grouping } from './grouping';
 import { Lengths, Pair, pairTag } from './lengths';
@@ -6,7 +6,7 @@ import { Measurements } from './measurements';
 import { Residues } from '../residues';
 import { VoidResult, ErrorResult, Result } from '../';
 import { GlobalConfig } from '../../global-config';
-import { htmlColorAsNumber, iterate, objKeys } from '../../util';
+import { htmlColorAsNumber, isWithin, isWithinTri, iterate, objKeys } from '../../util';
 
 /**
  * Averaged values of how probable is a particular bond angle or length of a particular base
