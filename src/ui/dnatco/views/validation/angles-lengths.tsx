@@ -24,6 +24,7 @@ import { Measurements } from '../../../../dnatco/angles-lengths/measurements';
 import { Serialize } from '../../../../dnatco/angles-lengths/serialize';
 import { Summarize } from '../../../../dnatco/angles-lengths/summarize';
 import { Naval } from '../../../../dnatco/naval';
+import { Validation } from '../../../../dnatco/naval/validation';
 import { rgbToHex } from '../../../util';
 import { GlobalConfig } from '../../../../global-config';
 import { htmlColorAsNumber, replaceAll, sequence } from '../../../../util';
@@ -35,7 +36,6 @@ import { Net } from '../../../../util/net';
 import 'assets/imgs/data-transfer-download.svg';
 import 'assets/imgs/triangle-down.svg';
 import 'assets/imgs/triangle-up.svg';
-import {Validation} from 'src/dnatco/naval/validation';
 
 type EmptiableMaybeBin = MaybeBin|'no-data';
 
