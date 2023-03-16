@@ -148,7 +148,7 @@ function compareMaybeBins(a: EmptiableMaybeBin, b: EmptiableMaybeBin) {
 }
 
 function compareNavalAtom(a: Validation.Atom, name: string, seqId: number, altId: string) {
-    const altIdMatch = a.altloc === '' || a.altloc === altId;
+    const altIdMatch = a.altloc === '' || altId === '' || a.altloc === altId;
     const isShifted = isShiftedName(name);
     const _name = isShifted ? unshiftName(name) : name;
     const _seqId = isShifted ? seqId - 1 : seqId;
