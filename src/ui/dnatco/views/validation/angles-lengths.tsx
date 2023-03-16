@@ -1488,8 +1488,8 @@ export class AnglesLengths extends View<
                             style={{ flex: 1, justifyContent: 'center'}}
                             onClick={() => Net.serveFile(
                                 FileTypes['csv'].mimeType,
-                                Naval.bondsAsCsv(this.props.dnatcofication.data.naval.bonds),
-                                `naval-bonds-report-${this.props.dnatcofication.pdbId}.csv`
+                                Naval.bondsAsCsv(this.props.dnatcofication.data.naval.bonds, ','),
+                                `${this.props.dnatcofication.pdbId}-naval-bonds-report.csv`
                             )}
                         >
                             <Icon img={`${pathPrefix}/imgs/data-transfer-download.svg`} size='text' />
@@ -1500,8 +1500,8 @@ export class AnglesLengths extends View<
                             style={{ flex: 1, justifyContent: 'center' }}
                             onClick={() => Net.serveFile(
                                 FileTypes['csv'].mimeType,
-                                Naval.anglesAsCsv(this.props.dnatcofication.data.naval.angles),
-                                `naval-angles-report-${this.props.dnatcofication.pdbId}.csv`
+                                Naval.anglesAsCsv(this.props.dnatcofication.data.naval.angles, ','),
+                                `${this.props.dnatcofication.pdbId}-naval-angles-report.csv`
                             )}
                         >
                             <Icon img={`${pathPrefix}/imgs/data-transfer-download.svg`} size='text' />
@@ -1512,8 +1512,8 @@ export class AnglesLengths extends View<
                             style={{ flex: 1, justifyContent: 'center' }}
                             onClick={() => Net.serveFile(
                                 FileTypes['csv'].mimeType,
-                                Naval.geometryAsCsv(this.props.dnatcofication.data.naval.geometry),
-                                `naval-geometry-report-${this.props.dnatcofication.pdbId}.csv`
+                                Naval.geometryAsCsv(this.props.dnatcofication.data.naval.geometry, ','),
+                                `${this.props.dnatcofication.pdbId}-naval-geometry-report.csv`
                             )}
                         >
                             <Icon img={`${pathPrefix}/imgs/data-transfer-download.svg`} size='text' />

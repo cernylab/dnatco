@@ -54,13 +54,14 @@ export namespace Naval {
     }
 
     export function anglesAsCsv(angles: AnglesReport.Report, delimiter = ';') {
-        let out = AnglesHeader.join(delimiter) + '\n';
+        const pdbcode = angles[0].pdbcode.toLowerCase();
 
+        let out = AnglesHeader.join(delimiter) + '\n';
         for (const item of angles) {
             const qual = quality(item);
 
             out += [
-                'angle', item.pdbcode, item.modelNum - 1, item.chain,
+                'angle', pdbcode, item.modelNum - 1, item.chain,
                 item.atoms.a.res_name, item.atoms.a.resid, item.atoms.a.name, item.atoms.a.altloc,
                 item.atoms.b.res_name, item.atoms.b.resid, item.atoms.b.name, item.atoms.b.altloc,
                 item.atoms.c.res_name, item.atoms.c.resid, item.atoms.c.name, item.atoms.c.altloc,
@@ -72,13 +73,14 @@ export namespace Naval {
     }
 
     export function bondsAsCsv(bonds: BondsReport.Report, delimiter = ';') {
-        let out = BondsHeader.join(delimiter) + '\n';
+        const pdbcode = bonds[0].pdbcode.toLowerCase();
 
+        let out = BondsHeader.join(delimiter) + '\n';
         for (const item of bonds) {
             const qual = quality(item);
 
             out += [
-                'bond', item.pdbcode, item.modelNum - 1, item.chain,
+                'bond', pdbcode, item.modelNum - 1, item.chain,
                 item.atoms.a.res_name, item.atoms.a.resid, item.atoms.a.name, item.atoms.a.altloc,
                 item.atoms.b.res_name, item.atoms.b.resid, item.atoms.b.name, item.atoms.b.altloc,
                 item.calculated_value.toFixed(3), item.target_value, QualityName[qual], item.name

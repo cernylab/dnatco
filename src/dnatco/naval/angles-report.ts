@@ -171,6 +171,9 @@ export namespace AnglesReport {
             return restrs.AA_1;
 
         if (zetaConf && zetaConf === 'Ap' && alphaConf && alphaConf === 'ScPlus')
+            return restrs.AA_2;
+
+        if (zetaConf && zetaConf === 'ScPlus' && alphaConf && alphaConf === 'Ap')
             return restrs.AA_3;
 
         return restrs.other;
