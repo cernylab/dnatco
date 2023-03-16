@@ -1486,12 +1486,12 @@ export class AnglesLengths extends View<
                     </CollapsibleVertical>
                 </div>
 
-                <div style={{ width: '100%' }}>
+                <div style={{ width: '100%', maxWidth: '30em', margin: 'auto' }}>
                     <div className='rdo-talgn-center rdo-strong'>Naval validation reports</div>
-                    <div style={{ display: 'flex', flexDirection: 'row', width: '100%' }}>
+                    <div style={{ display: 'flex', flexDirection: 'row', width: '100%', justifyContent: 'center' }}>
                         <div
                             className='rdo-dynamic-table-download-button'
-                            style={{ flex: 1 }}
+                            style={{ flex: 1, justifyContent: 'center'}}
                             onClick={() => Net.serveFile(
                                 FileTypes['csv'].mimeType,
                                 Naval.bondsAsCsv(this.props.dnatcofication.data.naval.bonds),
@@ -1503,7 +1503,7 @@ export class AnglesLengths extends View<
                         </div>
                         <div
                             className='rdo-dynamic-table-download-button'
-                            style={{ flex: 1 }}
+                            style={{ flex: 1, justifyContent: 'center' }}
                             onClick={() => Net.serveFile(
                                 FileTypes['csv'].mimeType,
                                 Naval.anglesAsCsv(this.props.dnatcofication.data.naval.angles),
@@ -1515,7 +1515,7 @@ export class AnglesLengths extends View<
                         </div>
                         <div
                             className='rdo-dynamic-table-download-button'
-                            style={{ flex: 1 }}
+                            style={{ flex: 1, justifyContent: 'center' }}
                             onClick={() => Net.serveFile(
                                 FileTypes['csv'].mimeType,
                                 Naval.geometryAsCsv(this.props.dnatcofication.data.naval.geometry),
