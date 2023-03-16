@@ -265,9 +265,9 @@ export namespace AnglesReport {
             report.push({
                 name: r.name,
                 atoms: {
-                    a: Validation.Atom(a1.label_atom_id, a1.label_comp_id, Common.residueId(a1.auth_seq_id, a1.pdbx_PDB_ins_code), Common.maybeAltId(a1.label_alt_id)),
-                    b: Validation.Atom(a2.label_atom_id, a2.label_comp_id, Common.residueId(a2.auth_seq_id, a2.pdbx_PDB_ins_code), Common.maybeAltId(a2.label_alt_id)),
-                    c: Validation.Atom(a3.label_atom_id, a3.label_comp_id, Common.residueId(a3.auth_seq_id, a3.pdbx_PDB_ins_code), Common.maybeAltId(a3.label_alt_id)),
+                    a: Validation.Atom(a1.label_atom_id, a1.label_comp_id, Common.residueId(a1.auth_seq_id, a1.pdbx_PDB_ins_code), Common.maybeAltId(a1.label_alt_id), a1.label_seq_id),
+                    b: Validation.Atom(a2.label_atom_id, a2.label_comp_id, Common.residueId(a2.auth_seq_id, a2.pdbx_PDB_ins_code), Common.maybeAltId(a2.label_alt_id), a2.label_seq_id),
+                    c: Validation.Atom(a3.label_atom_id, a3.label_comp_id, Common.residueId(a3.auth_seq_id, a3.pdbx_PDB_ins_code), Common.maybeAltId(a3.label_alt_id), a3.label_seq_id),
                 },
                 calculated_value: length,
                 target_value: r.csd_target,
@@ -278,7 +278,8 @@ export namespace AnglesReport {
                 pdb_suspicious_right: r.pdb_4high,
                 pdbcode: m.pdbcode,
                 modelNum: m.modelNum,
-                chain: m.chain
+                chain: m.chain,
+                chainId: m.chainId,
             });
         }
     }

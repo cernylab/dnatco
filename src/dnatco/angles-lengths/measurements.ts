@@ -19,10 +19,11 @@ export namespace Measurements {
         return altIds.size === 0 ? '' : Array.from(altIds.values())[0];
     }
 
-    function findAtom(stru: jsLLKA.LLKAStructure, name: string, seqId: number, modelNum: number) {
+    function findAtom(stru: jsLLKA.LLKAStructure, name: string, altId: string, seqId: number, modelNum: number) {
+        const _altId = !altId ? jsLLKA.NO_ALTID : altId.codePointAt(0);
         for (let idx = 0; idx < stru.size(); idx++) {
             let atom = stru.get(idx);
-            if (jsLLKA.atomMatches(atom, name, '', '', seqId, jsLLKA.NO_ALTID, jsLLKA.NO_INSCODE, modelNum))
+            if (jsLLKA.atomMatches(atom, name, '', '', seqId, _altId, jsLLKA.NO_INSCODE, modelNum))
                 return atom;
         }
 
@@ -95,7 +96,7 @@ export namespace Measurements {
 
         const requiredAtoms = new Map<string, jsLLKA.LLKAAtom>();
         for (const [name, shift] of Atoms[compId]) {
-            const a = findAtom(step, name, seqId + shift, firstAtom.pdbx_PDB_model_num);
+            const a = findAtom(step, name, altId, seqId + shift, firstAtom.pdbx_PDB_model_num);
             if (!a)
                 return void 0;
             requiredAtoms.set(shiftedName(name, shift), a);

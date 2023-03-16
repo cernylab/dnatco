@@ -5,6 +5,7 @@ import { BondsReport } from './bonds-report';
 import { GeometryReport } from './geometry-report';
 import { MappedAngleRestraints, MappedBondRestraints, Restraints } from './restraints';
 import { Validate } from './validate';
+import { Validation } from './validation';
 import { isWithin, Interval } from '../../util';
 
 let anglesStr = '';
@@ -37,18 +38,8 @@ export type NavalResult = {
 }
 
 export namespace Naval {
-    function quality(v: number, preferred: Interval, acceptable: Interval, suspicious: Interval): Quality {
-        if (isWithin(v, preferred))
-            return 'csd-preferred';
-        if (isWithin(v, acceptable))
-            return 'pdb-acceptable';
-        if (isWithin(v, suspicious))
-            return 'pdb-suspicious';
-        return 'outlier';
-    }
-
     export type Quality = 'csd-preferred' | 'pdb-acceptable' | 'pdb-suspicious' | 'outlier';
-    const QualityName: Record<Quality, string> = {
+    export const QualityName: Record<Quality, string> = {
         'csd-preferred': 'CSD-preferred',
         'pdb-acceptable': 'PDB-acceptable',
         'pdb-suspicious': 'PDB-suspicious',
@@ -60,6 +51,52 @@ export namespace Naval {
             angles: anglesStr,
             bonds: bondsStr,
         };
+    }
+
+    export function anglesAsCsv(angles: AnglesReport.Report, delimiter = ';') {
+        let out = AnglesHeader.join(delimiter) + '\n';
+
+        for (const item of angles) {
+            const qual = quality(item);
+
+            out += [
+                'angle', item.pdbcode, item.modelNum - 1, item.chain,
+                item.atoms.a.res_name, item.atoms.a.resid, item.atoms.a.name, item.atoms.a.altloc,
+                item.atoms.b.res_name, item.atoms.b.resid, item.atoms.b.name, item.atoms.b.altloc,
+                item.atoms.c.res_name, item.atoms.c.resid, item.atoms.c.name, item.atoms.c.altloc,
+                item.calculated_value.toFixed(1), item.target_value, QualityName[qual], item.name
+            ].join(delimiter) + '\n';
+        }
+
+        return out;
+    }
+
+    export function bondsAsCsv(bonds: BondsReport.Report, delimiter = ';') {
+        let out = BondsHeader.join(delimiter) + '\n';
+
+        for (const item of bonds) {
+            const qual = quality(item);
+
+            out += [
+                'bond', item.pdbcode, item.modelNum - 1, item.chain,
+                item.atoms.a.res_name, item.atoms.a.resid, item.atoms.a.name, item.atoms.a.altloc,
+                item.atoms.b.res_name, item.atoms.b.resid, item.atoms.b.name, item.atoms.b.altloc,
+                item.calculated_value.toFixed(3), item.target_value, QualityName[qual], item.name
+            ].join(delimiter) + '\n';
+        }
+
+        return out;
+    }
+
+    export function geometryAsCsv(geometry: GeometryReport.Report, delimiter = ';') {
+        let out = GeometryHeader.join(delimiter) + '\n';
+
+        for (const item of geometry) {
+            out += [item.type, item.pdbcode, item.model_id, item.chain, item.res_name, item.altloc, item.name, item.calculated?.toFixed(1) ?? '', item.value_label].join(delimiter);
+            out += '\n';
+        }
+
+        return out;
     }
 
     export async function initialize(anglesUrl: string, bondsUrl: string) {
@@ -83,64 +120,20 @@ export namespace Naval {
         }
     }
 
-    export function anglesAsCsv(angles: AnglesReport.Report, delimiter = ';') {
-        let out = AnglesHeader.join(delimiter) + '\n';
+    export function quality(item: Validation.ReportItem<Validation.AngleAtoms | Validation.BondAtoms>): Quality {
+        const csd_preferred_left = item.target_value - 3 * item.target_sigma;
+        const csd_preferred_right = item.target_value + 3 * item.target_sigma;
+        const preferred = Interval(csd_preferred_left, csd_preferred_right);
+        const acceptable = Interval(item.pdb_allowed_left, item.pdb_allowed_right);
+        const suspicious = Interval(item.pdb_suspicious_left, item.pdb_suspicious_right);
 
-        for (const item of angles) {
-            const csd_preferred_left = item.target_value - 3 * item.target_sigma;
-            const csd_preferred_right = item.target_value + 3 * item.target_sigma;
-            const qual = quality(
-                item.calculated_value,
-                Interval(csd_preferred_left, csd_preferred_right),
-                Interval(item.pdb_allowed_left, item.pdb_allowed_right),
-                Interval(item.pdb_suspicious_left, item.pdb_suspicious_right),
-            );
-
-            out += [
-                'angle', item.pdbcode, item.modelNum, item.chain,
-                item.atoms.a.res_name, item.atoms.a.resid, item.atoms.a.name, item.atoms.a.altloc,
-                item.atoms.b.res_name, item.atoms.b.resid, item.atoms.b.name, item.atoms.b.altloc,
-                item.atoms.c.res_name, item.atoms.c.resid, item.atoms.c.name, item.atoms.c.altloc,
-                item.calculated_value.toFixed(1), item.target_value, QualityName[qual], item.name
-            ].join(delimiter) + '\n';
-        }
-
-        return out;
-    }
-
-    export function bondsAsCsv(bonds: BondsReport.Report, delimiter = ';') {
-        let out = BondsHeader.join(delimiter) + '\n';
-
-        for (const item of bonds) {
-            const csd_preferred_left = item.target_value - 3 * item.target_sigma;
-            const csd_preferred_right = item.target_value + 3 * item.target_sigma;
-            const qual = quality(
-                item.calculated_value,
-                Interval(csd_preferred_left, csd_preferred_right),
-                Interval(item.pdb_allowed_left, item.pdb_allowed_right),
-                Interval(item.pdb_suspicious_left, item.pdb_suspicious_right),
-            );
-
-            out += [
-                'bond', item.pdbcode, item.modelNum, item.chain,
-                item.atoms.a.res_name, item.atoms.a.resid, item.atoms.a.name, item.atoms.a.altloc,
-                item.atoms.b.res_name, item.atoms.b.resid, item.atoms.b.name, item.atoms.b.altloc,
-                item.calculated_value.toFixed(1), item.target_value, QualityName[qual], item.name
-            ].join(delimiter) + '\n';
-        }
-
-        return out;
-    }
-
-    export function geometryAsCsv(geometry: GeometryReport.Report, delimiter = ';') {
-        let out = GeometryHeader.join(delimiter) + '\n';
-
-        for (const item of geometry) {
-            out += [item.type, item.pdbcode, item.model_id, item.chain, item.res_name, item.altloc, item.name, item.calculated?.toFixed(1) ?? '', item.value_label].join(delimiter);
-            out += '\n';
-        }
-
-        return out;
+        if (isWithin(item.calculated_value, preferred))
+            return 'csd-preferred';
+        if (isWithin(item.calculated_value, acceptable))
+            return 'pdb-acceptable';
+        if (isWithin(item.calculated_value, suspicious))
+            return 'pdb-suspicious';
+        return 'outlier';
     }
 
     export function validate(stru: jsLLKA.LLKAStructure, pdbId: string, angleRestraintsIn: string, bondRestraintsIn: string): NavalResult {

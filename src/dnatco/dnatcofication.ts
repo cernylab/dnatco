@@ -3,6 +3,7 @@ import { PdbParser } from 'tspdb';
 import { MmCifConverter } from 'tspdb';
 import { AnglesLengths, AnglesLengthsContext } from './angles-lengths';
 import { Bin } from './angles-lengths/bin';
+import { Measurements } from './angles-lengths/measurements';
 import { Summarize } from './angles-lengths/summarize';
 import { Coordinates } from './coordinates';
 import { ClassificationResources } from './classification-resources';
@@ -11,7 +12,8 @@ import { DensityMap } from './density-map';
 import { Dnatcofier } from './dnatcofier';
 import { ExtractInfo } from './extract-info';
 import { NavalContext, NavalResult } from './naval';
-import { Measurements } from './angles-lengths/measurements';
+import { GeometryReport } from './naval/geometry-report';
+import { Validation } from './naval/validation';
 import { StepsMapper } from './steps-mapper';
 import { Chain, Structure as _Structure } from './structure';
 import { Cif } from '../cif';
@@ -24,6 +26,7 @@ import {
     NdbStructNtcStep, NdbStructSugarStepParameters,
 } from '../cif/categories/ndb-struct-ntc';
 import { Struct } from '../cif/categories/struct';
+import { objKeys } from '../util';
 import { EventsKeeper } from '../util/events-keeper';
 import { Globals } from '../globals';
 
@@ -76,6 +79,43 @@ function mapALM(residues: Measurements.Residue[]): MappedALM {
     return { models, chains, residues, stats };
 }
 
+type NavalValidationMapping = Map<number, Map<string,Map<number, number[]>>>;
+function mapNaval(naval: NavalResult): MappedNaval {
+    type Item<T extends Validation.AngleAtoms | Validation.BondAtoms> = Validation.ReportItem<T>;
+
+    const anglesMapping: NavalValidationMapping = new Map();
+    const bondsMapping: NavalValidationMapping = new Map();
+
+    const mapOne = <T extends Validation.AngleAtoms | Validation.BondAtoms>(mapping: NavalValidationMapping, item: Item<T>, idx: number) => {
+        if (!mapping.has(item.modelNum))
+            mapping.set(item.modelNum, new Map());
+
+        const m = mapping.get(item.modelNum)!;
+        if (!m.has(item.chainId))
+            m.set(item.chainId, new Map());
+
+        const chain = m.get(item.chainId)!;
+        // Make sure we use the higher seqId in case of cross-residue items
+        const seqId = Math.max(...objKeys(item.atoms).map(k => (item.atoms[k] as Validation.Atom).seqId));
+
+        if (!chain.has(seqId))
+            chain.set(seqId, new Array());
+        const residue = chain.get(seqId)!;
+        residue.push(idx);
+    };
+
+    naval.angles.forEach((a, idx) => mapOne(anglesMapping, a, idx));
+    naval.bonds.forEach((b, idx) => mapOne(bondsMapping, b, idx));
+
+    return {
+        angles: naval.angles,
+        bonds: naval.bonds,
+        geometry: naval.geometry,
+        anglesMapping,
+        bondsMapping,
+    };
+}
+
 function pdbToCif(data: string) {
     const pdb = PdbParser.parse(data);
     const criticals = pdb.issues.filter(i => i.severity === 'critical');
@@ -106,6 +146,13 @@ export type MappedALM = {
     residues: Measurements.Residue[],
     stats: ALMResidueStats[],
 };
+export type MappedNaval = {
+    angles: Validation.Report<Validation.AngleAtoms>,
+    bonds: Validation.Report<Validation.BondAtoms>,
+    geometry: GeometryReport.Report,
+    anglesMapping: NavalValidationMapping,
+    bondsMapping: NavalValidationMapping,
+};
 export type StepRmsdStats = { rmsdThreshold: number, count: number };
 
 export const DnatcoficationData = {
@@ -124,7 +171,7 @@ export const DnatcoficationData = {
     stepRmsdStats: new Array<StepRmsdStats[]>(),
 
     alm: { models: new Map(), chains: new Map() } as MappedALM,
-    naval: { angles: [], bonds: [], geometry: [] } as NavalResult,
+    naval: { angles: [], bonds: [], geometry: [], anglesMapping: new Map(), bondsMapping: new Map() } as MappedNaval,
     rscc: new Array<Rscc.Rscc>(),
 };
 export type DnatcoficationData = typeof DnatcoficationData;
@@ -367,7 +414,7 @@ export namespace Dnatcofication {
                 averageConfals: ExtractInfo.averageConfals(steps),
                 stepRmsdStats: ExtractInfo.stepRmsdStats([0.5, 1.0], steps),
                 alm: mapALM(alm),
-                naval,
+                naval: mapNaval(naval),
                 rscc: [],
             };
 

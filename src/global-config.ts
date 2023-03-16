@@ -19,6 +19,7 @@ export type GlobalConfigData = {
     anglesLengths: {
         chartMarkerColor: string,
         maxWorst: number,
+        navalMarkerColor: string,
         pGroups: AngleLengthPGroup[],
         outlierColor: string,
     },
@@ -31,6 +32,7 @@ const GlobalConfigData: GlobalConfigData = {
     userDatabases: [],
     anglesLengths: {
         chartMarkerColor: '#ff03f2',
+        navalMarkerColor: '#ff8080',
         maxWorst: 30,
         outlierColor: '#000000',
         pGroups: [

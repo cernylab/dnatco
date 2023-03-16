@@ -45,7 +45,7 @@ export namespace Common {
     }
 
     export function maybeAltId(altId: number) {
-        return altId !== jsLLKA.LLKA.LLKA_NO_ALTID ? String.fromCharCode(altId) : '';
+        return altId !== jsLLKA.NO_ALTID ? String.fromCharCode(altId) : '';
     }
 
     export function residueId(seqId: number, insCode: string) {

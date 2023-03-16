@@ -35,9 +35,20 @@ import { Net } from '../../../../util/net';
 import 'assets/imgs/data-transfer-download.svg';
 import 'assets/imgs/triangle-down.svg';
 import 'assets/imgs/triangle-up.svg';
+import {Validation} from 'src/dnatco/naval/validation';
 
 type EmptiableMaybeBin = MaybeBin|'no-data';
 
+type NavalItem = {
+    value: number;
+    quality: Naval.Quality | 'none';
+}
+function NavalItem(item: Validation.ReportItem<Validation.AngleAtoms | Validation.BondAtoms>): NavalItem {
+    return { value: item.target_value, quality: Naval.quality(item) };
+}
+const EmptyNavalItem: NavalItem = { value: 0, quality: 'none' };
+
+const EmptyPlotPoints = new Array<number>();
 const PairBondNameCache: Map<string, React.ReactElement> = new Map();
 const TripletBondNameCache: Map<string, React.ReactElement> = new Map();
 
@@ -136,6 +147,15 @@ function compareMaybeBins(a: EmptiableMaybeBin, b: EmptiableMaybeBin) {
         return (a as Bin).prosco - (b as Bin).prosco;
 }
 
+function compareNavalAtom(a: Validation.Atom, name: string, seqId: number, altId: string) {
+    const altIdMatch = a.altloc === '' || a.altloc === altId;
+    const isShifted = isShiftedName(name);
+    const _name = isShifted ? unshiftName(name) : name;
+    const _seqId = isShifted ? seqId - 1 : seqId;
+
+    return a.name === _name && a.seqId === _seqId && altIdMatch;
+}
+
 function countsInGroups(counts: Summarize.Counts, thresholds: number[]): Summarize.CountsInGroup[] {
     const cig = [];
 
@@ -163,6 +183,38 @@ function fileNameFriendlyTag(tag: string) {
         "'",
         'p'
     );
+}
+
+function getNavalAngle(d: Dnatcofication, r: Measurements.Residue, triplet: Triplet) {
+    const [ na, nb, nc ] = triplet;
+    const niIdx = d.data.naval.anglesMapping.get(r.modelNum)
+        ?.get(r.chain)
+        ?.get(r.seqId)
+        ?.find(idx => {
+            const { a, b, c } = d.data.naval.angles[idx].atoms;
+            return (
+                (compareNavalAtom(a, na, r.seqId, r.altId) || compareNavalAtom(a, nc, r.seqId, r.altId)) &&
+                compareNavalAtom(b, nb, r.seqId, r.altId) &&
+                (compareNavalAtom(c, na, r.seqId, r.altId) || compareNavalAtom(c, nc, r.seqId, r.altId))
+            );
+        }) ?? -1;
+    return niIdx === -1 ? EmptyNavalItem : NavalItem(d.data.naval.angles[niIdx]);
+}
+
+function getNavalBond(d: Dnatcofication, r: Measurements.Residue, pair: Pair) {
+    const [ na, nb ] = pair;
+    const niIdx = d.data.naval.bondsMapping.get(r.modelNum)
+        ?.get(r.chain)
+        ?.get(r.seqId)
+        ?.find(idx => {
+            const rr = d.data.naval.bonds[idx];
+            const { a, b } = rr.atoms;
+            return (
+                (compareNavalAtom(a, na, r.seqId, r.altId) || compareNavalAtom(a, nb, r.seqId, r.altId)) &&
+                (compareNavalAtom(b, na, r.seqId, r.altId) || compareNavalAtom(b, nb, r.seqId, r.altId))
+            );
+        }) ?? -1;
+    return niIdx === -1 ? EmptyNavalItem : NavalItem(d.data.naval.bonds[niIdx]);
 }
 
 function makeCollapsibleHeader(collapsed: React.ReactNode, expanded?: React.ReactNode): { collapsed: React.ReactNode, expanded: React.ReactNode } {
@@ -372,6 +424,7 @@ class AveragesChart extends React.Component<{
     bins: Bins,
     pGroupDatas: DAnglesLengths.PGroupData[],
     mark: number,
+    naval: NavalItem,
     xTitle: string,
     yTitle: string,
     xTransform?: (x: number) => number;
@@ -405,6 +458,7 @@ class AveragesChart extends React.Component<{
 
     render() {
         const markerColorTup = colorToTuple(htmlColorAsNumber(GlobalConfig.data().anglesLengths.chartMarkerColor) ?? 0);
+        const navalColorTup = colorToTuple(htmlColorAsNumber(GlobalConfig.data().anglesLengths.navalMarkerColor) ?? 16744576);
         const outlierColor = DAnglesLengths.outlierColor();
         const pGroupIndices = this.binsToPGroupIndices(this.props.bins, this.props.pGroupDatas);
 
@@ -492,31 +546,46 @@ class AveragesChart extends React.Component<{
                         {
                             x: xt,
                             y: yt,
+                            width: xt[1] - xt[0],
                             marker: { color: color },
                             hoverinfo: 'none',
                             type: 'bar',
                             showlegend: false,
                         },
                         {
-                            x: [tm, tm],
-                            y: [0, yMax],
-                            type: 'scattergl',
-                            mode: 'lines',
-                            line: {
+                            x: [tm],
+                            y: [yMax],
+                            type: 'bar',
+                            width: 2 * (xt[1] - xt[0]),
+                            marker: {
                                 color: `rgb(${markerColorTup[0]}, ${markerColorTup[1]}, ${markerColorTup[2]})`,
-                                width: 2,
                             },
-                            hoverinfo: 'none',
+                            hoverinfo: 'text',
+                            hovertext: 'Actual value',
+                            hoveron: 'fills',
                             showlegend: false,
                         },
+                        {
+                            x: this.props.naval.quality !== 'none' ? [this.props.naval.value] : EmptyPlotPoints,
+                            y: this.props.naval.quality !== 'none' ? [yMax] : EmptyPlotPoints,
+                            type: 'bar',
+                            width: 2 * (xt[1] - xt[0]),
+                            marker: {
+                                color: `rgb(${navalColorTup[0]}, ${navalColorTup[1]}, ${navalColorTup[2]})`,
+                            },
+                            hoverinfo: 'text',
+                            hovertext: 'Naval target value',
+                            hoveron: 'fills',
+                            showlegend: false,
+                        }
                     ]}
                     layout={{
                         autosize: true,
                         bargap: 0,
                         dragmode: 'pan',
                         hovermode: 'closest',
-                        margin: { t: 0, l: 45, b: 45, r: 0 },
-                        xaxis: { title: this.props.xTitle, range: xRange},
+                        margin: { t: 0, l: 0, b: 45, r: 0 },
+                        xaxis: { title: this.props.xTitle, range: xRange },
                         yaxis: { showticklabels: false },
                         plot_bgcolor: 'white',
                         paper_bgcolor: 'white',
@@ -540,6 +609,7 @@ class BondAngleDetails extends React.Component<{
     bondAngle: Measurements.BondAngle,
     downloadName: string,
     maybeBin: EmptiableMaybeBin,
+    navalItem: NavalItem,
     outlierColor: [r: number, g: number, b: number],
     pGroup: DAnglesLengths.PGroup,
     pGroupDatas: DAnglesLengths.PGroupData[],
@@ -567,6 +637,7 @@ class BondAngleDetails extends React.Component<{
                         suffix={'\u00B0'}
                         value={ba.angle}
                         valueFormatter={(v) => M.r2d(v).toFixed(2)}
+                        naval={this.props.navalItem} // Contained value is already in degrees
                         xTitle={'Angle (\u00B0)'}
                         yTitle='Prob. (%)'
                         xTransform={(x) => M.r2d(x)}
@@ -588,6 +659,7 @@ class BondLengthDetails extends React.Component<{
     bondLength: Measurements.BondLength,
     downloadName: string,
     maybeBin: EmptiableMaybeBin,
+    navalItem: NavalItem,
     outlierColor: [r: number, g: number, b: number],
     pGroup: DAnglesLengths.PGroup,
     pGroupDatas: DAnglesLengths.PGroupData[],
@@ -615,6 +687,7 @@ class BondLengthDetails extends React.Component<{
                         suffix={'\u00A0\u212B'}
                         value={bl.length}
                         valueFormatter={(v) => v.toFixed(3)}
+                        naval={this.props.navalItem}
                         xTitle={'Length (\u212B)'}
                         yTitle='Prob. (%)'
                         yTransform={(y) => y * 100}
@@ -695,6 +768,7 @@ type PGroupSummaryProps = {
     residueName: JSX.Element,
     value: number,
     valueFormatter: (v: number) => string,
+    naval: NavalItem,
     xTitle: string,
     yTitle: string,
     suffix?: string,
@@ -702,7 +776,7 @@ type PGroupSummaryProps = {
     yTransform?: (y: number) => number,
     downloadFileName?: string,
 };
-class PGroupSummary extends React.Component<PGroupSummaryProps, { mode: 'chart'|'percentile' }> {
+class PGroupSummary extends React.Component<PGroupSummaryProps, { mode: 'chart'|'details' }> {
     constructor(props: PGroupSummaryProps) {
         super(props);
 
@@ -730,6 +804,7 @@ class PGroupSummary extends React.Component<PGroupSummaryProps, { mode: 'chart'|
         return <AveragesChart
             bins={this.props.bins}
             mark={this.props.value}
+            naval={this.props.naval}
             pGroupDatas={this.props.pGroupDatas}
             xTitle={this.props.xTitle}
             yTitle={this.props.yTitle}
@@ -753,9 +828,23 @@ class PGroupSummary extends React.Component<PGroupSummaryProps, { mode: 'chart'|
         );
     }
 
+    private renderNaval() {
+        return <>
+            <div className='rdo-strong' style={{ gridColumnStart: 'span 2' }} >Naval quality</div>
+            <div>{this.props.naval.quality === 'none' ? 'N/A' : Naval.QualityName[this.props.naval.quality]}</div>
+        </>
+    }
+
     private renderPercentile() {
-        if (!this.props.pGroup)
-            return this.renderPGroup();
+        if (!this.props.pGroup) {
+            return (
+                <div style={{ display: 'grid', gridTemplateColumns: 'auto auto auto', columnGap: 'var(--h-gap)' }}>
+                    <div style={{ gridColumnStart: 'span 2' }} />{this.renderPGroup()}
+                    <div className='rdo-line-spacer' style={{ gridColumn: 'span 3' }} />
+                    {this.renderNaval()}
+                </div>
+            )
+        }
 
         return (
             <div style={{ display: 'grid', gridTemplateColumns: 'auto auto auto', columnGap: 'var(--h-gap)' }}>
@@ -776,6 +865,8 @@ class PGroupSummary extends React.Component<PGroupSummaryProps, { mode: 'chart'|
                 <div className='rdo-line-spacer' style={{ gridColumnStart: 'span 3' }} />
                 <div className='rdo-strong' style={{ gridColumnStart: 'span 2' }}>Percentile</div>
                 {this.renderPGroup()}
+                <div className='rdo-line-spacer' style={{ gridColumn: 'span 3' }} />
+                {this.renderNaval()}
             </div>
         );
     }
@@ -784,7 +875,7 @@ class PGroupSummary extends React.Component<PGroupSummaryProps, { mode: 'chart'|
         switch (this.state.mode) {
         case 'chart':
             return this.renderChart();
-        case 'percentile':
+        case 'details':
             return this.renderPercentile();
         }
     }
@@ -813,7 +904,7 @@ class PGroupSummary extends React.Component<PGroupSummaryProps, { mode: 'chart'|
                             {this.makeToggleButton('Chart', 'chart')}
                         </div>
                         <div style={{ flex: 1 }}>
-                            {this.makeToggleButton('Percentile', 'percentile')}
+                            {this.makeToggleButton('Details', 'details')}
                         </div>
                     </div>
                     <div style={{ flex: 1 }} />
@@ -1054,12 +1145,14 @@ export class AnglesLengths extends View<
     ) {
         const pgrpDatas = pgrpIndices.map(idx => DAnglesLengths.anglePGroupData(idx, residue.compound, bondAngle.triplet)!);
         const dlName = `${residueIdentifyingName(structureName, residue)}_${fileNameFriendlyTag(tripletTag(bondAngle.triplet))}`;
+        const ni = getNavalAngle(this.props.dnatcofication, residue, bondAngle.triplet);
 
         return (
             <BondAngleDetails
                 bondAngle={bondAngle}
                 downloadName={dlName}
                 maybeBin={maybeBin}
+                navalItem={ni}
                 outlierColor={outlierColor}
                 pGroup={pGroup}
                 pGroupDatas={pgrpDatas}
@@ -1081,12 +1174,14 @@ export class AnglesLengths extends View<
     ) {
         const pgrpDatas = pgrpIndices.map(idx => DAnglesLengths.lengthPGroupData(idx, residue.compound, bondLength.pair)!);
         const dlName = `${residueIdentifyingName(structureName, residue)}${fileNameFriendlyTag(pairTag(bondLength.pair))}`;
+        const ni = getNavalBond(this.props.dnatcofication, residue, bondLength.pair);
 
         return (
             <BondLengthDetails
                 bondLength={bondLength}
                 downloadName={dlName}
                 maybeBin={maybeBin}
+                navalItem={ni}
                 outlierColor={outlierColor}
                 pGroup={pGroup}
                 pGroupDatas={pgrpDatas}

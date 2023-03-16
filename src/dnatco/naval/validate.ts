@@ -20,7 +20,7 @@ function allAvailableAltIds(structures: (jsLLKA.LLKAAtoms|undefined)[]) {
 
         for (let idx = 0; idx < stru.size(); idx++) {
             const at = stru.get(idx);
-            if (at.label_alt_id !== jsLLKA.LLKA.LLKA_NO_ALTID)
+            if (at.label_alt_id !== jsLLKA.NO_ALTID)
                 seenAltIds.add(String.fromCharCode(at.label_alt_id));
         }
     }
@@ -46,7 +46,7 @@ function filterByAltId(atoms: jsLLKA.LLKAAtoms, altId: string) {
 
     for (let idx = 0; idx < atoms.size(); idx++) {
         const at = atoms.get(idx);
-        const _altId = at.label_alt_id === jsLLKA.LLKA.LLKA_NO_ALTID ? '' : String.fromCharCode(at.label_alt_id);
+        const _altId = at.label_alt_id === jsLLKA.NO_ALTID ? '' : String.fromCharCode(at.label_alt_id);
 
         if (!_altId || _altId === altId)
             filtered.push_back(at);

@@ -455,9 +455,53 @@ export class App extends WithSubscriptions<{}, State> {
             './classification/golden_steps.csv',
             './classification/nu_angles.csv'
         ).then(retval => {
-            if (retval === undefined)
-                this.setState({ ...this.state, dnatcofierState: 'ready' });
-            else {
+            if (retval === undefined) {
+                AnglesLengths.initialize().then(res => {
+                    if (isError(res)) {
+                        this.setState({ ...this.state, dnatcofierState: 'failed' });
+                        Popup.create(
+                            <div className='rdo-error-text'>
+                                <div>Angles and lengths - {res.message}</div>
+                                <div>{Globals.ProductName} cannot function when its engine fails to initialize. Try to refresh the page...</div>
+                            </div>
+                        );
+                    } else {
+                        Naval.initialize(
+                            './naval/angle_restraints.csv',
+                            './naval/bond_restraints.csv',
+                        ).then(res => {
+                            if (isError(res)) {
+                                this.setState({ ...this.state, dnatcofierState: 'failed' });
+                                Popup.create(
+                                    <div className='rdo-error-text'>
+                                        <div>Naval - {res.message}</div>
+                                        <div>{Globals.ProductName} cannot function when its engine fails to initialize. Try to refresh the page...</div>
+                                    </div>
+                                );
+                            } else
+                                this.setState({ ...this.state, dnatcofierState: 'ready' });
+                        }).catch(e => {
+                            // We should not really get here but let's catch just in case
+                            this.setState({ ...this.state, dnatcofierState: 'failed' });
+                            Popup.create(
+                                <div className='rdo-error-text'>
+                                    <div>Naval - {e.toString()}</div>
+                                    <div>{Globals.ProductName} cannot function when its engine fails to initialize. Try to refresh the page...</div>
+                                </div>
+                            );
+                        });
+                    }
+                }).catch(e => {
+                    // We should not really get here but let's catch just in case
+                    this.setState({ ...this.state, dnatcofierState: 'failed' });
+                    Popup.create(
+                        <div className='rdo-error-text'>
+                            <div>Angles and lengths - {e.toString()}</div>
+                            <div>{Globals.ProductName} cannot function when its engine fails to initialize. Try to refresh the page...</div>
+                        </div>
+                    );
+                });
+            } else {
                 this.setState({ ...this.state, dnatcofierState: 'failed' });
                 Popup.create(
                     <div className='rdo-error-text'>
@@ -466,53 +510,6 @@ export class App extends WithSubscriptions<{}, State> {
                     </div>
                 );
             }
-
-            AnglesLengths.initialize().then(res => {
-                if (isError(res)) {
-                    this.setState({ ...this.state, dnatcofierState: 'failed' });
-                    Popup.create(
-                        <div className='rdo-error-text'>
-                            <div>Angles and lengths - {res.message}</div>
-                            <div>{Globals.ProductName} cannot function when its engine fails to initialize. Try to refresh the page...</div>
-                        </div>
-                    );
-                } else
-                    this.setState({ ...this.state, dnatcofierState: 'ready' });
-            }).catch(e => {
-                // We should not really get here but let's catch just in case
-                this.setState({ ...this.state, dnatcofierState: 'failed' });
-                Popup.create(
-                    <div className='rdo-error-text'>
-                        <div>Angles and lengths - {e.toString()}</div>
-                        <div>{Globals.ProductName} cannot function when its engine fails to initialize. Try to refresh the page...</div>
-                    </div>
-                );
-            });
-
-            Naval.initialize(
-                './naval/angle_restraints.csv',
-                './naval/bond_restraints.csv',
-            ).then(res => {
-                if (isError(res)) {
-                    this.setState({ ...this.state, dnatcofierState: 'failed' });
-                    Popup.create(
-                        <div className='rdo-error-text'>
-                            <div>Naval - {res.message}</div>
-                            <div>{Globals.ProductName} cannot function when its engine fails to initialize. Try to refresh the page...</div>
-                        </div>
-                    );
-                } else
-                    this.setState({ ...this.state, dnatcofierState: 'ready' });
-            }).catch(e => {
-                // We should not really get here but let's catch just in case
-                this.setState({ ...this.state, dnatcofierState: 'failed' });
-                Popup.create(
-                    <div className='rdo-error-text'>
-                        <div>Naval - {e.toString()}</div>
-                        <div>{Globals.ProductName} cannot function when its engine fails to initialize. Try to refresh the page...</div>
-                    </div>
-                );
-            });
         }).catch(e => {
             // We should not really get here but let's catch just in case
             this.setState({ ...this.state, dnatcofierState: 'failed' });

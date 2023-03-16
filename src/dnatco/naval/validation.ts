@@ -9,9 +9,10 @@ export namespace Validation {
         res_name: string,
         resid: string,
         altloc: string,
+        seqId: number,
     }
-    export function Atom(name: string, res_name: string, resid: string, altloc: string): Atom {
-        return { name, res_name, resid, altloc };
+    export function Atom(name: string, res_name: string, resid: string, altloc: string, seqId: number): Atom {
+        return { name, res_name, resid, altloc, seqId };
     }
 
     export type AngleAtoms = {
@@ -37,7 +38,8 @@ export namespace Validation {
         pdb_suspicious_right: number,
         pdbcode: string,
         modelNum: number,
-        chain: string,
+        chain: string, // auth_asym_id
+        chainId: string, // label_seq_id
     }
 
     export type Report<Atoms> = ReportItem<Atoms>[];
