@@ -312,7 +312,7 @@ function pairBondName(p: Pair, tag: string) {
     return name;
 }
 
-function renderSubstructureStats(caption: string | JSX.Element, summaryCounts: Summarize.Counts, countsInGroups: Summarize.CountsInGroup[]) {
+function renderSubstructureStats(caption: string | JSX.Element, summaryCounts: Summarize.Counts, countsInGroups: Summarize.CountsInGroup[], colorsForCounts: string[]) {
     return (
         <AnglesLengthsBar
             caption={
@@ -327,6 +327,7 @@ function renderSubstructureStats(caption: string | JSX.Element, summaryCounts: S
                 </div>
             }
             counts={summaryCounts}
+            colors={colorsForCounts}
         />
     );
 }
@@ -345,39 +346,31 @@ function tripletBondName(t: Triplet, tag: string) {
     return name;
 }
 
-class AnglesLengthsBar extends React.Component<{ caption?: string | React.ReactNode, counts: Summarize.Counts }> {
-    private readonly Width = 300;
-    private barRef = React.createRef<HTMLCanvasElement>();
-
-
-    private drawBar(canvas: HTMLCanvasElement, counts: number[]) {
-        const ctx = canvas.getContext('2d');
-        if (!ctx)
-            return;
-
+class AnglesLengthsBar extends React.Component<{ caption?: string | React.ReactNode, counts: Summarize.Counts, colors: string[] }> {
+    private renderBar(counts: number[]) {
         const sum = counts.reduce((p, c) => p + c, 0);
         const nGroups = DAnglesLengths.pGroupCount();
 
-        const tw = canvas.width;
-        const th = canvas.height;
-        let x = 0;
+        const blocks = new Array<JSX.Element>();
+        let accum = 0;
         for (let idx = 0; idx < nGroups; idx++) {
             const n = counts[idx];
             if (n === 0)
                 continue;
 
-            const w = Math.round(tw * n / sum);
+            const w = Math.round(100 * n / sum);
+            if (w > 0)
+                blocks.push(<div style={{ flex: w, backgroundColor: this.props.colors[idx] }} key={idx} />);
 
-            const clr = DAnglesLengths.pGroupColor(idx);
-            ctx.fillStyle = rgbToHex(colorToRgb(clr));
-            ctx.fillRect(x, 0, w, th);
+            accum += w;
 
-            x += w;
+        }
+        if (counts[nGroups] > 0 && accum < 100) {
+            const clr = this.props.colors[this.props.colors.length - 1];
+            blocks.push(<div style={{ flex: (100-accum), backgroundColor: clr }} key={nGroups} />);
         }
 
-        if (counts[nGroups] > 0)
-            ctx.fillStyle = rgbToHex(colorToRgb(DAnglesLengths.outlierColor()));
-        ctx.fillRect(x, 0, tw - x, th);
+        return blocks;
     }
 
     private renderCaption() {
@@ -391,29 +384,10 @@ class AnglesLengthsBar extends React.Component<{ caption?: string | React.ReactN
         }
     }
 
-    private tryDrawBar() {
-        const ref = this.barRef.current;
-        if (ref)
-            this.drawBar(ref, this.props.counts.exclusive);
-    }
-
-    componentDidMount() {
-        this.tryDrawBar();
-    }
-
-    componentDidUpdate() {
-        this.tryDrawBar();
-    }
-
     render() {
         return (
-            <div style={{ width: '100%', height: '100%', position: 'relative' }}>
-                <canvas
-                    width={this.Width}
-                    height={1}
-                    style={{ width: '100%', height: '100%' }}
-                    ref={this.barRef}
-                />
+            <div style={{ width: '100%', height: '100%', position: 'relative', display: 'flex', flexDirection: 'row' }}>
+                {this.renderBar(this.props.counts.exclusive)}
                 {this.renderCaption()}
             </div>
         );
@@ -965,7 +939,8 @@ class ResidueHeader extends React.Component<{
     structureName: string,
     summary: Summarize.Summary,
     countsAngles: Summarize.CountsInGroup[],
-    countsLengths: Summarize.CountsInGroup[]
+    countsLengths: Summarize.CountsInGroup[],
+    colorsForStatsBar: string[],
 }> {
     private tainerRef = React.createRef<HTMLDivElement>();
 
@@ -993,10 +968,10 @@ class ResidueHeader extends React.Component<{
                 >
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
                         <div style={{ flex: 1 }}>
-                            {renderSubstructureStats(<div style={ResidueBarCaptionStyle}>L</div>, this.props.summary.lengths, this.props.countsLengths)}
+                            {renderSubstructureStats(<div style={ResidueBarCaptionStyle}>L</div>, this.props.summary.lengths, this.props.countsLengths, this.props.colorsForStatsBar)}
                         </div>
                         <div style={{ flex: '1' }}>
-                            {renderSubstructureStats(<div style={ResidueBarCaptionStyle}>A</div>, this.props.summary.angles, this.props.countsAngles)}
+                            {renderSubstructureStats(<div style={ResidueBarCaptionStyle}>A</div>, this.props.summary.angles, this.props.countsAngles, this.props.colorsForStatsBar)}
                         </div>
                     </div>
                 </OverallStatsBar>
@@ -1070,25 +1045,33 @@ export class AnglesLengths extends View<
         };
     }
 
-    private fillResidueElementsCache(multipleModels: boolean, thresholds: number[]) {
+    private fillResidueElementsCache(multipleModels: boolean, thresholds: number[], colorsForStatsBar: string[]) {
         this.residuesCache = [];
 
+        const pgrpIndices = sequence(0, DAnglesLengths.pGroupCount() - 1);
         const alm = this.props.dnatcofication.data.alm;
 
         for (let idx = 0; idx < alm.residues.length; idx++) {
             const r = alm.residues[idx];
             const s = alm.stats[idx];
 
-            this.residuesCache.push(this.renderResidue(r, s, multipleModels, thresholds, idx));
+            this.residuesCache.push(this.renderResidue(r, s, multipleModels, thresholds, pgrpIndices, colorsForStatsBar, idx));
         }
     }
 
-    private renderResidue(residue: Measurements.Residue, stats: ALMResidueStats, multipleModels: boolean, thresholds: number[], idx = 0) {
+    private renderResidue(
+        residue: Measurements.Residue,
+        stats: ALMResidueStats,
+        multipleModels: boolean,
+        thresholds: number[],
+        pgrpIndices: number[],
+        colorsForStatsBar: string[],
+        idx = 0
+    ) {
         const countsAngles = countsInGroups(stats.summary.angles, thresholds);
         const countsLenghts = countsInGroups(stats.summary.lengths, thresholds);
         const residueName = this.renderResidueName(residue, multipleModels);
         const outlierColor = colorToTuple(DAnglesLengths.outlierColor());
-        const pgrpIndices = sequence(0, DAnglesLengths.pGroupCount() - 1);
         const structureName = this.props.dnatcofication.identifyingName ?? this.props.dnatcofication.pdbId;
 
         return (
@@ -1103,6 +1086,7 @@ export class AnglesLengths extends View<
                             structureName={structureName}
                             countsAngles={countsAngles}
                             countsLengths={countsLenghts}
+                            colorsForStatsBar={colorsForStatsBar}
                         />
                     )}
                 >
@@ -1300,7 +1284,12 @@ export class AnglesLengths extends View<
             const multipleModels = Dnatcofication.Structure.numberOfModels(this.props.dnatcofication) > 1;
             const thresholds = DAnglesLengths.pGroupThresholds();
 
-            this.fillResidueElementsCache(multipleModels, thresholds);
+            const htmlColorsForStatsBar = new Array<string>();
+            for (let idx = 0; idx < DAnglesLengths.pGroupCount(); idx++)
+                htmlColorsForStatsBar.push(rgbToHex(colorToRgb(DAnglesLengths.pGroupColor(idx))));
+            htmlColorsForStatsBar.push(rgbToHex(colorToRgb(DAnglesLengths.outlierColor())));
+
+            this.fillResidueElementsCache(multipleModels, thresholds, htmlColorsForStatsBar);
         });
     }
 
@@ -1321,8 +1310,13 @@ export class AnglesLengths extends View<
         const summary = Summarize.substructure(selectedResidues);
         const thresholds = DAnglesLengths.pGroupThresholds();
 
+        const htmlColorsForStatsBar = new Array<string>();
+        for (let idx = 0; idx < DAnglesLengths.pGroupCount(); idx++)
+            htmlColorsForStatsBar.push(rgbToHex(colorToRgb(DAnglesLengths.pGroupColor(idx))));
+        htmlColorsForStatsBar.push(rgbToHex(colorToRgb(DAnglesLengths.outlierColor())));
+
         if (this.residuesCache.length === 0)
-            this.fillResidueElementsCache(multipleModels, thresholds);
+            this.fillResidueElementsCache(multipleModels, thresholds, htmlColorsForStatsBar);
 
         const countsAngles = countsInGroups(summary.angles, thresholds);
         const countsLenghts = countsInGroups(summary.lengths, thresholds);
@@ -1389,10 +1383,10 @@ export class AnglesLengths extends View<
                 >
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
                         <div style={{ flex: 1 }}>
-                            {renderSubstructureStats(<div style={{ ...BarCaptionStyle, left: 'calc(var(--h-gap) / 2)' }}>Lengths</div>, summary.lengths, countsLenghts)}
+                            {renderSubstructureStats(<div style={{ ...BarCaptionStyle, left: 'calc(var(--h-gap) / 2)' }}>Lengths</div>, summary.lengths, countsLenghts, htmlColorsForStatsBar)}
                         </div>
                         <div style={{ flex: 1 }}>
-                            {renderSubstructureStats(<div style={{ ...BarCaptionStyle, left: 'calc(var(--h-gap) / 2)' }}>Angles</div>, summary.angles, countsAngles)}
+                            {renderSubstructureStats(<div style={{ ...BarCaptionStyle, left: 'calc(var(--h-gap) / 2)' }}>Angles</div>, summary.angles, countsAngles, htmlColorsForStatsBar)}
                         </div>
                     </div>
                 </OverallStatsBar>
