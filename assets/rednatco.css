@@ -164,8 +164,8 @@ tr.rdo-list-of-conformers-alternate-clr {
 
 .rdo-big-logo-container {
     background-color: var(--color-f);
-    display: flex;
-    height: 20em;
+    display: grid;
+    grid-template-columns: auto 1fr;
     justify-content: center;
 }
 
@@ -530,6 +530,7 @@ th.rdo-data-table-small {
     display: flex;
     justify-content: center;
     transition: background-color var(--anim-speed);
+    width: fit-content;
 }
 .rdo-pushbutton:hover {
     background-color: var(--color-b);
@@ -560,6 +561,16 @@ th.rdo-data-table-small {
     font-weight: bold;
     padding: calc(var(--x-gap) / 2);
     text-align: center;
+}
+
+.rdo-remove-icon-button {
+    height: 100%;
+    object-fit: contain;
+    transition: background-color var(--anim-speed);
+    width: 100%;
+}
+.rdo-remove-icon-button:hover {
+    background-color: var(--color-b);
 }
 
 .rdo-screen-with-side-panel {
@@ -692,6 +703,50 @@ th.rdo-data-table-small {
 .rdo-sup {
     vertical-align: super;
     font-size: var(--font-small)
+}
+
+.rdo-start-input-section {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.rdo-start-input-section-caption {
+    font-weight: bold;
+    font-size: var(--font-xxlarge);
+    margin-bottom: var(--v-gap);
+    text-align: center;
+}
+
+.rdo-start-analyze-button {
+    background-color: #7fff7f;
+    font-size: var(--font-large);
+}
+
+.rdo-start-analyze-button:hover {
+    background-color: #bfffbf;
+}
+
+.rdo-start-analyze-button-disabled {
+    background-color: var(--color-a);
+    font-size: var(--font-large);
+}
+
+.rdo-start-reset-button {
+    font-size: var(--font-large);
+}
+
+.rdo-start-reset-button:hover {
+    background-color: #ff7f7f;
+}
+
+.rdo-start-container {
+    display: flex;
+    flex-direction: column;
+    gap: calc(4 * var(--v-gap));
+    height: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 40em;
 }
 
 .rdo-strong {

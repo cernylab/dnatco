@@ -8,29 +8,18 @@ export class BigLogo extends React.Component {
     render() {
         return (
             <div className='rdo-big-logo-container'>
-                <div
+                <img
+                    src={`${GlobalConfig.data().pathPrefix}/imgs/definition_new_trans2.png`}
                     style={{
-                        alignItems: 'center',
-                        display: 'flex',
-                        flex: 3,
-                        flexDirection: 'column',
-                        gap: '2em',
-                        justifyContent: 'center',
+                        height: '7em',
+                        margin: '0.5em',
+                        objectFit: 'contain',
                     }}
-                >
-                    <div className='rdo-text-uber' style={{ color: 'white' }}>{Globals.ProductName} v{Version.tag()}</div>
-                    <div className='rdo-text-mega' style={{ color: 'white' }}>Assignment of DNA and RNA conformers</div>
+                />
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                    <div style={{ color: 'white', fontSize: 'var(--font-xxlarge)' }}>{Globals.ProductName} v{Version.tag()}</div>
+                    <div style={{ color: 'white', fontSize: 'var(--font-large)' }}>Analyze DNA/RNA structures</div>
                 </div>
-                <span style={{ flex: 2, padding: '0.5em' }}>
-                    <img
-                        src={`${GlobalConfig.data().pathPrefix}/imgs/definition_new_trans2.png`}
-                        style={{
-                            height: '100%',
-                            objectFit: 'contain',
-                            width: '100%',
-                        }}
-                    />
-                </span>
             </div>
         );
     }

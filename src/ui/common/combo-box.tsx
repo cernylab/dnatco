@@ -1,3 +1,4 @@
+import { type StandardLonghandProperties } from 'csstype';
 import * as React from 'react';
 import { GlobalConfig } from '../../global-config';
 import 'assets/imgs/down_arrow.svg';
@@ -5,6 +6,7 @@ import 'assets/imgs/down_arrow.svg';
 const SizingPolicy = {
     'min-content': 'min-content',
     'maximum-available': '100%',
+    'auto': 'auto',
 };
 
 export class ComboBox extends React.Component<ComboBox.Props> {
@@ -30,6 +32,7 @@ export class ComboBox extends React.Component<ComboBox.Props> {
                     className='rdo-combobox'
                     value={this.props.value}
                     onChange={e => this.props.onChange(e.currentTarget.value)}
+                    style={this.props.innerStyle}
                 >
                     {this.props.options.map(o => {
                         return (
@@ -60,5 +63,6 @@ export namespace ComboBox {
         onChange: (v: string) => void;
         value: string;
         sizing?: keyof typeof SizingPolicy;
+        innerStyle?: StandardLonghandProperties;
     }
 }

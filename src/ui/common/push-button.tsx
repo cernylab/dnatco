@@ -46,7 +46,7 @@ export class BasePushButton<P extends BasePushButton.Props> extends React.Compon
     }
 }
 
-export class DummyButton extends React.Component<{ caption: string, enabled: boolean, className?: string, classNameDisabled?: string }> {
+export class DummyButton extends React.Component<Omit<PushButton.Props, 'onClick'>> {
     static defaultProps = {
         enabled: true,
     };
@@ -62,6 +62,33 @@ export class DummyButton extends React.Component<{ caption: string, enabled: boo
         return (
             <div className={this.clsName()}>
                 <div className='rdo-pushbutton-text'>{this.props.caption}</div>
+            </div>
+        );
+    }
+}
+
+export class DummyIconTextButton extends React.Component<Omit<IconTextButton.Props, 'onClick'>> {
+    static defaultProps = {
+        enabled: true,
+    };
+
+    protected clsName() {
+        if (this.props.enabled)
+            return this.props.className ?? 'rdo-pushbutton rdo-pushbutton-border';
+        else
+            return this.props.classNameDisabled ?? 'rdo-pushbutton-disabled rdo-pushbutton-border';
+    }
+
+    render() {
+        return (
+            <div className={this.clsName()}>
+                <div style={{ display: 'flex', height: '100%', justifyContent: 'center', width: '100%' }}>
+                    <img
+                        className={this.props.iconClassName ?? 'rdo-icon-button-image'}
+                        src={`${GlobalConfig.data().pathPrefix}/${this.props.src}`}
+                    />
+                    <span className='rdo-pushbutton-text' style={{ flex: 1 }}>{this.props.caption}</span>
+                </div>
             </div>
         );
     }
@@ -94,6 +121,13 @@ export class IconTextButton extends React.Component<IconTextButton.Props> {
     static defaultProps = {
         enabled: true,
     };
+
+    protected clsName() {
+        if (this.props.enabled)
+            return this.props.className ?? 'rdo-pushbutton rdo-pushbutton-border';
+        else
+            return this.props.classNameDisabled ?? 'rdo-pushbutton-disabled rdo-pushbutton-border';
+    }
 
     render() {
         return (

@@ -2,10 +2,12 @@ import { OkResult, ErrorResult, Result } from './';
 import { RemoteDatabase } from '../remote/db';
 import { fileSuffixes } from '../util';
 
+export const DensityMapKinds = ['fo-fc', '2fo-fc', 'em'] as const;
+
 export type DensityMap = {
     data: Uint8Array,
     type: 'ccp4'|'dsn6'|'ds',
-    kind: 'fo-fc'|'2fo-fc'|'em',
+    kind: typeof DensityMapKinds[number],
 };
 
 const Dns6Suffixes = ['dsn6'];
