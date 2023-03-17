@@ -54,7 +54,12 @@ class Coordinates extends React.Component<Coordinates.Props> {
 
         return (
             <div className='rdo-start-input-section'>
-                <div className='rdo-start-input-section-caption'>Coordinates</div>
+                <div className='rdo-start-input-section-caption'>
+                    {this.props.dnatcofierInitializing
+                        ? <div style={{ display: 'flex', gap: '1ex' }}>Please wait for XXX to initialize...<InProgressSpinner /></div>
+                        : 'Coordinates'
+                    }
+                </div>
 
                 <div style={{ display: 'grid', gridTemplateColumns: '6em 1fr', gap: 'var(--x-gap)', alignItems: 'center', justifyItems: 'end', minWidth: '30em' }}>
                     <div className='rdo-strong rdo-talgn-right' style={{ fontSize: 'var(--font-large)' }}>Source</div>
@@ -116,6 +121,7 @@ namespace Coordinates {
         database: string;
         databaseOptions: ComboBox.Option[];
         pdbId: string;
+        dnatcofierInitializing: boolean;
 
         onCoordsFileChange: (file: File) => void;
         onDatabaseChange: (db: string) => void;
@@ -324,13 +330,12 @@ export class StartTab extends React.Component<StartTab.Props, State> {
                 <div className='rdo-offset' style={{ flex: 1 }}>
                     <ShadowedBox>
                         <div className='rdo-start-container'>
-                            {this.props.dnatcofierState === 'initializing' ? <InProgressSpinner /> : <div />}
-
                             <Coordinates
                                 coordsFile={this.state.coordsFile}
                                 database={this.state.database}
                                 databaseOptions={this.DatabaseOptions}
                                 pdbId={this.state.pdbId}
+                                dnatcofierInitializing={this.props.dnatcofierState === 'initializing'}
                                 onCoordsFileChange={(f) => this.setState({ ...this.state, coordsFile: f })}
                                 onDatabaseChange={(db) => this.setState({ ...this.state, database: db })}
                                 onPdbIdChange={(id) => this.setState({ ...this.state, pdbId: id })}
