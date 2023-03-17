@@ -6,7 +6,7 @@ import { PushButton } from '../../../common/push-button';
 import { SpinBox } from '../../../common/spin-box';
 import { Phenix } from '../../../../refine/phenix';
 import { Net } from '../../../../util/net';
-import { Globals } from '../../../../globals';
+import { GlobalConfig } from '../../../../global-config';
 
 const LeadingWS = new RegExp(/^[ ]./);
 
@@ -80,7 +80,7 @@ export class PhenixRestraints extends View<Refinement.Props, State> {
                     {elems}
                 </div>
                 <div>
-                    Note that this restraints file requires a modified &ldquo;NtC-aware&rdquo; version of Phenix. Contact the authors of the {Globals.ProductName} website for further information.
+                    Note that this restraints file requires a modified &ldquo;NtC-aware&rdquo; version of Phenix. Contact the authors of the {GlobalConfig.data().displayedProductName} website for further information.
                 </div>
             </div>
         );

@@ -1,6 +1,5 @@
 import * as React from 'react';
 import { GlobalConfig } from '../global-config';
-import { Globals } from '../globals';
 import { Version } from '../version';
 import 'assets/imgs/definition_new_trans2.png';
 
@@ -17,7 +16,7 @@ export class BigLogo extends React.Component {
                     }}
                 />
                 <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                    <div style={{ color: 'white', fontSize: 'var(--font-xxlarge)' }}>{Globals.ProductName} v{Version.tag()}</div>
+                    <div style={{ color: 'white', fontSize: 'var(--font-xxlarge)' }}>{GlobalConfig.data().displayedProductName} v{Version.tag()}</div>
                     <div style={{ color: 'white', fontSize: 'var(--font-large)' }}>Analyze DNA/RNA structures</div>
                 </div>
             </div>

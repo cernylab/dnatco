@@ -227,7 +227,7 @@ export class App extends WithSubscriptions<{}, State> {
                 caption: 'Upload structure for external processing?',
                 text: (
                     <div>
-                        You attached a map coefficients file to the structure. {Globals.ProductName} can use this information to calculate additional validation information about the structure. To do this calculation, {Globals.ProductName} must upload your structure and the map coefficients to an external server for processing.
+                        You attached a map coefficients file to the structure. {GlobalConfig.data().displayedProductName} can use this information to calculate additional validation information about the structure. To do this calculation, {GlobalConfig.data().displayedProductName} must upload your structure and the map coefficients to an external server for processing.
                         <div className='rdo-line-spacer' />
                         Is this okay?
                     </div>
@@ -449,6 +449,8 @@ export class App extends WithSubscriptions<{}, State> {
     }
 
     componentDidMount() {
+        const prodname = GlobalConfig.data().displayedProductName;
+
         ClassificationContext.initialize(
             './classification/clusters.csv',
             './classification/confals.csv',
@@ -462,7 +464,7 @@ export class App extends WithSubscriptions<{}, State> {
                         Popup.create(
                             <div className='rdo-error-text'>
                                 <div>Angles and lengths - {res.message}</div>
-                                <div>{Globals.ProductName} cannot function when its engine fails to initialize. Try to refresh the page...</div>
+                                <div>{prodname} cannot function when its engine fails to initialize. Try to refresh the page...</div>
                             </div>
                         );
                     } else {
@@ -475,7 +477,7 @@ export class App extends WithSubscriptions<{}, State> {
                                 Popup.create(
                                     <div className='rdo-error-text'>
                                         <div>Naval - {res.message}</div>
-                                        <div>{Globals.ProductName} cannot function when its engine fails to initialize. Try to refresh the page...</div>
+                                        <div>{prodname} cannot function when its engine fails to initialize. Try to refresh the page...</div>
                                     </div>
                                 );
                             } else
@@ -486,7 +488,7 @@ export class App extends WithSubscriptions<{}, State> {
                             Popup.create(
                                 <div className='rdo-error-text'>
                                     <div>Naval - {e.toString()}</div>
-                                    <div>{Globals.ProductName} cannot function when its engine fails to initialize. Try to refresh the page...</div>
+                                    <div>{prodname} cannot function when its engine fails to initialize. Try to refresh the page...</div>
                                 </div>
                             );
                         });
@@ -497,7 +499,7 @@ export class App extends WithSubscriptions<{}, State> {
                     Popup.create(
                         <div className='rdo-error-text'>
                             <div>Angles and lengths - {e.toString()}</div>
-                            <div>{Globals.ProductName} cannot function when its engine fails to initialize. Try to refresh the page...</div>
+                            <div>{prodname} cannot function when its engine fails to initialize. Try to refresh the page...</div>
                         </div>
                     );
                 });
@@ -506,7 +508,7 @@ export class App extends WithSubscriptions<{}, State> {
                 Popup.create(
                     <div className='rdo-error-text'>
                         <div>Classification context - {retval}</div>
-                        <div>{Globals.ProductName} cannot function when its engine fails to initialize. Try to refresh the page...</div>
+                        <div>{prodname} cannot function when its engine fails to initialize. Try to refresh the page...</div>
                     </div>
                 );
             }
@@ -516,7 +518,7 @@ export class App extends WithSubscriptions<{}, State> {
             Popup.create(
                 <div className='rdo-error-text'>
                     <div>Classification context - {e.toString()}</div>
-                    <div>{Globals.ProductName} cannot function when its engine fails to initialize. Try to refresh the page...</div>
+                    <div>{prodname} cannot function when its engine fails to initialize. Try to refresh the page...</div>
                 </div>
             );
         });

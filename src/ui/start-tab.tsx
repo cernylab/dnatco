@@ -56,7 +56,7 @@ class Coordinates extends React.Component<Coordinates.Props> {
             <div className='rdo-start-input-section'>
                 <div className='rdo-start-input-section-caption'>
                     {this.props.dnatcofierInitializing
-                        ? <div style={{ display: 'flex', gap: '1ex' }}>Please wait for XXX to initialize...<InProgressSpinner /></div>
+                        ? <div style={{ display: 'flex', gap: '1ex' }}>Please wait for {GlobalConfig.data().displayedProductName} to initialize...<InProgressSpinner /></div>
                         : 'Coordinates'
                     }
                 </div>

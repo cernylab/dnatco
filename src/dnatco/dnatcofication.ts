@@ -28,7 +28,6 @@ import {
 import { Struct } from '../cif/categories/struct';
 import { objKeys } from '../util';
 import { EventsKeeper } from '../util/events-keeper';
-import { Globals } from '../globals';
 
 function mapALM(residues: Measurements.Residue[]): MappedALM {
     const models = new Map<number, number[]>();
@@ -344,7 +343,7 @@ export namespace Dnatcofication {
                     llkaSteps.delete();
                     Dnatcofier.destroyImported(llkaImported);
 
-                    throw new Error('Input CIF file does not contain required DNATCO categories and ' + Globals.ProductName + '\'s automatic assignment process was unsuccessful. Sorry...');
+                    throw new Error('Input CIF file does not contain required DNATCO categories and the automatic assignment procedure was unsuccessful. Sorry...');
                 }
             }
 
