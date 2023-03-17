@@ -4,7 +4,6 @@ import { ComboBox } from './common/combo-box';
 import { DummyIconTextButton, IconButton, IconTextButton } from './common/push-button';
 import { InProgressSpinner } from './common/in-progress-spinner';
 import { Popup } from './common/popup';
-//import { QuestionDialog } from './common/question-dialog';
 import { ShadowedBox } from './common/shadowed-box';
 import { DensityMap, DensityMapKinds } from '../dnatco/density-map';
 import { BuiltInRemoteDatabases, UserRemoteDatabases } from '../remote/db/register';
