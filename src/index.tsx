@@ -33,7 +33,6 @@ import { Search } from './remote/search';
 import { BackgroundWorker, WorkerMessage } from './tasks/worker';
 import { ViewerApi, ViewerInterop } from './viewer/viewer-interop';
 import { Task } from './tasks/task';
-import { Globals } from './globals';
 import 'assets/conformers.csv';
 // Image assets
 import 'assets/imgs/elixir.png';
@@ -323,6 +322,8 @@ export class App extends WithSubscriptions<{}, State> {
             return (
                 <StartTab
                     onDoCustomStructure={(coordsFile, densityMaps, densityMapCoeffs) => {
+                        if (this.state.dnatcofierState !== 'ready') return;
+
                         this.fromCustomStructure(
                             coordsFile,
                             densityMaps,
@@ -331,6 +332,8 @@ export class App extends WithSubscriptions<{}, State> {
                         )
                     }}
                     onDoPdbId={(pdbId, db) => {
+                        if (this.state.dnatcofierState !== 'ready') return;
+
                         this.fromPdbId(
                             pdbId,
                             db,
@@ -338,6 +341,8 @@ export class App extends WithSubscriptions<{}, State> {
                         )
                     }}
                     onDoRawLink={link => {
+                        if (this.state.dnatcofierState !== 'ready') return;
+
                         this.fromRawLink(
                             link,
                             () => this.setState({ ...this.state, mode: 'structure', selectedTab: 'annotation' })
@@ -449,7 +454,7 @@ export class App extends WithSubscriptions<{}, State> {
     }
 
     componentDidMount() {
-        const prodname = GlobalConfig.data().displayedProductName;
+        const FailMsg = <div>{GlobalConfig.data().displayedProductName} cannot function when its engine fails to initialize. Try to refresh the page...</div>
 
         ClassificationContext.initialize(
             './classification/clusters.csv',
@@ -464,7 +469,7 @@ export class App extends WithSubscriptions<{}, State> {
                         Popup.create(
                             <div className='rdo-error-text'>
                                 <div>Angles and lengths - {res.message}</div>
-                                <div>{prodname} cannot function when its engine fails to initialize. Try to refresh the page...</div>
+                                {FailMsg}
                             </div>
                         );
                     } else {
@@ -477,7 +482,7 @@ export class App extends WithSubscriptions<{}, State> {
                                 Popup.create(
                                     <div className='rdo-error-text'>
                                         <div>Naval - {res.message}</div>
-                                        <div>{prodname} cannot function when its engine fails to initialize. Try to refresh the page...</div>
+                                        {FailMsg}
                                     </div>
                                 );
                             } else
@@ -488,7 +493,7 @@ export class App extends WithSubscriptions<{}, State> {
                             Popup.create(
                                 <div className='rdo-error-text'>
                                     <div>Naval - {e.toString()}</div>
-                                    <div>{prodname} cannot function when its engine fails to initialize. Try to refresh the page...</div>
+                                    {FailMsg}
                                 </div>
                             );
                         });
@@ -499,7 +504,7 @@ export class App extends WithSubscriptions<{}, State> {
                     Popup.create(
                         <div className='rdo-error-text'>
                             <div>Angles and lengths - {e.toString()}</div>
-                            <div>{prodname} cannot function when its engine fails to initialize. Try to refresh the page...</div>
+                            {FailMsg}
                         </div>
                     );
                 });
@@ -508,7 +513,7 @@ export class App extends WithSubscriptions<{}, State> {
                 Popup.create(
                     <div className='rdo-error-text'>
                         <div>Classification context - {retval}</div>
-                        <div>{prodname} cannot function when its engine fails to initialize. Try to refresh the page...</div>
+                        {FailMsg}
                     </div>
                 );
             }
@@ -518,7 +523,7 @@ export class App extends WithSubscriptions<{}, State> {
             Popup.create(
                 <div className='rdo-error-text'>
                     <div>Classification context - {e.toString()}</div>
-                    <div>{prodname} cannot function when its engine fails to initialize. Try to refresh the page...</div>
+                    {FailMsg}
                 </div>
             );
         });
