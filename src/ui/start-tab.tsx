@@ -19,6 +19,10 @@ const AllowedDensityMapKinds = [...DensityMapKinds, 'coefficients'] as const;
 type AllowedDensityMapKinds = typeof AllowedDensityMapKinds[number];
 type DensityMapFile = { file: File, kind: AllowedDensityMapKinds };
 
+function makeExample(pdbId: string, handler: (pdbId: string) => void) {
+    return <div key={pdbId} className='rdo-example-structure' onClick={() => handler(pdbId)}>{pdbId}</div>
+}
+
 const NiceMapKinds: Record<AllowedDensityMapKinds, string> = {
     'fo-fc': 'Fo-Fc',
     '2fo-fc': '2Fo-Fc',
@@ -90,10 +94,17 @@ class Coordinates extends React.Component<Coordinates.Props> {
                             <PdbIdInput
                                 pdbId={this.props.pdbId}
                                 onChange={(v) => this.props.onPdbIdChange(v)}
-                                onExecute={() => this.props.onExecute()}
+                                onExecute={() => this.props.onRun()}
                             />
                         </>
                     }
+                </div>
+
+                <div className='rdo-example-structures-list'>
+                    <div className='rdo-strong'>Examples:</div>
+                    <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', columnGap: '1ex' }}>
+                        {GlobalConfig.data().exampleStructures.map(x => makeExample(x, this.props.onRunExample))}
+                    </div>
                 </div>
             </div>
         );
@@ -110,7 +121,8 @@ namespace Coordinates {
         onDatabaseChange: (db: string) => void;
         onPdbIdChange: (id: string) => void;
 
-        onExecute: () => void;
+        onRun: () => void;
+        onRunExample: (pdbId: string) => void;
     }
 }
 
@@ -279,16 +291,16 @@ export class StartTab extends React.Component<StartTab.Props, State> {
         this.props.onDoCustomStructure(this.state.coordsFile!, densityMaps, densityMapCoeffs);
     }
 
-    private actionPdbId() {
-        if (isPdbId(this.state.pdbId))
-            this.props.onDoPdbId(this.state.pdbId, this.state.database);
-        else if (this.state.pdbId.length === 0) {
+    private actionPdbId(pdbId: string) {
+        if (isPdbId(pdbId))
+            this.props.onDoPdbId(pdbId, this.state.database);
+        else if (pdbId.length === 0) {
             Popup.create(
                 <div className='rdo-error-text'>Please enter a valid PDB ID</div>
             );
         } else {
             Popup.create(
-                <div className='rdo-error-text'>{`${this.state.pdbId} is not a valid PDB ID`}</div>
+                <div className='rdo-error-text'>{`${pdbId} is not a valid PDB ID`}</div>
             );
         }
     }
@@ -322,7 +334,8 @@ export class StartTab extends React.Component<StartTab.Props, State> {
                                 onCoordsFileChange={(f) => this.setState({ ...this.state, coordsFile: f })}
                                 onDatabaseChange={(db) => this.setState({ ...this.state, database: db })}
                                 onPdbIdChange={(id) => this.setState({ ...this.state, pdbId: id })}
-                                onExecute={() => this.actionPdbId()}
+                                onRun={() => this.actionPdbId(this.state.pdbId)}
+                                onRunExample={(pdbId) => this.actionPdbId(pdbId)}
                             />
 
                             {customFile
@@ -339,7 +352,7 @@ export class StartTab extends React.Component<StartTab.Props, State> {
                                         ready={this.props.dnatcofierState === 'ready'}
                                         onClick={() => {
                                             if (this.state.database)
-                                                this.actionPdbId()
+                                                this.actionPdbId(this.state.pdbId)
                                             else
                                                 this.actionCustomStructure();
                                         }}

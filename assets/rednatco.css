@@ -322,6 +322,20 @@ th.rdo-data-table-small {
     color: red;
 }
 
+.rdo-example-structure {
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+.rdo-example-structures-list {
+    display: flex;
+    flex-direction: row;
+    gap: var(--v-gap);
+    margin: var(--h-gap) auto 0 auto;
+    max-width: 30em;
+    width: fit-content;
+}
+
 .rdo-footer {
     background-color: var(--color-y);
     height: 3em;

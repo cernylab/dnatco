@@ -25,6 +25,7 @@ export type GlobalConfigData = {
     },
     violinPlotMarkerColorA: string,
     violinPlotMarkerColorB: string,
+    exampleStructures: string[],
 };
 const GlobalConfigData: GlobalConfigData = {
     isDevel: false,
@@ -43,6 +44,7 @@ const GlobalConfigData: GlobalConfigData = {
     },
     violinPlotMarkerColorA: '#fff70c',
     violinPlotMarkerColorB: '#000',
+    exampleStructures: [],
 };
 
 function checkAndSetEntry<K extends keyof GlobalConfigData>(data: GlobalConfigData, k: K, inputObj: any) {
