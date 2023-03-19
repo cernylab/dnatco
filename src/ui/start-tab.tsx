@@ -8,7 +8,7 @@ import { ShadowedBox } from './common/shadowed-box';
 import { DensityMap, DensityMapKinds } from '../dnatco/density-map';
 import { BuiltInRemoteDatabases, UserRemoteDatabases } from '../remote/db/register';
 import { Search } from '../remote/search';
-import { isPdbId } from '../util';
+import { copyString, isPdbId } from '../util';
 import { GlobalConfig } from '../global-config';
 import 'assets/imgs/magnifying-glass.svg';
 import 'assets/imgs/media-play.svg';
@@ -25,8 +25,10 @@ const CoordsItemProps = {
     fontSize: 'var(--font-large)'
 };
 
-function makeExample(pdbId: string, handler: (pdbId: string) => void) {
-    return <div key={pdbId} className='rdo-example-structure' onClick={() => handler(pdbId)}>{pdbId}</div>
+function makeExample(db: string, pdbId: string, handler: (db: string, pdbId: string) => void) {
+    const _db = copyString(db);
+    const _pdbId = copyString(pdbId);
+    return <div key={`${_db}${_pdbId}`} className='rdo-example-structure' onClick={() => handler(_db, _pdbId)}>{_pdbId}</div>
 }
 
 const NiceMapKinds: Record<AllowedDensityMapKinds, string> = {
@@ -112,7 +114,7 @@ class Coordinates extends React.Component<Coordinates.Props> {
                 <div className='rdo-example-structures-list'>
                     <div className='rdo-strong'>Examples:</div>
                     <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', columnGap: '1ex' }}>
-                        {GlobalConfig.data().exampleStructures.map(x => makeExample(x, this.props.onRunExample))}
+                        {GlobalConfig.data().exampleStructures.map(x => makeExample(x.db, x.pdbId, this.props.onRunExample))}
                     </div>
                 </div>
             </div>
@@ -131,7 +133,7 @@ namespace Coordinates {
         onPdbIdChange: (id: string) => void;
 
         onRun: () => void;
-        onRunExample: (pdbId: string) => void;
+        onRunExample: (db: string, pdbId: string) => void;
     }
 }
 
@@ -345,9 +347,9 @@ export class StartTab extends React.Component<StartTab.Props, State> {
         this.props.onDoCustomStructure(this.state.coordsFile!, densityMaps, densityMapCoeffs);
     }
 
-    private actionPdbId(pdbId: string) {
-        if (isPdbId(pdbId))
-            this.props.onDoPdbId(pdbId, this.state.database);
+    private actionPdbId(db: string, pdbId: string) {
+        if (isPdbId(pdbId) && !!db)
+            this.props.onDoPdbId(pdbId, db);
         else if (pdbId.length === 0) {
             Popup.create(
                 <div className='rdo-error-text'>Please enter a valid PDB ID</div>
@@ -387,8 +389,8 @@ export class StartTab extends React.Component<StartTab.Props, State> {
                                         onCoordsFileChange={(f) => this.setState({ ...this.state, coordsFile: f })}
                                         onDatabaseChange={(db) => this.setState({ ...this.state, database: db })}
                                         onPdbIdChange={(id) => this.setState({ ...this.state, pdbId: id })}
-                                        onRun={() => this.actionPdbId(this.state.pdbId)}
-                                        onRunExample={(pdbId) => this.actionPdbId(pdbId)}
+                                        onRun={() => this.actionPdbId(this.state.database, this.state.pdbId)}
+                                        onRunExample={(db, pdbId) => this.actionPdbId(db, pdbId)}
                                     />
                                 </div>
 
@@ -414,7 +416,7 @@ export class StartTab extends React.Component<StartTab.Props, State> {
                                     ready={this.props.dnatcofierState === 'ready'}
                                     onClick={() => {
                                         if (this.state.database)
-                                            this.actionPdbId(this.state.pdbId)
+                                            this.actionPdbId(this.state.database, this.state.pdbId)
                                         else
                                             this.actionCustomStructure();
                                     }}

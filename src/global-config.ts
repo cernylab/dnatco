@@ -25,7 +25,10 @@ export type GlobalConfigData = {
     },
     violinPlotMarkerColorA: string,
     violinPlotMarkerColorB: string,
-    exampleStructures: string[],
+    exampleStructures: {
+        db: string,
+        pdbId: string,
+    }[],
     displayedProductName: string,
 };
 const GlobalConfigData: GlobalConfigData = {
@@ -45,22 +48,28 @@ const GlobalConfigData: GlobalConfigData = {
     },
     violinPlotMarkerColorA: '#fff70c',
     violinPlotMarkerColorB: '#000',
-    exampleStructures: [],
+    exampleStructures: [{db: '', pdbId: ''}],
     displayedProductName: 'ReDNATCO',
 };
+const AllowedPartials: Partial<{[k in keyof GlobalConfigData]: object}> = {
+    anglesLengths: {}
+};
 
-function checkAndSetEntry<K extends keyof GlobalConfigData>(data: GlobalConfigData, k: K, inputObj: any) {
+function checkAndSetEntry<K extends keyof GlobalConfigData>(data: GlobalConfigData, k: K, inputObj: any, partials: typeof AllowedPartials) {
+    console.log(k, data[k]);
     const to = data[k];
-    const obj = fromTemplate(inputObj, to, true);
+    const obj = fromTemplate(inputObj, to, partials[k]);
     if (obj)
         data[k] = obj;
+    else
+        console.warn(`${k} entry in the configuration file appears to be malformed. Falling back to default value`);
 }
 
 function checkAndSet(data: GlobalConfigData, input: Record<string, any>) {
     for (const prop in data) {
         const inputObj = input[prop];
         if (inputObj)
-            checkAndSetEntry(data, prop as keyof GlobalConfigData, inputObj)
+            checkAndSetEntry(data, prop as keyof GlobalConfigData, inputObj, AllowedPartials);
     }
 }
 

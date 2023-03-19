@@ -39,8 +39,8 @@ export function isType<V>(v: unknown, checker: TypeChecker<V>) {
     return checker(v);
 }
 
-export function fromTemplate<T>(o: AnyObject, template: T, allowPartial = false): T|undefined {
-    if (!isObj(template)) {
+export function fromTemplate<T>(o: AnyObject, template: T, partials?: Partial<{[k in keyof T]: object}>): T|undefined {
+    if (isPrimitive(template)) {
         // Template is a built-in type
         if (typeof template === 'number' && !isNum(o))
             return undefined;
@@ -48,7 +48,7 @@ export function fromTemplate<T>(o: AnyObject, template: T, allowPartial = false)
             return undefined;
         else if (typeof template === 'boolean' && !isBool(o))
             return undefined;
-        else if (typeof template === 'function' || typeof template === 'symbol')
+        else if (typeof template === 'function' || typeof template === 'symbol' || typeof template === 'bigint')
             return undefined; // These types cannot appear in data objects
 
         return o as T;
@@ -57,17 +57,20 @@ export function fromTemplate<T>(o: AnyObject, template: T, allowPartial = false)
         if (Array.isArray(template)) {
             const to = template[0]; // Our template must have at least one element to detect array type
             for (const item of (o as unknown as Array<any>)) {
-                const res = fromTemplate(item, to[0]);
+                if (!to)
+                    return o as T; // No template object to check against. Go Maverick and hope that the input is okay.
+
+                const res = fromTemplate(item, to, partials);
                 if (!res)
                     return undefined;
             }
             return o as T;
         } else {
-            if (allowPartial) {
+            if (partials) {
                 for (const p in template) {
                     if (o[p] === undefined)
                         o[p] = template[p]; // WARNING: We should copy here to prevent accidental modifications of the template
-                    else if (fromTemplate(o[p] as AnyObject, template[p]) === undefined)
+                    else if (fromTemplate(o[p] as AnyObject, template[p], partials[p as keyof T]) === undefined)
                         return undefined;
                 }
             } else {
@@ -75,7 +78,7 @@ export function fromTemplate<T>(o: AnyObject, template: T, allowPartial = false)
                     return undefined;
 
                 for (const p in template) {
-                    if (fromTemplate(o[p] as AnyObject, template[p]) === undefined)
+                    if (fromTemplate(o[p] as AnyObject, template[p], void 0) === undefined)
                         return undefined;
                 }
             }
@@ -118,9 +121,19 @@ export function isNum(obj: unknown): obj is number {
 }
 
 export function isObj(obj: unknown): obj is AnyObject {
-    return typeof obj === 'object' &&
-                  obj !== null &&
-                  !Array.isArray(obj);
+    const isObjChk = typeof obj === 'object';
+    const notNullChk = obj !== null;
+    const notArrChk = !Array.isArray(obj);
+
+    return isObjChk && notNullChk && notArrChk;
+}
+
+export function isPrimitive(obj: unknown): obj is number|string|boolean|symbol|bigint {
+    const notObjChk = typeof obj !== 'object';
+    const notNullChk = obj !== null;
+    const notArrChk = !Array.isArray(obj);
+
+    return notObjChk && notNullChk && notArrChk;
 }
 
 export function isStr(obj: unknown): obj is string {

@@ -17,6 +17,12 @@ export function clamp(v: number, min: number, max: number) {
         v > max ? max : v;
 }
 
+export function copyString(s: string) {
+    // NOTE: This feels super sketchy but StackOverflow offers a couple
+    // of very odd suggestions, all of which are reported to have issues
+    return '' + s;
+}
+
 export function dequote(s: string) {
     const last = s.length - 1;
 
