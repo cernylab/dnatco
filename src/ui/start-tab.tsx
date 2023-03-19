@@ -9,7 +9,7 @@ import { DensityMap, DensityMapKinds } from '../dnatco/density-map';
 import { BuiltInRemoteDatabases, UserRemoteDatabases } from '../remote/db/register';
 import { Search } from '../remote/search';
 import { copyString, isPdbId } from '../util';
-import { GlobalConfig } from '../global-config';
+import { GlobalConfig, GlobalConfigData } from '../global-config';
 import 'assets/imgs/magnifying-glass.svg';
 import 'assets/imgs/media-play.svg';
 import 'assets/imgs/x.svg';
@@ -24,6 +24,24 @@ const CoordsItemProps = {
     height: '32px', // This needs to be in pixels because ems are relative to font size and things then get misaligned
     fontSize: 'var(--font-large)'
 };
+
+function listOfValidExamples(examples: GlobalConfigData['exampleStructures']) {
+    const dbIds = UserRemoteDatabases.list().map(x => x.id);
+
+    for (const id in BuiltInRemoteDatabases) {
+        dbIds.push(id);
+    }
+
+    const valid = new Array<GlobalConfigData['exampleStructures'][0]>();
+    for (const ex of examples) {
+        if (dbIds.includes(ex.db) && isPdbId(ex.pdbId))
+            valid.push(ex);
+        else
+            console.warn(`Example structure entry "${ex.pdbId}" from DB "${ex.db}" is invalid. Check the PDB ID and that it references a valid database.`);
+    }
+
+    return valid;
+}
 
 function makeExample(db: string, pdbId: string, handler: (db: string, pdbId: string) => void) {
     const _db = copyString(db);
@@ -59,6 +77,7 @@ class Coordinates extends React.Component<Coordinates.Props> {
     render() {
         const prefix = GlobalConfig.data().pathPrefix;
         const customFile = !this.props.database;
+        const examples = listOfValidExamples(GlobalConfig.data().exampleStructures);
 
         return (
             <div className='rdo-start-input-section'>
@@ -111,12 +130,15 @@ class Coordinates extends React.Component<Coordinates.Props> {
                     }
                 </div>
 
-                <div className='rdo-example-structures-list'>
-                    <div className='rdo-strong'>Examples:</div>
-                    <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', columnGap: '1ex' }}>
-                        {GlobalConfig.data().exampleStructures.map(x => makeExample(x.db, x.pdbId, this.props.onRunExample))}
+                {examples.length > 0
+                    ? <div className='rdo-example-structures-list'>
+                        <div className='rdo-strong'>Examples:</div>
+                        <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', columnGap: '1ex' }}>
+                            {examples.map(x => makeExample(x.db, x.pdbId, this.props.onRunExample))}
+                        </div>
                     </div>
-                </div>
+                    : undefined
+                }
             </div>
         );
     }
