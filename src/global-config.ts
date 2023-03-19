@@ -56,13 +56,12 @@ const AllowedPartials: Partial<{[k in keyof GlobalConfigData]: object}> = {
 };
 
 function checkAndSetEntry<K extends keyof GlobalConfigData>(data: GlobalConfigData, k: K, inputObj: any, partials: typeof AllowedPartials) {
-    console.log(k, data[k]);
     const to = data[k];
     const obj = fromTemplate(inputObj, to, partials[k]);
     if (obj)
         data[k] = obj;
     else
-        console.warn(`${k} entry in the configuration file appears to be malformed. Falling back to default value`);
+        console.warn(`"${k}" entry in the configuration file appears to be malformed. Falling back to default value. Mind that if the malformed entry is a complex object, the problem may be with one of its nested objects.`);
 }
 
 function checkAndSet(data: GlobalConfigData, input: Record<string, any>) {
