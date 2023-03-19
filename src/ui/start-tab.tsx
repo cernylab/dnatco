@@ -261,6 +261,10 @@ namespace DensityMapFiles {
 }
 
 class FileInput extends React.Component<{ id: string, onChange: (f: FileList | null) => void, disabled: boolean }> {
+    static defaultProps = {
+        disabled: false,
+    };
+
     render() {
         return (
             <input
