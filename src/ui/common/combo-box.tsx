@@ -33,6 +33,7 @@ export class ComboBox extends React.Component<ComboBox.Props> {
                     value={this.props.value}
                     onChange={e => this.props.onChange(e.currentTarget.value)}
                     style={this.props.innerStyle}
+                    disabled={this.props.disabled}
                 >
                     {this.props.options.map(o => {
                         return (

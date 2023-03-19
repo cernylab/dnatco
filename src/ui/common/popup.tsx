@@ -34,7 +34,6 @@ export class Popup extends React.Component<Popup.Props> {
                         <div style={{ flex: 1 }} />
                         <PushButton
                             caption='Dismiss'
-                            enabled={true}
                             onClick={() => this.dismiss()}
                         />
                     </div>

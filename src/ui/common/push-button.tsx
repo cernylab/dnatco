@@ -4,11 +4,11 @@ import { GlobalConfig } from '../../global-config';
 
 export class BasePushButton<P extends BasePushButton.Props> extends React.Component<P> {
     static defaultProps = {
-        enabled: true,
+        disabled: false,
     };
 
     protected clsName() {
-        if (this.props.enabled)
+        if (!this.props.disabled)
             return this.props.className ?? '';
         else
             return this.props.classNameDisabled ?? '';
@@ -20,23 +20,23 @@ export class BasePushButton<P extends BasePushButton.Props> extends React.Compon
                 className={this.clsName()}
                 style={this.props.style}
                 onClick={(e: React.MouseEvent<HTMLInputElement>) => {
-                    if (this.props.enabled && this.props.onClick)
+                    if (!this.props.disabled && this.props.onClick)
                         this.props.onClick(e);
                 }}
                 onMouseDown={e => {
-                    if (this.props.enabled && this.props.onMouseDown)
+                    if (!this.props.disabled && this.props.onMouseDown)
                         this.props.onMouseDown(e);
                 }}
                 onMouseUp={e => {
-                    if (this.props.enabled && this.props.onMouseUp)
+                    if (!this.props.disabled && this.props.onMouseUp)
                         this.props.onMouseUp(e);
                 }}
                 onMouseEnter={e => {
-                    if (this.props.enabled && this.props.onMouseEnter)
+                    if (!this.props.disabled && this.props.onMouseEnter)
                         this.props.onMouseEnter(e);
                 }}
                 onMouseLeave={e => {
-                    if (this.props.enabled && this.props.onMouseLeave)
+                    if (!this.props.disabled && this.props.onMouseLeave)
                         this.props.onMouseLeave(e);
                 }}
             >
@@ -48,11 +48,11 @@ export class BasePushButton<P extends BasePushButton.Props> extends React.Compon
 
 export class DummyButton extends React.Component<Omit<PushButton.Props, 'onClick'>> {
     static defaultProps = {
-        enabled: true,
+        disabled: false,
     };
 
     protected clsName() {
-        if (this.props.enabled)
+        if (!this.props.disabled)
             return this.props.className ?? 'rdo-pushbutton rdo-pushbutton-border';
         else
             return this.props.classNameDisabled ?? 'rdo-pushbutton-disabled rdo-pushbutton-border';
@@ -69,11 +69,11 @@ export class DummyButton extends React.Component<Omit<PushButton.Props, 'onClick
 
 export class DummyIconTextButton extends React.Component<Omit<IconTextButton.Props, 'onClick'>> {
     static defaultProps = {
-        enabled: true,
+        disabled: false,
     };
 
     protected clsName() {
-        if (this.props.enabled)
+        if (!this.props.disabled)
             return this.props.className ?? 'rdo-pushbutton rdo-pushbutton-border';
         else
             return this.props.classNameDisabled ?? 'rdo-pushbutton-disabled rdo-pushbutton-border';
@@ -96,7 +96,7 @@ export class DummyIconTextButton extends React.Component<Omit<IconTextButton.Pro
 
 export class IconButton extends React.Component<IconButton.Props> {
     static defaultProps = {
-        enabled: true,
+        disabled: false,
     };
 
     render() {
@@ -119,11 +119,11 @@ export class IconButton extends React.Component<IconButton.Props> {
 
 export class IconTextButton extends React.Component<IconTextButton.Props> {
     static defaultProps = {
-        enabled: true,
+        disabled: false,
     };
 
     protected clsName() {
-        if (this.props.enabled)
+        if (!this.props.disabled)
             return this.props.className ?? 'rdo-pushbutton rdo-pushbutton-border';
         else
             return this.props.classNameDisabled ?? 'rdo-pushbutton-disabled rdo-pushbutton-border';
@@ -150,11 +150,11 @@ export class IconTextButton extends React.Component<IconTextButton.Props> {
 
 export class PushButton extends BasePushButton<PushButton.Props> {
     static defaultProps = {
-        enabled: true,
+        disabled: false,
     };
 
     protected clsName() {
-        if (this.props.enabled)
+        if (!this.props.disabled)
             return this.props.className ?? 'rdo-pushbutton rdo-pushbutton-border'
         else
             return this.props.classNameDisabled ?? 'rdo-pushbutton-disabled rdo-pushbutton-border';
@@ -165,23 +165,23 @@ export class PushButton extends BasePushButton<PushButton.Props> {
             <div
                 className={this.clsName()}
                 onClick={(e: React.MouseEvent<HTMLInputElement>) => {
-                    if (this.props.enabled && this.props.onClick)
+                    if (!this.props.disabled && this.props.onClick)
                         this.props.onClick(e);
                 }}
                 onMouseDown={e => {
-                    if (this.props.enabled && this.props.onMouseDown)
+                    if (!this.props.disabled && this.props.onMouseDown)
                         this.props.onMouseDown(e);
                 }}
                 onMouseUp={e => {
-                    if (this.props.enabled && this.props.onMouseUp)
+                    if (!this.props.disabled && this.props.onMouseUp)
                         this.props.onMouseUp(e);
                 }}
                 onMouseEnter={e => {
-                    if (this.props.enabled && this.props.onMouseEnter)
+                    if (!this.props.disabled && this.props.onMouseEnter)
                         this.props.onMouseEnter(e);
                 }}
                 onMouseLeave={e => {
-                    if (this.props.enabled && this.props.onMouseLeave)
+                    if (!this.props.disabled && this.props.onMouseLeave)
                         this.props.onMouseLeave(e);
                 }}
             >
@@ -193,11 +193,11 @@ export class PushButton extends BasePushButton<PushButton.Props> {
 
 export class ToggleButton extends BasePushButton<ToggleButton.Props> {
     static defaultProps = {
-        enabled: true,
+        disabled: false,
     };
 
     protected clsName() {
-        if (this.props.enabled)
+        if (!this.props.disabled)
             return this.props.className ?? `rdo-pushbutton rdo-pushbutton-border ${this.props.selected ? 'rdo-togglebutton-selected' : 'rdo-togglebutton-deselected'}`;
         else
             return this.props.classNameDisabled ?? 'rdo-pushbutton-disabled rdo-pushbutton-border';
@@ -208,23 +208,23 @@ export class ToggleButton extends BasePushButton<ToggleButton.Props> {
             <div
                 className={this.clsName()}
                 onClick={(e: React.MouseEvent<HTMLInputElement>) => {
-                    if (this.props.enabled && this.props.onClick)
+                    if (!this.props.disabled && this.props.onClick)
                         this.props.onClick(e);
                 }}
                 onMouseDown={e => {
-                    if (this.props.enabled && this.props.onMouseDown)
+                    if (!this.props.disabled && this.props.onMouseDown)
                         this.props.onMouseDown(e);
                 }}
                 onMouseUp={e => {
-                    if (this.props.enabled && this.props.onMouseUp)
+                    if (!this.props.disabled && this.props.onMouseUp)
                         this.props.onMouseUp(e);
                 }}
                 onMouseEnter={e => {
-                    if (this.props.enabled && this.props.onMouseEnter)
+                    if (!this.props.disabled && this.props.onMouseEnter)
                         this.props.onMouseEnter(e);
                 }}
                 onMouseLeave={e => {
-                    if (this.props.enabled && this.props.onMouseLeave)
+                    if (!this.props.disabled && this.props.onMouseLeave)
                         this.props.onMouseLeave(e);
                 }}
             >
@@ -236,7 +236,7 @@ export class ToggleButton extends BasePushButton<ToggleButton.Props> {
 
 export namespace BasePushButton {
     export interface Props {
-        enabled: boolean;
+        disabled: boolean;
         onClick?: (e: React.MouseEvent) => void;
         onMouseDown?: (e: React.MouseEvent) => void;
         onMouseUp?: (e: React.MouseEvent) => void;

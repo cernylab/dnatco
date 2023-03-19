@@ -190,7 +190,7 @@ tr.rdo-list-of-conformers-alternate-clr {
     color: black;
     flex: 1;
     padding: 0.15em 1em 0.15em 0.15em;
-    transition: background-color 222ms;
+    transition: background-color var(--anim-speed);
     z-index: 2;
 }
 
@@ -216,7 +216,7 @@ tr.rdo-list-of-conformers-alternate-clr {
     height: calc(100% - 2*var(--thickness-border));
     justify-content: center;
     position: relative;
-    transition: background-color 222ms;
+    transition: background-color var(--anim-speed);
 }
 
 .rdo-combobox-container-disabled {
@@ -362,6 +362,11 @@ th.rdo-data-table-small {
     color: white;
     font-size: var(--font-small);
     text-align: center;
+}
+
+.rdo-hflex {
+    display: flex;
+    flex-direction: row;
 }
 
 .rdo-icon {
@@ -577,6 +582,11 @@ th.rdo-data-table-small {
     text-align: center;
 }
 
+.rdo-rednatco-state {
+    font-size: var(--font-large);
+    margin: auto;
+}
+
 .rdo-remove-icon-button {
     height: 100%;
     object-fit: contain;
@@ -584,7 +594,15 @@ th.rdo-data-table-small {
     width: 100%;
 }
 .rdo-remove-icon-button:hover {
-    background-color: var(--color-b);
+    background-color: var(--color-a);
+}
+
+.rdo-remove-icon-button-disabled {
+    background-color: var(--color-a);
+    height: 100%;
+    object-fit: contain;
+    transition: background-color var(--anim-speed);
+    width: 100%;
 }
 
 .rdo-screen-with-side-panel {
@@ -734,19 +752,29 @@ th.rdo-data-table-small {
 .rdo-start-analyze-button {
     background-color: #7fff7f;
     font-size: var(--font-large);
+    width: 100%;
 }
 
 .rdo-start-analyze-button:hover {
-    background-color: #bfffbf;
+    background-color: #dfffdf;
 }
 
 .rdo-start-analyze-button-disabled {
     background-color: var(--color-a);
     font-size: var(--font-large);
+    width: 100%;
+}
+
+.rdo-start-input-block {
+    align-items: center;
+    display: grid;
+    gap: var(--x-gap);
+    justify-items: 'end';
 }
 
 .rdo-start-reset-button {
     font-size: var(--font-large);
+    width: 100%;
 }
 
 .rdo-start-reset-button:hover {
@@ -759,8 +787,9 @@ th.rdo-data-table-small {
     gap: calc(4 * var(--v-gap));
     height: 100%;
     margin: 0 auto auto auto;
-    max-width: 40em;
-    padding-top: var(--h-gap);
+    max-width: 60em;
+    min-width: 45em;
+    padding: var(--h-gap) calc(2 * var(--h-gap)) calc(2 * var(--v-gap)) var(--h-gap);
 }
 
 .rdo-strong {
@@ -839,6 +868,10 @@ th.rdo-data-table-small {
 
 .rdo-talgn-right {
     text-align: right;
+}
+
+.rdo-text-disabled {
+    color: var(--color-a);
 }
 
 .rdo-text-large {

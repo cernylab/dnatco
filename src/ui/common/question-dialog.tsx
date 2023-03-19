@@ -30,7 +30,6 @@ export class QuestionDialog extends React.Component<Props> {
                                 return (
                                     <PushButton
                                         caption={x.text}
-                                        enabled={true}
                                         onClick={() => {
                                             this.dismiss();
                                             this.props.onAnswered(x.code);

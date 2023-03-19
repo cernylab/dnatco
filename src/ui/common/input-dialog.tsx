@@ -78,12 +78,10 @@ export class InputDialog extends React.Component<Props, State> {
                         <div style={{ flex: 1 }} />
                         <PushButton
                             caption='OK'
-                            enabled={true}
                             onClick={() => this.accept()}
                         />
                         <PushButton
                             caption='Cancel'
-                            enabled={true}
                             onClick={() => this.reject()}
                         />
                     </div>

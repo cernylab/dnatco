@@ -18,6 +18,13 @@ const AllowedDensityMapKinds = [...DensityMapKinds, 'coefficients'] as const;
 type AllowedDensityMapKinds = typeof AllowedDensityMapKinds[number];
 type DensityMapFile = { file: File, kind: AllowedDensityMapKinds };
 
+const CoordsItemProps = {
+    alignItems: 'center',
+    display: 'flex',
+    height: '32px', // This needs to be in pixels because ems are relative to font size and things then get misaligned
+    fontSize: 'var(--font-large)'
+};
+
 function makeExample(pdbId: string, handler: (pdbId: string) => void) {
     return <div key={pdbId} className='rdo-example-structure' onClick={() => handler(pdbId)}>{pdbId}</div>
 }
@@ -38,7 +45,7 @@ class AnalyzeButton extends React.Component<{ ready: boolean, onClick: () => voi
                 src={`${prefix}/imgs/media-play.svg`}
                 caption='Analyze'
                 onClick={() => this.props.onClick()}
-                enabled={this.props.ready}
+                disabled={!this.props.ready}
                 className='rdo-pushbutton rdo-pushbutton-border rdo-start-analyze-button'
                 classNameDisabled='rdo-pushbutton rdo-pushbutton-border rdo-start-analyze-button-disabled'
             />
@@ -53,28 +60,26 @@ class Coordinates extends React.Component<Coordinates.Props> {
 
         return (
             <div className='rdo-start-input-section'>
-                <div className='rdo-start-input-section-caption'>
-                    {this.props.dnatcofierInitializing
-                        ? <div style={{ display: 'flex', gap: '1ex' }}>Please wait for {GlobalConfig.data().displayedProductName} to initialize...<InProgressSpinner /></div>
-                        : 'Coordinates'
-                    }
-                </div>
+                <div className='rdo-start-input-section-caption'>Coordinates</div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '6em 1fr', gap: 'var(--x-gap)', alignItems: 'center', justifyItems: 'end', minWidth: '30em' }}>
-                    <div className='rdo-strong rdo-talgn-right' style={{ fontSize: 'var(--font-large)' }}>Source</div>
+                <div
+                    className='rdo-start-input-block'
+                    style={{ gridTemplateColumns: '6em 1fr' }}
+                >
+                    <div className='rdo-strong rdo-talgn-right' style={ CoordsItemProps }>Source</div>
                     <div style={{ width: '100%' }}>
                         <ComboBox
                             value={this.props.database}
                             options={this.props.databaseOptions}
                             onChange={(db) => this.props.onDatabaseChange(db)}
-                            innerStyle={{ fontSize: 'var(--font-large)' }}
+                            innerStyle={{ fontSize: CoordsItemProps.fontSize, height: CoordsItemProps.height }}
                             sizing='auto'
                         />
                     </div>
 
                     {customFile
                         ? <>
-                            <div>
+                            <div style={ CoordsItemProps }>
                                 <label htmlFor='upload-coords-file'>
                                     <DummyIconTextButton
                                         src={`${prefix}/imgs/magnifying-glass.svg`}
@@ -91,10 +96,10 @@ class Coordinates extends React.Component<Coordinates.Props> {
                                     }}
                                 />
                             </div>
-                            <div style={{ fontSize: 'var(--font-large)', width: '100%' }}>{this.props.coordsFile?.name ?? '(Select mmCif/PDB file)'}</div>
+                            <div style={{ fontSize: 'var(--font-large)', width: '100%', overflow: 'hidden', whiteSpace: 'nowrap' }}>{this.props.coordsFile?.name ?? '(Select mmCif/PDB file)'}</div>
                         </>
                         : <>
-                            <div className='rdo-strong rdo-talgn-right' style={{ fontSize: 'var(--font-large)' }}>PDB ID</div>
+                            <div className='rdo-strong rdo-talgn-right' style={ CoordsItemProps }>PDB ID</div>
                             <PdbIdInput
                                 pdbId={this.props.pdbId}
                                 onChange={(v) => this.props.onPdbIdChange(v)}
@@ -120,7 +125,6 @@ namespace Coordinates {
         database: string;
         databaseOptions: ComboBox.Option[];
         pdbId: string;
-        dnatcofierInitializing: boolean;
 
         onCoordsFileChange: (file: File) => void;
         onDatabaseChange: (db: string) => void;
@@ -143,6 +147,52 @@ class DensityMapFiles extends React.Component<
         };
     }
 
+    private addedFiles(fillToRows: number) {
+        const prefix = GlobalConfig.data().pathPrefix;
+        const elems = new Array<JSX.Element>();
+        const textCls = this.props.disabled ? 'rdo-text-disabled' : '';
+
+        let idx = 0;
+        for (; idx < this.props.files.length; idx++) {
+            const f = this.props.files[idx];
+            const _idx = idx;
+
+            elems.push(
+                <React.Fragment key={idx}>
+                    <div className={textCls} style={{
+                        fontSize: 'var(--font-large)',
+                        overflow: 'hidden',
+                        textAlign: 'right',
+                        whiteSpace: 'nowrap',
+                    }}>{f.file.name}</div>
+                    <div style={{ display: 'flex', flexDirection: 'row', width: '100%' }}>
+                        <div className={textCls} style={{ flex: 1, fontSize: 'var(--font-large)' }}>{NiceMapKinds[f.kind]}</div>
+                        <div style={{ width: '2em' }}>
+                            <IconButton
+                                src={`${prefix}/imgs/x.svg`}
+                                onClick={() => this.props.onRemoveFile(_idx)}
+                                className='rdo-remove-icon-button'
+                                classNameDisabled='rdo-remove-icon-button-disabled'
+                                disabled={this.props.disabled}
+                            />
+                        </div>
+                    </div>
+                </React.Fragment>
+            );
+        }
+
+        for (; idx < fillToRows; idx++) {
+            elems.push(
+                <React.Fragment key={idx}>
+                    <div style={{ fontSize: 'var(--font-large)' }}>{'\u00A0'}</div>
+                    <div style={{ fontSize: 'var(--font-large)' }}>{'\u00A0'}</div>
+                </React.Fragment>
+            );
+        }
+
+        return elems;
+    }
+
     private fileTypeOptions() {
         const remaining = AllowedDensityMapKinds.filter(x => !this.props.files.find(f => f.kind === x) );
         return remaining.map(x => ({ caption: NiceMapKinds[x], value: x }));
@@ -156,6 +206,7 @@ class DensityMapFiles extends React.Component<
 
     render() {
         const prefix = GlobalConfig.data().pathPrefix;
+        const opts = this.fileTypeOptions();
 
         return (
             <div className='rdo-start-input-section'>
@@ -165,45 +216,36 @@ class DensityMapFiles extends React.Component<
                     id='upload-density-map'
                     onChange={(e) => {
                         const file = e?.[0];
-                        if (file && this.fileTypeOptions().length > 0) {
-                            this.props.files.push({ file, kind: this.state.selectedKind });
-                            this.props.onChange(this.props.files);
+                        if (file && opts.length > 0) {
+                            const df: DensityMapFile = { file, kind: this.state.selectedKind };
+                            this.props.onAddFile(df);
                         }
                     }}
+                    disabled={this.props.disabled}
                 />
-                <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr', gap: 'var(--x-gap)', alignItems: 'center', justifyItems: 'end' }}>
-                    <label htmlFor='upload-density-map' style={{ height: '100%' }}>
-                        <DummyIconTextButton
-                            src={`${prefix}/imgs/magnifying-glass.svg`}
-                            caption='Browse'
-                        />
-                    </label>
+                <div
+                    className='rdo-start-input-block'
+                    style={{ gridTemplateColumns: '1fr 12em' }}
+                >
+                    {opts.length > 0
+                        ? <label htmlFor='upload-density-map' style={{ display: 'flex', justifyContent: 'end', height: '100%' }}>
+                            <DummyIconTextButton
+                                src={`${prefix}/imgs/magnifying-glass.svg`}
+                                caption='Browse'
+                                disabled={this.props.disabled}
+                            />
+                        </label>
+                        : <div />
+                    }
                     <ComboBox
                         value={this.state.selectedKind}
-                        options={this.fileTypeOptions()}
+                        options={opts}
                         onChange={(v) => this.setState({ ...this.state, selectedKind: v as AllowedDensityMapKinds })}
                         innerStyle={{ fontSize: 'var(--font-large)' }}
-                        sizing='maximum-available'
+                        sizing='auto'
+                        disabled={this.props.disabled}
                     />
-
-                    {this.props.files.map((f, idx) => (
-                        <React.Fragment key={idx}>
-                            <div style={{ fontSize: 'var(--font-large)' }}>{f.file.name}</div>
-                            <div style={{ display: 'flex', flexDirection: 'row', width: '100%' }}>
-                                <div style={{ flex: 1, fontSize: 'var(--font-large)' }}>{NiceMapKinds[f.kind]}</div>
-                                <div style={{ width: '2em' }}>
-                                    <IconButton
-                                        src={`${prefix}/imgs/x.svg`}
-                                        onClick={() => {
-                                            this.props.files.splice(idx, 1);
-                                            this.props.onChange(this.props.files);
-                                        }}
-                                        className='rdo-remove-icon-button'
-                                    />
-                                </div>
-                            </div>
-                        </React.Fragment>
-                    ))}
+                    {this.addedFiles(AllowedDensityMapKinds.length)}
                 </div>
             </div>
         );
@@ -211,12 +253,14 @@ class DensityMapFiles extends React.Component<
 }
 namespace DensityMapFiles {
     export interface Props {
+        disabled: boolean,
         files: DensityMapFile[],
-        onChange: (files: DensityMapFile[]) => void,
+        onAddFile: (file: DensityMapFile) => void,
+        onRemoveFile: (idx: number) => void,
     }
 }
 
-class FileInput extends React.Component<{ id: string, onChange: (f: FileList | null) => void }> {
+class FileInput extends React.Component<{ id: string, onChange: (f: FileList | null) => void, disabled: boolean }> {
     render() {
         return (
             <input
@@ -224,6 +268,7 @@ class FileInput extends React.Component<{ id: string, onChange: (f: FileList | n
                 className='rdo-input-file'
                 type='file'
                 onChange={(e) => this.props.onChange(e.currentTarget.files)}
+                disabled={this.props.disabled}
             />
         );
     }
@@ -234,7 +279,7 @@ class PdbIdInput extends React.Component<{ pdbId: string, onChange: (v: string) 
         return (
             <input
                 className='rdo-input-text'
-                style={{ fontSize: 'var(--font-large)', width: '100%', ...(!isPdbId(this.props.pdbId) ? { color: 'red' } : {})}}
+                style={{ fontSize: CoordsItemProps.fontSize, height: CoordsItemProps.height, width: '100%', ...(!isPdbId(this.props.pdbId) ? { color: 'red' } : {})}}
                 type='text'
                 value={this.props.pdbId}
                 onChange={(v) => {
@@ -320,7 +365,6 @@ export class StartTab extends React.Component<StartTab.Props, State> {
     }
 
     render() {
-        const customFile = !this.state.database;
         const prefix = GlobalConfig.data().pathPrefix;
 
         return (
@@ -329,48 +373,62 @@ export class StartTab extends React.Component<StartTab.Props, State> {
                 <div className='rdo-offset' style={{ flex: 1 }}>
                     <ShadowedBox>
                         <div className='rdo-start-container'>
-                            <Coordinates
-                                coordsFile={this.state.coordsFile}
-                                database={this.state.database}
-                                databaseOptions={this.DatabaseOptions}
-                                pdbId={this.state.pdbId}
-                                dnatcofierInitializing={this.props.dnatcofierState === 'initializing'}
-                                onCoordsFileChange={(f) => this.setState({ ...this.state, coordsFile: f })}
-                                onDatabaseChange={(db) => this.setState({ ...this.state, database: db })}
-                                onPdbIdChange={(id) => this.setState({ ...this.state, pdbId: id })}
-                                onRun={() => this.actionPdbId(this.state.pdbId)}
-                                onRunExample={(pdbId) => this.actionPdbId(pdbId)}
-                            />
-
-                            {customFile
-                                ? <DensityMapFiles
-                                    files={this.state.densityMaps}
-                                    onChange={(files) => this.setState({ ...this.state, densityMaps: [...files] })}
-                                    />
-                                : undefined
-                            }
-
-                            <div style={{ display: 'flex', flexDirection: 'row', margin: 'auto', gap: 'var(--h-gap)' }}>
+                            <div className='rdo-hflex' style={{ gap: 'var(--h-gap)' }}>
                                 <div style={{ flex: 1 }}>
-                                    <AnalyzeButton
-                                        ready={this.props.dnatcofierState === 'ready'}
-                                        onClick={() => {
-                                            if (this.state.database)
-                                                this.actionPdbId(this.state.pdbId)
-                                            else
-                                                this.actionCustomStructure();
+                                    <Coordinates
+                                        coordsFile={this.state.coordsFile}
+                                        database={this.state.database}
+                                        databaseOptions={this.DatabaseOptions}
+                                        pdbId={this.state.pdbId}
+                                        onCoordsFileChange={(f) => this.setState({ ...this.state, coordsFile: f })}
+                                        onDatabaseChange={(db) => this.setState({ ...this.state, database: db })}
+                                        onPdbIdChange={(id) => this.setState({ ...this.state, pdbId: id })}
+                                        onRun={() => this.actionPdbId(this.state.pdbId)}
+                                        onRunExample={(pdbId) => this.actionPdbId(pdbId)}
+                                    />
+                                </div>
+
+                                <div style={{ flex: 1 }}>
+                                    <DensityMapFiles
+                                        disabled={this.state.database !== ''}
+                                        files={this.state.densityMaps}
+                                        onAddFile={file => {
+                                            this.state.densityMaps.push(file);
+                                            this.setState({ ...this.state });
+                                        }}
+                                        onRemoveFile={idx => {
+                                            this.state.densityMaps.splice(idx, 1);
+                                            this.setState({ ...this.state });
                                         }}
                                     />
                                 </div>
-                                <div style={{ flex: 1 }}>
-                                    <IconTextButton
-                                        src={`${prefix}/imgs/reload.svg`}
-                                        caption='Reset'
-                                        onClick={() => this.setState({ ...this.defaultState() })}
-                                        className='rdo-pushutton rdo-pushbutton-border rdo-start-reset-button'
-                                    />
-                                </div>
                             </div>
+
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 128px 128px 1fr', gap: 'var(--h-gap)' }}>
+                                <div />
+                                <AnalyzeButton
+                                    ready={this.props.dnatcofierState === 'ready'}
+                                    onClick={() => {
+                                        if (this.state.database)
+                                            this.actionPdbId(this.state.pdbId)
+                                        else
+                                            this.actionCustomStructure();
+                                    }}
+                                />
+                                <IconTextButton
+                                    src={`${prefix}/imgs/reload.svg`}
+                                    caption='Reset'
+                                    onClick={() => this.setState({ ...this.defaultState() })}
+                                    className='rdo-pushbutton rdo-pushbutton-border rdo-start-reset-button'
+                                />
+                                <div />
+                            </div>
+                            {this.props.dnatcofierState === 'initializing'
+                                ? <div className='rdo-rednatco-state'>Please wait for {GlobalConfig.data().displayedProductName} to initialize...<InProgressSpinner /></div>
+                                : this.props.dnatcofierState === 'failed'
+                                    ? <div className='rdo-rednatco-state rdo-error-text' style={{ display: 'flex', gap: '1ex' }}>{GlobalConfig.data().displayedProductName} failed to initialize</div>
+                                    : undefined
+                            }
                             <div style={{ flex: 1 }} />
                         </div>
                     </ShadowedBox>
