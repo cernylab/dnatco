@@ -9,6 +9,12 @@ function inside(x: number, y: number, l: number, t: number, r: number, b: number
 }
 
 export class Tooltip extends React.Component<Tooltip.Props> {
+    static defaultProps: Tooltip.Props = {
+        delayMsec: 0,
+        display: 'inline',
+        overflow: 'visible',
+    };
+
     private contentId;
     private inhibitDisplay = false;
     private ref: React.RefObject<HTMLSpanElement> = React.createRef();
@@ -147,9 +153,9 @@ export class Tooltip extends React.Component<Tooltip.Props> {
     render() {
         return (
             <span className='rdo-tooltip'
-                style={{ display: this.props.display ?? 'inline' }}
+                style={{ display: this.props.display, overflow: this.props.overflow }}
                 ref={this.ref}
-                onMouseEnter={e => this.scheduleDisplay(e.pageX, e.pageY, false, this.props.delayMsec ?? 0)}
+                onMouseEnter={e => this.scheduleDisplay(e.pageX, e.pageY, false, this.props.delayMsec)}
                 onMouseLeave={() => {
                     if (this.pendingDisplay) {
                         window.clearTimeout(this.pendingDisplay);
@@ -176,8 +182,9 @@ export class Tooltip extends React.Component<Tooltip.Props> {
 export namespace Tooltip {
     export interface Props {
         children?: React.ReactNode;
+        delayMsec: number;
+        display: 'inline' | 'block';
+        overflow: 'visible' | 'hidden';
         tag?: JSX.Element|string;
-        delayMsec?: number;
-        display?: 'inline' | 'block';
     }
 }

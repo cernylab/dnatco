@@ -13,6 +13,7 @@ import { GlobalConfig, GlobalConfigData } from '../global-config';
 import 'assets/imgs/magnifying-glass.svg';
 import 'assets/imgs/media-play.svg';
 import 'assets/imgs/x.svg';
+import {Tooltip} from './common/tooltip';
 
 const AllowedDensityMapKinds = [...DensityMapKinds, 'coefficients'] as const;
 type AllowedDensityMapKinds = typeof AllowedDensityMapKinds[number];
@@ -117,7 +118,10 @@ class Coordinates extends React.Component<Coordinates.Props> {
                                     }}
                                 />
                             </div>
-                            <div style={{ fontSize: 'var(--font-large)', width: '100%', overflow: 'hidden', whiteSpace: 'nowrap' }}>{this.props.coordsFile?.name ?? '(Select mmCif/PDB file)'}</div>
+                            {this.props.coordsFile
+                                ? <LongFileName name={this.props.coordsFile.name} disabled={false} />
+                                : <div style={{ fontSize: 'var(--font-large)', width: '100%', overflow: 'hidden', whiteSpace: 'nowrap' }}>(Select mmCif/PDB file)</div>
+                            }
                         </>
                         : <>
                             <div className='rdo-strong rdo-talgn-right' style={ CoordsItemProps }>PDB ID</div>
@@ -183,12 +187,7 @@ class DensityMapFiles extends React.Component<
 
             elems.push(
                 <React.Fragment key={idx}>
-                    <div className={textCls} style={{
-                        fontSize: 'var(--font-large)',
-                        overflow: 'hidden',
-                        textAlign: 'right',
-                        whiteSpace: 'nowrap',
-                    }}>{f.file.name}</div>
+                    <LongFileName name={f.file.name} disabled={this.props.disabled} />
                     <div style={{ display: 'flex', flexDirection: 'row', width: '100%' }}>
                         <div className={textCls} style={{ flex: 1, fontSize: 'var(--font-large)' }}>{NiceMapKinds[f.kind]}</div>
                         <div style={{ width: '2em' }}>
@@ -231,9 +230,10 @@ class DensityMapFiles extends React.Component<
     render() {
         const prefix = GlobalConfig.data().pathPrefix;
         const opts = this.fileTypeOptions();
+        const addedFiles = this.addedFiles(AllowedDensityMapKinds.length);
 
         return (
-            <div className='rdo-start-input-section'>
+            <div className='rdo-start-input-section' style={{ position: 'relative' }}>
                 <div className='rdo-start-input-section-caption'>Density maps</div>
 
                 <FileInput
@@ -269,8 +269,24 @@ class DensityMapFiles extends React.Component<
                         sizing='auto'
                         disabled={this.props.disabled}
                     />
-                    {this.addedFiles(AllowedDensityMapKinds.length)}
+                    {addedFiles}
                 </div>
+            {this.props.files.length === 0 && this.props.disabled
+                ? <div
+                    className='rdo-text-disabled'
+                    style={{
+                        fontSize: 'var(--font-large)',
+                        padding: '0 var(--h-gap) 0 var(--h-gap)',
+                        position: 'absolute',
+                        width: '100%',
+                        textAlign: 'center',
+                        top: '50%',
+                    }}
+                >
+                    Density maps can be used only with structures from custom files
+                </div>
+                : undefined
+            }
             </div>
         );
     }
@@ -302,12 +318,43 @@ class FileInput extends React.Component<{ id: string, onChange: (f: FileList | n
     }
 }
 
+class LongFileName extends React.Component<{ name: string, disabled: boolean }> {
+    render() {
+        return (
+            <Tooltip
+                display='block'
+                overflow='hidden'
+                tag={
+                    <span>
+                        <span
+                            className={this.props.disabled ? 'rdo-text-disabled' : '' }
+                            style={{
+                                fontSize: 'var(--font-large)',
+                                overflow: 'hidden',
+                                whiteSpace: 'nowrap',
+                            }}
+                        >{this.props.name}</span>
+                        <div style={{ position: 'absolute', right: '0', top: '0', background: 'linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,1) 100%)', width: '4em', height: '100%' }} />
+                    </span>
+                }
+            >
+                {this.props.name}
+            </Tooltip>
+        );
+    }
+}
+
 class PdbIdInput extends React.Component<{ pdbId: string, onChange: (v: string) => void, onExecute: () => void }> {
     render() {
         return (
             <input
                 className='rdo-input-text'
-                style={{ fontSize: CoordsItemProps.fontSize, height: CoordsItemProps.height, width: '100%', ...(!isPdbId(this.props.pdbId) ? { color: 'red' } : {})}}
+                style={{
+                    fontSize: CoordsItemProps.fontSize,
+                    height: CoordsItemProps.height,
+                    width: '100%',
+                    ...(!isPdbId(this.props.pdbId) && this.props.pdbId.length > 0 ? { color: 'red' } : {})
+                }}
                 type='text'
                 value={this.props.pdbId}
                 onChange={(v) => {
