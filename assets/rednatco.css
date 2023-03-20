@@ -785,7 +785,7 @@ th.rdo-data-table-small {
     display: flex;
     flex-direction: column;
     gap: calc(4 * var(--v-gap));
-    height: 100%;
+    height: 75%;
     margin: 0 auto auto auto;
     max-width: 60em;
     min-width: 45em;

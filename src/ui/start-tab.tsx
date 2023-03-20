@@ -5,6 +5,7 @@ import { DummyIconTextButton, IconButton, IconTextButton } from './common/push-b
 import { InProgressSpinner } from './common/in-progress-spinner';
 import { Popup } from './common/popup';
 import { ShadowedBox } from './common/shadowed-box';
+import { Common } from './dnatco/common';
 import { DensityMap, DensityMapKinds } from '../dnatco/density-map';
 import { BuiltInRemoteDatabases, UserRemoteDatabases } from '../remote/db/register';
 import { Search } from '../remote/search';
@@ -445,68 +446,70 @@ export class StartTab extends React.Component<StartTab.Props, State> {
         return (
             <div className='rdo-section-column' style={{ height: '100%' }}>
                 <BigLogo />
-                <div className='rdo-offset' style={{ flex: 1 }}>
+                <div style={ Common.VScrollJail }>
+                    <div className='rdo-offset' style={{ flex: 1 }}>
                     <ShadowedBox>
-                        <div className='rdo-start-container'>
-                            <div className='rdo-hflex' style={{ gap: 'var(--h-gap)' }}>
-                                <div style={{ flex: 1 }}>
-                                    <Coordinates
-                                        coordsFile={this.state.coordsFile}
-                                        database={this.state.database}
-                                        databaseOptions={this.DatabaseOptions}
-                                        pdbId={this.state.pdbId}
-                                        onCoordsFileChange={(f) => this.setState({ ...this.state, coordsFile: f })}
-                                        onDatabaseChange={(db) => this.setState({ ...this.state, database: db })}
-                                        onPdbIdChange={(id) => this.setState({ ...this.state, pdbId: id })}
-                                        onRun={() => this.actionPdbId(this.state.database, this.state.pdbId)}
-                                        onRunExample={(db, pdbId) => this.actionPdbId(db, pdbId)}
-                                    />
+                            <div className='rdo-start-container rdo-scroll-vertically'>
+                                <div className='rdo-hflex' style={{ gap: 'var(--h-gap)' }}>
+                                    <div style={{ flex: 1 }}>
+                                        <Coordinates
+                                            coordsFile={this.state.coordsFile}
+                                            database={this.state.database}
+                                            databaseOptions={this.DatabaseOptions}
+                                            pdbId={this.state.pdbId}
+                                            onCoordsFileChange={(f) => this.setState({ ...this.state, coordsFile: f })}
+                                            onDatabaseChange={(db) => this.setState({ ...this.state, database: db })}
+                                            onPdbIdChange={(id) => this.setState({ ...this.state, pdbId: id })}
+                                            onRun={() => this.actionPdbId(this.state.database, this.state.pdbId)}
+                                            onRunExample={(db, pdbId) => this.actionPdbId(db, pdbId)}
+                                        />
+                                    </div>
+
+                                    <div style={{ flex: 1 }}>
+                                        <DensityMapFiles
+                                            disabled={this.state.database !== ''}
+                                            files={this.state.densityMaps}
+                                            onAddFile={file => {
+                                                this.state.densityMaps.push(file);
+                                                this.setState({ ...this.state });
+                                            }}
+                                            onRemoveFile={idx => {
+                                                this.state.densityMaps.splice(idx, 1);
+                                                this.setState({ ...this.state });
+                                            }}
+                                        />
+                                    </div>
                                 </div>
 
-                                <div style={{ flex: 1 }}>
-                                    <DensityMapFiles
-                                        disabled={this.state.database !== ''}
-                                        files={this.state.densityMaps}
-                                        onAddFile={file => {
-                                            this.state.densityMaps.push(file);
-                                            this.setState({ ...this.state });
-                                        }}
-                                        onRemoveFile={idx => {
-                                            this.state.densityMaps.splice(idx, 1);
-                                            this.setState({ ...this.state });
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 128px 128px 1fr', gap: 'var(--h-gap)' }}>
+                                    <div />
+                                    <AnalyzeButton
+                                        ready={this.props.dnatcofierState === 'ready'}
+                                        onClick={() => {
+                                            if (this.state.database)
+                                                this.actionPdbId(this.state.database, this.state.pdbId)
+                                            else
+                                                this.actionCustomStructure();
                                         }}
                                     />
+                                    <IconTextButton
+                                        src={`${prefix}/imgs/reload.svg`}
+                                        caption='Reset'
+                                        onClick={() => this.setState({ ...this.defaultState() })}
+                                        className='rdo-pushbutton rdo-pushbutton-border rdo-start-reset-button'
+                                    />
+                                    <div />
                                 </div>
+                                {this.props.dnatcofierState === 'initializing'
+                                    ? <div className='rdo-rednatco-state'>Please wait for {GlobalConfig.data().displayedProductName} to initialize...<InProgressSpinner /></div>
+                                    : this.props.dnatcofierState === 'failed'
+                                        ? <div className='rdo-rednatco-state rdo-error-text' style={{ display: 'flex', gap: '1ex' }}>{GlobalConfig.data().displayedProductName} failed to initialize</div>
+                                        : undefined
+                                }
+                                <div style={{ flex: 1 }} />
                             </div>
-
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 128px 128px 1fr', gap: 'var(--h-gap)' }}>
-                                <div />
-                                <AnalyzeButton
-                                    ready={this.props.dnatcofierState === 'ready'}
-                                    onClick={() => {
-                                        if (this.state.database)
-                                            this.actionPdbId(this.state.database, this.state.pdbId)
-                                        else
-                                            this.actionCustomStructure();
-                                    }}
-                                />
-                                <IconTextButton
-                                    src={`${prefix}/imgs/reload.svg`}
-                                    caption='Reset'
-                                    onClick={() => this.setState({ ...this.defaultState() })}
-                                    className='rdo-pushbutton rdo-pushbutton-border rdo-start-reset-button'
-                                />
-                                <div />
-                            </div>
-                            {this.props.dnatcofierState === 'initializing'
-                                ? <div className='rdo-rednatco-state'>Please wait for {GlobalConfig.data().displayedProductName} to initialize...<InProgressSpinner /></div>
-                                : this.props.dnatcofierState === 'failed'
-                                    ? <div className='rdo-rednatco-state rdo-error-text' style={{ display: 'flex', gap: '1ex' }}>{GlobalConfig.data().displayedProductName} failed to initialize</div>
-                                    : undefined
-                            }
-                            <div style={{ flex: 1 }} />
-                        </div>
-                    </ShadowedBox>
+                        </ShadowedBox>
+                    </div>
                 </div>
             </div>
         );
