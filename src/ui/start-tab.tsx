@@ -116,15 +116,15 @@ class Coordinates extends React.Component<Coordinates.Props> {
                                         if (file)
                                             this.props.onCoordsFileChange(file);
 
-                                    }}
-                                />
-                            </div>
-                            {this.props.coordsFile
-                                ? <LongFileName name={this.props.coordsFile.name} disabled={false} />
-                                : <div style={{ fontSize: 'var(--font-large)', width: '100%', overflow: 'hidden', whiteSpace: 'nowrap' }}>(Select mmCif/PDB file)</div>
-                            }
-                        </>
-                        : <>
+                                        }}
+                                    />
+                                </div>
+                                {this.props.coordsFile
+                                    ? <LongFileName name={this.props.coordsFile.name} disabled={false} />
+                                    : <div style={{ fontSize: 'var(--font-large)', width: '100%', overflow: 'hidden', whiteSpace: 'nowrap' }}>(Select mmCif/PDB file)</div>
+                                }
+                            </>
+                            : <>
                             <div className='rdo-strong rdo-talgn-right' style={ CoordsItemProps }>PDB ID</div>
                             <PdbIdInput
                                 pdbId={this.props.pdbId}
@@ -133,17 +133,18 @@ class Coordinates extends React.Component<Coordinates.Props> {
                             />
                         </>
                     }
-                </div>
 
-                {examples.length > 0
-                    ? <div className='rdo-example-structures-list'>
-                        <div className='rdo-strong'>Examples:</div>
-                        <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', columnGap: '1ex' }}>
-                            {examples.map(x => makeExample(x.db, x.pdbId, this.props.onRunExample))}
+                    <div />
+                    {examples.length > 0
+                        ? <div className='rdo-example-structures-list'>
+                            <div className='rdo-strong'>Examples:</div>
+                            <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', columnGap: '1ex' }}>
+                                {examples.map(x => makeExample(x.db, x.pdbId, this.props.onRunExample))}
+                            </div>
                         </div>
-                    </div>
-                    : undefined
-                }
+                        : <div />
+                    }
+                </div>
             </div>
         );
     }
