@@ -100,6 +100,69 @@ export function getStepsAtoms(steps: Step[], cif: Cif.Data) {
     return gatheredAtoms;
 }
 
+function getConnectivityInternal(currentStepStru: jsLLKA.LLKAStructure, prevStepStru: jsLLKA.LLKAStructure|undefined, nextStepStru: jsLLKA.LLKAStructure|undefined, ntc: jsLLKA.NtC) {
+    let backward: Connectivities|null = null;
+    let forward: Connectivities|null = null;
+    // Are we connected backwards?
+    if (prevStepStru) {
+        const resConn = jsLLKA.measureStepConnectivityNtCsMultipleFirst(prevStepStru, NtCsVector, currentStepStru, ntc);
+        if (resConn.isSuccess()) {
+            const succ = resConn.success();
+            const connectivities: Connectivities = {};
+            for (let jdx = 0; jdx < NumNtCs; jdx++)
+                connectivities[NtCNames[jdx]] = { ...succ.get(jdx) };
+
+            succ.delete();
+            backward = connectivities;
+        } else
+            console.warn(`Cannot measure connectivity: ${jsLLKA.LLKA.errorToString(resConn.failure())}`);
+
+        resConn.delete();
+    }
+
+    // Are we connected forwards?
+    if (nextStepStru) {
+        const resConn = jsLLKA.LLKA.measureStepConnectivityNtCsMultipleSecond(currentStepStru, ntc, nextStepStru, NtCsVector);
+        if (resConn.isSuccess()) {
+            const succ = resConn.success();
+            const connectivities: Connectivities = {};
+            for (let jdx = 0; jdx < NumNtCs; jdx++)
+                connectivities[NtCNames[jdx]] = { ...succ.get(jdx) };
+
+            succ.delete();
+            forward = connectivities;
+        } else
+            console.warn(`Cannot measure connectivity: ${jsLLKA.LLKA.errorToString(resConn.failure())}`);
+
+        resConn.delete();
+    }
+
+    return { backward, forward };
+}
+
+export function getConnectivity(currentStep: Step, previousStep: Step|undefined, nextStep: Step|undefined, atoms: Cif.Table<AtomSite_Schema>) {
+    const prevStepStru = previousStep ? gatherStepAtoms(previousStep, atoms) : void 0;
+    const currentStepStru = gatherStepAtoms(currentStep, atoms);
+    const nextStepStru = nextStep ? gatherStepAtoms(nextStep, atoms) : void 0;
+
+    let backward: Connectivities|null = null;
+    let forward: Connectivities|null = null;
+
+    const ntc = jsLLKA.LLKA.nameToNtC(currentStep.closestNtC);
+    if (ntc != jsLLKA.LLKA.NtC.LLKA_NANT) {
+        // We should not ever get NANT here
+        const conns = getConnectivityInternal(currentStepStru, prevStepStru, nextStepStru, ntc);
+        backward = conns.backward;
+        forward = conns.forward;
+    }
+
+    if (prevStepStru) prevStepStru.delete();
+    currentStepStru.delete();
+    if (nextStepStru) nextStepStru.delete();
+
+    return { backward, forward };
+}
+
 export function getConnectivities(steps: Step[], stepsAtoms: jsLLKA.LLKAStructures, previous: number[], next: number[], excludeSteps: Set<number> = new Set()): AllConnectivities {
     if (steps.length !== stepsAtoms.size())
         throw new Error(`Mismatching number of steps ${steps.length} and step atoms ${stepsAtoms.size()}`);
@@ -123,48 +186,11 @@ export function getConnectivities(steps: Step[], stepsAtoms: jsLLKA.LLKAStructur
             // This should never happen
             backward.push(null);
             forward.push(null);
-            continue;
+        } else {
+            const conns = getConnectivityInternal(currentStepStru, prevStepStru, nextStepStru, ntc);
+            backward.push(conns.backward);
+            forward.push(conns.forward);
         }
-
-        // Are we connected backwards?
-        if (prevStepStru) {
-            const resConn = jsLLKA.measureStepConnectivityNtCsMultipleFirst(prevStepStru, NtCsVector, currentStepStru, ntc);
-            if (resConn.isSuccess()) {
-                const succ = resConn.success();
-                const connectivities: Connectivities = {};
-                for (let jdx = 0; jdx < NumNtCs; jdx++)
-                    connectivities[NtCNames[jdx]] = { ...succ.get(jdx) };
-
-                succ.delete();
-                backward.push(connectivities);
-            } else {
-                console.warn(`Cannot measure connectivity: ${jsLLKA.LLKA.errorToString(resConn.failure())}`);
-                backward.push(null);
-            }
-
-            resConn.delete();
-        } else
-            backward.push(null);
-
-        // Are we connected forwards?
-        if (nextStepStru) {
-            const resConn = jsLLKA.LLKA.measureStepConnectivityNtCsMultipleSecond(currentStepStru, ntc, nextStepStru, NtCsVector);
-            if (resConn.isSuccess()) {
-                const succ = resConn.success();
-                const connectivities: Connectivities = {};
-                for (let jdx = 0; jdx < NumNtCs; jdx++)
-                    connectivities[NtCNames[jdx]] = { ...succ.get(jdx) };
-
-                succ.delete();
-                forward.push(connectivities);
-            } else {
-                console.warn(`Cannot measure connectivity: ${jsLLKA.LLKA.errorToString(resConn.failure())}`);
-                forward.push(null);
-            }
-
-            resConn.delete();
-        } else
-            forward.push(null);
 
         if (prevStepStru) prevStepStru.delete();
         currentStepStru.delete();

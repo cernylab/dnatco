@@ -64,7 +64,7 @@ export class Downloads extends View {
             <div>
                 <NamedList rowSpacing='half'>
                     <NamedListItem name='mmCIF file'>
-                        <div style={{ width: '10em' }}>
+                        <div style={{ width: '10em', height: '100%' }}>
                             <DownloadButton
                                 caption='Download'
                                 onClick={() => this.serveMmCif()}

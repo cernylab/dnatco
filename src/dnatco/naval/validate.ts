@@ -11,7 +11,7 @@ import { Validation } from "./validation";
 const MaxResidueDistance = 2.0; // Angstroms
 const EnabledValidators = Validation.ValidatorBase | Validation.ValidatorPO4 | Validation.ValidatorSugarPucker;
 
-function allAvailableAltIds(structures: (jsLLKA.LLKAAtoms|undefined)[]) {
+function allAvailableAltIds(structures: (jsLLKA.LLKAStructure|undefined)[]) {
     const seenAltIds = new Set<string>();
 
     for (const stru of structures) {
@@ -28,7 +28,7 @@ function allAvailableAltIds(structures: (jsLLKA.LLKAAtoms|undefined)[]) {
     return seenAltIds;
 }
 
-function areResiduesConnected(first: jsLLKA.LLKAAtoms|undefined, second: jsLLKA.LLKAAtoms|undefined) {
+function areResiduesConnected(first: jsLLKA.LLKAStructure|undefined, second: jsLLKA.LLKAStructure|undefined) {
     if (!first || !second)
         return false;
 
@@ -41,8 +41,8 @@ function areResiduesConnected(first: jsLLKA.LLKAAtoms|undefined, second: jsLLKA.
     return jsLLKA.LLKA.measureDistance(O3p, P) <= MaxResidueDistance;
 }
 
-function filterByAltId(atoms: jsLLKA.LLKAAtoms, altId: string) {
-    const filtered = jsLLKA.CLLKAAtoms();
+function filterByAltId(atoms: jsLLKA.LLKAStructure, altId: string) {
+    const filtered = jsLLKA.CLLKAStructure();
 
     for (let idx = 0; idx < atoms.size(); idx++) {
         const at = atoms.get(idx);
@@ -55,7 +55,7 @@ function filterByAltId(atoms: jsLLKA.LLKAAtoms, altId: string) {
     return filtered;
 }
 
-function makeBunches(before: jsLLKA.LLKAAtoms|undefined, current: jsLLKA.LLKAAtoms, after: jsLLKA.LLKAAtoms|undefined) {
+function makeBunches(before: jsLLKA.LLKAStructure|undefined, current: jsLLKA.LLKAStructure, after: jsLLKA.LLKAStructure|undefined) {
     const bunches = [];
 
     const allAltIds = allAvailableAltIds([before, current, after]);
@@ -126,14 +126,19 @@ function measureStructure(pdbcode: string, segs: any) {
                     }
                 }
             }
+
+            for (const r of residues)
+                r.delete();
         }
+        chainKeys.delete();
     }
+    modelKeys.delete();
 
     return measurements;
 }
 
 function residuesAsVector(residues: any) {
-    const vec = new Array<jsLLKA.LLKAAtoms>(residues.size());
+    const vec = new Array<jsLLKA.LLKAStructure>(residues.size());
     const keys = residues.keys(); // We hope that Emscripten is not stupid and will return the keys in the correct order
     for (let idx = 0; idx < keys.size(); idx++) {
         const key = keys.get(idx);
@@ -141,6 +146,7 @@ function residuesAsVector(residues: any) {
 
         vec[idx] = r.atoms;
     }
+    keys.delete();
 
     return vec;
 }

@@ -384,15 +384,19 @@ th.rdo-data-table-small {
 
 .rdo-icon-button {
     flex: 1;
+    height: 100%;
     object-fit: contain;
 }
 
 .rdo-icon-button-image {
     margin: 0.25em;
+    height: calc(100% - 0.50em);
+    max-height: 1em;
 }
 
 .rdo-icon-text-button {
     border: var(--thickness-border) solid var(--color-b);
+    height: calc(100% - var(--thickness-border) * 2);
     object-fit: contain;
     transition: background-color var(--anim-speed);
 }
@@ -561,6 +565,14 @@ th.rdo-data-table-small {
 
 .rdo-pushbutton-disabled {
     background-color: var(--color-a);
+}
+
+.rdo-pushbutton-inner-container {
+    display: flex;
+    height: 100%;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
 }
 
 .rdo-pushbutton-text {

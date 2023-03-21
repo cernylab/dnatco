@@ -367,8 +367,15 @@ export namespace Dnatcofication {
                 throw new Error(`Failed to calculate Naval validation: ${e}`);
             }
 
+            // We are deleting llkaSteps here to free up WASM memory.
+            // Larger structures can hit the 2 GiB limit if we hold on
+            // to this vector and also try to gather step atoms
+            // for connectivity/similarity calculations.
+            llkaSteps.delete();
+
+            const atoms = Cif.File.table(cifData, AtomSite, 0);
             const structures = new Array<_Structure>();
-            structures.push(new _Structure(Cif.File.table(cifData, AtomSite, 0))); // NOTE: We are explicitly ignoring any blocks except the first one
+            structures.push(new _Structure(atoms)); // NOTE: We are explicitly ignoring any blocks except the first one
 
             const entityKinds = [];
             for (const model of structures[0].models) {
@@ -384,8 +391,10 @@ export namespace Dnatcofication {
                 structures[0],
             );
 
-            ctx.status = 'Calculating connectivities';
+            ctx.status = 'Gathering step atoms';
             const stepsAtoms = ConnSimil.getStepsAtoms(steps.steps, cifData);
+
+            ctx.status = 'Calculating connectivities';
             const connectivities = ConnSimil.getConnectivities(steps.steps, stepsAtoms, steps.previous, steps.next);
 
             ctx.status = 'Calculating similarities';
@@ -397,7 +406,6 @@ export namespace Dnatcofication {
 
             console.log(`Dnatcofication process took ${((tEnd - tStart) / 1000.0).toFixed(3)} sec`);
 
-            llkaSteps.delete();
             Dnatcofier.destroyImported(llkaImported);
 
             const data: DnatcoficationData = {
@@ -416,6 +424,9 @@ export namespace Dnatcofication {
                 naval: mapNaval(naval),
                 rscc: [],
             };
+
+            const tEnd2 = performance.now();
+            console.log(`Dnatcofication process with finalization overhead took ${((tEnd2 - tStart) / 1000.0).toFixed(3)} sec`);
 
             return data;
         } catch (e) {

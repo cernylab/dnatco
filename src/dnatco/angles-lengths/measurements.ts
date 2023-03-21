@@ -150,8 +150,10 @@ export namespace Measurements {
         for (let idx = 0; idx < steps.size(); idx++) {
             const step = steps.get(idx);
             const firstAtom = pivotAtom(step);
-            if (!firstAtom)
+            if (!firstAtom) {
+                step.delete();
                 continue;
+            }
 
             const altId = expandAltId(step, firstAtom.label_seq_id);
             // We can see some residues multiple times because we are reading them from steps
@@ -166,14 +168,18 @@ export namespace Measurements {
             // Ignoring this "invisible" residue might actually be the right thing because we measure
             // cross-residue angles and these angles would most likely turn out wrong.
             const tag = `${firstAtom.pdbx_PDB_model_num}_${firstAtom.label_asym_id}_${firstAtom.label_seq_id}_${firstAtom.pdbx_PDB_ins_code}_${altId})`;
-            if (seenResidues.has(tag))
+            if (seenResidues.has(tag)) {
+                step.delete();
                 continue;
+            }
 
             const residue = processResidue(firstAtom, altId, step);
             if (residue) {
                 residues.push(residue);
                 seenResidues.add(tag);
             }
+
+            step.delete();
         }
 
         return residues;

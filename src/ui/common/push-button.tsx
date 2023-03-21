@@ -82,7 +82,7 @@ export class DummyIconTextButton extends React.Component<Omit<IconTextButton.Pro
     render() {
         return (
             <div className={this.clsName()}>
-                <div style={{ display: 'flex', height: '100%', justifyContent: 'center', width: '100%' }}>
+                <div className='rdo-pushbutton-inner-container'>
                     <img
                         className={this.props.iconClassName ?? 'rdo-icon-button-image'}
                         src={`${GlobalConfig.data().pathPrefix}/${this.props.src}`}
@@ -106,7 +106,7 @@ export class IconButton extends React.Component<IconButton.Props> {
                 className={this.props.className ?? 'rdo-icon-button'}
                 classNameDisabled={this.props.classNameDisabled ?? 'rdo-icon-button-disabled'}
             >
-                <div style={{ display: 'flex', height: '100%', justifyContent: 'center', width: '100%' }}>
+                <div className='rdo-pushbutton-inner-container'>
                     <img
                         className={this.props.iconClassName ?? 'rdo-icon-button-image'}
                         src={`${GlobalConfig.data().pathPrefix}/${this.props.src}`}
@@ -136,7 +136,7 @@ export class IconTextButton extends React.Component<IconTextButton.Props> {
                 className={this.props.className ?? 'rdo-icon-text-button'}
                 classNameDisabled={this.props.classNameDisabled ?? 'rdo-icon-text-button-disabled'}
             >
-                <div style={{ display: 'flex', height: '100%', justifyContent: 'center', width: '100%' }}>
+                <div className='rdo-pushbutton-inner-container'>
                     <img
                         className={this.props.iconClassName ?? 'rdo-icon-button-image'}
                         src={`${GlobalConfig.data().pathPrefix}/${this.props.src}`}

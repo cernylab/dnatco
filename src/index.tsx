@@ -267,6 +267,8 @@ export class App extends WithSubscriptions<{}, State> {
 
         this.ingestionInProgress = true;
 
+        const tStart = performance.now();
+
         const inProgressDlg = await InProgress.create('Processing structure', 'Preparing', true);
         const worker = BackgroundWorker<DnatcoficationData, P>();
         worker.onerror = (ev) => {
@@ -309,6 +311,10 @@ export class App extends WithSubscriptions<{}, State> {
                     );
                 } else if (data.finished.state === 'succeeded') {
                     this.dnatcofication.setData(data.finished.data!);
+
+                    const tEnd = performance.now();
+                    console.log(`Total structure ingestion time was ${((tEnd - tStart) / 1000).toFixed(3)} sec`);
+
                     onSuccess();
                 } else if (data.finished.state === 'aborted')
                     worker.terminate();

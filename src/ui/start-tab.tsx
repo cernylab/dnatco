@@ -103,7 +103,7 @@ class Coordinates extends React.Component<Coordinates.Props> {
                     {customFile
                         ? <>
                             <div style={ CoordsItemProps }>
-                                <label htmlFor='upload-coords-file'>
+                                <label htmlFor='upload-coords-file' style={{ display: 'flex', justifyContent: 'end', height: '100%' }}>
                                     <DummyIconTextButton
                                         src={`${prefix}/imgs/magnifying-glass.svg`}
                                         caption='Browse'
@@ -502,7 +502,12 @@ export class StartTab extends React.Component<StartTab.Props, State> {
                                     <div />
                                 </div>
                                 {this.props.dnatcofierState === 'initializing'
-                                    ? <div className='rdo-rednatco-state'>Please wait for {GlobalConfig.data().displayedProductName} to initialize...<InProgressSpinner /></div>
+                                    ? <div className='rdo-hflex' style={{ alignItems: 'center', gap: 'var(--h-gap)' }}>
+                                        <div style={{ flex: 1 }} />
+                                        <div className='rdo-rednatco-state'>Please wait for {GlobalConfig.data().displayedProductName} to initialize...</div>
+                                        <InProgressSpinner />
+                                        <div style={{ flex: 1 }} />
+                                    </div>
                                     : this.props.dnatcofierState === 'failed'
                                         ? <div className='rdo-rednatco-state rdo-error-text' style={{ display: 'flex', gap: '1ex' }}>{GlobalConfig.data().displayedProductName} failed to initialize</div>
                                         : undefined

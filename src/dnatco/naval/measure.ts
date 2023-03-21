@@ -351,10 +351,7 @@ export namespace Measure {
         m.chi = measureTorsion([aoi.O4p_2, aoi.C1p_2, aoi.baseA_2, aoi.baseB_2]);
         m.chiConf = chiConf(m.chi);
 
-        const view = Common.asStructureView(bunch.current);
-        const riboseMet = jsLLKA.LLKA.riboseMetricsView(view);
-        view.delete();
-
+        const riboseMet = jsLLKA.LLKA.riboseMetrics(bunch.current);
         if (riboseMet.isSuccess()) {
             const metrics = riboseMet.success();
             m.theta0 = rad2deg(metrics.nus.nu_0);
