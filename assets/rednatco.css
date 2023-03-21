@@ -553,6 +553,8 @@ th.rdo-data-table-small {
     align-items: center;
     display: flex;
     justify-content: center;
+    padding-left: calc(var(--thickness-border) * 2);
+    padding-right: calc(var(--thickness-border) * 2);
     transition: background-color var(--anim-speed);
     width: fit-content;
 }
