@@ -6,7 +6,7 @@ import { View } from '../view';
 import { Constants } from '../../constants';
 import { InvalidChain, InvalidModelIndex } from '../../structure-selection';
 import { Common } from '../../common';
-import { colorToRgb, colorToTuple } from '../../../util';
+import { colorToRgb, colorToTuple, ColorTuple } from '../../../util';
 import { CollapsibleVertical } from '../../../common/collapsible-vertical';
 import { ComboBox } from '../../../common/combo-box';
 import { NamedList, NamedListItem } from '../../../common/named-list';
@@ -78,8 +78,9 @@ const ResidueBarCaptionStyle = {
 const DetailsTableStyle = {
     display: 'grid',
     gridTemplateColumns: '1em auto auto auto 1fr',
-    columnGap: '1em'
-};
+    columnGap: '1em',
+    position: 'relative',
+} as StandardLonghandProperties;
 
 type AveragesChartDownloader = Downloader<Serialization.Serializable>;
 const AveragesChartDownloaders = [
@@ -289,7 +290,6 @@ function gatherWorst<T extends keyof GatherWorst>(gather: T, residues: Measureme
     return worst;
 }
 
-
 function makeBondName(bond: Pair | Triplet) {
     const toks = bond.map(x => isShiftedName(x) ? <span>{unshiftName(x)}<span className='rdo-sup'>(-1)</span></span> : <span>{x}</span>);
     let idx = 1;
@@ -310,6 +310,66 @@ function pairBondName(p: Pair, tag: string) {
     }
 
     return name;
+}
+
+function renderBondAngleDetail(
+    d: Dnatcofication,
+    bondAngle: Measurements.BondAngle,
+    maybeBin: EmptiableMaybeBin,
+    pGroup: DAnglesLengths.PGroup,
+    residue: Measurements.Residue,
+    residueName: JSX.Element,
+    structureName: string,
+    outlierColor: [r: number, g: number, b: number],
+    pgrpIndices: number[]
+) {
+    const pgrpDatas = pgrpIndices.map(idx => DAnglesLengths.anglePGroupData(idx, residue.compound, bondAngle.triplet)!);
+    const dlName = `${residueIdentifyingName(structureName, residue)}_${fileNameFriendlyTag(tripletTag(bondAngle.triplet))}`;
+    const ni = getNavalAngle(d, residue, bondAngle.triplet);
+
+    return (
+        <BondAngleDetails
+            bondAngle={bondAngle}
+            downloadName={dlName}
+            maybeBin={maybeBin}
+            navalItem={ni}
+            outlierColor={outlierColor}
+            pGroup={pGroup}
+            pGroupDatas={pgrpDatas}
+            residue={residue}
+            residueName={residueName}
+        />
+    );
+}
+
+function renderBondLengthDetail(
+    d: Dnatcofication,
+    bondLength: Measurements.BondLength,
+    maybeBin: EmptiableMaybeBin,
+    pGroup: DAnglesLengths.PGroup,
+    residue: Measurements.Residue,
+    residueName: JSX.Element,
+    structureName: string,
+    outlierColor: [r: number, g: number, b: number],
+    pgrpIndices: number[]
+) {
+    const pgrpDatas = pgrpIndices.map(idx => DAnglesLengths.lengthPGroupData(idx, residue.compound, bondLength.pair)!);
+    const dlName = `${residueIdentifyingName(structureName, residue)}${fileNameFriendlyTag(pairTag(bondLength.pair))}`;
+    const ni = getNavalBond(d, residue, bondLength.pair);
+
+    return (
+        <BondLengthDetails
+            bondLength={bondLength}
+            downloadName={dlName}
+            maybeBin={maybeBin}
+            navalItem={ni}
+            outlierColor={outlierColor}
+            pGroup={pGroup}
+            pGroupDatas={pgrpDatas}
+            residue={residue}
+            residueName={residueName}
+        />
+    );
 }
 
 function renderSubstructureStats(caption: string | JSX.Element, summaryCounts: Summarize.Counts, countsInGroups: Summarize.CountsInGroup[], colorsForCounts: string[]) {
@@ -932,6 +992,118 @@ class Prosco extends React.Component<{ bin: Bin|'below'|'above'|'no-data' }> {
     }
 }
 
+interface ResidueElemProps {
+    tainer: React.RefObject<HTMLDivElement>,
+    d: Dnatcofication,
+    colorsForStatsBar: string[],
+    countsAngles: Summarize.CountsInGroup[],
+    countsLenghts: Summarize.CountsInGroup[],
+    outlierColor: ColorTuple,
+    pgrpIndices: number[],
+    residue: Measurements.Residue,
+    residueName: JSX.Element,
+    stats: ALMResidueStats,
+    structureName: string,
+}
+interface ResidueDetailsProps extends ResidueElemProps {
+    onHideRequested: () => void,
+}
+
+class ResidueDetails extends React.Component<ResidueDetailsProps, { floaterYOffset: number }> {
+    private selfRef = React.createRef<HTMLDivElement>();
+
+    constructor(props: ResidueDetailsProps) {
+        super(props);
+
+        this.state = {
+            floaterYOffset: -1,
+        };
+    }
+
+    onScroll = () => {
+        const self = this.selfRef.current;
+        const tainer = this.props.tainer.current;
+        if (!self || !tainer)
+            return;
+
+        const tainerBRect = tainer.getBoundingClientRect();
+        const selfBRect = self.getBoundingClientRect();
+
+        let off = tainerBRect.top - selfBRect.top;
+        off = off > selfBRect.height ? 0 : off;
+
+        this.setState({ ...this.state, floaterYOffset: off });
+    }
+
+    componentDidMount() {
+        this.props.tainer.current?.addEventListener('scroll', this.onScroll);
+    }
+
+    componentWillUnmount() {
+        this.props.tainer.current?.removeEventListener('scroll', this.onScroll);
+    }
+
+    render() {
+        return (
+            <div style={DetailsTableStyle} ref={this.selfRef}>
+                {this.state.floaterYOffset > 0
+                    ? <div style={{
+                        border: 'var(--thickness-border) solid var(--color-a)',
+                        position: 'absolute',
+                        padding: '0.25em',
+                        top: `${this.state.floaterYOffset + 16}px`,
+                        right: '32px'}}
+                        onClick={() => this.props.onHideRequested()}
+                    >
+                        {this.props.residueName}
+                    </div>
+                    : undefined
+                }
+
+                <div style={{ gridColumnStart: 'span 5', ...DetailsCaptionStyle }}>Bond lengths</div>
+                {this.props.residue.bondLengths.map((x, idx) => {
+                    return (
+                        <React.Fragment key={idx}>
+                            {renderBondLengthDetail(
+                                this.props.d,
+                                x,
+                                this.props.stats.lengths[idx].bin,
+                                this.props.stats.lengths[idx].pGroup,
+                                this.props.residue,
+                                this.props.residueName,
+                                this.props.structureName,
+                                this.props.outlierColor,
+                                this.props.pgrpIndices
+                            )}
+                            <div />
+                        </React.Fragment>
+                    );
+                })}
+
+                <div style={{ gridColumnStart: 'span 5', ...DetailsCaptionStyle }}>Bond angles</div>
+                {this.props.residue.bondAngles.map((x, idx) => {
+                    return (
+                        <React.Fragment key={idx}>
+                            {renderBondAngleDetail(
+                                this.props.d,
+                                x,
+                                this.props.stats.angles[idx].bin,
+                                this.props.stats.angles[idx].pGroup,
+                                this.props.residue,
+                                this.props.residueName,
+                                this.props.structureName,
+                                this.props.outlierColor,
+                                this.props.pgrpIndices
+                            )}
+                            <div />
+                        </React.Fragment>
+                    );
+                })}
+            </div>
+        );
+    }
+}
+
 class ResidueHeader extends React.Component<{
     caption: string | JSX.Element,
     residue: Measurements.Residue,
@@ -976,6 +1148,35 @@ class ResidueHeader extends React.Component<{
                     </div>
                 </OverallStatsBar>
             </div>
+        );
+    }
+}
+
+class Residue extends React.Component<ResidueElemProps> {
+    private collapserRef = React.createRef<CollapsibleVertical>();
+
+    render() {
+        return (
+            <CollapsibleVertical
+                ref={this.collapserRef}
+                header={makeCollapsibleHeader(
+                    <ResidueHeader
+                        caption={this.props.residueName}
+                        residue={this.props.residue}
+                        stats={this.props.stats}
+                        summary={this.props.stats.summary}
+                        structureName={this.props.structureName}
+                        countsAngles={this.props.countsAngles}
+                        countsLengths={this.props.countsLenghts}
+                        colorsForStatsBar={this.props.colorsForStatsBar}
+                    />
+                )}
+            >
+                <ResidueDetails
+                    onHideRequested={() => this.collapserRef.current?.collapseExpand('collapse')}
+                    { ...this.props }
+                />
+            </CollapsibleVertical>
         );
     }
 }
@@ -1032,6 +1233,7 @@ export class AnglesLengths extends View<
     }
 > {
     static readonly unscrollableContainer = true;
+    private residuesTainerRef = React.createRef<HTMLDivElement>();
 
     constructor(props: View.Props) {
         super(props);
@@ -1042,122 +1244,6 @@ export class AnglesLengths extends View<
             maxWorstLengths: GlobalConfig.data().anglesLengths.maxWorst,
             worstLengthsThreshold: '',
         };
-    }
-
-    private renderResidue(
-        residue: Measurements.Residue,
-        stats: ALMResidueStats,
-        multipleModels: boolean,
-        thresholds: number[],
-        pgrpIndices: number[],
-        colorsForStatsBar: string[],
-        idx = 0
-    ) {
-        const countsAngles = countsInGroups(stats.summary.angles, thresholds);
-        const countsLenghts = countsInGroups(stats.summary.lengths, thresholds);
-        const residueName = this.renderResidueName(residue, multipleModels);
-        const outlierColor = colorToTuple(DAnglesLengths.outlierColor());
-        const structureName = this.props.dnatcofication.identifyingName ?? this.props.dnatcofication.pdbId;
-
-        return (
-            <React.Fragment key={idx}>
-                <CollapsibleVertical
-                    header={makeCollapsibleHeader(
-                        <ResidueHeader
-                            caption={residueName}
-                            residue={residue}
-                            stats={stats}
-                            summary={stats.summary}
-                            structureName={structureName}
-                            countsAngles={countsAngles}
-                            countsLengths={countsLenghts}
-                            colorsForStatsBar={colorsForStatsBar}
-                        />
-                    )}
-                >
-                    <div style={DetailsTableStyle}>
-                        <div style={{ gridColumnStart: 'span 5', ...DetailsCaptionStyle }}>Bond lengths</div>
-                        {residue.bondLengths.map((x, idx) => {
-                            return (
-                                <React.Fragment key={idx}>
-                                    {this.renderBondLengthDetail(x, stats.lengths[idx].bin, stats.lengths[idx].pGroup, residue, residueName, structureName, outlierColor, pgrpIndices)}
-                                    <div />
-                                </React.Fragment>
-                            );
-                        })}
-
-                        <div style={{ gridColumnStart: 'span 5', ...DetailsCaptionStyle }}>Bond angles</div>
-                        {residue.bondAngles.map((x, idx) => {
-                            return (
-                                <React.Fragment key={idx}>
-                                    {this.renderBondAngleDetail(x, stats.angles[idx].bin, stats.angles[idx].pGroup, residue, residueName, structureName, outlierColor, pgrpIndices)}
-                                    <div />
-                                </React.Fragment>
-                            );
-                        })}
-                    </div>
-                </CollapsibleVertical>
-                <div style={{ height: 'calc(var(--v-gap) / 2)' }} />
-            </React.Fragment>
-        );
-    }
-
-    private renderBondAngleDetail(
-        bondAngle: Measurements.BondAngle,
-        maybeBin: EmptiableMaybeBin,
-        pGroup: DAnglesLengths.PGroup,
-        residue: Measurements.Residue,
-        residueName: JSX.Element,
-        structureName: string,
-        outlierColor: [r: number, g: number, b: number],
-        pgrpIndices: number[]
-    ) {
-        const pgrpDatas = pgrpIndices.map(idx => DAnglesLengths.anglePGroupData(idx, residue.compound, bondAngle.triplet)!);
-        const dlName = `${residueIdentifyingName(structureName, residue)}_${fileNameFriendlyTag(tripletTag(bondAngle.triplet))}`;
-        const ni = getNavalAngle(this.props.dnatcofication, residue, bondAngle.triplet);
-
-        return (
-            <BondAngleDetails
-                bondAngle={bondAngle}
-                downloadName={dlName}
-                maybeBin={maybeBin}
-                navalItem={ni}
-                outlierColor={outlierColor}
-                pGroup={pGroup}
-                pGroupDatas={pgrpDatas}
-                residue={residue}
-                residueName={residueName}
-            />
-        );
-    }
-
-    private renderBondLengthDetail(
-        bondLength: Measurements.BondLength,
-        maybeBin: EmptiableMaybeBin,
-        pGroup: DAnglesLengths.PGroup,
-        residue: Measurements.Residue,
-        residueName: JSX.Element,
-        structureName: string,
-        outlierColor: [r: number, g: number, b: number],
-        pgrpIndices: number[]
-    ) {
-        const pgrpDatas = pgrpIndices.map(idx => DAnglesLengths.lengthPGroupData(idx, residue.compound, bondLength.pair)!);
-        const dlName = `${residueIdentifyingName(structureName, residue)}${fileNameFriendlyTag(pairTag(bondLength.pair))}`;
-        const ni = getNavalBond(this.props.dnatcofication, residue, bondLength.pair);
-
-        return (
-            <BondLengthDetails
-                bondLength={bondLength}
-                downloadName={dlName}
-                maybeBin={maybeBin}
-                navalItem={ni}
-                outlierColor={outlierColor}
-                pGroup={pGroup}
-                pGroupDatas={pgrpDatas}
-                residue={residue}
-                residueName={residueName}
-            />
-        );
     }
 
     private renderResidueName(r: Measurements.Residue, multipleModels: boolean) {
@@ -1178,11 +1264,36 @@ export class AnglesLengths extends View<
         return <div>{...inner}</div>;
     }
 
-    private renderSelection(indices: number[], multipleModels: boolean, thresholds: number[], pgrpIndices: number[], colorsForStatsBar: string[]) {
+    private renderSelection(tainer: React.RefObject<HTMLDivElement>, indices: number[], multipleModels: boolean, thresholds: number[], pgrpIndices: number[], colorsForStatsBar: string[]) {
         const r = this.props.dnatcofication.data.alm.residues;
         const s = this.props.dnatcofication.data.alm.stats;
+        const outlierColor = colorToTuple(DAnglesLengths.outlierColor());
 
-        return indices.map(idx => this.renderResidue(r[idx], s[idx], multipleModels, thresholds, pgrpIndices, colorsForStatsBar, idx))
+        return indices.map(idx => {
+            const _r = r[idx];
+            const _s = s[idx];
+            const countsAngles = countsInGroups(_s.summary.angles, thresholds);
+            const countsLenghts = countsInGroups(_s.summary.lengths, thresholds);
+            const residueName = this.renderResidueName(_r, multipleModels);
+            const structureName = this.props.dnatcofication.identifyingName ?? this.props.dnatcofication.pdbId;
+
+            return (
+                <Residue
+                    tainer={tainer}
+                    d={this.props.dnatcofication}
+                    countsAngles={countsAngles}
+                    countsLenghts={countsLenghts}
+                    outlierColor={outlierColor}
+                    pgrpIndices={pgrpIndices}
+                    residue={_r}
+                    residueName={residueName}
+                    stats={_s}
+                    structureName={structureName}
+                    colorsForStatsBar={colorsForStatsBar}
+                    key={idx}
+                />
+            );
+        });
     }
 
     private renderWorstAngles(residues: Measurements.Residue[], stats: ALMResidueStats[], maxCount: number, threshold: number|'outlier', structureName: string, multipleModels: boolean) {
@@ -1195,7 +1306,8 @@ export class AnglesLengths extends View<
                 {...worst.map((x, idx) => {
                     return (
                         <React.Fragment key={idx}>
-                            {this.renderBondAngleDetail(
+                            {renderBondAngleDetail(
+                                this.props.dnatcofication,
                                 x.bond,
                                 x.maybeBin,
                                 x.pGroup,
@@ -1223,7 +1335,8 @@ export class AnglesLengths extends View<
                 {...worst.map((x, idx) => {
                     return (
                         <React.Fragment key={idx}>
-                            {this.renderBondLengthDetail(
+                            {renderBondLengthDetail(
+                                this.props.dnatcofication,
                                 x.bond,
                                 x.maybeBin,
                                 x.pGroup,
@@ -1369,8 +1482,8 @@ export class AnglesLengths extends View<
                         style={ Common.VScrollJail }
                     >
                         <div style={ Common.VScrollElement }>
-                            <div className='rdo-scroll-vertically-with-scrollbar'>
-                                {this.renderSelection(selectedIndices, multipleModels, thresholds, pgrpIndices, htmlColorsForStatsBar)}
+                            <div className='rdo-scroll-vertically-with-scrollbar' ref={this.residuesTainerRef}>
+                                {this.renderSelection(this.residuesTainerRef, selectedIndices, multipleModels, thresholds, pgrpIndices, htmlColorsForStatsBar)}
                             </div>
                         </div>
                     </CollapsibleVertical>

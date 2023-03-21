@@ -35,6 +35,10 @@ export class CollapsibleVertical extends React.Component<CollapsibleVertical.Pro
         }
     }
 
+    collapseExpand = (change: 'collapse' | 'expand') => {
+        this.setState({ ...this.state, collapsed: change === 'collapse' });
+    }
+
     render() {
         return (
             <div className='rdo-collapsible-vertical' style={this.props.style}>
