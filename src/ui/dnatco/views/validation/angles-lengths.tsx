@@ -1032,7 +1032,6 @@ export class AnglesLengths extends View<
     }
 > {
     static readonly unscrollableContainer = true;
-    private residuesCache = new Array<React.ReactElement>();
 
     constructor(props: View.Props) {
         super(props);
@@ -1043,20 +1042,6 @@ export class AnglesLengths extends View<
             maxWorstLengths: GlobalConfig.data().anglesLengths.maxWorst,
             worstLengthsThreshold: '',
         };
-    }
-
-    private fillResidueElementsCache(multipleModels: boolean, thresholds: number[], colorsForStatsBar: string[]) {
-        this.residuesCache = [];
-
-        const pgrpIndices = sequence(0, DAnglesLengths.pGroupCount() - 1);
-        const alm = this.props.dnatcofication.data.alm;
-
-        for (let idx = 0; idx < alm.residues.length; idx++) {
-            const r = alm.residues[idx];
-            const s = alm.stats[idx];
-
-            this.residuesCache.push(this.renderResidue(r, s, multipleModels, thresholds, pgrpIndices, colorsForStatsBar, idx));
-        }
     }
 
     private renderResidue(
@@ -1193,8 +1178,11 @@ export class AnglesLengths extends View<
         return <div>{...inner}</div>;
     }
 
-    private renderSelection(indices: number[]) {
-        return indices.map(idx => this.residuesCache[idx]);
+    private renderSelection(indices: number[], multipleModels: boolean, thresholds: number[], pgrpIndices: number[], colorsForStatsBar: string[]) {
+        const r = this.props.dnatcofication.data.alm.residues;
+        const s = this.props.dnatcofication.data.alm.stats;
+
+        return indices.map(idx => this.renderResidue(r[idx], s[idx], multipleModels, thresholds, pgrpIndices, colorsForStatsBar, idx))
     }
 
     private renderWorstAngles(residues: Measurements.Residue[], stats: ALMResidueStats[], maxCount: number, threshold: number|'outlier', structureName: string, multipleModels: boolean) {
@@ -1279,20 +1267,6 @@ export class AnglesLengths extends View<
         }
     }
 
-    componentDidMount() {
-        this.subscribe(this.props.dnatcofication.events.structureChanged, () => {
-            const multipleModels = Dnatcofication.Structure.numberOfModels(this.props.dnatcofication) > 1;
-            const thresholds = DAnglesLengths.pGroupThresholds();
-
-            const htmlColorsForStatsBar = new Array<string>();
-            for (let idx = 0; idx < DAnglesLengths.pGroupCount(); idx++)
-                htmlColorsForStatsBar.push(rgbToHex(colorToRgb(DAnglesLengths.pGroupColor(idx))));
-            htmlColorsForStatsBar.push(rgbToHex(colorToRgb(DAnglesLengths.outlierColor())));
-
-            this.fillResidueElementsCache(multipleModels, thresholds, htmlColorsForStatsBar);
-        });
-    }
-
     componentWillUnmount() {
         this.unsubscribeAll();
     }
@@ -1309,14 +1283,12 @@ export class AnglesLengths extends View<
 
         const summary = Summarize.substructure(selectedResidues);
         const thresholds = DAnglesLengths.pGroupThresholds();
+        const pgrpIndices = sequence(0, DAnglesLengths.pGroupCount() - 1);
 
         const htmlColorsForStatsBar = new Array<string>();
         for (let idx = 0; idx < DAnglesLengths.pGroupCount(); idx++)
             htmlColorsForStatsBar.push(rgbToHex(colorToRgb(DAnglesLengths.pGroupColor(idx))));
         htmlColorsForStatsBar.push(rgbToHex(colorToRgb(DAnglesLengths.outlierColor())));
-
-        if (this.residuesCache.length === 0)
-            this.fillResidueElementsCache(multipleModels, thresholds, htmlColorsForStatsBar);
 
         const countsAngles = countsInGroups(summary.angles, thresholds);
         const countsLenghts = countsInGroups(summary.lengths, thresholds);
@@ -1398,7 +1370,7 @@ export class AnglesLengths extends View<
                     >
                         <div style={ Common.VScrollElement }>
                             <div className='rdo-scroll-vertically'>
-                                {this.renderSelection(selectedIndices)}
+                                {this.renderSelection(selectedIndices, multipleModels, thresholds, pgrpIndices, htmlColorsForStatsBar)}
                             </div>
                         </div>
                     </CollapsibleVertical>

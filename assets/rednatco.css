@@ -568,6 +568,8 @@ th.rdo-data-table-small {
 
 .rdo-pushbutton-disabled {
     background-color: var(--color-a);
+    padding-left: calc(var(--thickness-border) * 2);
+    padding-right: calc(var(--thickness-border) * 2);
 }
 
 .rdo-pushbutton-inner-container {
