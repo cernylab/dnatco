@@ -1142,7 +1142,7 @@ class ResidueHeader extends React.Component<{
                         <div style={{ flex: 1 }}>
                             {renderSubstructureStats(<div style={ResidueBarCaptionStyle}>L</div>, this.props.summary.lengths, this.props.countsLengths, this.props.colorsForStatsBar)}
                         </div>
-                        <div style={{ flex: '1' }}>
+                        <div style={{ flex: 1 }}>
                             {renderSubstructureStats(<div style={ResidueBarCaptionStyle}>A</div>, this.props.summary.angles, this.props.countsAngles, this.props.colorsForStatsBar)}
                         </div>
                     </div>
@@ -1482,7 +1482,11 @@ export class AnglesLengths extends View<
                         style={ Common.VScrollJail }
                     >
                         <div style={ Common.VScrollElement }>
-                            <div className='rdo-scroll-vertically-with-scrollbar' ref={this.residuesTainerRef}>
+                            <div
+                                className='rdo-scroll-vertically-with-scrollbar'
+                                style={{ display: 'flex', flexDirection: 'column', gap: 'calc(var(--h2-gap) / 2)' }}
+                                ref={this.residuesTainerRef}
+                            >
                                 {this.renderSelection(this.residuesTainerRef, selectedIndices, multipleModels, thresholds, pgrpIndices, htmlColorsForStatsBar)}
                             </div>
                         </div>
