@@ -641,6 +641,11 @@ th.rdo-data-table-small {
     display: none;
 }
 
+.rdo-scroll-vertically-with-scrollbar {
+    height: 100%;
+    overflow-y: scroll;
+}
+
 .rdo-secondary-caption {
     font-size: var(--font-large);
     font-weight: bold;

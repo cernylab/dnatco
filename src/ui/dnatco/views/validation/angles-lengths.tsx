@@ -1369,7 +1369,7 @@ export class AnglesLengths extends View<
                         style={ Common.VScrollJail }
                     >
                         <div style={ Common.VScrollElement }>
-                            <div className='rdo-scroll-vertically'>
+                            <div className='rdo-scroll-vertically-with-scrollbar'>
                                 {this.renderSelection(selectedIndices, multipleModels, thresholds, pgrpIndices, htmlColorsForStatsBar)}
                             </div>
                         </div>
@@ -1400,7 +1400,7 @@ export class AnglesLengths extends View<
                             </NamedListItem>
                         </NamedList>
                         <div style={ Common.VScrollElement }>
-                            <div className='rdo-scroll-vertically'>
+                            <div className='rdo-scroll-vertically-with-scrollbar'>
                                 {this.renderWorstLengths(
                                     selectedResidues,
                                     selectedResidueStats,
@@ -1438,7 +1438,7 @@ export class AnglesLengths extends View<
                             </NamedListItem>
                         </NamedList>
                         <div style={ Common.VScrollElement }>
-                            <div className='rdo-scroll-vertically'>
+                            <div className='rdo-scroll-vertically-with-scrollbar'>
                                 {this.renderWorstAngles(
                                     selectedResidues,
                                     selectedResidueStats,

@@ -210,7 +210,7 @@ export class ChangeNtCs extends View<Refinement.Props> {
 
                 <div className='rdo-line-spacer' />
                 <div style={ Common.VScrollElement } ref={this.tableTainer}>
-                    <div className='rdo-scroll-vertically'>
+                    <div className='rdo-scroll-vertically-with-scrollbar'>
                         {this.renderStepsTable()}
                     </div>
                 </div>
