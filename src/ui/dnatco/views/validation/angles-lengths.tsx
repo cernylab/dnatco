@@ -107,7 +107,7 @@ type StatsDownloader = Downloader<{
     counts: {
         angles: Summarize.CountsInGroup[],
         lengths: Summarize.CountsInGroup[]
-    }
+    },
     stats: ALMResidueStats[],
 }>;
 const StatsDownloaders = [
@@ -1223,6 +1223,9 @@ class SubstructureSummary extends React.Component<{ countsInGroups: Summarize.Co
     }
 }
 
+const DefaultShownResiduesLimit = 100;
+const ShownResiduesIncrement = 100;
+const LoadNextElemId = 'rdo-angles-lenghts-load-next-elem';
 export class AnglesLengths extends View<
     View.Props,
     {
@@ -1230,10 +1233,12 @@ export class AnglesLengths extends View<
         worstAnglesThreshold: string,
         maxWorstLengths: number,
         worstLengthsThreshold: string,
+        shownResiduesLimit: number,
     }
 > {
     static readonly unscrollableContainer = true;
     private residuesTainerRef = React.createRef<HTMLDivElement>();
+    private inhibitLoadNext = false;
 
     constructor(props: View.Props) {
         super(props);
@@ -1243,6 +1248,7 @@ export class AnglesLengths extends View<
             worstAnglesThreshold: '',
             maxWorstLengths: GlobalConfig.data().anglesLengths.maxWorst,
             worstLengthsThreshold: '',
+            shownResiduesLimit: 100,
         };
     }
 
@@ -1264,12 +1270,25 @@ export class AnglesLengths extends View<
         return <div>{...inner}</div>;
     }
 
-    private renderSelection(tainer: React.RefObject<HTMLDivElement>, indices: number[], multipleModels: boolean, thresholds: number[], pgrpIndices: number[], colorsForStatsBar: string[]) {
+    private renderSelection(
+        tainer: React.RefObject<HTMLDivElement>,
+        indices: number[],
+        multipleModels: boolean,
+        thresholds: number[],
+        pgrpIndices: number[],
+        colorsForStatsBar: string[],
+        maxResidues: number,
+        loadNext: () => void
+    ) {
         const r = this.props.dnatcofication.data.alm.residues;
         const s = this.props.dnatcofication.data.alm.stats;
         const outlierColor = colorToTuple(DAnglesLengths.outlierColor());
 
-        return indices.map(idx => {
+        const elems = new Array<JSX.Element>();
+        let adx = 0;
+        for (; adx < indices.length && adx < maxResidues; adx++) {
+            const idx = indices[adx];
+
             const _r = r[idx];
             const _s = s[idx];
             const countsAngles = countsInGroups(_s.summary.angles, thresholds);
@@ -1277,7 +1296,7 @@ export class AnglesLengths extends View<
             const residueName = this.renderResidueName(_r, multipleModels);
             const structureName = this.props.dnatcofication.identifyingName ?? this.props.dnatcofication.pdbId;
 
-            return (
+            elems.push(
                 <Residue
                     tainer={tainer}
                     d={this.props.dnatcofication}
@@ -1293,7 +1312,12 @@ export class AnglesLengths extends View<
                     key={idx}
                 />
             );
-        });
+        }
+
+        if (adx === maxResidues)
+            elems.push(<div key={-1} id={LoadNextElemId} onClick={loadNext}>{`(... ${indices.length - maxResidues} more residues)`}</div>);
+
+        return elems;
     }
 
     private renderWorstAngles(residues: Measurements.Residue[], stats: ALMResidueStats[], maxCount: number, threshold: number|'outlier', structureName: string, multipleModels: boolean) {
@@ -1378,6 +1402,21 @@ export class AnglesLengths extends View<
             else
                 return alm.models.get(modelNum) ?? [];
         }
+    }
+
+    increaseShownResiduesLimit = () => {
+        this.setState({ ...this.state, shownResiduesLimit: this.state.shownResiduesLimit + ShownResiduesIncrement });
+        setTimeout(() => this.inhibitLoadNext = false, 100);
+    }
+
+    componentDidUpdate(prevProps: View.Props) {
+        const prevModel = prevProps.structureSelection.modelIndex;
+        const prevChain = prevProps.structureSelection.chain;
+        const model = this.props.structureSelection.modelIndex;
+        const chain = this.props.structureSelection.chain;
+
+        if (prevModel !== model || prevChain !== chain)
+            this.setState({ ...this.state, shownResiduesLimit: DefaultShownResiduesLimit });
     }
 
     componentWillUnmount() {
@@ -1486,8 +1525,35 @@ export class AnglesLengths extends View<
                                 className='rdo-scroll-vertically-with-scrollbar'
                                 style={{ display: 'flex', flexDirection: 'column', gap: 'calc(var(--h2-gap) / 2)' }}
                                 ref={this.residuesTainerRef}
+                                onScroll={(ev) => {
+                                    // Debounce
+                                    if (this.inhibitLoadNext)
+                                        return;
+
+                                    const self = ev.currentTarget;
+                                    const loadNextElem = document.querySelector(`#${LoadNextElemId}`);
+                                    if (!loadNextElem)
+                                        return;
+
+                                    const tainerBRect = self.getBoundingClientRect();
+                                    const loadNextBRect = loadNextElem.getBoundingClientRect();
+
+                                    if (loadNextBRect.top < tainerBRect.bottom) {
+                                        this.inhibitLoadNext = true;
+                                        this.increaseShownResiduesLimit();
+                                    }
+                                }}
                             >
-                                {this.renderSelection(this.residuesTainerRef, selectedIndices, multipleModels, thresholds, pgrpIndices, htmlColorsForStatsBar)}
+                                {this.renderSelection(
+                                    this.residuesTainerRef,
+                                    selectedIndices,
+                                    multipleModels,
+                                    thresholds,
+                                    pgrpIndices,
+                                    htmlColorsForStatsBar,
+                                    this.state.shownResiduesLimit,
+                                    this.increaseShownResiduesLimit
+                                )}
                             </div>
                         </div>
                     </CollapsibleVertical>
