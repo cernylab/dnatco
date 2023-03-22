@@ -162,12 +162,23 @@ export class ChangeNtCs extends View<Refinement.Props> {
     componentDidMount() {
         this.subscribe(
             this.props.dnatcofication.customNtCs.events.changed,
-            () => this.forceUpdate()
+            () => {
+                const sel = StructureSelection(this.props.viewerInterop, this.props.dnatcofication);
+                this.setTableModel(sel);
+                this.forceUpdate();
+            }
         );
 
-        this.subscribe(this.props.switching.events.modelSwitched, (sel) =>  this.setTableModel(sel));
-        this.subscribe(this.props.switching.events.chainSwitched, (sel) =>  this.setTableModel(sel));
+        this.subscribe(this.props.switching.events.modelSwitched, (sel) => this.setTableModel(sel));
+        this.subscribe(this.props.switching.events.chainSwitched, (sel) => this.setTableModel(sel));
+    }
 
+    componentDidUpdate(prevProps: Refinement.Props) {
+        if (this.props.selectedCustomNtCSet !== prevProps.selectedCustomNtCSet) {
+            const sel = StructureSelection(this.props.viewerInterop, this.props.dnatcofication);
+            this.setTableModel(sel);
+            this.forceUpdate();
+        }
     }
 
     componentWillUnmount() {
