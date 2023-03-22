@@ -89,8 +89,8 @@ export class CustomNtCSets extends WithSubscriptions<CustomNtCSets.Props, Empty>
                 </div>
                 {
                     this.props.selectedSet === ''
-                        ? <div style={{ fontStyle: 'oblique', color: 'var(--color-f)' }}>(Switch away from the "Computed" NtC set if you wish to set NtCs manually)</div>
-                        : undefined
+                        ? <div style={{ fontStyle: 'oblique', color: 'var(--color-f)', height: '1em', marginTop: 'calc(var(--v-gap) / 2)' }}>(Switch away from the "Computed" NtC set if you wish to set NtCs manually)</div>
+                        : <div style={{ height: '1em', marginTop: 'calc(var(--v-gap) / 2)' }} />
                 }
             </div>
         );

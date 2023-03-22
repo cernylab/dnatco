@@ -46,19 +46,19 @@ export class ChangeNtCs extends View<Refinement.Props> {
             tooltip: <div>Di<span className='rdo-emphasize'>N</span>ucleotide <span className='rdo-emphasize'>C</span>onformational class</div>,
         };
         const customNtCColumn: DynamicTable.Column<string> = {
-            name: 'Custom NtC', cells: new Array<DynamicTable.Cell<string>>(), alignment: 'center',
+            name: 'Custom NtC', cells: new Array<DynamicTable.Cell<string>>(), alignment: 'left',
             notSortable: true,
             tooltip: <div>Di<span className='rdo-emphasize'>N</span>ucleotide <span className='rdo-emphasize'>C</span>onformational class</div>,
         };
 
         const makeSelCell = this.props.selectedCustomNtCSet === ''
-            ? () => <span>(Not changeable)</span>
+            ? () => <div style={{ height: '1.5em' }}>(Not changeable)</div>
             : (row: number) => {
                 const step = Cif.Column.value(name, row)!;
                 const computedNtC = Cif.Column.value(closest_NtC, row)!;
                 const customNtC = this.props.dnatcofication.customNtCs.getCustomNtC(this.props.selectedCustomNtCSet, step);
                 return (
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 'var(--h2-gap)' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'auto 2em 1fr', gap: 'var(--h2-gap)', height: '1.5em' }}>
                         <Refinement.NtCSelector
                             value={customNtC ?? computedNtC}
                             onChanged={v => {
@@ -76,8 +76,9 @@ export class ChangeNtCs extends View<Refinement.Props> {
                                     onClick={() => this.props.dnatcofication.customNtCs.deleteCustomNtC(this.props.selectedCustomNtCSet, step)}
                                     className='rdo-icon-text-button'
                                 />
-                            : <span />
+                            : <div />
                         }
+                        <div />
                     </div>
                 );
             };
@@ -119,7 +120,9 @@ export class ChangeNtCs extends View<Refinement.Props> {
 
             customNtCColumn.cells.push({
                 data: '',
-                elem: makeSelCell(row),
+                elem: (<div style={{ display: 'flex', justifyContent: 'center' }}>
+                    <div style={{ width: '9em' }}>{makeSelCell(row)}</div>
+                </div>),
             });
         }
 
