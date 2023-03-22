@@ -46,13 +46,13 @@ export class ChangeNtCs extends View<Refinement.Props> {
             tooltip: <div>Di<span className='rdo-emphasize'>N</span>ucleotide <span className='rdo-emphasize'>C</span>onformational class</div>,
         };
         const customNtCColumn: DynamicTable.Column<string> = {
-            name: 'Custom NtC', cells: new Array<DynamicTable.Cell<string>>(), alignment: 'left',
+            name: 'Custom NtC', cells: new Array<DynamicTable.Cell<string>>(),
             notSortable: true,
             tooltip: <div>Di<span className='rdo-emphasize'>N</span>ucleotide <span className='rdo-emphasize'>C</span>onformational class</div>,
         };
 
         const makeSelCell = this.props.selectedCustomNtCSet === ''
-            ? () => <div style={{ height: '1.5em' }}>(Not changeable)</div>
+            ? () => <div style={{ height: '1.5em', textAlign: 'center' }}>(Not changeable)</div>
             : (row: number) => {
                 const step = Cif.Column.value(name, row)!;
                 const computedNtC = Cif.Column.value(closest_NtC, row)!;
@@ -120,9 +120,7 @@ export class ChangeNtCs extends View<Refinement.Props> {
 
             customNtCColumn.cells.push({
                 data: '',
-                elem: (<div style={{ display: 'flex', justifyContent: 'center' }}>
-                    <div style={{ width: '9em' }}>{makeSelCell(row)}</div>
-                </div>),
+                elem: <div style={{ width: '9em', margin: 'auto' }}>{makeSelCell(row)}</div>,
             });
         }
 
