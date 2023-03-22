@@ -1393,7 +1393,7 @@ export class AnglesLengths extends View<
     private selectionToIndices(modelIdx: number, chain: string) {
         const alm = this.props.dnatcofication.data.alm;
         if (modelIdx === InvalidModelIndex) {
-            return sequence(0, alm.residues.length);
+            return sequence(0, alm.residues.length - 1);
         } else {
             const modelNum = this.props.dnatcofication.data.structures[0].models[modelIdx].num;
 
