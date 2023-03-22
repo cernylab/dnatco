@@ -1538,7 +1538,7 @@ export class AnglesLengths extends View<
                                     const tainerBRect = self.getBoundingClientRect();
                                     const loadNextBRect = loadNextElem.getBoundingClientRect();
 
-                                    if (loadNextBRect.top < tainerBRect.bottom) {
+                                    if (loadNextBRect.top + loadNextBRect.height / 2 < tainerBRect.bottom) {
                                         this.inhibitLoadNext = true;
                                         this.increaseShownResiduesLimit();
                                     }
