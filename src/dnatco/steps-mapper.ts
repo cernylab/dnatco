@@ -86,6 +86,8 @@ export namespace StepsMapper {
             if (chain1 !== chain2)
                 throw new Error(`Steps are not allowed to span across chains but step ${id} does that`);
 
+            const chainAuth = Cif.Column.value(steps.auth_asym_id_1, row)!;
+
             const { assignedNtC, closestNtC, CANA, confal, rmsd } = findNtC(id, summaries);
             orderedSteps[idx] = {
                 id,
@@ -105,6 +107,7 @@ export namespace StepsMapper {
                 CANA,
                 confal,
                 rmsd,
+                chainAuth,
                 resNo1Auth: Cif.Column.value(steps.auth_seq_id_1, row)!,
                 resNo2Auth: Cif.Column.value(steps.auth_seq_id_2, row)!,
             };

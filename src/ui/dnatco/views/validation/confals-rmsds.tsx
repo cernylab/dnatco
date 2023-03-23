@@ -4,13 +4,15 @@ import { Validation } from './common';
 import { ChainSelect, ModelSelect } from '../structure-selectors';
 import { EmptyStructureSelection, InvalidChain, InvalidModelIndex, InvalidStepId, StructureSelection } from '../../structure-selection';
 import { View } from '../view';
-import { confalPercentile, niceStepName, Common } from '../../common';
+import { confalPercentile, niceStepName, niceStepNameText, Common } from '../../common';
+import { SearchBox } from '../../search-box';
 import { SingleStepInfo } from '../../single-step-info';
 import { Constants } from '../../constants';
 import { valueToSemaphore, GappedSemaphore } from '../../util';
 import { Icon } from '../../../common/icon';
 import { rgbToHex } from '../../../util';
 import { DynamicTable } from '../../../common/dynamic-table';
+import { IconButton } from '../../../common/push-button';
 import { NamedList, NamedListItem } from '../../../common/named-list';
 import { Tooltip } from '../../../common/tooltip';
 import { Cif } from '../../../../cif';
@@ -19,12 +21,15 @@ import {
     NdbStructNtcStepParameters
 } from '../../../../cif/categories/ndb-struct-ntc';
 import { Dnatcofication, StepRmsdStats as DnatcoStepRmsdStats } from '../../../../dnatco/dnatcofication';
+import { Step } from '../../../../dnatco/step';
 import { StepsMapper } from '../../../../dnatco/steps-mapper';
 import { GlobalConfig } from '../../../../global-config';
+import { parseIntStrict } from '../../../../util';
 import { doDownload, FileTypes } from '../../../../util/downloader';
 import { Serialization } from '../../../../util/serialization';
 import 'assets/imgs/info.svg';
 import 'assets/imgs/info-inverse.svg';
+import 'assets/imgs/magnifying-glass.svg';
 
 const CellBgAlpha = 0.5;
 
@@ -217,6 +222,42 @@ export class ConfalsRmsds extends View<View.Props> {
     static readonly unscrollableContainer = true;
     private tableModel: DynamicTable.Model = new DynamicTable.Model([]);
     private tableTainer = React.createRef<HTMLDivElement>();
+    private searchBoxOpen = false;
+
+    private readonly Searching: SearchBox.Searching<Step> = {
+        onRenderResult: (step) => <div>{`${step.chainAuth} - ${niceStepNameText(step)}`}</div>,
+        onSearch: (prompt) => {
+            const toks = prompt.split(' ').slice(0, 2);
+            const resNoAuth = parseIntStrict(toks.length === 2 ? toks[1] : toks[0]);
+            const chainAuth = toks.length === 2 ? toks[0] : void 0;
+
+            if (isNaN(resNoAuth))
+                return [];
+
+            const results = [];
+            for (const step of this.props.dnatcofication.data.steps.steps) {
+                if (step.resNo1Auth === resNoAuth) {
+                    if (chainAuth) {
+                        if (chainAuth === step.chain)
+                            results.push(step);
+                    } else
+                        results.push(step);
+                }
+            }
+
+            return results;
+        },
+        onUseResult: (step) => this.props.switching.switchStepId(step.id),
+    }
+
+    private readonly SearchBoxProps: SearchBox.Props<Step> = {
+        anchor: 'bottom-right',
+        xOffset: 32,
+        yOffset: 32,
+        caption: 'Enter chain and residue no.',
+        onClose: () => this.searchBoxOpen = false,
+        searching: this.Searching,
+    }
 
     constructor(props: View.Props) {
         super(props);
@@ -423,9 +464,11 @@ export class ConfalsRmsds extends View<View.Props> {
         const numModels = Dnatcofication.Structure.numberOfModels(this.props.dnatcofication);
         const modelIdx = this.props.structureSelection.modelIndex === InvalidModelIndex ? 0 : this.props.structureSelection.modelIndex;
         const confalAverage = this.props.dnatcofication.data.averageConfals[modelIdx];
+        const prefix = GlobalConfig.data().pathPrefix;
+        const selfRef = React.createRef<HTMLDivElement>();
 
         return (
-            <div style={ Common.VScrollJail }>
+            <div style={{ ...Common.VScrollJail, position: 'relative' }} ref={selfRef}>
                 <div className='rdo-view-caption'>Overall structure quality</div>
 
                 <Stats
@@ -464,6 +507,21 @@ export class ConfalsRmsds extends View<View.Props> {
                     <div className='rdo-scroll-vertically-with-scrollbar'>
                         {this.renderStepsTable()}
                     </div>
+                </div>
+
+                <div className='rdo-floating-search-icon-tainer' style={{ bottom: 'var(--x-gap)', right: 'var(--x-gap)' }}>
+                    <IconButton
+                        src={`${prefix}/imgs/magnifying-glass.svg`}
+                        className='rdo-floating-search-icon rdo-pushbutton-border'
+                        onClick={() => {
+                            const tainer = selfRef.current;
+                            if (!tainer || this.searchBoxOpen)
+                                return;
+
+                            this.searchBoxOpen = true;
+                            SearchBox.create(tainer, this.SearchBoxProps);
+                        }}
+                    />
                 </div>
             </div>
         );

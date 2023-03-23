@@ -20,6 +20,7 @@ export const StepObj = {
     CANA:  'NAN' as CANA.Class,
     confal: 0,
     rmsd: 0,
+    chainAuth: '',
     resNo1Auth: 0,
     resNo2Auth: 0,
 };

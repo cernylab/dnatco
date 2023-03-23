@@ -62,11 +62,11 @@ export function niceStepNameText(step: Step, showModelNum = false) {
 
     const nice =
         step.base1 + SP +
-        step.resNo1 + step.insCode1 +
+        step.resNo1Auth + step.insCode1 +
         (step.altPos1 !== '' ? `(alt ${step.altPos1})` : '') +
         SP +
         step.base2 + SP +
-        step.resNo2 + step.insCode2 +
+        step.resNo2Auth + step.insCode2 +
         (step.altPos2 !== '' ? `(alt ${step.altPos2})` : '');
 
     return (showModelNum ? `M${step.model} ` : '') + nice;

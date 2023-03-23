@@ -336,6 +336,26 @@ th.rdo-data-table-small {
     width: fit-content;
 }
 
+.rdo-floating-search-icon {
+    background-color: white;
+    height: 3em;
+    width: 3em;
+}
+
+.rdo-floating-search-icon-tainer {
+    align-items: center;
+    display: flex;
+    height: 4em;
+    justify-content: center;
+    opacity: 0;
+    position: absolute;
+    width: 4em;
+    transition: opacity var(--anim-speed);
+}
+.rdo-floating-search-icon-tainer:hover {
+    opacity: 1;
+}
+
 .rdo-footer {
     background-color: var(--color-y);
     height: 3em;
@@ -363,6 +383,10 @@ th.rdo-data-table-small {
     color: white;
     font-size: var(--font-small);
     text-align: center;
+}
+
+.rdo-hgap {
+    gap: var(--h-gap);
 }
 
 .rdo-hflex {
@@ -644,6 +668,16 @@ th.rdo-data-table-small {
 .rdo-scroll-vertically-with-scrollbar {
     height: 100%;
     overflow-y: scroll;
+}
+
+.rdo-search-box {
+    background-color: white;
+    border: var(--thickness-border) solid var(--color-a);
+    display: flex;
+    flex-direction: column;
+    gap: var(--v-gap);
+    padding: var(--x-gap);
+    z-index: 99;
 }
 
 .rdo-secondary-caption {
@@ -945,6 +979,15 @@ th.rdo-data-table-small {
 .rdo-vertical-text {
     writing-mode: vertical-rl;
     transform: rotate(180deg);
+}
+
+.rdo-vgap {
+    gap: var(--v-gap);
+}
+
+.rdo-vgap {
+    display: flex;
+    flex-direction: column;
 }
 
 .rdo-view-caption {

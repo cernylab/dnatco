@@ -2,24 +2,66 @@ import React from 'react';
 import { Annotation } from './common';
 import { ChainSelect, ModelSelect } from '../structure-selectors';
 import { View } from '../view';
+import { SearchBox } from '../../search-box';
 import { EmptyStructureSelection, InvalidChain, InvalidModelIndex, InvalidStepId, StructureSelection } from '../../structure-selection';
-import { niceStepName, Common } from '../../common';
+import { niceStepName, niceStepNameText, Common } from '../../common';
 import { DynamicTable } from '../../../common/dynamic-table';
 import { NamedList, NamedListItem } from '../../../common/named-list';
+import { IconButton } from '../../../common/push-button';
 import { Tooltip } from '../../../common/tooltip';
 import { Cif } from '../../../../cif';
 import { NdbStructNtcStep, NdbStructNtcStepSummary } from '../../../../cif/categories/ndb-struct-ntc';
 import { Dnatcofication } from '../../../../dnatco/dnatcofication';
+import { Step } from '../../../../dnatco/step';
 import { StepsMapper } from '../../../../dnatco/steps-mapper';
+import { parseIntStrict } from '../../../../util';
 import { doDownload, FileTypes } from '../../../../util/downloader';
 import { Serialization } from '../../../../util/serialization';
+import { GlobalConfig } from '../../../../global-config';
 import 'assets/imgs/info.svg';
 import 'assets/imgs/info-inverse.svg';
+import 'assets/imgs/magnifying-glass.svg';
 
 export class AssignedNtCs extends View<View.Props> {
     static readonly unscrollableContainer = true;
     private tableModel: DynamicTable.Model = new DynamicTable.Model([]);
     private tableTainer = React.createRef<HTMLDivElement>();
+    private searchBoxOpen = false;
+
+    private readonly Searching: SearchBox.Searching<Step> = {
+        onRenderResult: (step) => <div>{`${step.chainAuth} - ${niceStepNameText(step)}`}</div>,
+        onSearch: (prompt) => {
+            const toks = prompt.split(' ').slice(0, 2);
+            const resNoAuth = parseIntStrict(toks.length === 2 ? toks[1] : toks[0]);
+            const chainAuth = toks.length === 2 ? toks[0] : void 0;
+
+            if (isNaN(resNoAuth))
+                return [];
+
+            const results = [];
+            for (const step of this.props.dnatcofication.data.steps.steps) {
+                if (step.resNo1Auth === resNoAuth) {
+                    if (chainAuth) {
+                        if (chainAuth === step.chain)
+                            results.push(step);
+                    } else
+                        results.push(step);
+                }
+            }
+
+            return results;
+        },
+        onUseResult: (step) => this.props.switching.switchStepId(step.id),
+    }
+
+    private readonly SearchBoxProps: SearchBox.Props<Step> = {
+        anchor: 'bottom-right',
+        xOffset: 32,
+        yOffset: 32,
+        caption: 'Enter chain and residue no.',
+        onClose: () => this.searchBoxOpen = false,
+        searching: this.Searching,
+    };
 
     constructor(props: View.Props) {
         super(props);
@@ -173,9 +215,11 @@ export class AssignedNtCs extends View<View.Props> {
 
     render() {
         const numModels = Dnatcofication.Structure.numberOfModels(this.props.dnatcofication);
+        const prefix = GlobalConfig.data().pathPrefix;
+        const selfRef = React.createRef<HTMLDivElement>();
 
         return (
-            <div style={ Common.VScrollJail }>
+            <div style={{ ...Common.VScrollJail, position: 'relative' }} ref={selfRef}>
                 <div className='rdo-view-caption'>Assigned NtCs</div>
 
                 <NamedList sizing='min-content' rowSpacing='half'>
@@ -204,6 +248,21 @@ export class AssignedNtCs extends View<View.Props> {
                     <div className='rdo-scroll-vertically-with-scrollbar'>
                         {this.renderStepsTable()}
                     </div>
+                </div>
+
+                <div className='rdo-floating-search-icon-tainer' style={{ bottom: 'var(--x-gap)', right: 'var(--x-gap)' }}>
+                    <IconButton
+                        src={`${prefix}/imgs/magnifying-glass.svg`}
+                        className='rdo-floating-search-icon rdo-pushbutton-border'
+                        onClick={() => {
+                            const tainer = selfRef.current;
+                            if (!tainer || this.searchBoxOpen)
+                                return;
+
+                            this.searchBoxOpen = true;
+                            SearchBox.create(tainer, this.SearchBoxProps);
+                        }}
+                    />
                 </div>
             </div>
         );
