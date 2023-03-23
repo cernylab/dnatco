@@ -1,6 +1,6 @@
 import React from 'react';
 import { getCifValue } from './util';
-import { InvalidChain, InvalidModelIndex, InvalidStepId, StructureSelection, StructureSelectionSwitching } from './structure-selection';
+import { InvalidChain, InvalidModelIndex, InvalidStepId, StructureSelection, StructureSelectionFromViewer, StructureSelectionSwitching } from './structure-selection';
 import { ViewsList } from './views-list';
 import { Register } from './views/register';
 import { DynamicSplitView } from '../common/dynamic-split-view';
@@ -121,7 +121,7 @@ export class MainScreen extends WithSubscriptions<MainScreen.Props, State> {
     constructor(props: MainScreen.Props) {
         super(props);
 
-        const structureSelection = StructureSelection(this.props.viewerInterop, this.props.dnatcofication);
+        const structureSelection = StructureSelectionFromViewer(this.props.viewerInterop, this.props.dnatcofication);
 
         this.state = {
             activeViews: {

@@ -4,7 +4,7 @@ import { ChainSelect, ModelSelect } from '../structure-selectors';
 import { View } from '../view';
 import { SearchBox } from '../../search-box';
 import { EmptyStructureSelection, InvalidChain, InvalidModelIndex, InvalidStepId, StructureSelection } from '../../structure-selection';
-import { niceStepName, niceStepNameText, Common } from '../../common';
+import { niceStepName, Common } from '../../common';
 import { DynamicTable } from '../../../common/dynamic-table';
 import { NamedList, NamedListItem } from '../../../common/named-list';
 import { IconButton } from '../../../common/push-button';
@@ -29,7 +29,7 @@ export class AssignedNtCs extends View<View.Props> {
     private searchBoxOpen = false;
 
     private readonly Searching: SearchBox.Searching<Step> = {
-        onRenderResult: (step) => <div>{`${step.chainAuth} - ${niceStepNameText(step)}`}</div>,
+        onRenderResult: (step) => <div>{step.chainAuth} - {niceStepName(step, this.props.structureSelection.modelIndex === InvalidModelIndex)}</div>,
         onSearch: (prompt) => {
             const toks = prompt.split(' ').slice(0, 2);
             const resNoAuth = parseIntStrict(toks.length === 2 ? toks[1] : toks[0]);
@@ -38,8 +38,15 @@ export class AssignedNtCs extends View<View.Props> {
             if (isNaN(resNoAuth))
                 return [];
 
+            const modelIndex = this.props.structureSelection.modelIndex;
+            const modelNum = this.modelNumFromIndex(modelIndex);
+            const chain = this.props.structureSelection.chain;
+            const filterFunc = (step: Step) => {
+                return (modelIndex === InvalidModelIndex || step.model === modelNum) && (chain === InvalidChain || chain === step.chain);
+            }
+
             const results = [];
-            for (const step of this.props.dnatcofication.data.steps.steps) {
+            for (const step of this.props.dnatcofication.data.steps.steps.filter(x => filterFunc(x))) {
                 if (step.resNo1Auth === resNoAuth) {
                     if (chainAuth) {
                         if (chainAuth === step.chain)
@@ -73,7 +80,7 @@ export class AssignedNtCs extends View<View.Props> {
         const steps = this.props.dnatcofication.table(NdbStructNtcStep);
         const summary = this.props.dnatcofication.table(NdbStructNtcStepSummary);
 
-        const { PDB_model_number, label_asym_id_1, name } = steps;
+        const { PDB_model_number, label_asym_id_1, auth_asym_id_1, name } = steps;
         const { assigned_NtC, assigned_CANA, closest_NtC, closest_CANA } = summary;
 
         const chainColumn: DynamicTable.Column<string> = {
@@ -96,7 +103,7 @@ export class AssignedNtCs extends View<View.Props> {
 
         for (let row = 0; row < steps._rowCount; row++) {
             const modelNum = Cif.Column.value(PDB_model_number, row)!;
-            if (selectedModelNum !== -1 && selectedModelNum !== modelNum)
+            if (selectedModelNum !== InvalidModelIndex && selectedModelNum !== modelNum)
                 continue;
 
             const chain = Cif.Column.value(label_asym_id_1, row)!;
@@ -106,7 +113,7 @@ export class AssignedNtCs extends View<View.Props> {
             const tag = Cif.Column.value(name, row)!;
             const _step = StepsMapper.byName(this.props.dnatcofication, tag)!; // tag is the internal step name
 
-            chainColumn.cells.push({ data: chain, tag });
+            chainColumn.cells.push({ data: Cif.Column.value(auth_asym_id_1, row)!, tag });
             stepColumn.cells.push({
                 data: tag,
                 elem: niceStepName(_step, selectedModelNum === InvalidModelIndex),
@@ -147,6 +154,12 @@ export class AssignedNtCs extends View<View.Props> {
         }
 
         return new DynamicTable.Model([chainColumn, stepColumn, ntcColumn, canaColumn]);
+    }
+
+    private modelNumFromIndex(modelIndex: number) {
+        return modelIndex !== InvalidModelIndex
+            ? this.props.dnatcofication.data.structures[0].models[modelIndex].num
+            : InvalidModelIndex;
     }
 
     private renderStepsTable() {
@@ -194,9 +207,7 @@ export class AssignedNtCs extends View<View.Props> {
     }
 
     private setTableModel(sel: StructureSelection) {
-        const modelNum = sel.modelIndex !== InvalidModelIndex
-            ? this.props.dnatcofication.data.structures[0].models[sel.modelIndex].num
-            : InvalidModelIndex;
+        const modelNum  = this.modelNumFromIndex(sel.modelIndex);
         this.tableModel = this.makeTableModel(
             modelNum,
             sel.chain === InvalidChain ? void 0 : sel.chain

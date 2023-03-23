@@ -4,7 +4,7 @@ import { Validation } from './common';
 import { ChainSelect, ModelSelect } from '../structure-selectors';
 import { EmptyStructureSelection, InvalidChain, InvalidModelIndex, InvalidStepId, StructureSelection } from '../../structure-selection';
 import { View } from '../view';
-import { confalPercentile, niceStepName, niceStepNameText, Common } from '../../common';
+import { confalPercentile, niceStepName, Common } from '../../common';
 import { SearchBox } from '../../search-box';
 import { SingleStepInfo } from '../../single-step-info';
 import { Constants } from '../../constants';
@@ -225,7 +225,7 @@ export class ConfalsRmsds extends View<View.Props> {
     private searchBoxOpen = false;
 
     private readonly Searching: SearchBox.Searching<Step> = {
-        onRenderResult: (step) => <div>{`${step.chainAuth} - ${niceStepNameText(step)}`}</div>,
+        onRenderResult: (step) => <div>{step.chainAuth} - {niceStepName(step, this.props.structureSelection.modelIndex === InvalidModelIndex)}</div>,
         onSearch: (prompt) => {
             const toks = prompt.split(' ').slice(0, 2);
             const resNoAuth = parseIntStrict(toks.length === 2 ? toks[1] : toks[0]);
@@ -234,8 +234,15 @@ export class ConfalsRmsds extends View<View.Props> {
             if (isNaN(resNoAuth))
                 return [];
 
+            const modelIndex = this.props.structureSelection.modelIndex;
+            const modelNum = this.modelNumFromIndex(modelIndex);
+            const chain = this.props.structureSelection.chain;
+            const filterFunc = (step: Step) => {
+                return (modelIndex === InvalidModelIndex || step.model === modelNum) && (chain === InvalidChain || chain === step.chain);
+            }
+
             const results = [];
-            for (const step of this.props.dnatcofication.data.steps.steps) {
+            for (const step of this.props.dnatcofication.data.steps.steps.filter(x => filterFunc(x))) {
                 if (step.resNo1Auth === resNoAuth) {
                     if (chainAuth) {
                         if (chainAuth === step.chain)
@@ -271,7 +278,7 @@ export class ConfalsRmsds extends View<View.Props> {
         const summary = this.props.dnatcofication.table(NdbStructNtcStepSummary);
         const params = this.props.dnatcofication.table(NdbStructNtcStepParameters);
 
-        const { PDB_model_number, label_asym_id_1, name } = steps;
+        const { PDB_model_number, label_asym_id_1, auth_asym_id_1, name } = steps;
         const {
             assigned_NtC, assigned_CANA, closest_NtC, closest_CANA,
             confal_score, cartesian_rmsd_closest_NtC_representative
@@ -283,6 +290,10 @@ export class ConfalsRmsds extends View<View.Props> {
             tor_NCCN, dist_CC, dist_NN
         } = params;
 
+        const chainColumn: DynamicTable.Column<string> = {
+            name: 'Chain', cells: new Array<DynamicTable.Cell<string>>(), alignment: 'center',
+            tooltip: <div>PDB chain ID (author)</div>,
+        };
         const stepColumn: DynamicTable.Column<string> = {
             name: 'Step', cells: new Array<DynamicTable.Cell<string>>(), alignment: 'center', notSortable: true,
             tooltip: <div>Dinucleotide step identifier</div>,
@@ -322,6 +333,7 @@ export class ConfalsRmsds extends View<View.Props> {
             const NtC = Cif.Column.value(assigned_NtC, row)!;
             const _step = StepsMapper.byName(this.props.dnatcofication, tag)!; // tag is the internal step name
 
+            chainColumn.cells.push({ data: Cif.Column.value(auth_asym_id_1, row)!, tag });
             stepColumn.cells.push({
                 data: tag,
                 elem: niceStepName(_step, selectedModelNum === InvalidModelIndex),
@@ -395,7 +407,13 @@ export class ConfalsRmsds extends View<View.Props> {
             });
         }
 
-        return new DynamicTable.Model([stepColumn, ntcColumn, canaColumn, confalColumn, rmsdColumn, torsionsColumn]);
+        return new DynamicTable.Model([chainColumn, stepColumn, ntcColumn, canaColumn, confalColumn, rmsdColumn, torsionsColumn]);
+    }
+
+    private modelNumFromIndex(modelIndex: number) {
+        return modelIndex !== InvalidModelIndex
+            ? this.props.dnatcofication.data.structures[0].models[modelIndex].num
+            : InvalidModelIndex;
     }
 
     private renderStepsTable() {
@@ -443,9 +461,7 @@ export class ConfalsRmsds extends View<View.Props> {
     }
 
     private setTableModel(sel: StructureSelection) {
-        const modelNum = sel.modelIndex !== InvalidModelIndex
-            ? this.props.dnatcofication.data.structures[0].models[sel.modelIndex].num
-            : -1;
+        const modelNum = this.modelNumFromIndex(sel.modelIndex);
         this.tableModel = this.makeTableModel(modelNum, sel.chain === InvalidChain ? void 0 : sel.chain);
     }
 

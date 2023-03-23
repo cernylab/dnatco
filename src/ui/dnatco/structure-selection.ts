@@ -14,7 +14,10 @@ export type StructureSelection = {
     chain: string,
     stepId: number,
 }
-export function StructureSelection(viewerInterop: ViewerInterop, dnatcofication: Dnatcofication): StructureSelection {
+export function StructureSelection(modelIndex: number, chain: string, stepId: number): StructureSelection {
+    return { modelIndex, chain, stepId };
+}
+export function StructureSelectionFromViewer(viewerInterop: ViewerInterop, dnatcofication: Dnatcofication): StructureSelection {
     if (viewerInterop.ready()) {
         const stru = dnatcofication.data.structures[0];
 

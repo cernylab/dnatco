@@ -164,7 +164,7 @@ export class ChangeNtCs extends View<Refinement.Props> {
         this.subscribe(
             this.props.dnatcofication.customNtCs.events.changed,
             () => {
-                const sel = StructureSelection(this.props.viewerInterop, this.props.dnatcofication);
+                const sel = this.props.structureSelection;
                 this.setTableModel(sel);
                 this.forceUpdate();
             }
@@ -176,7 +176,7 @@ export class ChangeNtCs extends View<Refinement.Props> {
 
     componentDidUpdate(prevProps: Refinement.Props) {
         if (this.props.selectedCustomNtCSet !== prevProps.selectedCustomNtCSet) {
-            const sel = StructureSelection(this.props.viewerInterop, this.props.dnatcofication);
+            const sel = this.props.structureSelection;
             this.setTableModel(sel);
             this.forceUpdate();
         }

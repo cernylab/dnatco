@@ -4,14 +4,15 @@ import React from 'react';
 import { ChainSelect, ModelSelect } from '../structure-selectors';
 import { View } from '../view';
 import { Constants } from '../../constants';
+import { SearchBox } from '../../search-box';
 import { InvalidChain, InvalidModelIndex } from '../../structure-selection';
 import { Common } from '../../common';
-import { colorToRgb, colorToTuple, ColorTuple } from '../../../util';
+import { colorToRgb, colorToTuple, ColorTuple, scrollIntoViewIfNeeded } from '../../../util';
 import { CollapsibleVertical } from '../../../common/collapsible-vertical';
 import { ComboBox } from '../../../common/combo-box';
 import { NamedList, NamedListItem } from '../../../common/named-list';
 import { Icon } from '../../../common/icon';
-import { ToggleButton } from '../../../common/push-button';
+import { IconButton, ToggleButton } from '../../../common/push-button';
 import { SpinBox } from '../../../common/spin-box';
 import { Tooltip } from '../../../common/tooltip';
 import { ALMResidueStats, Dnatcofication, MaybeBin } from '../../../../dnatco/dnatcofication';
@@ -27,7 +28,7 @@ import { Naval } from '../../../../dnatco/naval';
 import { Validation } from '../../../../dnatco/naval/validation';
 import { rgbToHex } from '../../../util';
 import { GlobalConfig } from '../../../../global-config';
-import { htmlColorAsNumber, replaceAll, sequence } from '../../../../util';
+import { htmlColorAsNumber, parseIntStrict, replaceAll, sequence } from '../../../../util';
 import { doDownload, Downloader, FileTypes } from '../../../../util/downloader';
 import { Serialization } from '../../../../util/serialization';
 import { isWithin } from '../../../../util';
@@ -394,6 +395,10 @@ function renderSubstructureStats(caption: string | JSX.Element, summaryCounts: S
 
 function residueIdentifyingName(structureName: string, r: Measurements.Residue) {
     return `${structureName}-m${r.modelNum}-${r.authChain}-${r.authSeqId}${r.insCode ? `.${r.insCode}` : ''}${r.altId ? `_alt${r.altId}` : ''}_`;
+}
+
+function structureIdentifyingName(d: Dnatcofication) {
+    return d.identifyingName ?? d.pdbId;
 }
 
 function tripletBondName(t: Triplet, tag: string) {
@@ -1002,6 +1007,7 @@ interface ResidueElemProps {
     pgrpIndices: number[],
     residue: Measurements.Residue,
     residueName: JSX.Element,
+    residueIdentifyingName: string,
     stats: ALMResidueStats,
     structureName: string,
 }
@@ -1107,6 +1113,7 @@ class ResidueDetails extends React.Component<ResidueDetailsProps, { floaterYOffs
 class ResidueHeader extends React.Component<{
     caption: string | JSX.Element,
     residue: Measurements.Residue,
+    residueIdentifyingName: string,
     stats: ALMResidueStats,
     structureName: string,
     summary: Summarize.Summary,
@@ -1120,7 +1127,11 @@ class ResidueHeader extends React.Component<{
         const r = this.props.residue;
 
         return (
-            <div style={{ position: 'relative', width: '100%', height: '100%' }} ref={this.tainerRef}>
+            <div
+                style={{ position: 'relative', width: '100%', height: '100%' }}
+                ref={this.tainerRef}
+                id={this.props.residueIdentifyingName}
+            >
                 <div style={{
                         ...StayAboveStyle,
                         top: 0,
@@ -1155,6 +1166,10 @@ class ResidueHeader extends React.Component<{
 class Residue extends React.Component<ResidueElemProps> {
     private collapserRef = React.createRef<CollapsibleVertical>();
 
+    collapseExpand = (change: 'collapse' | 'expand') => {
+        this.collapserRef.current?.collapseExpand(change);
+    }
+
     render() {
         return (
             <CollapsibleVertical
@@ -1163,6 +1178,7 @@ class Residue extends React.Component<ResidueElemProps> {
                     <ResidueHeader
                         caption={this.props.residueName}
                         residue={this.props.residue}
+                        residueIdentifyingName={this.props.residueIdentifyingName}
                         stats={this.props.stats}
                         summary={this.props.stats.summary}
                         structureName={this.props.structureName}
@@ -1239,6 +1255,52 @@ export class AnglesLengths extends View<
     static readonly unscrollableContainer = true;
     private residuesTainerRef = React.createRef<HTMLDivElement>();
     private inhibitLoadNext = false;
+    private searchBoxOpen = false;
+    // This is set in the render function each time we re-render.
+    // We use this mapping to get to all currently rendered Resdiue components
+    // because the gotoResdue function needs to be able to do that. We need to keep
+    // this in the component-scope because we must be able to jump to a Residue
+    // that was not rendered when the jump was requested and gotoResidue needs
+    // access to the current mapping of rendered Residues.
+    private residueBlocksMapping = new Map<string, React.RefObject<Residue>>();
+
+    private readonly Searching = {
+        onSearch: (prompt: string) => {
+            const toks = prompt.split(' ').slice(0, 2);
+            const authSeqId = parseIntStrict(toks.length === 2 ? toks[1] : toks[0]);
+            const authChain = toks.length === 2 ? toks[0] : void 0;
+
+            if (isNaN(authSeqId))
+                return [];
+
+            const { modelIdx, chain } = this.getSelection();
+            const alm = this.props.dnatcofication.data.alm;
+
+            const selectedIndices = this.selectionToIndices(modelIdx, chain);
+            const selectedResidues = selectedIndices.map(x => alm.residues[x]);
+
+            const results = [];
+            for (const r of selectedResidues) {
+                if (r.authSeqId === authSeqId) {
+                    if (authChain) {
+                        if (authChain === r.authChain)
+                            results.push(r);
+                    } else
+                        results.push(r);
+                }
+            }
+
+            return results;
+        },
+    }
+
+    private readonly SearchBoxProps = {
+        anchor: 'bottom-right' as SearchBox.Props<Measurements.Residue>['anchor'],
+        xOffset: 32,
+        yOffset: 32,
+        caption: 'Enter chain and residue no.',
+        onClose: () => this.searchBoxOpen = false,
+    };
 
     constructor(props: View.Props) {
         super(props);
@@ -1250,6 +1312,19 @@ export class AnglesLengths extends View<
             worstLengthsThreshold: '',
             shownResiduesLimit: 100,
         };
+    }
+
+    private getSelection() {
+        const modelIdx = this.props.structureSelection.modelIndex;
+        const chain = this.props.structureSelection.chain === InvalidChain ? '' : this.props.structureSelection.chain;
+
+        return { modelIdx, chain };
+    }
+
+    private gotoResidue(id: string, ref: React.RefObject<Residue>) {
+        if (this.residuesTainerRef.current)
+            scrollIntoViewIfNeeded(id, this.residuesTainerRef.current);
+        ref.current?.collapseExpand('expand');
     }
 
     private renderResidueName(r: Measurements.Residue, multipleModels: boolean) {
@@ -1279,11 +1354,12 @@ export class AnglesLengths extends View<
         colorsForStatsBar: string[],
         maxResidues: number,
         loadNext: () => void
-    ) {
+    ): { elems: JSX.Element[], mapping: Map<string, React.RefObject<Residue>> } {
         const r = this.props.dnatcofication.data.alm.residues;
         const s = this.props.dnatcofication.data.alm.stats;
         const outlierColor = colorToTuple(DAnglesLengths.outlierColor());
 
+        const mapping = new Map<string, React.RefObject<Residue>>();
         const elems = new Array<JSX.Element>();
         let adx = 0;
         for (; adx < indices.length && adx < maxResidues; adx++) {
@@ -1294,30 +1370,35 @@ export class AnglesLengths extends View<
             const countsAngles = countsInGroups(_s.summary.angles, thresholds);
             const countsLenghts = countsInGroups(_s.summary.lengths, thresholds);
             const residueName = this.renderResidueName(_r, multipleModels);
-            const structureName = this.props.dnatcofication.identifyingName ?? this.props.dnatcofication.pdbId;
+            const structureName = structureIdentifyingName(this.props.dnatcofication);
+            const identResName = residueIdentifyingName(structureName, _r);
 
-            elems.push(
-                <Residue
-                    tainer={tainer}
-                    d={this.props.dnatcofication}
-                    countsAngles={countsAngles}
-                    countsLenghts={countsLenghts}
-                    outlierColor={outlierColor}
-                    pgrpIndices={pgrpIndices}
-                    residue={_r}
-                    residueName={residueName}
-                    stats={_s}
-                    structureName={structureName}
-                    colorsForStatsBar={colorsForStatsBar}
-                    key={idx}
-                />
-            );
+            const ref = React.createRef<Residue>();
+            const elem = <Residue
+                ref={ref}
+                tainer={tainer}
+                d={this.props.dnatcofication}
+                countsAngles={countsAngles}
+                countsLenghts={countsLenghts}
+                outlierColor={outlierColor}
+                pgrpIndices={pgrpIndices}
+                residue={_r}
+                residueName={residueName}
+                residueIdentifyingName={identResName}
+                stats={_s}
+                structureName={structureName}
+                colorsForStatsBar={colorsForStatsBar}
+                key={idx}
+            />;
+
+            elems.push(elem);
+            mapping.set(identResName, ref);
         }
 
         if (adx === maxResidues)
             elems.push(<div key={-1} id={LoadNextElemId} onClick={loadNext}>{`(... ${indices.length - maxResidues} more residues)`}</div>);
 
-        return elems;
+        return { elems, mapping };
     }
 
     private renderWorstAngles(residues: Measurements.Residue[], stats: ALMResidueStats[], maxCount: number, threshold: number|'outlier', structureName: string, multipleModels: boolean) {
@@ -1387,7 +1468,7 @@ export class AnglesLengths extends View<
             ? ''
             : name ? `-${chain}` : chain;
 
-        return `${this.props.dnatcofication.identifyingName ?? this.props.dnatcofication.pdbId}_${name ? `${name}_` : ''}`;
+        return `${structureIdentifyingName(this.props.dnatcofication)}_${name ? `${name}_` : ''}`;
     }
 
     private selectionToIndices(modelIdx: number, chain: string) {
@@ -1404,8 +1485,8 @@ export class AnglesLengths extends View<
         }
     }
 
-    increaseShownResiduesLimit = () => {
-        this.setState({ ...this.state, shownResiduesLimit: this.state.shownResiduesLimit + ShownResiduesIncrement });
+    increaseShownResiduesLimit = (increaseBy = ShownResiduesIncrement) => {
+        this.setState({ ...this.state, shownResiduesLimit: this.state.shownResiduesLimit + increaseBy });
         setTimeout(() => this.inhibitLoadNext = false, 100);
     }
 
@@ -1425,8 +1506,7 @@ export class AnglesLengths extends View<
 
     render() {
         const multipleModels = Dnatcofication.Structure.numberOfModels(this.props.dnatcofication) > 1;
-        const modelIdx = this.props.structureSelection.modelIndex;
-        const chain = this.props.structureSelection.chain === InvalidChain ? '' : this.props.structureSelection.chain;
+        const { modelIdx, chain } = this.getSelection();
         const alm = this.props.dnatcofication.data.alm;
 
         const selectedIndices = this.selectionToIndices(modelIdx, chain);
@@ -1472,6 +1552,19 @@ export class AnglesLengths extends View<
                 )
             };
         };
+
+        const residuesOuterTainerRef = React.createRef<HTMLDivElement>();
+        const residueBlocks = this.renderSelection(
+            this.residuesTainerRef,
+            selectedIndices,
+            multipleModels,
+            thresholds,
+            pgrpIndices,
+            htmlColorsForStatsBar,
+            this.state.shownResiduesLimit,
+            this.increaseShownResiduesLimit
+        );
+        this.residueBlocksMapping = residueBlocks.mapping;
 
         return (
             <div style={{ ...Common.VScrollGridJail, gridTemplateRows: 'auto auto auto auto auto 1fr' }}>
@@ -1519,8 +1612,15 @@ export class AnglesLengths extends View<
                     <CollapsibleVertical
                         header={mkHeader('Residues')}
                         style={ Common.VScrollJail }
+                        onCollapsedExpanded={(change) => {
+                            if (change === 'collapsed')
+                                this.setState({ ...this.state, shownResiduesLimit: DefaultShownResiduesLimit });
+                        }}
                     >
-                        <div style={ Common.VScrollElement }>
+                        <div
+                            ref={residuesOuterTainerRef}
+                            style={{ ...Common.VScrollElement, position: 'relative' }}
+                        >
                             <div
                                 className='rdo-scroll-vertically-with-scrollbar'
                                 style={{ display: 'flex', flexDirection: 'column', gap: 'calc(var(--h2-gap) / 2)' }}
@@ -1544,16 +1644,42 @@ export class AnglesLengths extends View<
                                     }
                                 }}
                             >
-                                {this.renderSelection(
-                                    this.residuesTainerRef,
-                                    selectedIndices,
-                                    multipleModels,
-                                    thresholds,
-                                    pgrpIndices,
-                                    htmlColorsForStatsBar,
-                                    this.state.shownResiduesLimit,
-                                    this.increaseShownResiduesLimit
-                                )}
+                                {residueBlocks.elems}
+                            </div>
+                            <div className='rdo-floating-search-icon-tainer' style={{ bottom: 'var(--x-gap)', right: 'var(--x-gap)' }}>
+                                <IconButton
+                                    src={`${pathPrefix}/imgs/magnifying-glass.svg`}
+                                    className='rdo-floating-search-icon rdo-pushbutton-border'
+                                    onClick={() => {
+                                        if (this.searchBoxOpen === true || !residuesOuterTainerRef.current)
+                                            return;
+
+                                        const searching: SearchBox.Searching<Measurements.Residue> = {
+                                            ...this.Searching,
+                                            onRenderResult: (residue: Measurements.Residue) => this.renderResidueName(residue, multipleModels),
+                                            onUseResult: (r) => {
+                                                const id = residueIdentifyingName(structureIdentifyingName(this.props.dnatcofication), r);
+                                                const ref = this.residueBlocksMapping.get(id);
+
+                                                if (!ref) {
+                                                    if (selectedResidues.length > this.state.shownResiduesLimit) {
+                                                        this.increaseShownResiduesLimit(selectedResidues.length);
+                                                        setTimeout(() => {
+                                                            const ref = this.residueBlocksMapping.get(id);
+                                                            if (ref)
+                                                                this.gotoResidue(id, ref);
+                                                        }, 1);
+                                                    }
+                                                } else
+                                                    this.gotoResidue(id, ref);
+                                            },
+                                        };
+                                        const sbprops = { ...this.SearchBoxProps, searching };
+
+                                        this.searchBoxOpen = true;
+                                        SearchBox.create(residuesOuterTainerRef.current, sbprops);
+                                    }}
+                                />
                             </div>
                         </div>
                     </CollapsibleVertical>
@@ -1589,7 +1715,7 @@ export class AnglesLengths extends View<
                                     selectedResidueStats,
                                     this.state.maxWorstLengths,
                                     this.state.worstLengthsThreshold ? parseFloat(this.state.worstLengthsThreshold) : 'outlier',
-                                    this.props.dnatcofication.identifyingName ?? this.props.dnatcofication.pdbId,
+                                    structureIdentifyingName(this.props.dnatcofication),
                                     multipleModels
                                 )}
                             </div>
@@ -1627,7 +1753,7 @@ export class AnglesLengths extends View<
                                     selectedResidueStats,
                                     this.state.maxWorstAngles,
                                     this.state.worstAnglesThreshold ? parseFloat(this.state.worstAnglesThreshold) : 'outlier',
-                                    this.props.dnatcofication.identifyingName ?? this.props.dnatcofication.pdbId,
+                                    structureIdentifyingName(this.props.dnatcofication),
                                     multipleModels
                                 )}
                             </div>

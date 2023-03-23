@@ -39,6 +39,11 @@ export class CollapsibleVertical extends React.Component<CollapsibleVertical.Pro
         this.setState({ ...this.state, collapsed: change === 'collapse' });
     }
 
+    componentDidUpdate(prevProps: CollapsibleVertical.Props, prevState: State) {
+        if (this.props.onCollapsedExpanded && prevState.collapsed !== this.state.collapsed)
+            this.props.onCollapsedExpanded(this.state.collapsed ? 'collapsed' : 'expanded');
+    }
+
     render() {
         return (
             <div className='rdo-collapsible-vertical' style={this.props.style}>
@@ -52,7 +57,8 @@ export class CollapsibleVertical extends React.Component<CollapsibleVertical.Pro
 export namespace CollapsibleVertical {
     export interface Props {
         header: string | { expanded: React.ReactNode, collapsed: React.ReactNode },
-        children?: React.ReactNode;
-        style?: StandardLonghandProperties;
+        children?: React.ReactNode,
+        style?: StandardLonghandProperties,
+        onCollapsedExpanded?: (change: 'collapsed' | 'expanded') => void,
     }
 }

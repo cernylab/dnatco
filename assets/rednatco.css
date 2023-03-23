@@ -351,6 +351,7 @@ th.rdo-data-table-small {
     position: absolute;
     width: 4em;
     transition: opacity var(--anim-speed);
+    z-index: 98;
 }
 .rdo-floating-search-icon-tainer:hover {
     opacity: 1;
