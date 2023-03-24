@@ -338,6 +338,7 @@ th.rdo-data-table-small {
 
 .rdo-floating-search-icon {
     background-color: white;
+    box-shadow: 0 0 5px 2px var(--color-b);
     height: 3em;
     width: 3em;
 }
@@ -415,7 +416,6 @@ th.rdo-data-table-small {
 }
 
 .rdo-icon-button-image {
-    margin: 0.25em;
     height: calc(100% - 0.50em);
     max-height: 1em;
 }
@@ -598,11 +598,14 @@ th.rdo-data-table-small {
 }
 
 .rdo-pushbutton-inner-container {
-    display: flex;
-    height: 100%;
     align-items: center;
+    display: flex;
+    gap: 0.25em;
+    height: 100%;
     justify-content: center;
-    width: 100%;
+    margin: auto;
+    padding: 0 0.25em 0 0.25em;
+    width: min-content;
 }
 
 .rdo-pushbutton-text {
@@ -674,6 +677,7 @@ th.rdo-data-table-small {
 .rdo-search-box {
     background-color: white;
     border: var(--thickness-border) solid var(--color-a);
+    box-shadow: 0 0 5px 2px var(--color-b);
     display: flex;
     flex-direction: column;
     gap: var(--v-gap);
