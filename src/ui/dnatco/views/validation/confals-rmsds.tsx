@@ -49,54 +49,27 @@ const GSMapping = GappedSemaphore.makeMapping([
 ]);
 
 class ConfalPercentileStatsBar extends React.Component<{ percentile: number }> {
-    private readonly MarkerWidthRatio = 0.005;
-    private readonly MarkerOverdrawRatio = 0.8; // How much smaller is the background gradient than the marker.
-    private barRef = React.createRef<HTMLCanvasElement>();
-
-    private drawBar(canvas: HTMLCanvasElement, perc: number) {
-        let ctx = canvas.getContext('2d');
-        if (!ctx)
-            return;
-
-        const tw = canvas.width;
-        const th = canvas.height;
-
-        ctx.clearRect(0, 0, tw, th);
-
-        const gh = Math.round(0.8 * th);
-        const grad = ctx.createLinearGradient(0, 0, tw, 0);
-        grad.addColorStop(0.0, 'rgba(255,   0,   0, 1.0)');
-        grad.addColorStop(0.5, 'rgba(255, 255, 255, 1.0)');
-        grad.addColorStop(1.0, 'rgba(0,     0, 255, 1.0)');
-        ctx.fillStyle = grad;
-        ctx.fillRect(0, (th - gh) / 2.0, tw, gh);
-
-        const mx = tw * perc / 100.0;
-        const mwx = Math.round(this.MarkerWidthRatio * tw);
-        const fx = Math.round(mx - this.MarkerWidthRatio / 2.0);
-
-        /* Firefox refuses to change fillStyle from CanvasGradient to rgba color
-         * specified by rgba() string. Encode the color differently. */
-        ctx.fillStyle = '#000000';
-        ctx.fillRect(fx, 0, mwx, th);
-    }
-
-    private tryDrawBar() {
-        const ref = this.barRef.current;
-        if (ref)
-            this.drawBar(ref, this.props.percentile);
-    }
-
-    componentDidMount() {
-        this.tryDrawBar();
-    }
-
-    componentDidUpdate() {
-        this.tryDrawBar();
-    }
-
     render() {
-        return <canvas width={300} height={30} style={{ ...Common.StyleScoreBar, height: `${Common.BarHeightEm / this.MarkerOverdrawRatio}em` }} ref={this.barRef} />;
+        return (
+            <div
+                style={{
+                    alignItems: 'center',
+                    background: 'linear-gradient(90deg, rgba(255,0,0,1) 0%, rgba(255,255,255,1) 50%, rgba(0,0,255,1) 100%)',
+                        height: `${Common.BarHeightEm}em`,
+                        position: 'relative',
+                }}
+            >
+                <div style={{
+                        backgroundColor: 'black',
+                        left: `${this.props.percentile}%`,
+                        height: '133%',
+                        position: 'absolute',
+                        width: '8px',
+                        top: '-16%',
+                    }}
+                />
+            </div>
+        );
     }
 }
 
