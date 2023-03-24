@@ -351,7 +351,7 @@ class PdbIdInput extends React.Component<{ pdbId: string, onChange: (v: string) 
             <input
                 className='rdo-input-text'
                 style={{
-                    fontSize: CoordsItemProps.fontSize,
+                    fontSize: 'var(--font-large)',
                     height: CoordsItemProps.height,
                     width: '100%',
                     ...(!isPdbId(this.props.pdbId) && this.props.pdbId.length > 0 ? { color: 'red' } : {})
