@@ -24,7 +24,6 @@ const CoordsItemProps = {
     alignItems: 'center',
     display: 'flex',
     height: '32px', // This needs to be in pixels because ems are relative to font size and things then get misaligned
-    fontSize: 'var(--font-large)'
 };
 
 function listOfValidExamples(examples: GlobalConfigData['exampleStructures']) {
@@ -89,13 +88,13 @@ class Coordinates extends React.Component<Coordinates.Props> {
                     className='rdo-start-input-block'
                     style={{ gridTemplateColumns: '6em 1fr' }}
                 >
-                    <div className='rdo-strong rdo-talgn-right' style={ CoordsItemProps }>Source</div>
+                    <div className='rdo-strong rdo-talgn-right' style={{ ...CoordsItemProps, fontSize: 'var(--font-large)' }}>Source</div>
                     <div style={{ width: '100%' }}>
                         <ComboBox
                             value={this.props.database}
                             options={this.props.databaseOptions}
                             onChange={(db) => this.props.onDatabaseChange(db)}
-                            innerStyle={{ fontSize: CoordsItemProps.fontSize, height: CoordsItemProps.height }}
+                            innerStyle={{ fontSize: 'var(--font-size)', height: CoordsItemProps.height }}
                             sizing='auto'
                         />
                     </div>
@@ -125,7 +124,7 @@ class Coordinates extends React.Component<Coordinates.Props> {
                                 }
                             </>
                             : <>
-                            <div className='rdo-strong rdo-talgn-right' style={ CoordsItemProps }>PDB ID</div>
+                            <div className='rdo-strong rdo-talgn-right' style={{ ...CoordsItemProps, fontSize: 'var(--font-large)' }}>PDB ID</div>
                             <PdbIdInput
                                 pdbId={this.props.pdbId}
                                 onChange={(v) => this.props.onPdbIdChange(v)}
