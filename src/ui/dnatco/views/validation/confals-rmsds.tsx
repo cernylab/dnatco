@@ -6,6 +6,7 @@ import { EmptyStructureSelection, InvalidChain, InvalidModelIndex, InvalidStepId
 import { View } from '../view';
 import { confalPercentile, niceStepName, Common } from '../../common';
 import { SearchBox } from '../../search-box';
+import { StatsBar } from '../../stats-bar';
 import { SingleStepInfo } from '../../single-step-info';
 import { Constants } from '../../constants';
 import { valueToSemaphore, GappedSemaphore } from '../../util';
@@ -99,63 +100,6 @@ class ConfalPercentileStatsBar extends React.Component<{ percentile: number }> {
     }
 }
 
-class StepRmsdStatsBar extends React.Component<{ stats: DnatcoStepRmsdStats[] }> {
-    private barRef = React.createRef<HTMLCanvasElement>();
-
-    private drawBar(canvas: HTMLCanvasElement, stats: DnatcoStepRmsdStats[]) {
-        const ctx = canvas.getContext('2d');
-        if (!ctx || stats.length < 3)
-            return;
-
-        const tw = canvas.width;
-        const th = canvas.height;
-        const green = stats[0].rmsdThreshold;
-        const red = stats[stats.length - 2].rmsdThreshold;
-
-        const total = stats.reduce((p, c) => p + c.count, 0);
-
-        let fx = 0;
-        for (let idx = 0; idx < stats.length; idx++) {
-            const s = stats[idx];
-            const thrPrev = stats[idx - 1]?.rmsdThreshold ?? 0;
-            const v = s.rmsdThreshold === -1 ? red + 0.1 : thrPrev + (s.rmsdThreshold - thrPrev) / 2.0;
-
-            const w = Math.round(tw * s.count / total);
-            const rgb = GappedSemaphore.toSemaphore(v, green, red, GSMapping);
-
-            ctx.fillStyle = rgbToHex(rgb);
-            ctx.fillRect(fx, 0, w, th);
-            if (w >= tw)
-                return;
-
-            fx += w;
-        }
-    }
-
-    private tryDrawBar() {
-        const ref = this.barRef.current;
-        if (ref)
-            this.drawBar(ref, this.props.stats);
-    }
-
-    componentDidMount() {
-        this.tryDrawBar();
-    }
-
-    componentDidUpdate() {
-        this.tryDrawBar();
-    }
-
-    render() {
-        const stats = this.props.stats;
-
-        if (stats.length < 2)
-            return void 0;
-
-        return <canvas width={300} height={1} style={ Common.StyleScoreBar } ref={this.barRef} />;
-    }
-}
-
 class Stats extends React.Component<{
     assigned: number,
     close: number,
@@ -167,6 +111,18 @@ class Stats extends React.Component<{
     private readonly ValuesCell = { display: 'flex', flexDirection: 'row', width: '100%' } as StandardLonghandProperties;
     private readonly Value = { flex: 1, textAlign: 'center' } as StandardLonghandProperties;
     render() {
+        const _stats = this.props.rmsdStats;
+        const rmsdCounts = _stats.map(x => x.count);
+        const rmsdGreen = _stats[0].rmsdThreshold;
+        const rmsdRed = _stats[this.props.rmsdStats.length - 2]?.rmsdThreshold ?? (rmsdGreen * 2);
+        const rmsdColors = _stats.map((x, idx) => {
+            const thrPrev = _stats[idx - 1]?.rmsdThreshold ?? 0;
+            const v = x.rmsdThreshold === -1 ? rmsdRed + 0.1 : thrPrev + (x.rmsdThreshold - thrPrev) / 2.0;
+            const rgb = GappedSemaphore.toSemaphore(v, rmsdGreen, rmsdRed, GSMapping);
+
+            return rgbToHex(rgb);
+        });
+
         return (
             <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr', columnGap: 'var(--h-gap)', rowGap: 'calc(var(--v-gap) / 2)' }}>
                 <div className='rdo-strong'>NtC</div>
@@ -204,7 +160,9 @@ class Stats extends React.Component<{
                     </div>
                 </div>
                 <div />
-                <StepRmsdStatsBar stats={this.props.rmsdStats} />
+                <div style={{ height: `${Common.BarHeightEm}em` }}>
+                    <StatsBar counts={rmsdCounts} colors={rmsdColors} />
+                </div>
 
                 <div className='rdo-strong'>Confal score</div>
                 <div style={this.ValuesCell}>

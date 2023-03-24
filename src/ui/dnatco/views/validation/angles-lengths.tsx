@@ -5,6 +5,7 @@ import { ChainSelect, ModelSelect } from '../structure-selectors';
 import { View } from '../view';
 import { Constants } from '../../constants';
 import { SearchBox } from '../../search-box';
+import { StatsBar } from '../../stats-bar';
 import { InvalidChain, InvalidModelIndex } from '../../structure-selection';
 import { Common } from '../../common';
 import { colorToRgb, colorToTuple, ColorTuple, scrollIntoViewIfNeeded } from '../../../util';
@@ -412,32 +413,6 @@ function tripletBondName(t: Triplet, tag: string) {
 }
 
 class AnglesLengthsBar extends React.Component<{ caption?: string | React.ReactNode, counts: Summarize.Counts, colors: string[] }> {
-    private renderBar(counts: number[]) {
-        const sum = counts.reduce((p, c) => p + c, 0);
-        const nGroups = DAnglesLengths.pGroupCount();
-
-        const blocks = new Array<JSX.Element>();
-        let accum = 0;
-        for (let idx = 0; idx < nGroups; idx++) {
-            const n = counts[idx];
-            if (n === 0)
-                continue;
-
-            const w = Math.round(100 * n / sum);
-            if (w > 0)
-                blocks.push(<div style={{ flex: w, backgroundColor: this.props.colors[idx] }} key={idx} />);
-
-            accum += w;
-
-        }
-        if (counts[nGroups] > 0 && accum < 100) {
-            const clr = this.props.colors[this.props.colors.length - 1];
-            blocks.push(<div style={{ flex: (100-accum), backgroundColor: clr }} key={nGroups} />);
-        }
-
-        return blocks;
-    }
-
     private renderCaption() {
         if (!this.props.caption)
             return void 0;
@@ -452,7 +427,7 @@ class AnglesLengthsBar extends React.Component<{ caption?: string | React.ReactN
     render() {
         return (
             <div style={{ width: '100%', height: '100%', position: 'relative', display: 'flex', flexDirection: 'row' }}>
-                {this.renderBar(this.props.counts.exclusive)}
+                <StatsBar counts={this.props.counts.exclusive} colors={this.props.colors} />
                 {this.renderCaption()}
             </div>
         );
