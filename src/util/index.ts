@@ -66,7 +66,7 @@ export function isDigit(s: string) {
     return diff >= 0 && diff <= 9;
 }
 
-export function objKeys<T extends object>(obj: T, exclude: (keyof T)[] = []) {
+export function objKeys<T extends Record<K, any>, K extends string>(obj: T, exclude: (keyof T)[] = []): (keyof T)[] {
     const keys = new Array<keyof T>();
     for (const k in obj) {
         if (!exclude.includes(k))

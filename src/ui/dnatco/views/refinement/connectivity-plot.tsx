@@ -4,7 +4,7 @@ import { Refinement } from './common';
 import { CustomNtCSets } from './custom-ntc-sets';
 import { ChainSelect, ModelSelect, StepSelect } from '../structure-selectors';
 import { View } from '../view';
-import { InvalidStepId } from '../../structure-selection';
+import { InvalidResidue, InvalidStepId } from '../../structure-selection';
 import { NamedList, NamedListItem } from '../../../common/named-list';
 import { Constants } from '../../../dnatco/constants';
 import { getConnectivities, getStepsAtoms } from '../../../../dnatco/connectivity-similarity';
@@ -38,20 +38,7 @@ const SimilPlotData = {
 };
 type SimilPlotData = typeof SimilPlotData;
 
-interface State {
-    previousStepId: number;
-    nextStepId: number;
-}
-export class ConnectivityPlot extends View<Refinement.Props, State> {
-    constructor(props: Refinement.Props) {
-        super(props);
-
-        this.state = {
-            previousStepId: -1,
-            nextStepId: -1,
-        };
-    }
-
+export class ConnectivityPlot extends View<Refinement.Props> {
     private connectivityPlotData(centerStepId: number, surroundingStepId: number, direction: 'previous' | 'next'): ConnPlotData {
         const x = new Array<number>();
         const y = new Array<number>();
@@ -189,24 +176,9 @@ export class ConnectivityPlot extends View<Refinement.Props, State> {
     }
 
     componentDidMount() {
-        if (this.props.structureSelection.stepId === InvalidStepId)
-            this.setState({ ...this.state, previousStepId: InvalidStepId, nextStepId: InvalidStepId });
-        else {
-            const prevNext = StepsMapper.previousNextById(this.props.dnatcofication, this.props.structureSelection.stepId);
-            this.setState({ ...this.state, previousStepId: prevNext.previousId, nextStepId: prevNext.nextId });
-        }
-    }
-
-    componentDidUpdate(prevProps: View.Props, prevState: State) {
-        if (this.props.structureSelection.stepId === prevProps.structureSelection.stepId)
-            return;
-
-        if (this.props.structureSelection.stepId === InvalidStepId)
-            this.setState({ ...this.state, previousStepId: InvalidStepId, nextStepId: InvalidStepId });
-        else {
-            const prevNext = StepsMapper.previousNextById(this.props.dnatcofication, this.props.structureSelection.stepId);
-            this.setState({ ...this.state, previousStepId: prevNext.previousId, nextStepId: prevNext.nextId });
-        }
+        this.subscribe(this.props.switching.events.modelSwitched, () => this.forceUpdate());
+        this.subscribe(this.props.switching.events.chainSwitched, () => this.forceUpdate());
+        this.subscribe(this.props.switching.events.selectionChanged, () => this.forceUpdate());
     }
 
     componentWillUnmount() {
@@ -218,15 +190,18 @@ export class ConnectivityPlot extends View<Refinement.Props, State> {
         let simPlotData = SimilPlotData;
         let prevConnPlotData = ConnPlotData;
         let nextConnPlotData = ConnPlotData;
-        if (this.props.structureSelection.stepId !== InvalidStepId) {
-            simPlotData = this.similarityPlotData(this.props.structureSelection.stepId);
-            prevConnPlotData = this.connectivityPlotData(this.props.structureSelection.stepId, this.state.previousStepId, 'previous');
-            nextConnPlotData = this.connectivityPlotData(this.props.structureSelection.stepId, this.state.nextStepId, 'next');
+        if (this.props.structureSelection.steps.length > 0) {
+            const step = this.props.structureSelection.steps[0];
+            const prevNext = StepsMapper.previousNextById(this.props.dnatcofication, step);
+
+            simPlotData = this.similarityPlotData(step);
+            prevConnPlotData = this.connectivityPlotData(this.props.structureSelection.steps[0], prevNext.previousId, 'previous');
+            nextConnPlotData = this.connectivityPlotData(this.props.structureSelection.steps[0], prevNext.nextId, 'next');
         }
 
         const changeCustomNtC = (NtC: string) => {
-            const stepId = this.props.structureSelection.stepId;
-            if (this.props.selectedCustomNtCSet === '' || stepId === InvalidStepId)
+            const stepId = this.props.structureSelection.steps[0];
+            if (this.props.selectedCustomNtCSet === '' || stepId === undefined)
                 return;
 
             const step = StepsMapper.byId(this.props.dnatcofication, stepId);
@@ -251,7 +226,7 @@ export class ConnectivityPlot extends View<Refinement.Props, State> {
                                 <ModelSelect
                                     dnatcofication={this.props.dnatcofication}
                                     structureSelection={this.props.structureSelection}
-                                    onChange={this.props.switching.switchModel}
+                                    switching={this.props.switching}
                                 />
                             </NamedListItem>
                         : undefined
@@ -260,14 +235,20 @@ export class ConnectivityPlot extends View<Refinement.Props, State> {
                         <ChainSelect
                             dnatcofication={this.props.dnatcofication}
                             structureSelection={this.props.structureSelection}
-                            onChange={this.props.switching.switchChain}
+                            switching={this.props.switching}
                         />
                     </NamedListItem>
                     <NamedListItem name='Step'>
                         <StepSelect
                             dnatcofication={this.props.dnatcofication}
                             structureSelection={this.props.structureSelection}
-                            onChange={this.props.switching.switchStepId}
+                            switching={this.props.switching}
+                            onChange={(stepId) => {
+                                const sel = stepId === -1
+                                    ? { steps: [], residues: [], reconstruct: true }
+                                    : ConnectivityPlot.SelectionMaker(stepId, InvalidResidue, this.props.structureSelection.steps, this.props.structureSelection.residues);
+                                this.props.switching.changeSelection(sel, ConnectivityPlot.SelectionDisplayer);
+                            }}
                         />
                     </NamedListItem>
                 </NamedList>
@@ -354,5 +335,6 @@ export class ConnectivityPlot extends View<Refinement.Props, State> {
 }
 
 export namespace ConnectivityPlot {
-    export const StepSwitcher = Refinement.switchStep;
+    export const SelectionDisplayer = Refinement.selectionDisplayer;
+    export const SelectionMaker = Refinement.selectionMaker;
 }

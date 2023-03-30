@@ -10,7 +10,7 @@ export class CollapsibleVertical extends React.Component<CollapsibleVertical.Pro
         super(props);
 
         this.state = {
-            collapsed: true,
+            collapsed: this.props.initiallyExpanded ? false : true,
         };
     }
 
@@ -60,5 +60,6 @@ export namespace CollapsibleVertical {
         children?: React.ReactNode,
         style?: StandardLonghandProperties,
         onCollapsedExpanded?: (change: 'collapsed' | 'expanded') => void,
+        initiallyExpanded?: boolean,
     }
 }

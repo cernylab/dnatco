@@ -1,6 +1,7 @@
 import React from 'react';
 import { Validation } from './common';
 import { ChainSelect, ModelSelect, StepSelect } from '../structure-selectors';
+import { InvalidResidue } from '../../structure-selection';
 import { View } from '../view';
 import { Common as C } from '../../common';
 import { NamedList, NamedListItem } from '../../../common/named-list';
@@ -405,7 +406,10 @@ export class StepTorsions extends View<View.Props> {
         return info;
     }
 
-    private stepInfo(stepId: number) {
+    private stepInfo(stepId: number|undefined) {
+        if (stepId === undefined)
+            return StepInfo;
+
         if (!this.stepSumTable || !this.sugarStepParamsTable || !this.stepParamsTable)
             return StepInfo;
 
@@ -473,6 +477,10 @@ export class StepTorsions extends View<View.Props> {
             this.stepSumTable = this.props.dnatcofication.hasTable(NdbStructNtcStepSummary) ? this.props.dnatcofication.table(NdbStructNtcStepSummary) : null;
             this.sugarStepParamsTable = this.props.dnatcofication.hasTable(NdbStructSugarStepParameters) ? this.props.dnatcofication.table(NdbStructSugarStepParameters) : null;
         });
+
+        this.subscribe(this.props.switching.events.modelSwitched, () => this.forceUpdate());
+        this.subscribe(this.props.switching.events.chainSwitched, () => this.forceUpdate());
+        this.subscribe(this.props.switching.events.selectionChanged, () => this.forceUpdate());
     }
 
     componentWillUnmount() {
@@ -480,9 +488,9 @@ export class StepTorsions extends View<View.Props> {
     }
 
     render() {
-        const torsionInfo = this.torsionInfo(this.props.structureSelection.stepId);
-        const distanceInfo = this.distanceInfo(this.props.structureSelection.stepId);
-        const stepInfo = this.stepInfo(this.props.structureSelection.stepId);
+        const torsionInfo = this.torsionInfo(this.props.structureSelection.steps[0]);
+        const distanceInfo = this.distanceInfo(this.props.structureSelection.steps[0]);
+        const stepInfo = this.stepInfo(this.props.structureSelection.steps[0]);
         const numModels = Dnatcofication.Structure.numberOfModels(this.props.dnatcofication);
 
         return (
@@ -496,7 +504,7 @@ export class StepTorsions extends View<View.Props> {
                                 <ModelSelect
                                     dnatcofication={this.props.dnatcofication}
                                     structureSelection={this.props.structureSelection}
-                                    onChange={this.props.switching.switchModel}
+                                    switching={this.props.switching}
                                 />
                             </NamedListItem>
                         : undefined
@@ -505,14 +513,20 @@ export class StepTorsions extends View<View.Props> {
                         <ChainSelect
                             dnatcofication={this.props.dnatcofication}
                             structureSelection={this.props.structureSelection}
-                            onChange={this.props.switching.switchChain}
+                            switching={this.props.switching}
                         />
                     </NamedListItem>
                     <NamedListItem name='Step'>
                         <StepSelect
                             dnatcofication={this.props.dnatcofication}
                             structureSelection={this.props.structureSelection}
-                            onChange={this.props.switching.switchStepId}
+                            switching={this.props.switching}
+                            onChange={(stepId) => {
+                                const sel = stepId === -1
+                                    ? { steps: [], residues: [], reconstruct: true }
+                                    : StepTorsions.SelectionMaker(stepId, InvalidResidue, this.props.structureSelection.steps, this.props.structureSelection.residues);
+                                this.props.switching.changeSelection(sel, StepTorsions.SelectionDisplayer);
+                            }}
                         />
                     </NamedListItem>
                 </NamedList>
@@ -577,5 +591,6 @@ export class StepTorsions extends View<View.Props> {
 }
 
 export namespace StepTorsions {
-    export const StepSwitcher = Validation.switchStep;
+    export const SelectionDisplayer = Validation.selectionDisplayer;
+    export const SelectionMaker = Validation.selectionMaker;
 }

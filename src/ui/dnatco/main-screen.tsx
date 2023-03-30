@@ -1,6 +1,11 @@
 import React from 'react';
 import { getCifValue } from './util';
-import { InvalidChain, InvalidModelIndex, InvalidStepId, StructureSelection, StructureSelectionFromViewer, StructureSelectionSwitching } from './structure-selection';
+import {
+    EmptyStructureSelection,
+    InvalidChain, InvalidModelIndex, InvalidStepId, InvalidResidue,
+    SelectionDisplayer, SelectedPieces,
+    StructureSelection, StructureSelectionFromViewer, StructureSelectionSwitching
+} from './structure-selection';
 import { ViewsList } from './views-list';
 import { Register } from './views/register';
 import { DynamicSplitView } from '../common/dynamic-split-view';
@@ -9,6 +14,7 @@ import { ViewerInterop, ViewerApi } from '../../viewer/viewer-interop';
 import { Refine } from '../../cif/categories/refine';
 import { Dnatcofication } from '../../dnatco/dnatcofication';
 import { StepsMapper } from '../../dnatco/steps-mapper';
+import { objKeys } from '../../util';
 import { EventsKeeper } from '../../util/events-keeper';
 import { Filters } from 'viewer-filters';
 import 'assets/molstar.js';
@@ -47,39 +53,68 @@ function masterModeViews(mode: MasterMode): { id: ViewType, caption: string }[] 
     }
 }
 
+const ExcludeModelIndex = ['modelIndex'] as (keyof StructureSelection)[];
+const ExcludeModelIndexAndChain = ['modelIndex', 'chain'] as (keyof StructureSelection)[];
+const EmptyPieces: SelectedPieces = {
+    steps: [],
+    residues: [],
+    reconstruct: true,
+};
+
 interface State {
     activeViews: {
         annotation: typeof AnnotationViews[number];
         validation: typeof ValidationViews[number];
         refinement: typeof RefinementViews[number];
     };
-    structureSelection: StructureSelection;
     selectedCustomNtCSet: string;
     initializationError?: string;
 }
 export class MainScreen extends WithSubscriptions<MainScreen.Props, State> {
     private ek = new EventsKeeper();
     private scrollableElemRef = React.createRef<HTMLDivElement>();
+    private structureSelection: StructureSelection = {
+        modelIndex: InvalidModelIndex,
+        chain: InvalidChain,
+        steps: [] as StructureSelection['steps'],
+        residues: [] as StructureSelection['residues'],
+    }
+
+    readonly changeSelection = async (pieces: SelectedPieces, displayer: SelectionDisplayer) => {
+        await this.props.viewerInterop.api.command(ViewerApi.Commands.DeselectStructures());
+
+        this.structureSelection.steps = [...pieces.steps];
+        this.structureSelection.residues = [...pieces.residues];
+
+        await displayer(pieces, this.props.dnatcofication, this.props.viewerInterop, this.state.selectedCustomNtCSet);
+
+        this.structureSwitching.events.selectionChanged.next(this.structureSelection);
+    }
 
     readonly switchChain = async (chain: string) => {
-        await this.props.viewerInterop.api.command(ViewerApi.Commands.DeselectStep());
+        await this.props.viewerInterop.api.command(ViewerApi.Commands.DeselectStructures());
 
         if (chain === InvalidChain)
             this.props.viewerInterop.api.command(ViewerApi.Commands.Filter(Filters.Empty()));
         else {
-            const filter = Filters.Slices([{ chain }]);
+            const model = this.props.dnatcofication.data.structures[0].models[this.structureSelection.modelIndex === InvalidModelIndex ? 0 : this.structureSelection.modelIndex];
+            const filter = Filters.Slices([{ chain: model.chains.find((x) => x.name === chain)!.authName }]);
             this.props.viewerInterop.api.command(ViewerApi.Commands.Filter(filter));
         }
 
         // Invalidate step selection when switching chains
-        const structureSelection = { ...this.state.structureSelection, chain, stepId: InvalidStepId };
-        this.setState({ ...this.state, structureSelection });
+        const empty = EmptyStructureSelection(this.props.dnatcofication);
+        for (const prop of objKeys(empty, ExcludeModelIndexAndChain)) {
+            const v = empty[prop];
+            (this.structureSelection[prop] as typeof v) = v;
+        }
+        this.structureSelection.chain = chain;
 
-        this.viewerSwitching.events.chainSwitched.next(structureSelection);
+        this.structureSwitching.events.chainSwitched.next(this.structureSelection);
     }
 
     readonly switchModel = async (modelIndex: number) => {
-        await this.props.viewerInterop.api.command(ViewerApi.Commands.DeselectStep());
+        await this.props.viewerInterop.api.command(ViewerApi.Commands.DeselectStructures());
         await this.props.viewerInterop.api.command(ViewerApi.Commands.Filter(Filters.Empty()));
 
         if (modelIndex !== InvalidModelIndex) {
@@ -88,40 +123,32 @@ export class MainScreen extends WithSubscriptions<MainScreen.Props, State> {
         }
 
         // Invalidate chain and step selection when switching model
-        const structureSelection = { ...this.state.structureSelection, modelIndex, chain: InvalidChain, stepId: InvalidStepId };
-        this.setState({ ...this.state, structureSelection });
-
-        this.viewerSwitching.events.modelSwitched.next(structureSelection);
-    }
-
-    readonly switchStepId = async (stepId: number) => {
-        const switcher = Register.Views[this.activeView()].stepSwitcher;
-
-        if (stepId === InvalidStepId)
-            await this.props.viewerInterop.api.command(ViewerApi.Commands.DeselectStep());
-        else {
-            if (switcher)
-                await switcher(stepId, this.props.dnatcofication, this.props.viewerInterop, this.state.selectedCustomNtCSet);
+        const empty = EmptyStructureSelection(this.props.dnatcofication);
+        for (const prop of objKeys(empty, ExcludeModelIndex)) {
+            const v = empty[prop];
+            (this.structureSelection[prop] as typeof v) = v;
         }
+        this.structureSelection.modelIndex = modelIndex;
 
-        const structureSelection = { ...this.state.structureSelection, stepId };
-        this.setState({ ...this.state, structureSelection });
+        this.structureSwitching.events.modelSwitched.next(this.structureSelection);
+        this.structureSwitching.events.chainSwitched.next(this.structureSelection);
     }
 
-    readonly viewerSwitching: StructureSelectionSwitching = {
+    readonly structureSwitching: StructureSelectionSwitching = {
+        changeSelection: this.changeSelection,
         switchChain: this.switchChain,
         switchModel: this.switchModel,
-        switchStepId:  this.switchStepId,
         events: {
             modelSwitched: this.ek.subject<StructureSelection>(),
             chainSwitched: this.ek.subject<StructureSelection>(),
+            selectionChanged: this.ek.subject<StructureSelection>(),
         },
     }
 
     constructor(props: MainScreen.Props) {
         super(props);
 
-        const structureSelection = StructureSelectionFromViewer(this.props.viewerInterop, this.props.dnatcofication);
+        this.structureSelection = StructureSelectionFromViewer(this.props.viewerInterop, this.props.dnatcofication);
 
         this.state = {
             activeViews: {
@@ -129,7 +156,6 @@ export class MainScreen extends WithSubscriptions<MainScreen.Props, State> {
                 validation: 'confals-rmsds',
                 refinement: 'connectivity-plot',
             },
-            structureSelection,
             selectedCustomNtCSet: '',
         }
     }
@@ -143,8 +169,8 @@ export class MainScreen extends WithSubscriptions<MainScreen.Props, State> {
         const rendered = view.render({
             dnatcofication: this.props.dnatcofication,
             viewerInterop: this.props.viewerInterop,
-            structureSelection: this.state.structureSelection,
-            switching: this.viewerSwitching,
+            structureSelection: this.structureSelection,
+            switching: this.structureSwitching,
             selectedCustomNtCSet: this.state.selectedCustomNtCSet,
             scrollableParent: this.scrollableElemRef.current ?? void 0,
             onCustomNtCSetChanged: (set: string) => {
@@ -186,40 +212,54 @@ export class MainScreen extends WithSubscriptions<MainScreen.Props, State> {
                     return;
                 }
 
-                if (set !== this.state.selectedCustomNtCSet)
-                    return;
-
-                const sel = this.props.viewerInterop.api.query('selected-step');
-                if (sel.selected) {
-                    const displayedStep = StepsMapper.byName(this.props.dnatcofication, sel.selected.name);
-                    if (displayedStep && displayedStep.name === step)
-                        this.switchStepId(displayedStep.id);
-                }
+                const pieces = {
+                    steps: this.structureSelection.steps,
+                    residues: this.structureSelection.residues,
+                    reconstruct: false,
+                };
+                const displayer = Register.Views[this.activeView()].selectionDisplayer;
+                displayer(pieces, this.props.dnatcofication, this.props.viewerInterop, this.state.selectedCustomNtCSet);
             }
         )
 
         this.props.viewerInterop.bind('rdo-id-molstar-container').then(() => {
             this.subscribe(
+                this.props.viewerInterop.events.residueRequested,
+                (residue) => {
+                    const av = Register.Views[this.activeView()];
+                    if (av.granularity !== 'residue')
+                        return;
+
+                    const r = StructureSelection.authToCif(this.props.dnatcofication.data.structures[0], residue);
+                    if (r) {
+                        const pieces = Register.Views[this.activeView()].selectionMaker(InvalidStepId, r ,this.structureSelection.steps, this.structureSelection.residues);
+                        this.changeSelection(pieces, Register.Views[this.activeView()].selectionDisplayer);
+                    }
+
+                }
+            ),
+            this.subscribe(
                 this.props.viewerInterop.events.stepRequested,
                 (name) => {
-                    const stepId = StepsMapper.byName(this.props.dnatcofication, name)?.id ?? InvalidStepId;
-                    this.switchStepId(stepId);
+                    const av = Register.Views[this.activeView()];
+                    if (av.granularity !== 'two-residues')
+                        return;
+
+
+                    const stepId = StepsMapper.byName(this.props.dnatcofication, name)?.id;
+                    if (stepId !== undefined) {
+                        const pieces = Register.Views[this.activeView()].selectionMaker(stepId, InvalidResidue, this.structureSelection.steps, this.structureSelection.residues);
+                        this.changeSelection(pieces, Register.Views[this.activeView()].selectionDisplayer);
+                    }
                 }
             );
             this.subscribe(
-                this.props.viewerInterop.events.stepDeselected,
+                this.props.viewerInterop.events.structuresDeselected,
                 () => {
-                    const sel = { ...this.state.structureSelection, stepId: InvalidModelIndex };
-                    this.setState({ ...this.state, structureSelection: sel });
-                }
-            );
-            this.subscribe(
-                this.props.viewerInterop.events.stepSelected,
-                (v) => {
-                    const name = v.name;
-                    const stepId = StepsMapper.byName(this.props.dnatcofication, name)?.id ?? InvalidStepId;
-                    const sel = { ...this.state.structureSelection, stepId };
-                    this.setState({ ...this.state, structureSelection: sel });
+                    this.structureSelection.steps.splice(0, this.structureSelection.steps.length);
+                    this.structureSelection.residues.splice(0, this.structureSelection.residues.length);
+
+                    this.changeSelection(EmptyPieces, Register.Views[this.activeView()].selectionDisplayer);
                 }
             );
 
@@ -228,6 +268,7 @@ export class MainScreen extends WithSubscriptions<MainScreen.Props, State> {
                 () => {
                     this.props.viewerInterop.loadStructure(
                         this.props.dnatcofication.rawCif(),
+                        1,
                         this.props.dnatcofication.data.densityMaps
                     );
                 }
@@ -241,18 +282,37 @@ export class MainScreen extends WithSubscriptions<MainScreen.Props, State> {
         if (this.props.viewerInterop.ready()) {
             if (this.props.masterMode !== prevProps.masterMode) {
                 this.props.viewerInterop.api.command(ViewerApi.Commands.Redraw()).then(() => {
-                    if (this.state.structureSelection.stepId !== InvalidStepId)
-                        this.switchStepId(this.state.structureSelection.stepId);
+                    const av = Register.Views[this.activeView()];
+
+                    const pieces = {
+                        steps: this.structureSelection.steps,
+                        residues: this.structureSelection.residues,
+                        reconstruct: true,
+                    };
+                    this.changeSelection(pieces, av.selectionDisplayer);
+                    if (av.granularity !== 'dont-care')
+                        this.props.viewerInterop.api.command(ViewerApi.Commands.SwitchSelectionGranularity(av.granularity));
                 })
             } else if (this.state.activeViews[this.props.masterMode] !== prevState.activeViews[this.props.masterMode]) {
-                if (this.state.structureSelection.stepId !== InvalidStepId)
-                    this.switchStepId(this.state.structureSelection.stepId);
+                const av = Register.Views[this.activeView()];
+
+                const pieces = {
+                    steps: this.structureSelection.steps,
+                    residues: this.structureSelection.residues,
+                    reconstruct: true,
+                };
+                this.changeSelection(pieces, av.selectionDisplayer);
+                if (av.granularity !== 'dont-care')
+                    this.props.viewerInterop.api.command(ViewerApi.Commands.SwitchSelectionGranularity(av.granularity));
             } else if (this.state.selectedCustomNtCSet !== prevState.selectedCustomNtCSet) {
-                const sel = this.props.viewerInterop.api.query('selected-step');
-                if (sel.selected) {
-                    const displayedStep = StepsMapper.byName(this.props.dnatcofication, sel.selected.name);
-                    if (displayedStep)
-                        this.switchStepId(displayedStep.id);
+                if (this.props.masterMode === 'refinement') {
+                    const pieces = {
+                        steps: this.structureSelection.steps,
+                        residues: this.structureSelection.residues,
+                        reconstruct: false,
+                    };
+                    const displayer = Register.Views[this.activeView()].selectionDisplayer;
+                    displayer(pieces, this.props.dnatcofication, this.props.viewerInterop, this.state.selectedCustomNtCSet);
                 }
             }
         }

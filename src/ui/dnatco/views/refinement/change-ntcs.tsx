@@ -4,7 +4,7 @@ import { CustomNtCSets } from './custom-ntc-sets';
 import { ChainSelect, ModelSelect } from '../structure-selectors';
 import { View } from '../view';
 import { Common, niceStepName } from '../../common';
-import { EmptyStructureSelection, InvalidChain, InvalidModelIndex, InvalidStepId, StructureSelection } from '../../structure-selection';
+import { EmptyStructureSelection, InvalidChain, InvalidModelIndex, InvalidResidue, InvalidStepId, StructureSelection } from '../../structure-selection';
 import { DynamicTable } from '../../../common/dynamic-table';
 import { NamedList, NamedListItem } from '../../../common/named-list';
 import { IconButton } from '../../../common/push-button';
@@ -128,7 +128,7 @@ export class ChangeNtCs extends View<Refinement.Props> {
     }
 
     private renderStepsTable() {
-        const stepName = this.props.structureSelection.stepId === InvalidStepId ? '' : StepsMapper.byId(this.props.dnatcofication, this.props.structureSelection.stepId).name;
+        const stepName = this.props.structureSelection.steps.length === 0 ? '' : StepsMapper.byId(this.props.dnatcofication, this.props.structureSelection.steps[0]).name;
 
         return (
             <DynamicTable
@@ -143,8 +143,10 @@ export class ChangeNtCs extends View<Refinement.Props> {
 
                     const stepName = row[cIdx].data;
                     const stepId = StepsMapper.byName(this.props.dnatcofication, stepName)?.id ?? InvalidStepId;
-                    if (stepId !== InvalidStepId)
-                        this.props.switching.switchStepId(stepId);
+                    if (stepId !== InvalidStepId) {
+                        const sel = ChangeNtCs.SelectionMaker(stepId, InvalidResidue, this.props.structureSelection.steps, this.props.structureSelection.residues);
+                        this.props.switching.changeSelection(sel, ChangeNtCs.SelectionDisplayer);
+                    }
                 }}
                 highlightedTag={stepName}
                 scrollTainer={this.tableTainer.current ?? void 0}
@@ -170,8 +172,14 @@ export class ChangeNtCs extends View<Refinement.Props> {
             }
         );
 
-        this.subscribe(this.props.switching.events.modelSwitched, (sel) => this.setTableModel(sel));
-        this.subscribe(this.props.switching.events.chainSwitched, (sel) => this.setTableModel(sel));
+        this.subscribe(this.props.switching.events.modelSwitched, (sel) => {
+            this.setTableModel(sel);
+            this.forceUpdate();
+        });
+        this.subscribe(this.props.switching.events.chainSwitched, (sel) => {
+            this.setTableModel(sel);
+            this.forceUpdate();
+        });
     }
 
     componentDidUpdate(prevProps: Refinement.Props) {
@@ -198,7 +206,7 @@ export class ChangeNtCs extends View<Refinement.Props> {
                                 <ModelSelect
                                     dnatcofication={this.props.dnatcofication}
                                     structureSelection={this.props.structureSelection}
-                                    onChange={this.props.switching.switchModel}
+                                    switching={this.props.switching}
                                 />
                             </NamedListItem>
                         : undefined
@@ -207,7 +215,7 @@ export class ChangeNtCs extends View<Refinement.Props> {
                         <ChainSelect
                             dnatcofication={this.props.dnatcofication}
                             structureSelection={this.props.structureSelection}
-                            onChange={this.props.switching.switchChain}
+                            switching={this.props.switching}
                         />
                     </NamedListItem>
                 </NamedList>
@@ -232,5 +240,6 @@ export class ChangeNtCs extends View<Refinement.Props> {
 }
 
 export namespace ChangeNtCs {
-    export const StepSwitcher = Refinement.switchStep;
+    export const SelectionDisplayer = Refinement.selectionDisplayer;
+    export const SelectionMaker = Refinement.selectionMaker;
 }

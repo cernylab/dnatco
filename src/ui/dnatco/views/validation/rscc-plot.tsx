@@ -6,7 +6,7 @@ import { ModelSelect } from '../structure-selectors';
 import { View } from '../view';
 import { Constants } from '../../constants';
 import { niceStepNameText } from '../../common';
-import { InvalidModelIndex, InvalidStepId } from '../../structure-selection';
+import { InvalidModelIndex, InvalidResidue } from '../../structure-selection';
 import { NamedList, NamedListItem } from '../../../common/named-list';
 import { OkResult, isError, isOk } from '../../../../dnatco';
 import { Dnatcofication } from '../../../../dnatco/dnatcofication';
@@ -66,11 +66,11 @@ function isPlotEmpty(data: RsccPlotData) {
     return data.xy.x.length === 0;
 }
 
-function makeData(stru: Rscc.StepRscc[], backdrop: Rscc.BackdropRscc, selectedStepId: number, d: Dnatcofication): RsccPlotData {
+function makeData(stru: Rscc.StepRscc[], backdrop: Rscc.BackdropRscc, selectedStepId: number|undefined, d: Dnatcofication): RsccPlotData {
     if (stru.length < 1)
         return { xy: RsccXYData, contour: RsccContourData };
 
-    const SL = selectedStepId === InvalidStepId ? 0 : 1;
+    const SL = selectedStepId === undefined ? 0 : 1;
     const L = stru.length - SL;
 
     const x = new Array<number>(L);
@@ -217,13 +217,13 @@ export class RsccPlot extends View<View.Props, State> {
         const assigned = makeData(
             stru.assigned,
             backdropAssigned,
-            this.props.structureSelection.stepId,
+            this.props.structureSelection.steps[0],
             this.props.dnatcofication
         );
         const unassigned = makeData(
             stru.unassigned,
             backdropUnassigned,
-            this.props.structureSelection.stepId,
+            this.props.structureSelection.steps[0],
             this.props.dnatcofication
         );
 
@@ -359,8 +359,10 @@ export class RsccPlot extends View<View.Props, State> {
                     const pt = ev.points[0];
                     if (pt) {
                         const datum = pt.customdata;
-                        if (typeof datum === 'number')
-                            this.props.switching.switchStepId(datum);
+                        if (typeof datum === 'number') {
+                            const sel = RsccPlot.SelectionMaker(datum, InvalidResidue, this.props.structureSelection.steps, this.props.structureSelection.residues);
+                            this.props.switching.changeSelection(sel, RsccPlot.SelectionDisplayer);
+                        }
                     }
                 }}
             />
@@ -368,6 +370,10 @@ export class RsccPlot extends View<View.Props, State> {
     }
 
     componentDidMount() {
+        this.subscribe(this.props.switching.events.modelSwitched, () => this.forceUpdate());
+        this.subscribe(this.props.switching.events.chainSwitched, () => this.forceUpdate());
+        this.subscribe(this.props.switching.events.selectionChanged, () => this.forceUpdate());
+
         this.fetchRsccData();
     }
 
@@ -392,7 +398,7 @@ export class RsccPlot extends View<View.Props, State> {
                             <ModelSelect
                                 dnatcofication={this.props.dnatcofication}
                                 structureSelection={this.props.structureSelection}
-                                onChange={this.props.switching.switchModel}
+                                switching={this.props.switching}
                                 hideAllModelsOption={true}
                             />
                         </NamedListItem>
@@ -425,5 +431,6 @@ export class RsccPlot extends View<View.Props, State> {
 }
 
 export namespace RsccPlot {
-    export const StepSwitcher = Validation.switchStep;
+    export const SelectionDisplayer = Validation.selectionDisplayer;
+    export const SelectionMaker = Validation.selectionMaker;
 }

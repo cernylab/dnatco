@@ -12,9 +12,12 @@ import { ConnectivityPlot } from './refinement/connectivity-plot';
 import { AnglesLengths } from './validation/angles-lengths';
 import { ConfalsRmsds } from './validation/confals-rmsds';
 import { RsccPlot } from './validation/rscc-plot';
-import { SimilarityPlots } from './validation/similarity-plot';
+import { SimilarityPlot } from './validation/similarity-plot';
 import { StepTorsions } from './validation/step-torsions';
-import { StepSwitcher } from '../structure-selection';
+import { SelectedPieces, SelectionDisplayer } from '../structure-selection';
+
+const NullDisplayer = async () => {};
+const NullMaker = () => ({ steps: [], residues: [], reconstruct: true });
 
 export namespace Register {
     type PropsType = {
@@ -24,66 +27,94 @@ export namespace Register {
     };
 
     export type View<Kind extends keyof PropsType> = {
-        render: (props: PropsType[Kind]) => React.ReactNode;
-        stepSwitcher?: StepSwitcher;
-        unscrollableContainer?: boolean;
+        render: (props: PropsType[Kind]) => React.ReactNode,
+        selectionDisplayer: SelectionDisplayer,
+        selectionMaker: (newStepId: number, newResidue: SelectedPieces['residues'][0], steps: number[], residues: SelectedPieces['residues']) => SelectedPieces,
+        granularity: 'dont-care' | 'two-residues' | 'residue',
+        unscrollableContainer?: boolean,
     };
 
     export const Views: Record<string, View<any>> = {
         'assigned-ntcs': {
             render: (props: View.Props) => <AssignedNtCs {...props} />,
-            stepSwitcher: AssignedNtCs.StepSwitcher,
+            selectionDisplayer: AssignedNtCs.SelectionDisplayer,
+            selectionMaker: AssignedNtCs.SelectionMaker,
+            granularity: 'two-residues',
         },
         'angles-lengths': {
             render:(props: View.Props) => <AnglesLengths {...props} />,
-            stepSwitcher: void 0,
+            selectionDisplayer: AnglesLengths.SelectionDisplayer,
+            selectionMaker: AnglesLengths.SelectionMaker,
             unscrollableContainer: AnglesLengths.unscrollableContainer,
+            granularity: 'residue',
         },
         'change-ntcs': {
             render: (props: Refinement.Props) => <ChangeNtCs {...props} />,
-            stepSwitcher: ChangeNtCs.StepSwitcher,
+            selectionDisplayer: ChangeNtCs.SelectionDisplayer,
+            selectionMaker: ChangeNtCs.SelectionMaker,
             unscrollableContainer: ChangeNtCs.unscrollableContainer,
+            granularity: 'two-residues',
         },
         'confals-rmsds': {
             render: (props: View.Props) => <ConfalsRmsds {...props} />,
-            stepSwitcher: ConfalsRmsds.StepSwitcher,
+            selectionDisplayer: ConfalsRmsds.SelectionDisplayer,
+            selectionMaker: ConfalsRmsds.SelectionMaker,
             unscrollableContainer: ConfalsRmsds.unscrollableContainer,
+            granularity: 'two-residues',
         },
         'connectivity-plot': {
             render: (props: Refinement.Props) => <ConnectivityPlot {...props} />,
-            stepSwitcher: ConnectivityPlot.StepSwitcher
+            selectionDisplayer: ConnectivityPlot.SelectionDisplayer,
+            selectionMaker: ConnectivityPlot.SelectionMaker,
+            granularity: 'two-residues',
         },
         'downloads': {
             render: (props: View.Props) => <Downloads {...props} />,
-            stepSwitcher: void 0,
+            selectionDisplayer: NullDisplayer,
+            selectionMaker: NullMaker,
+            granularity: 'dont-care',
         },
         'mmb-commands-file': {
             render: (props: Refinement.Props) => <MmbCommandsFile {...props} />,
-            stepSwitcher: void 0,
+            selectionDisplayer: NullDisplayer,
+            selectionMaker: NullMaker,
+            granularity: 'dont-care',
         },
         'phenix-restraints': {
             render: (props: Refinement.Props) => <PhenixRestraints {...props} />,
-            stepSwitcher: void 0,
+            selectionDisplayer: NullDisplayer,
+            selectionMaker: NullMaker,
+            granularity: 'dont-care',
         },
         'refmac-restraints': {
             render: (props: Refinement.Props) => <RefmacRestraints {...props} />,
-            stepSwitcher: void 0,
+            selectionDisplayer: NullDisplayer,
+            selectionMaker: NullMaker,
+            granularity: 'dont-care',
         },
         'rscc-plot': {
             render: (props: View.Props) => <RsccPlot {...props} />,
-            stepSwitcher: RsccPlot.StepSwitcher
+            selectionDisplayer: RsccPlot.SelectionDisplayer,
+            selectionMaker: RsccPlot.SelectionMaker,
+            granularity: 'two-residues',
         },
         'step-torsions': {
             render: (props: View.Props) => <StepTorsions {...props} />,
-            stepSwitcher: StepTorsions.StepSwitcher
+            selectionDisplayer: StepTorsions.SelectionDisplayer,
+            selectionMaker: StepTorsions.SelectionMaker,
+            granularity: 'two-residues',
         },
         'similarity-plot': {
-            render: (props: View.Props) => <SimilarityPlots {...props} />,
-            stepSwitcher: SimilarityPlots.StepSwitcher
+            render: (props: View.Props) => <SimilarityPlot {...props} />,
+            selectionDisplayer: SimilarityPlot.SelectionDisplayer,
+            selectionMaker: SimilarityPlot.SelectionMaker,
+            granularity: 'two-residues',
         },
         'structure-info': {
             render: (props: View.Props) => <StructureInfo {...props} />,
-            stepSwitcher: void 0,
+            selectionDisplayer: NullDisplayer,
+            selectionMaker: NullMaker,
+            granularity: 'dont-care',
         },
     };
 }

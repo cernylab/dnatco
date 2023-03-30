@@ -3,7 +3,7 @@ import { Annotation } from './common';
 import { ChainSelect, ModelSelect } from '../structure-selectors';
 import { View } from '../view';
 import { SearchBox } from '../../search-box';
-import { EmptyStructureSelection, InvalidChain, InvalidModelIndex, InvalidStepId, StructureSelection } from '../../structure-selection';
+import { EmptyStructureSelection, InvalidChain, InvalidModelIndex, InvalidResidue, InvalidStepId, StructureSelection } from '../../structure-selection';
 import { niceStepName, Common } from '../../common';
 import { DynamicTable } from '../../../common/dynamic-table';
 import { NamedList, NamedListItem } from '../../../common/named-list';
@@ -58,7 +58,7 @@ export class AssignedNtCs extends View<View.Props> {
 
             return results;
         },
-        onUseResult: (step) => this.props.switching.switchStepId(step.id),
+        onUseResult: (step) => this.props.switching.changeSelection(AssignedNtCs.SelectionMaker(step.id, InvalidResidue, this.props.structureSelection.steps, this.props.structureSelection.residues), AssignedNtCs.SelectionDisplayer),
     }
 
     private readonly SearchBoxProps: SearchBox.Props<Step> = {
@@ -163,7 +163,7 @@ export class AssignedNtCs extends View<View.Props> {
     }
 
     private renderStepsTable() {
-        const stepName = this.props.structureSelection.stepId === InvalidStepId ? '' : StepsMapper.byId(this.props.dnatcofication, this.props.structureSelection.stepId).name;
+        const stepName = this.props.structureSelection.steps.length  === 0 ? '' : StepsMapper.byId(this.props.dnatcofication, this.props.structureSelection.steps[0]).name;
 
         return (
             <DynamicTable
@@ -176,7 +176,7 @@ export class AssignedNtCs extends View<View.Props> {
                     const stepName = row[cIdx].data;
                     const stepId = StepsMapper.byName(this.props.dnatcofication, stepName)?.id ?? InvalidStepId;
                     if (stepId !== InvalidStepId)
-                        this.props.switching.switchStepId(stepId);
+                        this.props.switching.changeSelection(AssignedNtCs.SelectionMaker(stepId, InvalidResidue, this.props.structureSelection.steps, this.props.structureSelection.residues), AssignedNtCs.SelectionDisplayer);
                 }}
                 highlightedTag={stepName}
                 scrollTainer={this.tableTainer.current ?? void 0}
@@ -216,8 +216,18 @@ export class AssignedNtCs extends View<View.Props> {
 
     componentDidMount() {
         this.subscribe(this.props.dnatcofication.events.structureChanged, () => this.setTableModel(EmptyStructureSelection(this.props.dnatcofication)));
-        this.subscribe(this.props.switching.events.modelSwitched, (sel) =>  this.setTableModel(sel));
-        this.subscribe(this.props.switching.events.chainSwitched, (sel) =>  this.setTableModel(sel));
+        this.subscribe(this.props.switching.events.modelSwitched, (sel) => {
+            this.setTableModel(sel);
+            this.forceUpdate();
+        });
+        this.subscribe(this.props.switching.events.chainSwitched, (sel) => {
+            this.setTableModel(sel);
+            this.forceUpdate();
+        });
+        this.subscribe(this.props.switching.events.selectionChanged, (sel) => {
+            this.setTableModel(sel);
+            this.forceUpdate();
+        });
     }
 
     componentWillUnmount() {
@@ -240,7 +250,7 @@ export class AssignedNtCs extends View<View.Props> {
                                 <ModelSelect
                                     dnatcofication={this.props.dnatcofication}
                                     structureSelection={this.props.structureSelection}
-                                    onChange={this.props.switching.switchModel}
+                                    switching={this.props.switching}
                                 />
                             </NamedListItem>
                         : undefined
@@ -249,7 +259,7 @@ export class AssignedNtCs extends View<View.Props> {
                         <ChainSelect
                             dnatcofication={this.props.dnatcofication}
                             structureSelection={this.props.structureSelection}
-                            onChange={this.props.switching.switchChain}
+                            switching={this.props.switching}
                         />
                     </NamedListItem>
                 </NamedList>
@@ -281,5 +291,6 @@ export class AssignedNtCs extends View<View.Props> {
 }
 
 export namespace AssignedNtCs {
-    export const StepSwitcher = Annotation.switchStep;
+    export const SelectionDisplayer = Annotation.selectionDisplayer;
+    export const SelectionMaker = Annotation.selectionMaker;
 }

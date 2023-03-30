@@ -3,7 +3,7 @@ import Plot from 'react-plotly.js';
 import { Validation } from './common';
 import { ChainSelect, ModelSelect, StepSelect } from '../structure-selectors';
 import { View } from '../view';
-import { InvalidStepId } from '../../structure-selection';
+import { InvalidResidue } from '../../structure-selection';
 import { valueToSemaphore } from '../../util';
 import { NamedList, NamedListItem } from '../../../common/named-list';
 import { Constants } from '../../../dnatco/constants';
@@ -26,20 +26,7 @@ const PlotData = {
 };
 type PlotData = typeof PlotData;
 
-interface State {
-    previousStepId: number;
-    nextStepId: number;
-}
-export class SimilarityPlots extends View<View.Props, State> {
-    constructor(props: View.Props) {
-        super(props);
-
-        this.state = {
-            previousStepId: -1,
-            nextStepId: -1,
-        };
-    }
-
+export class SimilarityPlot extends View<View.Props> {
     private plotData(stepIdx: number): PlotData {
         const x = [];
         const y = [];
@@ -75,24 +62,9 @@ export class SimilarityPlots extends View<View.Props, State> {
     }
 
     componentDidMount() {
-        if (this.props.structureSelection.stepId === InvalidStepId)
-            this.setState({ ...this.state, previousStepId: InvalidStepId, nextStepId: InvalidStepId });
-        else {
-            const prevNext = StepsMapper.previousNextById(this.props.dnatcofication, this.props.structureSelection.stepId);
-            this.setState({ ...this.state, previousStepId: prevNext.previousId, nextStepId: prevNext.nextId });
-        }
-    }
-
-    componentDidUpdate(prevProps: View.Props, prevState: State) {
-        if (this.props.structureSelection.stepId === prevProps.structureSelection.stepId)
-            return;
-
-        if (this.props.structureSelection.stepId === InvalidStepId)
-            this.setState({ ...this.state, previousStepId: InvalidStepId, nextStepId: InvalidStepId });
-        else {
-            const prevNext = StepsMapper.previousNextById(this.props.dnatcofication, this.props.structureSelection.stepId);
-            this.setState({ ...this.state, previousStepId: prevNext.previousId, nextStepId: prevNext.nextId });
-        }
+        this.subscribe(this.props.switching.events.modelSwitched, () => this.forceUpdate());
+        this.subscribe(this.props.switching.events.chainSwitched, () => this.forceUpdate());
+        this.subscribe(this.props.switching.events.selectionChanged, () => this.forceUpdate());
     }
 
     componentWillUnmount() {
@@ -104,10 +76,10 @@ export class SimilarityPlots extends View<View.Props, State> {
 
         let plotData;
         let step: Step|undefined = void 0;
-        if (this.props.structureSelection.stepId !== InvalidStepId) {
-            const stepIdx = StepsMapper.idToIndex(this.props.dnatcofication, this.props.structureSelection.stepId);
+        if (this.props.structureSelection.steps.length > 0) {
+            const stepIdx = StepsMapper.idToIndex(this.props.dnatcofication, this.props.structureSelection.steps[0]);
             plotData = this.plotData(stepIdx);
-            step = StepsMapper.byId(this.props.dnatcofication, this.props.structureSelection.stepId);
+            step = StepsMapper.byId(this.props.dnatcofication, this.props.structureSelection.steps[0]);
         } else {
             plotData = PlotData;
         }
@@ -125,7 +97,7 @@ export class SimilarityPlots extends View<View.Props, State> {
                                 <ModelSelect
                                     dnatcofication={this.props.dnatcofication}
                                     structureSelection={this.props.structureSelection}
-                                    onChange={this.props.switching.switchModel}
+                                    switching={this.props.switching}
                                 />
                             </NamedListItem>
                         : undefined
@@ -134,14 +106,20 @@ export class SimilarityPlots extends View<View.Props, State> {
                         <ChainSelect
                             dnatcofication={this.props.dnatcofication}
                             structureSelection={this.props.structureSelection}
-                            onChange={this.props.switching.switchChain}
+                            switching={this.props.switching}
                         />
                     </NamedListItem>
                     <NamedListItem name='Step'>
                         <StepSelect
                             dnatcofication={this.props.dnatcofication}
                             structureSelection={this.props.structureSelection}
-                            onChange={this.props.switching.switchStepId}
+                            switching={this.props.switching}
+                            onChange={(stepId) => {
+                                const sel = stepId === -1
+                                    ? { steps: [], residues: [], reconstruct: true }
+                                    : SimilarityPlot.SelectionMaker(stepId, InvalidResidue, this.props.structureSelection.steps, this.props.structureSelection.residues);
+                                this.props.switching.changeSelection(sel, SimilarityPlot.SelectionDisplayer);
+                            }}
                         />
                     </NamedListItem>
                 </NamedList>
@@ -211,6 +189,7 @@ export class SimilarityPlots extends View<View.Props, State> {
     }
 }
 
-export namespace SimilarityPlots {
-    export const StepSwitcher = Validation.switchStep;
+export namespace SimilarityPlot {
+    export const SelectionDisplayer = Validation.selectionDisplayer;
+    export const SelectionMaker = Validation.selectionMaker;
 }

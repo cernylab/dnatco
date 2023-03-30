@@ -6,9 +6,11 @@ import { sleep } from '../util';
 
 export type ViewerEvents = {
     ready: Subject<void>,
-    stepDeselected: Subject<void>,
+    residueRequested: Subject<ViewerApi.Payloads.ResidueSelection>,
+    residueSelected: Subject<ViewerApi.Payloads.ResidueSelection>,
+    structuresDeselected: Subject<void>,
     stepRequested: Subject<string>,
-    stepSelected: Subject<{ name: string, rmsd?: number }>,
+    stepSelected: Subject<{ name: string }>,
     structureLoaded: Subject<void>,
 }
 
@@ -19,7 +21,9 @@ export class ViewerInterop {
 
     readonly events: ViewerEvents = {
         ready: this.ek.subject<void>(),
-        stepDeselected: this.ek.subject<void>(),
+        residueRequested: this.ek.subject<ViewerApi.Payloads.ResidueSelection>(),
+        residueSelected: this.ek.subject<ViewerApi.Payloads.ResidueSelection>(),
+        structuresDeselected: this.ek.subject<void>(),
         stepRequested: this.ek.subject<string>(),
         stepSelected: this.ek.subject<{ name: string, rmsd?: number }>(),
         structureLoaded: this.ek.subject(),
@@ -40,18 +44,31 @@ export class ViewerInterop {
             //@ts-ignore
             this._api = molstar.ReDNATCOMspApi.init(
                 viewerContainerId,
-                (evt: ViewerApi.Event) => {
-                    if (evt.type === 'ready') {
+                (ev: ViewerApi.Event) => {
+                    if (ev.type === 'ready') {
                         this._ready = true;
                         this.events.ready.next();
-                    } else if (evt.type === 'step-selected') {
-                        if (evt.success)
-                            this.events.stepSelected.next({ name: evt.name });
-                    } else if (evt.type === 'step-deselected')
-                        this.events.stepDeselected.next();
-                    else if (evt.type === 'step-requested')
-                        this.events.stepRequested.next(evt.name);
-                    else if (evt.type === 'structure-loaded')
+                    } else if (ev.type === 'structures-selected') {
+                        if (ev.success) {
+                            for (const sel of ev.selections) {
+                                if (sel.type === 'step')
+                                    this.events.stepSelected.next({ name: sel.name });
+                                else if (sel.type === 'residue')
+                                    this.events.residueSelected.next(sel);
+                                else if (sel.type === 'atom')
+                                    console.log('"atom" selection type is currently not handled');
+                            }
+                        }
+                    } else if (ev.type === 'structures-deselected')
+                        this.events.structuresDeselected.next();
+                    else if (ev.type === 'structure-requested') {
+                        if (ev.selection.type === 'step')
+                            this.events.stepRequested.next(ev.selection.name);
+                        else if (ev.selection.type === 'residue')
+                            this.events.residueRequested.next(ev.selection);
+                        else if (ev.selection.type === 'atom')
+                            console.log('"atom" request type is currently not handled');
+                    } else if (ev.type === 'structure-loaded')
                         this.events.structureLoaded.next();
                 }
             );
@@ -61,10 +78,10 @@ export class ViewerInterop {
             throw new Error('Molstar plugin took too long to initialize');
     }
 
-    loadStructure(cif: string, densityMaps: DensityMap[]|null) {
+    loadStructure(cif: string, modelNumber: number, densityMaps: DensityMap[]|null) {
         //@ts-ignore
         molstar.ReDNATCOMspApi.loadStructure(
-            { data: cif, type:'cif' },
+            { data: cif, type: 'cif', modelNumber },
             densityMaps
         );
     }

@@ -172,13 +172,16 @@ export class App extends WithSubscriptions<{}, State> {
         if (step) {
             // Use an arbitrary delay to give Molstar some time to settle
             // Not doing this may result in broken rendering
+
             setTimeout(
                 () => {
-                    this.viewerInterop.api.command(ViewerApi.Commands.SelectStep(
-                        ViewerApi.Payloads.StepSelection(stepName, { NtC: step.closestNtC, color: Constants.StepColor }),
-                        void 0,
-                        void 0
-                    ));
+                    this.viewerInterop.api.command(ViewerApi.Commands.SelectStructures([
+                        ViewerApi.Commands.StepSelection(
+                            ViewerApi.Payloads.StepSelection(stepName, { NtC: step.closestNtC, color: Constants.StepColor }),
+                            void 0,
+                            void 0
+                        )
+                    ]));
                 },
                 200
             );

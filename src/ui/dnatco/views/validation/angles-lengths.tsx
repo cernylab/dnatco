@@ -6,7 +6,12 @@ import { View } from '../view';
 import { Constants } from '../../constants';
 import { SearchBox } from '../../search-box';
 import { StatsBar } from '../../stats-bar';
-import { InvalidChain, InvalidModelIndex } from '../../structure-selection';
+import {
+    AuthResidue, CifResidue,
+    InvalidChain, InvalidModelIndex,
+    SelectedPieces,
+    StructureSelection
+} from '../../structure-selection';
 import { Common } from '../../common';
 import { colorToRgb, colorToTuple, ColorTuple, scrollIntoViewIfNeeded } from '../../../util';
 import { CollapsibleVertical } from '../../../common/collapsible-vertical';
@@ -35,6 +40,7 @@ import { Serialization } from '../../../../util/serialization';
 import { isWithin } from '../../../../util';
 import { M } from '../../../../util/math';
 import { Net } from '../../../../util/net';
+import { ViewerInterop, ViewerApi } from '../../../../viewer/viewer-interop';
 import 'assets/imgs/data-transfer-download.svg';
 import 'assets/imgs/triangle-down.svg';
 import 'assets/imgs/triangle-up.svg';
@@ -1138,7 +1144,7 @@ class ResidueHeader extends React.Component<{
     }
 }
 
-class Residue extends React.Component<ResidueElemProps> {
+class Residue extends React.Component<ResidueElemProps & { structureSelection: StructureSelection, viewerInterop: ViewerInterop, scrollMyselfIntoView: () => void }> {
     private collapserRef = React.createRef<CollapsibleVertical>();
 
     collapseExpand = (change: 'collapse' | 'expand') => {
@@ -1146,6 +1152,22 @@ class Residue extends React.Component<ResidueElemProps> {
     }
 
     render() {
+        const cifRes = {
+            modelNum: this.props.residue.modelNum,
+            chain: this.props.residue.chain,
+            seqId: this.props.residue.seqId,
+            altId: this.props.residue.altId
+        };
+
+        const cifResMatches = (r: CifResidue) => {
+            return (
+                r.modelNum === cifRes.modelNum &&
+                r.chain === cifRes.chain &&
+                r.seqId === cifRes.seqId &&
+                r.altId === cifRes.altId
+            );
+        };
+
         return (
             <CollapsibleVertical
                 ref={this.collapserRef}
@@ -1162,6 +1184,20 @@ class Residue extends React.Component<ResidueElemProps> {
                         colorsForStatsBar={this.props.colorsForStatsBar}
                     />
                 )}
+                onCollapsedExpanded={(change) => {
+                    if (change === 'expanded') {
+                        if (this.props.structureSelection.residues.find(cifResMatches))
+                            return;
+
+                        this.props.structureSelection.residues = this.props.structureSelection.residues.filter((x) => x.modelNum === cifRes.modelNum);
+                        this.props.structureSelection.residues.push(cifRes);
+                        selectionDisplayer({ steps: [], residues: this.props.structureSelection.residues, reconstruct: false }, this.props.d, this.props.viewerInterop);
+                    } else {
+                        this.props.structureSelection.residues = this.props.structureSelection.residues.filter((x) => !cifResMatches(x));
+                        selectionDisplayer({ steps: [], residues: this.props.structureSelection.residues, reconstruct: true }, this.props.d, this.props.viewerInterop);
+                    }
+                }}
+                initiallyExpanded={!!this.props.structureSelection.residues.find(cifResMatches)}
             >
                 <ResidueDetails
                     onHideRequested={() => this.collapserRef.current?.collapseExpand('collapse')}
@@ -1296,12 +1332,6 @@ export class AnglesLengths extends View<
         return { modelIdx, chain };
     }
 
-    private gotoResidue(id: string, ref: React.RefObject<Residue>) {
-        if (this.residuesTainerRef.current)
-            scrollIntoViewIfNeeded(id, this.residuesTainerRef.current);
-        ref.current?.collapseExpand('expand');
-    }
-
     private renderResidueName(r: Measurements.Residue, multipleModels: boolean) {
         let inner = [];
 
@@ -1363,6 +1393,9 @@ export class AnglesLengths extends View<
                 stats={_s}
                 structureName={structureName}
                 colorsForStatsBar={colorsForStatsBar}
+                structureSelection={this.props.structureSelection}
+                viewerInterop={this.props.viewerInterop}
+                scrollMyselfIntoView={() => this.gotoResidue(identResName, ref)}
                 key={idx}
             />;
 
@@ -1460,9 +1493,73 @@ export class AnglesLengths extends View<
         }
     }
 
+    gotoResidue = (id: string, ref: React.RefObject<Residue>) => {
+        if (this.residuesTainerRef.current)
+            scrollIntoViewIfNeeded(id, this.residuesTainerRef.current);
+        ref.current?.collapseExpand('expand');
+    }
+
     increaseShownResiduesLimit = (increaseBy = ShownResiduesIncrement) => {
         this.setState({ ...this.state, shownResiduesLimit: this.state.shownResiduesLimit + increaseBy });
         setTimeout(() => this.inhibitLoadNext = false, 100);
+    }
+
+    componentDidMount() {
+        this.subscribe(this.props.switching.events.modelSwitched, () => this.forceUpdate());
+        this.subscribe(this.props.switching.events.chainSwitched, () => this.forceUpdate());
+
+        this.subscribe(this.props.viewerInterop.events.structuresDeselected, () => {
+            for (const ref of this.residueBlocksMapping.values()) {
+                if (ref.current)
+                    ref.current.collapseExpand('collapse');
+            }
+        });
+        this.subscribe(this.props.viewerInterop.events.residueRequested, (sel) => {
+            const authRes: AuthResidue = sel;
+            const cifRes = StructureSelection.authToCif(this.props.dnatcofication.data.structures[0], authRes);
+            if (!cifRes)
+                return;
+
+            const struName = structureIdentifyingName(this.props.dnatcofication);
+            const id = residueIdentifyingName(
+                struName,
+                {
+                    modelNum: cifRes.modelNum,
+                    chain: cifRes.chain,
+                    seqId: cifRes.seqId,
+                    altId: cifRes.altId,
+                    authChain: authRes.chain,
+                    authSeqId: authRes.seqId,
+                    insCode: authRes.insCode,
+                    compound: 'A', // Irrelevant,
+                    bondAngles: [], // Irrelevant
+                    bondLengths: [] // Irrelevant
+                }
+            );
+
+            const ref = this.residueBlocksMapping.get(id);
+            if (document.getElementById(id)) {
+                // Corresponding residue block is displayed, scroll to it
+                if (ref)
+                    this.gotoResidue(id, ref);
+            } else {
+                // Corresponding residue block is not displayed. Expand the residue blocks list and scroll to it then.
+                const { modelIdx, chain } = this.getSelection();
+                const numSelected = this.selectionToIndices(modelIdx, chain).length;
+
+                if (this.state.shownResiduesLimit < numSelected)
+                    this.increaseShownResiduesLimit(numSelected);
+
+                setTimeout(
+                    () => {
+                        const ref = this.residueBlocksMapping.get(id);
+                        if (ref)
+                            this.gotoResidue(id, ref);
+                    },
+                    100
+                );
+            }
+        });
     }
 
     componentDidUpdate(prevProps: View.Props) {
@@ -1550,7 +1647,7 @@ export class AnglesLengths extends View<
                                 <ModelSelect
                                     dnatcofication={this.props.dnatcofication}
                                     structureSelection={this.props.structureSelection}
-                                    onChange={this.props.switching.switchModel}
+                                    switching={this.props.switching}
                                 />
                             </NamedListItem>
                         : undefined
@@ -1559,7 +1656,7 @@ export class AnglesLengths extends View<
                         <ChainSelect
                             dnatcofication={this.props.dnatcofication}
                             structureSelection={this.props.structureSelection}
-                            onChange={this.props.switching.switchChain}
+                            switching={this.props.switching}
                         />
                     </NamedListItem>
                 </NamedList>
@@ -1780,4 +1877,43 @@ export class AnglesLengths extends View<
             </div>
         );
     }
+}
+
+async function selectionDisplayer(pieces: SelectedPieces, d: Dnatcofication, vi: ViewerInterop) {
+    if (pieces.reconstruct)
+        await vi.api.command(ViewerApi.Commands.DeselectStructures());
+
+    if (pieces.residues.length < 1)
+        return;
+
+    const selected = [];
+    for (const r of pieces.residues) {
+        const authRes = StructureSelection.cifToAuth(d.data.structures[0], r);
+        if (authRes) {
+            const cmdRes = ViewerApi.Commands.ResidueSelection(r.modelNum, authRes.chain, authRes.cifChain, authRes.seqId, authRes.insCode, authRes.altId, Constants.StepColor);
+            selected.push(cmdRes);
+        }
+    }
+
+    await vi.api.command(ViewerApi.Commands.SelectStructures(selected));
+}
+
+function selectionMaker(newStepId: number, newResidue: SelectedPieces['residues'][0], steps: number[], residues: SelectedPieces['residues']): SelectedPieces {
+    let newResidues;
+    if (residues.find((x) => StructureSelection.cifResiduesMatch(x, newResidue))) {
+        newResidues = residues;
+    } else {
+        newResidues = [...residues.filter((x) => x.modelNum === newResidue.modelNum), newResidue];
+    }
+
+    return {
+        steps: [],
+        residues: newResidues,
+        reconstruct: steps.length > 0
+    };
+}
+
+export namespace AnglesLengths {
+    export const SelectionDisplayer = selectionDisplayer;
+    export const SelectionMaker = selectionMaker;
 }

@@ -50,7 +50,7 @@ export function filterToChain(dnatcofication: Dnatcofication, modelIndex: number
         return ''; // Empty string indicates all chains
 
     const chain = filter.slices.at(0)?.chain ?? '';
-    const found = dnatcofication.data.structures[0].models[modelIndex].chains.find(ch => ch.name === chain);
+    const found = dnatcofication.data.structures[0].models[modelIndex].chains.find(ch => ch.authName === chain);
 
     return found ? chain : '';
 }

@@ -260,6 +260,7 @@ export class Dnatcofication {
 
     setData(data: DnatcoficationData) {
         this.data = data;
+        this._customNtCs = new CustomNtCs();
         this.events.structureChanged.next(true);
     }
 }

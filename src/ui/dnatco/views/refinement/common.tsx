@@ -1,17 +1,23 @@
 import React from 'react';
 import { Constants } from '../../constants';
+import { SelectedPieces } from '../../structure-selection';
 import { makeStepSelection } from '../../util';
 import { View } from '../../views/view';
 import { ComboBox } from '../../../common/combo-box';
 import { Dnatcofication } from '../../../../dnatco/dnatcofication';
 import { CustomNtCs } from '../../../../dnatco/custom-ntcs';
 import { NtC } from '../../../../dnatco/ntc';
+import { Step } from '../../../../dnatco/step';
 import { StepsMapper } from '../../../../dnatco/steps-mapper';
 import { ViewerInterop, ViewerApi } from '../../../../viewer/viewer-interop';
 
 const NtCSelectorOptions: ComboBox.Option[] = (() => {
     return NtC.Classes.map(NtC => ({ caption: NtC, value: NtC }));
 })();
+
+export function getNtC(d: Dnatcofication, step: Step, set: string) {
+    return set === '' ? step.closestNtC : d.customNtCs.getCustomNtC(set, step.name) ?? step.closestNtC;
+}
 
 export namespace Refinement {
     export interface Props extends View.Props {
@@ -44,26 +50,33 @@ export namespace Refinement {
         ];
     }
 
-    export async function switchStep(stepId: number, d: Dnatcofication, vi: ViewerInterop, customNtCSet: string) {
-        const selection = makeStepSelection(d, stepId);
-        const step = StepsMapper.byId(d, selection.current.id);
+    export async function selectionDisplayer(pieces: SelectedPieces, d: Dnatcofication, vi: ViewerInterop, customNtCSet: string) {
+        if (pieces.reconstruct)
+            await vi.api.command(ViewerApi.Commands.DeselectStructures());
 
-        let NtC;
-        if (customNtCSet !== '') {
-            const custom = d.customNtCs.getCustomNtC(customNtCSet, step.name);
-            NtC = custom ?? step.closestNtC;
-        } else
-            NtC = step.closestNtC;
+        const selected = [];
+        for (const sid of pieces.steps) {
+            const selection = makeStepSelection(d, sid)
+            const currStep = StepsMapper.byId(d, selection.current.id);
+            const prevStep = selection.previous ? StepsMapper.byId(d, selection.previous.id) : void 0;
+            const nextStep = selection.next ? StepsMapper.byId(d, selection.next.id) : void 0;
 
-        const prevNtC = selection.previous ? StepsMapper.byId(d, selection.previous.id).closestNtC : void 0;
-        const nextNtC = selection.next ? StepsMapper.byId(d, selection.next.id).closestNtC : void 0;
+            const currNtC = getNtC(d, currStep, customNtCSet);
+            const prevNtC = prevStep ? getNtC(d, prevStep, customNtCSet) : void 0;
+            const nextNtC = nextStep ? getNtC(d, nextStep, customNtCSet) : void 0;
 
-        await vi.api.command(
-            ViewerApi.Commands.SelectStep(
-                ViewerApi.Payloads.StepSelection(selection.current.name, { NtC, color: Constants.StepColor }),
+            const step = ViewerApi.Commands.StepSelection(
+                ViewerApi.Payloads.StepSelection(selection.current.name, { NtC: currNtC, color: Constants.StepColor }),
                 prevNtC ? ViewerApi.Payloads.StepSelection(selection.previous!.name, { NtC: prevNtC, color: Constants.PrevStepColor }) : void 0,
                 nextNtC ? ViewerApi.Payloads.StepSelection(selection.next!.name, { NtC: nextNtC, color: Constants.NextStepColor }) : void 0
-            )
-        );
+            );
+            selected.push(step);
+        }
+
+        await vi.api.command(ViewerApi.Commands.SelectStructures(selected));
+    }
+
+    export function selectionMaker(newStepId: number, newResidue: SelectedPieces['residues'][0], steps: number[], residues: SelectedPieces['residues']) {
+        return { steps: [newStepId], residues: [], reconstruct: !(steps[0] === newStepId && steps.length === 1) };
     }
 }
