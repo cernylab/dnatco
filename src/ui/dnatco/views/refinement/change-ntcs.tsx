@@ -180,6 +180,10 @@ export class ChangeNtCs extends View<Refinement.Props> {
             this.setTableModel(sel);
             this.forceUpdate();
         });
+        this.subscribe(this.props.switching.events.selectionChanged, (sel) => {
+            this.setTableModel(sel);
+            this.forceUpdate();
+        });
     }
 
     componentDidUpdate(prevProps: Refinement.Props) {
