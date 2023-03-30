@@ -329,7 +329,8 @@ function renderBondAngleDetail(
     residueName: JSX.Element,
     structureName: string,
     outlierColor: [r: number, g: number, b: number],
-    pgrpIndices: number[]
+    pgrpIndices: number[],
+    vi: ViewerInterop
 ) {
     const pgrpDatas = pgrpIndices.map(idx => DAnglesLengths.anglePGroupData(idx, residue.compound, bondAngle.triplet)!);
     const dlName = `${residueIdentifyingName(structureName, residue)}_${fileNameFriendlyTag(tripletTag(bondAngle.triplet))}`;
@@ -346,6 +347,7 @@ function renderBondAngleDetail(
             pGroupDatas={pgrpDatas}
             residue={residue}
             residueName={residueName}
+            vi={vi}
         />
     );
 }
@@ -359,7 +361,8 @@ function renderBondLengthDetail(
     residueName: JSX.Element,
     structureName: string,
     outlierColor: [r: number, g: number, b: number],
-    pgrpIndices: number[]
+    pgrpIndices: number[],
+    vi: ViewerInterop
 ) {
     const pgrpDatas = pgrpIndices.map(idx => DAnglesLengths.lengthPGroupData(idx, residue.compound, bondLength.pair)!);
     const dlName = `${residueIdentifyingName(structureName, residue)}${fileNameFriendlyTag(pairTag(bondLength.pair))}`;
@@ -376,6 +379,7 @@ function renderBondLengthDetail(
             pGroupDatas={pgrpDatas}
             residue={residue}
             residueName={residueName}
+            vi={vi}
         />
     );
 }
@@ -635,10 +639,21 @@ class BondAngleDetails extends React.Component<{
     pGroupDatas: DAnglesLengths.PGroupData[],
     residue: Measurements.Residue,
     residueName: JSX.Element,
+    vi: ViewerInterop,
 }> {
     render() {
         const ba = this.props.bondAngle;
         const clr = this.props.pGroup ? colorToTuple(this.props.pGroup.color) : this.props.outlierColor;
+
+        const doHighlight = () => {
+            const r = this.props.residue;
+            const a = ViewerApi.Payloads.Atom2Selection(r.modelNum, r.authChain, r.chain, r.authSeqId, r.insCode, r.altId, this.props.bondAngle.triplet[0]);
+            const b = ViewerApi.Payloads.Atom2Selection(r.modelNum, r.authChain, r.chain, r.authSeqId, r.insCode, r.altId, this.props.bondAngle.triplet[1]);
+            const c = ViewerApi.Payloads.Atom2Selection(r.modelNum, r.authChain, r.chain, r.authSeqId, r.insCode, r.altId, this.props.bondAngle.triplet[2]);
+
+            this.props.vi.api.command(ViewerApi.Commands.Highlight([a, b, c]));
+        };
+        const doUnhighlight = () => this.props.vi.api.command(ViewerApi.Commands.Unhighlight());
 
         return (
             <>
@@ -647,26 +662,41 @@ class BondAngleDetails extends React.Component<{
                     delayMsec={Constants.TooltipDelayMSec}
                     display='block'
                 >
-                    <PGroupSummary
-                        bins={DAnglesLengths.angleAverages(this.props.residue.compound, ba.triplet)!}
-                        caption={tripletBondName(ba.triplet, ba.tag)}
-                        pGroup={this.props.pGroup}
-                        pGroupDatas={this.props.pGroupDatas}
-                        rangeFormatter={(v) => M.r2d(v).toFixed(2)}
-                        residueName={this.props.residueName}
-                        suffix={'\u00B0'}
-                        value={ba.angle}
-                        valueFormatter={(v) => M.r2d(v).toFixed(2)}
-                        naval={this.props.navalItem} // Contained value is already in degrees
-                        xTitle={'Angle (\u00B0)'}
-                        yTitle='Prob. (%)'
-                        xTransform={(x) => M.r2d(x)}
-                        yTransform={(y) => y * 100}
-                        downloadFileName={this.props.downloadName}
-                    />
+                    <span
+                        onMouseLeave={doUnhighlight} // We need to do it like this because componentWillUnmount() won't fire on Tooltipped components
+                    >
+                        <PGroupSummary
+                            bins={DAnglesLengths.angleAverages(this.props.residue.compound, ba.triplet)!}
+                            caption={tripletBondName(ba.triplet, ba.tag)}
+                            pGroup={this.props.pGroup}
+                            pGroupDatas={this.props.pGroupDatas}
+                            rangeFormatter={(v) => M.r2d(v).toFixed(2)}
+                            residueName={this.props.residueName}
+                            suffix={'\u00B0'}
+                            value={ba.angle}
+                            valueFormatter={(v) => M.r2d(v).toFixed(2)}
+                            naval={this.props.navalItem} // Contained value is already in degrees
+                            xTitle={'Angle (\u00B0)'}
+                            yTitle='Prob. (%)'
+                            xTransform={(x) => M.r2d(x)}
+                            yTransform={(y) => y * 100}
+                            downloadFileName={this.props.downloadName}
+                            highlighter={doHighlight}
+                            vi={this.props.vi}
+                        />
+                    </span>
                 </Tooltip>
-                {tripletBondName(ba.triplet, ba.tag)}
-                <div className='rdo-monospace rdo-talgn-right'>
+                <span
+                    onMouseEnter={doHighlight}
+                    onMouseLeave={doUnhighlight}
+                >
+                    {tripletBondName(ba.triplet, ba.tag)}
+                </span>
+                <div
+                    onMouseEnter={doHighlight}
+                    onMouseLeave={doUnhighlight}
+                    className='rdo-monospace rdo-talgn-right'
+                >
                     {M.r2d(ba.angle).toFixed(2)}{'\u00B0'}
                 </div>
                 <Prosco bin={this.props.maybeBin} />
@@ -685,10 +715,20 @@ class BondLengthDetails extends React.Component<{
     pGroupDatas: DAnglesLengths.PGroupData[],
     residue: Measurements.Residue,
     residueName: JSX.Element,
+    vi: ViewerInterop,
 }> {
     render() {
         const bl = this.props.bondLength;
         const clr = this.props.pGroup ? colorToTuple(this.props.pGroup.color) : this.props.outlierColor;
+
+        const doHighlight = () => {
+            const r = this.props.residue;
+            const a = ViewerApi.Payloads.Atom2Selection(r.modelNum, r.authChain, r.chain, r.authSeqId, r.insCode, r.altId, this.props.bondLength.pair[0]);
+            const b = ViewerApi.Payloads.Atom2Selection(r.modelNum, r.authChain, r.chain, r.authSeqId, r.insCode, r.altId, this.props.bondLength.pair[1]);
+
+            this.props.vi.api.command(ViewerApi.Commands.Highlight([a, b]));
+        };
+        const doUnhighlight = () => this.props.vi.api.command(ViewerApi.Commands.Unhighlight());
 
         return (
             <>
@@ -697,25 +737,40 @@ class BondLengthDetails extends React.Component<{
                     delayMsec={Constants.TooltipDelayMSec}
                     display='block'
                 >
-                    <PGroupSummary
-                        bins={DAnglesLengths.lengthAverages(this.props.residue.compound, bl.pair)!}
-                        caption={pairBondName(bl.pair, bl.tag)}
-                        pGroup={this.props.pGroup}
-                        pGroupDatas={this.props.pGroupDatas}
-                        rangeFormatter={(v) => v.toFixed(3)}
-                        residueName={this.props.residueName}
-                        suffix={'\u00A0\u212B'}
-                        value={bl.length}
-                        valueFormatter={(v) => v.toFixed(3)}
-                        naval={this.props.navalItem}
-                        xTitle={'Length (\u212B)'}
-                        yTitle='Prob. (%)'
-                        yTransform={(y) => y * 100}
-                        downloadFileName={this.props.downloadName}
-                    />
+                    <span
+                        onMouseLeave={doUnhighlight} // We need to do it like this because componentWillUnmount() won't fire on Tooltipped components
+                    >
+                        <PGroupSummary
+                            bins={DAnglesLengths.lengthAverages(this.props.residue.compound, bl.pair)!}
+                            caption={pairBondName(bl.pair, bl.tag)}
+                            pGroup={this.props.pGroup}
+                            pGroupDatas={this.props.pGroupDatas}
+                            rangeFormatter={(v) => v.toFixed(3)}
+                            residueName={this.props.residueName}
+                            suffix={'\u00A0\u212B'}
+                            value={bl.length}
+                            valueFormatter={(v) => v.toFixed(3)}
+                            naval={this.props.navalItem}
+                            xTitle={'Length (\u212B)'}
+                            yTitle='Prob. (%)'
+                            yTransform={(y) => y * 100}
+                            downloadFileName={this.props.downloadName}
+                            highlighter={doHighlight}
+                            vi={this.props.vi}
+                        />
+                    </span>
                 </Tooltip>
-                {pairBondName(bl.pair, bl.tag)}
-                <div className='rdo-monospace rdo-talgn-right'>
+                <span
+                    onMouseEnter={doHighlight}
+                    onMouseLeave={doUnhighlight}
+                >
+                    {pairBondName(bl.pair, bl.tag)}
+                </span>
+                <div
+                    className='rdo-monospace rdo-talgn-right'
+                    onMouseEnter={doHighlight}
+                    onMouseLeave={doUnhighlight}
+                >
                     {bl.length.toFixed(3)}{'\u00A0\u212B'}
                 </div>
                 <Prosco bin={this.props.maybeBin} />
@@ -795,6 +850,8 @@ type PGroupSummaryProps = {
     xTransform?: (x: number) => number,
     yTransform?: (y: number) => number,
     downloadFileName?: string,
+    highlighter: () => void,
+    vi: ViewerInterop,
 };
 class PGroupSummary extends React.Component<PGroupSummaryProps, { mode: 'chart'|'details' }> {
     constructor(props: PGroupSummaryProps) {
@@ -912,6 +969,10 @@ class PGroupSummary extends React.Component<PGroupSummaryProps, { mode: 'chart'|
         );
     }
 
+    componentDidMount() {
+        this.props.highlighter();
+    }
+
     render() {
         return (
             <div>
@@ -991,6 +1052,7 @@ interface ResidueElemProps {
     residueIdentifyingName: string,
     stats: ALMResidueStats,
     structureName: string,
+    vi: ViewerInterop,
 }
 interface ResidueDetailsProps extends ResidueElemProps {
     onHideRequested: () => void,
@@ -1060,7 +1122,8 @@ class ResidueDetails extends React.Component<ResidueDetailsProps, { floaterYOffs
                                 this.props.residueName,
                                 this.props.structureName,
                                 this.props.outlierColor,
-                                this.props.pgrpIndices
+                                this.props.pgrpIndices,
+                                this.props.vi
                             )}
                             <div />
                         </React.Fragment>
@@ -1080,7 +1143,8 @@ class ResidueDetails extends React.Component<ResidueDetailsProps, { floaterYOffs
                                 this.props.residueName,
                                 this.props.structureName,
                                 this.props.outlierColor,
-                                this.props.pgrpIndices
+                                this.props.pgrpIndices,
+                                this.props.vi
                             )}
                             <div />
                         </React.Fragment>
@@ -1396,6 +1460,7 @@ export class AnglesLengths extends View<
                 structureSelection={this.props.structureSelection}
                 viewerInterop={this.props.viewerInterop}
                 scrollMyselfIntoView={() => this.gotoResidue(identResName, ref)}
+                vi={this.props.viewerInterop}
                 key={idx}
             />;
 
@@ -1428,7 +1493,8 @@ export class AnglesLengths extends View<
                                 this.renderResidueName(x.residue, multipleModels),
                                 structureName,
                                 outlierColor,
-                                pgrpIndices
+                                pgrpIndices,
+                                this.props.viewerInterop
                             )}
                             <div />
                         </React.Fragment>
@@ -1457,7 +1523,8 @@ export class AnglesLengths extends View<
                                 this.renderResidueName(x.residue, multipleModels),
                                 structureName,
                                 outlierColor,
-                                pgrpIndices
+                                pgrpIndices,
+                                this.props.viewerInterop
                             )}
                             <div />
                         </React.Fragment>
