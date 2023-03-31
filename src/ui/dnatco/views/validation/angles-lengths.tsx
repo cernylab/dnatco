@@ -1437,6 +1437,8 @@ export class AnglesLengths extends View<
         inner.push(<span>{'\u00A0'}</span>);
         inner.push(<span className='rdo-nice-step-base' style={{ fontWeight: BarCaptionStyle.fontWeight }}>{r.compound}</span>);
         inner.push(<span>{r.authSeqId}</span>);
+        if (r.insCode)
+            inner.push(<span>{r.insCode}</span>);
         if (r.altId)
             inner.push(<span className='rdo-nice-step-altpos'>(alt. {r.altId})</span>);
 
