@@ -4,7 +4,11 @@ import { CustomNtCSets } from './custom-ntc-sets';
 import { ChainSelect, ModelSelect } from '../structure-selectors';
 import { View } from '../view';
 import { Common, niceStepName } from '../../common';
-import { EmptyStructureSelection, InvalidChain, InvalidModelIndex, InvalidResidue, InvalidStepId, StructureSelection } from '../../structure-selection';
+import {
+    EmptyStructureSelection,
+    InvalidAtom, InvalidChain, InvalidModelIndex, InvalidResidue, InvalidStepId,
+    StructureSelection
+} from '../../structure-selection';
 import { DynamicTable } from '../../../common/dynamic-table';
 import { NamedList, NamedListItem } from '../../../common/named-list';
 import { IconButton } from '../../../common/push-button';
@@ -144,7 +148,7 @@ export class ChangeNtCs extends View<Refinement.Props> {
                     const stepName = row[cIdx].data;
                     const stepId = StepsMapper.byName(this.props.dnatcofication, stepName)?.id ?? InvalidStepId;
                     if (stepId !== InvalidStepId) {
-                        const sel = ChangeNtCs.SelectionMaker(stepId, InvalidResidue, this.props.structureSelection.steps, this.props.structureSelection.residues);
+                        const sel = ChangeNtCs.SelectionMaker(stepId, InvalidResidue, InvalidAtom, this.props.structureSelection.steps, this.props.structureSelection.residues, this.props.structureSelection.atoms, this.props.dnatcofication);
                         this.props.switching.changeSelection(sel, ChangeNtCs.SelectionDisplayer);
                     }
                 }}

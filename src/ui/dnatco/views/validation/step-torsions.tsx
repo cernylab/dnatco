@@ -1,7 +1,7 @@
 import React from 'react';
 import { Validation } from './common';
 import { ChainSelect, ModelSelect, StepSelect } from '../structure-selectors';
-import { InvalidResidue } from '../../structure-selection';
+import { EmptySelectionPieces, InvalidAtom, InvalidResidue } from '../../structure-selection';
 import { View } from '../view';
 import { Common as C } from '../../common';
 import { NamedList, NamedListItem } from '../../../common/named-list';
@@ -523,8 +523,8 @@ export class StepTorsions extends View<View.Props> {
                             switching={this.props.switching}
                             onChange={(stepId) => {
                                 const sel = stepId === -1
-                                    ? { steps: [], residues: [], reconstruct: true }
-                                    : StepTorsions.SelectionMaker(stepId, InvalidResidue, this.props.structureSelection.steps, this.props.structureSelection.residues);
+                                    ? EmptySelectionPieces
+                                    : StepTorsions.SelectionMaker(stepId, InvalidResidue, InvalidAtom, this.props.structureSelection.steps, this.props.structureSelection.residues, this.props.structureSelection.atoms, this.props.dnatcofication);
                                 this.props.switching.changeSelection(sel, StepTorsions.SelectionDisplayer);
                             }}
                         />

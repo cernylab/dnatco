@@ -2,7 +2,11 @@ import type { StandardLonghandProperties } from 'csstype';
 import React from 'react';
 import { Validation } from './common';
 import { ChainSelect, ModelSelect } from '../structure-selectors';
-import { EmptyStructureSelection, InvalidChain, InvalidModelIndex, InvalidResidue, InvalidStepId, StructureSelection } from '../../structure-selection';
+import {
+    EmptyStructureSelection,
+    InvalidAtom, InvalidChain, InvalidModelIndex, InvalidResidue, InvalidStepId,
+    StructureSelection
+} from '../../structure-selection';
 import { View } from '../view';
 import { confalPercentile, niceStepName, Common } from '../../common';
 import { SearchBox } from '../../search-box';
@@ -186,7 +190,7 @@ export class ConfalsRmsds extends View<View.Props> {
             return results;
         },
         onUseResult: (step) => {
-            const sel = ConfalsRmsds.SelectionMaker(step.id, InvalidResidue, this.props.structureSelection.steps, this.props.structureSelection.residues);
+            const sel = ConfalsRmsds.SelectionMaker(step.id, InvalidResidue, InvalidAtom, this.props.structureSelection.steps, this.props.structureSelection.residues, this.props.structureSelection.atoms, this.props.dnatcofication);
             this.props.switching.changeSelection(sel, ConfalsRmsds.SelectionDisplayer);
         }
     }
@@ -364,7 +368,7 @@ export class ConfalsRmsds extends View<View.Props> {
                     const stepName = row[cIdx].data;
                     const stepId = StepsMapper.byName(this.props.dnatcofication, stepName)?.id ?? InvalidStepId;
                     if (stepId !== InvalidStepId) {
-                        const sel = ConfalsRmsds.SelectionMaker(stepId, InvalidResidue, this.props.structureSelection.steps, this.props.structureSelection.residues);
+                        const sel = ConfalsRmsds.SelectionMaker(stepId, InvalidResidue, InvalidAtom, this.props.structureSelection.steps, this.props.structureSelection.residues, this.props.structureSelection.atoms, this.props.dnatcofication);
                         this.props.switching.changeSelection(sel, ConfalsRmsds.SelectionDisplayer);
                     }
                 }}

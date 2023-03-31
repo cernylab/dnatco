@@ -6,7 +6,7 @@ import { ModelSelect } from '../structure-selectors';
 import { View } from '../view';
 import { Constants } from '../../constants';
 import { niceStepNameText } from '../../common';
-import { InvalidModelIndex, InvalidResidue } from '../../structure-selection';
+import { InvalidAtom, InvalidModelIndex, InvalidResidue } from '../../structure-selection';
 import { NamedList, NamedListItem } from '../../../common/named-list';
 import { OkResult, isError, isOk } from '../../../../dnatco';
 import { Dnatcofication } from '../../../../dnatco/dnatcofication';
@@ -360,7 +360,7 @@ export class RsccPlot extends View<View.Props, State> {
                     if (pt) {
                         const datum = pt.customdata;
                         if (typeof datum === 'number') {
-                            const sel = RsccPlot.SelectionMaker(datum, InvalidResidue, this.props.structureSelection.steps, this.props.structureSelection.residues);
+                            const sel = RsccPlot.SelectionMaker(datum, InvalidResidue, InvalidAtom, this.props.structureSelection.steps, this.props.structureSelection.residues, this.props.structureSelection.atoms, this.props.dnatcofication);
                             this.props.switching.changeSelection(sel, RsccPlot.SelectionDisplayer);
                         }
                     }

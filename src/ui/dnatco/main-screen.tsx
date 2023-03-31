@@ -1,8 +1,8 @@
 import React from 'react';
 import { getCifValue } from './util';
 import {
-    EmptyStructureSelection,
-    InvalidChain, InvalidModelIndex, InvalidStepId, InvalidResidue,
+    EmptySelectionPieces, EmptyStructureSelection,
+    InvalidAtom, InvalidChain, InvalidModelIndex, InvalidStepId, InvalidResidue,
     SelectionDisplayer, SelectedPieces,
     StructureSelection, StructureSelectionFromViewer, StructureSelectionSwitching
 } from './structure-selection';
@@ -55,11 +55,6 @@ function masterModeViews(mode: MasterMode): { id: ViewType, caption: string }[] 
 
 const ExcludeModelIndex = ['modelIndex'] as (keyof StructureSelection)[];
 const ExcludeModelIndexAndChain = ['modelIndex', 'chain'] as (keyof StructureSelection)[];
-const EmptyPieces: SelectedPieces = {
-    steps: [],
-    residues: [],
-    reconstruct: true,
-};
 
 interface State {
     activeViews: {
@@ -78,6 +73,7 @@ export class MainScreen extends WithSubscriptions<MainScreen.Props, State> {
         chain: InvalidChain,
         steps: [] as StructureSelection['steps'],
         residues: [] as StructureSelection['residues'],
+        atoms: [] as StructureSelection['atoms'],
     }
 
     readonly changeSelection = async (pieces: SelectedPieces, displayer: SelectionDisplayer) => {
@@ -85,6 +81,7 @@ export class MainScreen extends WithSubscriptions<MainScreen.Props, State> {
 
         this.structureSelection.steps = [...pieces.steps];
         this.structureSelection.residues = [...pieces.residues];
+        this.structureSelection.atoms = [...pieces.atoms];
 
         await displayer(pieces, this.props.dnatcofication, this.props.viewerInterop, this.state.selectedCustomNtCSet);
 
@@ -215,6 +212,7 @@ export class MainScreen extends WithSubscriptions<MainScreen.Props, State> {
                 const pieces = {
                     steps: this.structureSelection.steps,
                     residues: this.structureSelection.residues,
+                    atoms: this.structureSelection.atoms,
                     reconstruct: false,
                 };
                 const displayer = Register.Views[this.activeView()].selectionDisplayer;
@@ -230,12 +228,15 @@ export class MainScreen extends WithSubscriptions<MainScreen.Props, State> {
                     if (av.granularity !== 'residue')
                         return;
 
-                    const r = StructureSelection.authToCif(this.props.dnatcofication.data.structures[0], residue);
+                    const r = StructureSelection.authToCifResidue(this.props.dnatcofication.data.structures[0], residue);
                     if (r) {
-                        const pieces = Register.Views[this.activeView()].selectionMaker(InvalidStepId, r ,this.structureSelection.steps, this.structureSelection.residues);
+                        const pieces = Register.Views[this.activeView()].selectionMaker(
+                            InvalidStepId, r , InvalidAtom,
+                            this.structureSelection.steps, this.structureSelection.residues, this.structureSelection.atoms,
+                            this.props.dnatcofication
+                        );
                         this.changeSelection(pieces, Register.Views[this.activeView()].selectionDisplayer);
                     }
-
                 }
             ),
             this.subscribe(
@@ -248,7 +249,11 @@ export class MainScreen extends WithSubscriptions<MainScreen.Props, State> {
 
                     const stepId = StepsMapper.byName(this.props.dnatcofication, name)?.id;
                     if (stepId !== undefined) {
-                        const pieces = Register.Views[this.activeView()].selectionMaker(stepId, InvalidResidue, this.structureSelection.steps, this.structureSelection.residues);
+                        const pieces = Register.Views[this.activeView()].selectionMaker(
+                            stepId, InvalidResidue, InvalidAtom,
+                            this.structureSelection.steps, this.structureSelection.residues, this.structureSelection.atoms,
+                            this.props.dnatcofication
+                        );
                         this.changeSelection(pieces, Register.Views[this.activeView()].selectionDisplayer);
                     }
                 }
@@ -258,8 +263,9 @@ export class MainScreen extends WithSubscriptions<MainScreen.Props, State> {
                 () => {
                     this.structureSelection.steps.splice(0, this.structureSelection.steps.length);
                     this.structureSelection.residues.splice(0, this.structureSelection.residues.length);
+                    this.structureSelection.atoms.splice(0, this.structureSelection.atoms.length);
 
-                    this.changeSelection(EmptyPieces, Register.Views[this.activeView()].selectionDisplayer);
+                    this.changeSelection(EmptySelectionPieces, Register.Views[this.activeView()].selectionDisplayer);
                 }
             );
 
@@ -287,6 +293,7 @@ export class MainScreen extends WithSubscriptions<MainScreen.Props, State> {
                     const pieces = {
                         steps: this.structureSelection.steps,
                         residues: this.structureSelection.residues,
+                        atoms: this.structureSelection.atoms,
                         reconstruct: true,
                     };
                     this.changeSelection(pieces, av.selectionDisplayer);
@@ -299,6 +306,7 @@ export class MainScreen extends WithSubscriptions<MainScreen.Props, State> {
                 const pieces = {
                     steps: this.structureSelection.steps,
                     residues: this.structureSelection.residues,
+                    atoms: this.structureSelection.atoms,
                     reconstruct: true,
                 };
                 this.changeSelection(pieces, av.selectionDisplayer);
@@ -309,6 +317,7 @@ export class MainScreen extends WithSubscriptions<MainScreen.Props, State> {
                     const pieces = {
                         steps: this.structureSelection.steps,
                         residues: this.structureSelection.residues,
+                        atoms: this.structureSelection.atoms,
                         reconstruct: false,
                     };
                     const displayer = Register.Views[this.activeView()].selectionDisplayer;

@@ -3,7 +3,7 @@ import { Annotation } from './common';
 import { ChainSelect, ModelSelect } from '../structure-selectors';
 import { View } from '../view';
 import { SearchBox } from '../../search-box';
-import { EmptyStructureSelection, InvalidChain, InvalidModelIndex, InvalidResidue, InvalidStepId, StructureSelection } from '../../structure-selection';
+import { EmptyStructureSelection, InvalidAtom, InvalidChain, InvalidModelIndex, InvalidResidue, InvalidStepId, StructureSelection } from '../../structure-selection';
 import { niceStepName, Common } from '../../common';
 import { DynamicTable } from '../../../common/dynamic-table';
 import { NamedList, NamedListItem } from '../../../common/named-list';
@@ -58,7 +58,14 @@ export class AssignedNtCs extends View<View.Props> {
 
             return results;
         },
-        onUseResult: (step) => this.props.switching.changeSelection(AssignedNtCs.SelectionMaker(step.id, InvalidResidue, this.props.structureSelection.steps, this.props.structureSelection.residues), AssignedNtCs.SelectionDisplayer),
+        onUseResult: (step) => this.props.switching.changeSelection(
+            AssignedNtCs.SelectionMaker(
+                step.id, InvalidResidue, InvalidAtom,
+                this.props.structureSelection.steps, this.props.structureSelection.residues, this.props.structureSelection.atoms,
+                this.props.dnatcofication
+            ),
+            AssignedNtCs.SelectionDisplayer
+        ),
     }
 
     private readonly SearchBoxProps: SearchBox.Props<Step> = {
@@ -176,7 +183,14 @@ export class AssignedNtCs extends View<View.Props> {
                     const stepName = row[cIdx].data;
                     const stepId = StepsMapper.byName(this.props.dnatcofication, stepName)?.id ?? InvalidStepId;
                     if (stepId !== InvalidStepId)
-                        this.props.switching.changeSelection(AssignedNtCs.SelectionMaker(stepId, InvalidResidue, this.props.structureSelection.steps, this.props.structureSelection.residues), AssignedNtCs.SelectionDisplayer);
+                        this.props.switching.changeSelection(
+                            AssignedNtCs.SelectionMaker(
+                                stepId, InvalidResidue, InvalidAtom,
+                                this.props.structureSelection.steps, this.props.structureSelection.residues, this.props.structureSelection.atoms,
+                                this.props.dnatcofication
+                            ),
+                            AssignedNtCs.SelectionDisplayer
+                        );
                 }}
                 highlightedTag={stepName}
                 scrollTainer={this.tableTainer.current ?? void 0}

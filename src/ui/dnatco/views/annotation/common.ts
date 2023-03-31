@@ -30,7 +30,16 @@ export namespace Annotation {
         await vi.api.command(ViewerApi.Commands.SelectStructures(selected));
     }
 
-    export function selectionMaker(newStepId: number, newResidue: SelectedPieces['residues'][0], steps: number[], residues: SelectedPieces['residues']): SelectedPieces {
-        return { steps: [newStepId], residues: [], reconstruct: !(steps[0] === newStepId && steps.length === 1) };
+    export function selectionMaker(
+        newStepId: SelectedPieces['steps'][0], newResidue: SelectedPieces['residues'][0], newAtom: SelectedPieces['atoms'][0],
+        steps: number[], residues: SelectedPieces['residues'], atoms: SelectedPieces['atoms'],
+        d: Dnatcofication
+    ): SelectedPieces {
+        return {
+            steps: [newStepId],
+            residues: [],
+            atoms: [],
+            reconstruct: !(steps[0] === newStepId && steps.length === 1)
+        };
     }
 }

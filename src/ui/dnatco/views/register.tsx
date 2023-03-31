@@ -15,9 +15,10 @@ import { RsccPlot } from './validation/rscc-plot';
 import { SimilarityPlot } from './validation/similarity-plot';
 import { StepTorsions } from './validation/step-torsions';
 import { SelectedPieces, SelectionDisplayer } from '../structure-selection';
+import { Dnatcofication } from '../../../dnatco/dnatcofication';
 
 const NullDisplayer = async () => {};
-const NullMaker = () => ({ steps: [], residues: [], reconstruct: true });
+const NullMaker = () => ({ steps: [], residues: [], atoms: [], reconstruct: true });
 
 export namespace Register {
     type PropsType = {
@@ -29,7 +30,11 @@ export namespace Register {
     export type View<Kind extends keyof PropsType> = {
         render: (props: PropsType[Kind]) => React.ReactNode,
         selectionDisplayer: SelectionDisplayer,
-        selectionMaker: (newStepId: number, newResidue: SelectedPieces['residues'][0], steps: number[], residues: SelectedPieces['residues']) => SelectedPieces,
+        selectionMaker: (
+            newStepId: SelectedPieces['steps'][0], newResidue: SelectedPieces['residues'][0], newAtom: SelectedPieces['atoms'][0],
+            steps: number[], residues: SelectedPieces['residues'], atoms: SelectedPieces['atoms'],
+            d: Dnatcofication
+        ) => SelectedPieces,
         granularity: 'dont-care' | 'two-residues' | 'residue',
         unscrollableContainer?: boolean,
     };

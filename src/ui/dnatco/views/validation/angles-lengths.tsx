@@ -7,8 +7,8 @@ import { Constants } from '../../constants';
 import { SearchBox } from '../../search-box';
 import { StatsBar } from '../../stats-bar';
 import {
-    AuthResidue, CifResidue,
-    InvalidChain, InvalidModelIndex,
+    AuthResidue, CifAtom, CifResidue,
+    InvalidAtom, InvalidChain, InvalidModelIndex,
     SelectedPieces,
     StructureSelection
 } from '../../structure-selection';
@@ -224,6 +224,16 @@ function getNavalBond(d: Dnatcofication, r: Measurements.Residue, pair: Pair) {
             );
         }) ?? -1;
     return niIdx === -1 ? EmptyNavalItem : NavalItem(d.data.naval.bonds[niIdx]);
+}
+
+function makeAtomSelectionPayload(r: Measurements.Residue, atomName: string) {
+    if (isShiftedName(atomName)) {
+        if (Measurements.Residue.hasPrevious(r))
+            return ViewerApi.Payloads.AtomSelection(r.modelNum, r.authChain, r.chain, r.prevAuthSeqId!, r.prevInsCode!, r.prevAltId!, unshiftName(atomName), 0);
+        else
+            return void 0;
+    } else
+        return ViewerApi.Payloads.AtomSelection(r.modelNum, r.authChain, r.chain, r.authSeqId, r.insCode, r.altId, atomName, 0);
 }
 
 function makeCollapsibleHeader(collapsed: React.ReactNode, expanded?: React.ReactNode): { collapsed: React.ReactNode, expanded: React.ReactNode } {
@@ -647,11 +657,12 @@ class BondAngleDetails extends React.Component<{
 
         const doHighlight = () => {
             const r = this.props.residue;
-            const a = ViewerApi.Payloads.Atom2Selection(r.modelNum, r.authChain, r.chain, r.authSeqId, r.insCode, r.altId, this.props.bondAngle.triplet[0]);
-            const b = ViewerApi.Payloads.Atom2Selection(r.modelNum, r.authChain, r.chain, r.authSeqId, r.insCode, r.altId, this.props.bondAngle.triplet[1]);
-            const c = ViewerApi.Payloads.Atom2Selection(r.modelNum, r.authChain, r.chain, r.authSeqId, r.insCode, r.altId, this.props.bondAngle.triplet[2]);
+            const a = makeAtomSelectionPayload(r, this.props.bondAngle.triplet[0]);
+            const b = makeAtomSelectionPayload(r, this.props.bondAngle.triplet[1]);
+            const c = makeAtomSelectionPayload(r, this.props.bondAngle.triplet[2]);
 
-            this.props.vi.api.command(ViewerApi.Commands.Highlight([a, b, c]));
+            if (a && b && c)
+                this.props.vi.api.command(ViewerApi.Commands.Highlight([a, b, c]));
         };
         const doUnhighlight = () => this.props.vi.api.command(ViewerApi.Commands.Unhighlight());
 
@@ -723,10 +734,11 @@ class BondLengthDetails extends React.Component<{
 
         const doHighlight = () => {
             const r = this.props.residue;
-            const a = ViewerApi.Payloads.Atom2Selection(r.modelNum, r.authChain, r.chain, r.authSeqId, r.insCode, r.altId, this.props.bondLength.pair[0]);
-            const b = ViewerApi.Payloads.Atom2Selection(r.modelNum, r.authChain, r.chain, r.authSeqId, r.insCode, r.altId, this.props.bondLength.pair[1]);
+            const a = makeAtomSelectionPayload(r, this.props.bondLength.pair[0]);
+            const b = makeAtomSelectionPayload(r, this.props.bondLength.pair[1]);
 
-            this.props.vi.api.command(ViewerApi.Commands.Highlight([a, b]));
+            if (a && b)
+                this.props.vi.api.command(ViewerApi.Commands.Highlight([a, b]));
         };
         const doUnhighlight = () => this.props.vi.api.command(ViewerApi.Commands.Unhighlight());
 
@@ -1222,6 +1234,16 @@ class Residue extends React.Component<ResidueElemProps & { structureSelection: S
             seqId: this.props.residue.seqId,
             altId: this.props.residue.altId
         };
+        let cifAtomPrev: CifAtom;
+        if (Measurements.Residue.hasPrevious(this.props.residue)) {
+            cifAtomPrev = {
+                modelNum: this.props.residue.modelNum,
+                chain: this.props.residue.chain,
+                seqId: this.props.residue.prevSeqId!,
+                altId: this.props.residue.prevAltId!,
+                atomId: "O3'",
+            };
+        }
 
         const cifResMatches = (r: CifResidue) => {
             return (
@@ -1255,10 +1277,17 @@ class Residue extends React.Component<ResidueElemProps & { structureSelection: S
 
                         this.props.structureSelection.residues = this.props.structureSelection.residues.filter((x) => x.modelNum === cifRes.modelNum);
                         this.props.structureSelection.residues.push(cifRes);
-                        selectionDisplayer({ steps: [], residues: this.props.structureSelection.residues, reconstruct: false }, this.props.d, this.props.viewerInterop);
+
+                        if (cifAtomPrev) {
+                            this.props.structureSelection.atoms = this.props.structureSelection.atoms.filter((x) => x.modelNum === cifAtomPrev.modelNum);
+                            this.props.structureSelection.atoms.push(cifAtomPrev);
+                        }
+
+                        selectionDisplayer({ steps: [], residues: this.props.structureSelection.residues, atoms: this.props.structureSelection.atoms, reconstruct: false }, this.props.d, this.props.viewerInterop);
                     } else {
                         this.props.structureSelection.residues = this.props.structureSelection.residues.filter((x) => !cifResMatches(x));
-                        selectionDisplayer({ steps: [], residues: this.props.structureSelection.residues, reconstruct: true }, this.props.d, this.props.viewerInterop);
+                        this.props.structureSelection.atoms = this.props.structureSelection.atoms.filter((x) => x.modelNum === cifAtomPrev.modelNum);
+                        selectionDisplayer({ steps: [], residues: this.props.structureSelection.residues, atoms: this.props.structureSelection.atoms, reconstruct: true }, this.props.d, this.props.viewerInterop);
                     }
                 }}
                 initiallyExpanded={!!this.props.structureSelection.residues.find(cifResMatches)}
@@ -1583,7 +1612,7 @@ export class AnglesLengths extends View<
         });
         this.subscribe(this.props.viewerInterop.events.residueRequested, (sel) => {
             const authRes: AuthResidue = sel;
-            const cifRes = StructureSelection.authToCif(this.props.dnatcofication.data.structures[0], authRes);
+            const cifRes = StructureSelection.authToCifResidue(this.props.dnatcofication.data.structures[0], authRes);
             if (!cifRes)
                 return;
 
@@ -1955,27 +1984,70 @@ async function selectionDisplayer(pieces: SelectedPieces, d: Dnatcofication, vi:
 
     const selected = [];
     for (const r of pieces.residues) {
-        const authRes = StructureSelection.cifToAuth(d.data.structures[0], r);
+        const authRes = StructureSelection.cifToAuthResidue(d.data.structures[0], r);
         if (authRes) {
             const cmdRes = ViewerApi.Commands.ResidueSelection(r.modelNum, authRes.chain, authRes.cifChain, authRes.seqId, authRes.insCode, authRes.altId, Constants.StepColor);
             selected.push(cmdRes);
+        }
+    }
+    for (const a of pieces.atoms) {
+        const authAtom = StructureSelection.cifToAuthAtom(d.data.structures[0], a);
+        if (authAtom) {
+            const cmdAtom = ViewerApi.Commands.AtomSelection(authAtom.modelNum, authAtom.chain, authAtom.cifChain, authAtom.seqId, authAtom.insCode, authAtom.altId, authAtom.cifAtomId, 0);
+            selected.push(cmdAtom);
         }
     }
 
     await vi.api.command(ViewerApi.Commands.SelectStructures(selected));
 }
 
-function selectionMaker(newStepId: number, newResidue: SelectedPieces['residues'][0], steps: number[], residues: SelectedPieces['residues']): SelectedPieces {
+function selectionMaker(
+    newStepId: SelectedPieces['steps'][0], newResidue: SelectedPieces['residues'][0], newAtom: SelectedPieces['atoms'][0],
+    steps: number[], residues: SelectedPieces['residues'], atoms: SelectedPieces['atoms'],
+    d: Dnatcofication
+): SelectedPieces {
     let newResidues;
-    if (residues.find((x) => StructureSelection.cifResiduesMatch(x, newResidue))) {
+    if (residues.find((x) => StructureSelection.cifResiduesMatch(x, newResidue)))
         newResidues = residues;
-    } else {
+    else
         newResidues = [...residues.filter((x) => x.modelNum === newResidue.modelNum), newResidue];
+
+    // If the selection event came from the viewer, the viewer does not know that we want to
+    // select the residue AND the preceding O3' atom - if there is any. We need to augment the input atom
+    // accordingly by hand here.
+    if (newAtom === InvalidAtom) {
+        const chain = d.data.alm.chains.get(newResidue.modelNum)?.get(newResidue.chain);
+        if (chain) {
+            for (const idx of chain) {
+                const r = d.data.alm.residues[idx];
+                if (r.seqId === newResidue.seqId && r.altId === newResidue.altId) {
+                    if (Measurements.Residue.hasPrevious(r)) {
+                        newAtom = {
+                            modelNum: r.modelNum,
+                            chain: r.chain,
+                            seqId: r.prevSeqId!,
+                            altId: r.prevAltId!,
+                            atomId: "O3'",
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    let newAtoms;
+    if (atoms.find((x) => StructureSelection.cifAtomsMatch(x, newAtom)))
+        newAtoms = atoms;
+    else {
+        newAtoms = atoms.filter((x) => x.modelNum === newAtom.modelNum);
+        if (newAtom !== InvalidAtom)
+            newAtoms.push(newAtom);
     }
 
     return {
         steps: [],
         residues: newResidues,
+        atoms: newAtoms,
         reconstruct: steps.length > 0
     };
 }

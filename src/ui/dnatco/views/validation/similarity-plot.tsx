@@ -3,7 +3,7 @@ import Plot from 'react-plotly.js';
 import { Validation } from './common';
 import { ChainSelect, ModelSelect, StepSelect } from '../structure-selectors';
 import { View } from '../view';
-import { InvalidResidue } from '../../structure-selection';
+import { EmptySelectionPieces, InvalidAtom, InvalidResidue } from '../../structure-selection';
 import { valueToSemaphore } from '../../util';
 import { NamedList, NamedListItem } from '../../../common/named-list';
 import { Constants } from '../../../dnatco/constants';
@@ -116,8 +116,8 @@ export class SimilarityPlot extends View<View.Props> {
                             switching={this.props.switching}
                             onChange={(stepId) => {
                                 const sel = stepId === -1
-                                    ? { steps: [], residues: [], reconstruct: true }
-                                    : SimilarityPlot.SelectionMaker(stepId, InvalidResidue, this.props.structureSelection.steps, this.props.structureSelection.residues);
+                                    ? EmptySelectionPieces
+                                    : SimilarityPlot.SelectionMaker(stepId, InvalidResidue, InvalidAtom, this.props.structureSelection.steps, this.props.structureSelection.residues, this.props.structureSelection.atoms, this.props.dnatcofication);
                                 this.props.switching.changeSelection(sel, SimilarityPlot.SelectionDisplayer);
                             }}
                         />

@@ -4,7 +4,7 @@ import { Refinement } from './common';
 import { CustomNtCSets } from './custom-ntc-sets';
 import { ChainSelect, ModelSelect, StepSelect } from '../structure-selectors';
 import { View } from '../view';
-import { InvalidResidue, InvalidStepId } from '../../structure-selection';
+import { EmptySelectionPieces, InvalidAtom, InvalidResidue, InvalidStepId } from '../../structure-selection';
 import { NamedList, NamedListItem } from '../../../common/named-list';
 import { Constants } from '../../../dnatco/constants';
 import { getConnectivities, getStepsAtoms } from '../../../../dnatco/connectivity-similarity';
@@ -245,8 +245,8 @@ export class ConnectivityPlot extends View<Refinement.Props> {
                             switching={this.props.switching}
                             onChange={(stepId) => {
                                 const sel = stepId === -1
-                                    ? { steps: [], residues: [], reconstruct: true }
-                                    : ConnectivityPlot.SelectionMaker(stepId, InvalidResidue, this.props.structureSelection.steps, this.props.structureSelection.residues);
+                                    ? EmptySelectionPieces
+                                    : ConnectivityPlot.SelectionMaker(stepId, InvalidResidue, InvalidAtom, this.props.structureSelection.steps, this.props.structureSelection.residues, this.props.structureSelection.atoms, this.props.dnatcofication);
                                 this.props.switching.changeSelection(sel, ConnectivityPlot.SelectionDisplayer);
                             }}
                         />

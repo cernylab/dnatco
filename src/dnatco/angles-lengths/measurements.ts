@@ -82,14 +82,18 @@ export namespace Measurements {
             return void 0;
 
         const residue: Residue = {
-            chain: firstAtom.label_asym_id,
             compound: compId,
+            chain: firstAtom.label_asym_id,
+
             seqId: firstAtom.label_seq_id,
             insCode: firstAtom.pdbx_PDB_ins_code,
             altId,
+
             authChain: firstAtom.auth_asym_id,
             authSeqId: firstAtom.auth_seq_id,
+
             modelNum: firstAtom.pdbx_PDB_model_num,
+
             bondLengths: [],
             bondAngles: [],
         };
@@ -99,6 +103,15 @@ export namespace Measurements {
             const a = findAtom(step, name, altId, seqId + shift, firstAtom.pdbx_PDB_model_num);
             if (!a)
                 return void 0;
+
+            if (shift === -1) {
+                // Yes, this is awkward but then again the problem itself is awkward
+                residue.prevSeqId = a.label_seq_id;
+                residue.prevInsCode = a.pdbx_PDB_ins_code;
+                residue.prevAltId = a.label_alt_id === jsLLKA.NO_ALTID ? '' : String.fromCharCode(a.label_alt_id);
+                residue.prevAuthSeqId = a.auth_seq_id;
+            }
+
             requiredAtoms.set(shiftedName(name, shift), a);
         }
 
@@ -129,19 +142,36 @@ export namespace Measurements {
     };
 
     export type Residue = {
-        chain: string;
-        compound: Residues.ElementaryResidue;
-        seqId: number;
-        insCode: string;
-        altId: string;
-        modelNum: number;
+        compound: Residues.ElementaryResidue,
+        chain: string,
 
-        authChain: string;
-        authSeqId: number;
+        seqId: number,
+        insCode: string,
+        altId: string,
+        authChain: string,
+        authSeqId: number,
 
-        bondLengths: BondLength[];
-        bondAngles: BondAngle[];
+        prevSeqId?: number,
+        prevInsCode?: string,
+        prevAltId?: string,
+        prevAuthSeqId?: number,
+
+        modelNum: number,
+
+        bondLengths: BondLength[],
+        bondAngles: BondAngle[],
     };
+
+    export namespace Residue {
+        export function hasPrevious(r: Residue) {
+            return (
+                r.prevAltId !== undefined &&
+                r.prevSeqId !== undefined &&
+                r.prevInsCode !== undefined &&
+                r.prevAuthSeqId !== undefined
+            );
+        }
+    }
 
     export function allSteps(steps: jsLLKA.LLKAStructures) {
         const residues = [];
