@@ -2,12 +2,12 @@ const path = require('path');
 const CopyPlugin = require('copy-webpack-plugin');
 const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
-const TerserPlugin = require('terser-webpack-plugin');
 
 const DistDir = 'dist';
 
 function sharedConfig(productionBuild) {
     return {
+        mode: productionBuild ? 'production' : 'debug',
         module: {
             rules: [
                 {
@@ -94,13 +94,6 @@ function sharedConfig(productionBuild) {
                 ]
             })
         ],
-        optimization: {
-            minimize: productionBuild,
-            minimizer: [
-                new CssMinimizerPlugin(),
-                new TerserPlugin(),
-            ],
-        },
         resolve: {
             modules: [
                 'node_modules',
@@ -135,6 +128,9 @@ function createApp(name, productionBuild) {
 
 module.exports = (env, argv) => {
     const productionBuild = argv.mode === 'production';
+
+    if (productionBuild)
+        console.log('Building for production!');
 
     return createApp('index', productionBuild);
 };
