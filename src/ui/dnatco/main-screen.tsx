@@ -11,6 +11,8 @@ import { Register } from './views/register';
 import { DynamicSplitView } from '../common/dynamic-split-view';
 import { WithSubscriptions } from '../service/with-subscriptions';
 import { ViewerInterop, ViewerApi } from '../../viewer/viewer-interop';
+import { Em3dReconstruction } from '../../cif/categories/em-3d-reconstruction';
+import { Exptl } from '../../cif/categories/experimental';
 import { Refine } from '../../cif/categories/refine';
 import { Dnatcofication } from '../../dnatco/dnatcofication';
 import { StepsMapper } from '../../dnatco/steps-mapper';
@@ -159,6 +161,31 @@ export class MainScreen extends WithSubscriptions<MainScreen.Props, State> {
 
     private activeView() {
         return this.state.activeViews[this.props.masterMode];
+    }
+
+    private renderResolution() {
+        const method = getCifValue(this.props.dnatcofication, Exptl, 'method');
+        if (method === 'x-ray diffraction') {
+            return (
+                <div>
+                    <span className='rdo-emphasize'>Low:{'\u00A0'}</span><span>{getCifValue(this.props.dnatcofication, Refine, 'ls_d_res_low')?.toFixed(3) ?? 'N/A'}</span>
+                    {',\u00A0'}
+                    <span className='rdo-emphasize'>High:{'\u00A0'}</span><span>{getCifValue(this.props.dnatcofication, Refine, 'ls_d_res_high')?.toFixed(3) ?? 'N/A'}</span>
+                </div>
+            );
+        } else if (method === 'electron microscopy') {
+            return (
+                <div>
+                    <span className='rdo-emphasize'>EM:{'\u00A0'}</span><span>{getCifValue(this.props.dnatcofication, Em3dReconstruction, 'resolution')?.toFixed(3) ?? 'N/A'}</span>
+                </div>
+            );
+        } else {
+            return (
+                <div>
+                    <span className='rdo-emphasize'>N/A</span>
+                </div>
+            );
+        }
     }
 
     private renderView() {
@@ -367,11 +394,7 @@ export class MainScreen extends WithSubscriptions<MainScreen.Props, State> {
                         </div>
                         <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center', gap: 'var(--h-gap)' }}>
                             <div className='rdo-strong'>Resolution</div>
-                            <div>
-                                <span className='rdo-emphasize'>Low:{'\u00A0'}</span><span>{getCifValue(this.props.dnatcofication, Refine, 'ls_d_res_low')?.toFixed(3) ?? 'N/A'}</span>
-                                {',\u00A0'}
-                                <span className='rdo-emphasize'>High:{'\u00A0'}</span><span>{getCifValue(this.props.dnatcofication, Refine, 'ls_d_res_high')?.toFixed(3) ?? 'N/A'}</span>
-                            </div>
+                            {this.renderResolution()}
                         </div>
                     </div>
                     <DynamicSplitView

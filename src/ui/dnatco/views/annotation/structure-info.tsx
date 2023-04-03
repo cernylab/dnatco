@@ -6,6 +6,7 @@ import { NamedList, NamedListItem } from '../../../common/named-list';
 import { Cif } from '../../../../cif';
 import { Citation } from '../../../../cif/categories/citation';
 import { CitationAuthor } from '../../../../cif/categories/citation-author';
+import { Em3dReconstruction } from '../../../../cif/categories/em-3d-reconstruction';
 import { Exptl } from '../../../../cif/categories/experimental';
 import { PdbxDatabaseStatus } from '../../../../cif/categories/pdbx-database-status';
 import { Refine } from '../../../../cif/categories/refine';
@@ -48,6 +49,16 @@ function primaryPublication(d: Dnatcofication) {
     }
 }
 
+function resolution(d: Dnatcofication) {
+    const method = getCifValue(d, Exptl, 'method');
+    if (method === 'x-ray diffraction') {
+        return `Low: ${getCifValue(d, Refine, 'ls_d_res_low')?.toFixed(3) ?? NA}, High: ${getCifValue(d, Refine, 'ls_d_res_high')?.toFixed(3) ?? NA}`;
+    } else if (method === 'electron microscopy') {
+        return `${getCifValue(d, Em3dReconstruction, 'resolution')?.toFixed(3) ?? NA} (${getCifValue(d, Em3dReconstruction, 'resolution_method')})`;
+    } else
+        return NA;
+}
+
 export class StructureInfo extends View {
     render() {
         const priPub = primaryPublication(this.props.dnatcofication);
@@ -80,7 +91,7 @@ export class StructureInfo extends View {
                     <div className='rdo-offset'>
                         <NamedList>
                             <NamedListItem name='Method'>{getCifValue(this.props.dnatcofication, Exptl, 'method') ?? NA }</NamedListItem>
-                            <NamedListItem name='Resolution'>{`Low: ${getCifValue(this.props.dnatcofication, Refine, 'ls_d_res_low')?.toFixed(3) ?? NA}, High: ${getCifValue(this.props.dnatcofication, Refine, 'ls_d_res_high')?.toFixed(3) ?? NA}`}</NamedListItem>
+                            <NamedListItem name='Resolution'>{resolution(this.props.dnatcofication)}</NamedListItem>
                             <NamedListItem name='R-free'>{getCifValue(this.props.dnatcofication, Refine, 'ls_R_factor_R_free')?.toFixed(3) ?? NA }</NamedListItem>
                         </NamedList>
                     </div>
