@@ -9,10 +9,11 @@ import {
 } from '../../structure-selection';
 import { View } from '../view';
 import { confalPercentile, niceStepName, Common } from '../../common';
+import { Constants } from '../../constants';
 import { SearchBox } from '../../search-box';
 import { StatsBar } from '../../stats-bar';
 import { SingleStepInfo } from '../../single-step-info';
-import { Constants } from '../../constants';
+import { setDynamicTableModelColumns } from '../../util';
 import { valueToSemaphore, GappedSemaphore } from '../../util';
 import { Icon } from '../../../common/icon';
 import { rgbToHex } from '../../../util';
@@ -258,6 +259,8 @@ export class ConfalsRmsds extends View<View.Props> {
             elem: <Icon img={`${pathPrefix}/imgs/info.svg`} size='text' />
         };
 
+        const columns = [chainColumn, stepColumn, ntcColumn, canaColumn, confalColumn, rmsdColumn, torsionsColumn];
+
         for (let row = 0; row < steps._rowCount; row++) {
             const modelNum = Cif.Column.value(PDB_model_number, row);
             if (selectedModelNum !== -1 && selectedModelNum !== modelNum)
@@ -268,84 +271,80 @@ export class ConfalsRmsds extends View<View.Props> {
                 continue;
 
             const tag = Cif.Column.value(name, row)!;
-            const NtC = Cif.Column.value(assigned_NtC, row)!;
+            const tags = [tag, tag, tag, tag, void 0, void 0, tag];
+            const assignedNtC = Cif.Column.value(assigned_NtC, row)!;
+            const assignedCANA = Cif.Column.value(assigned_CANA, row)!;
             const _step = StepsMapper.byName(this.props.dnatcofication, tag)!; // tag is the internal step name
 
-            chainColumn.cells.push({ data: Cif.Column.value(auth_asym_id_1, row)!, tag });
-            stepColumn.cells.push({
-                data: tag,
-                elem: niceStepName(_step, selectedModelNum === InvalidModelIndex),
-                tag
-            });
-            ntcColumn.cells.push({
-                data :Cif.Column.value(assigned_NtC, row)!,
-                elem: (() => {
-                    const assigned = Cif.Column.value(assigned_NtC, row)!;
-                    return assigned === 'NANT'
-                        ?
-                            <Tooltip
-                                tag={<span className='rdo-unassigned-ntc'>{Cif.Column.value(closest_NtC, row)!}</span>}
-                                delayMsec={300}
-                            >
-                                This step is unassigned. Closest NtC is shown instead.
-                            </Tooltip>
-                        : <span>{assigned}</span>;
-                })(),
-                tag,
-            });
-            canaColumn.cells.push({
-                data: Cif.Column.value(assigned_CANA, row)!,
-                elem: (() => {
-                    const assigned = Cif.Column.value(assigned_CANA, row)!;
-                    return assigned === 'NAN'
-                        ?
-                            <Tooltip
-                                tag={<span className='rdo-unassigned-ntc'>{Cif.Column.value(closest_CANA, row)!}</span>}
-                                delayMsec={300}
-                            >
-                                This step is unassigned. Closest CANA is shown instead.
-                            </Tooltip>
-                        : <span>{assigned}</span>;
-
-                })(),
-                tag,
-            });
-            confalColumn.cells.push({ data: Cif.Column.value(confal_score, row)!, tag });
-            rmsdColumn.cells.push({
-                data: Cif.Column.value(cartesian_rmsd_closest_NtC_representative, row)!,
-                elem: <span>{Cif.Column.value(cartesian_rmsd_closest_NtC_representative, row)!.toFixed(3)}</span>,
-                tag
-            });
-            torsionsColumn.cells.push({
-                data: '',
-                tag,
-                tooltip:
-                    <Tooltip
-                        tag={
-                            <Icon img={`${pathPrefix}/imgs/info-inverse.svg`} size='text' />
-                        }
-                        delayMsec={300}
-                    >
-                        <SingleStepInfo
-                            NtC={NtC}
-                            delta1={Cif.Column.value(tor_delta_1, row)!}
-                            epsilon1={Cif.Column.value(tor_epsilon_1, row)!}
-                            zeta1={Cif.Column.value(tor_zeta_1, row)!}
-                            alpha2={Cif.Column.value(tor_alpha_2, row)!}
-                            beta2={Cif.Column.value(tor_beta_2, row)!}
-                            gamma2={Cif.Column.value(tor_gamma_2, row)!}
-                            delta2={Cif.Column.value(tor_delta_2, row)!}
-                            chi1={Cif.Column.value(tor_chi_1, row)!}
-                            chi2={Cif.Column.value(tor_chi_2, row)!}
-                            mu={Cif.Column.value(tor_NCCN, row)!}
-                            CC={Cif.Column.value(dist_CC, row)!}
-                            NN={Cif.Column.value(dist_NN, row)!}
-                        />
-                    </Tooltip>,
-            });
+            setDynamicTableModelColumns(
+                this.tableModel,
+                row,
+                columns,
+                tags,
+                [
+                    Cif.Column.value(auth_asym_id_1, row)!,
+                    tag,
+                    assignedNtC,
+                    assignedCANA,
+                    Cif.Column.value(confal_score, row)!,
+                    Cif.Column.value(cartesian_rmsd_closest_NtC_representative, row)!,
+                    '',
+                ],
+                [
+                    void 0,
+                    () => niceStepName(_step, selectedModelNum === InvalidModelIndex),
+                    () => (
+                        assignedNtC === 'NANT'
+                            ?
+                                <Tooltip
+                                    tag={<span className='rdo-unassigned-ntc'>{Cif.Column.value(closest_NtC, row)!}</span>}
+                                    delayMsec={300}
+                                >
+                                    This step is unassigned. Closest NtC is shown instead.
+                                </Tooltip>
+                            : <span>{assignedNtC}</span>
+                    ),
+                    () => (
+                        assignedCANA === 'NAN'
+                            ?
+                                <Tooltip
+                                    tag={<span className='rdo-unassigned-ntc'>{Cif.Column.value(closest_CANA, row)!}</span>}
+                                    delayMsec={300}
+                                >
+                                    This step is unassigned. Closest CANA is shown instead.
+                                </Tooltip>
+                            : <span>{assignedCANA}</span>
+                    ),
+                    () => <span>{Cif.Column.value(cartesian_rmsd_closest_NtC_representative, row)!.toFixed(3)}</span>,
+                    () => (
+                        <Tooltip
+                            tag={
+                                <Icon img={`${pathPrefix}/imgs/info-inverse.svg`} size='text' />
+                            }
+                            delayMsec={300}
+                        >
+                            <SingleStepInfo
+                                NtC={assignedNtC}
+                                delta1={Cif.Column.value(tor_delta_1, row)!}
+                                epsilon1={Cif.Column.value(tor_epsilon_1, row)!}
+                                zeta1={Cif.Column.value(tor_zeta_1, row)!}
+                                alpha2={Cif.Column.value(tor_alpha_2, row)!}
+                                beta2={Cif.Column.value(tor_beta_2, row)!}
+                                gamma2={Cif.Column.value(tor_gamma_2, row)!}
+                                delta2={Cif.Column.value(tor_delta_2, row)!}
+                                chi1={Cif.Column.value(tor_chi_1, row)!}
+                                chi2={Cif.Column.value(tor_chi_2, row)!}
+                                mu={Cif.Column.value(tor_NCCN, row)!}
+                                CC={Cif.Column.value(dist_CC, row)!}
+                                NN={Cif.Column.value(dist_NN, row)!}
+                            />
+                        </Tooltip>
+                    )
+                ]
+            );
         }
 
-        return new DynamicTable.Model([chainColumn, stepColumn, ntcColumn, canaColumn, confalColumn, rmsdColumn, torsionsColumn]);
+        return new DynamicTable.Model(columns);
     }
 
     private modelNumFromIndex(modelIndex: number) {

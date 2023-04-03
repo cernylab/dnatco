@@ -5,6 +5,7 @@ import { View } from '../view';
 import { SearchBox } from '../../search-box';
 import { EmptyStructureSelection, InvalidAtom, InvalidChain, InvalidModelIndex, InvalidResidue, InvalidStepId, StructureSelection } from '../../structure-selection';
 import { niceStepName, Common } from '../../common';
+import { setDynamicTableModelColumns } from '../../util';
 import { DynamicTable } from '../../../common/dynamic-table';
 import { NamedList, NamedListItem } from '../../../common/named-list';
 import { IconButton } from '../../../common/push-button';
@@ -108,6 +109,8 @@ export class AssignedNtCs extends View<View.Props> {
             tooltip: <div><span className='rdo-emphasize'>C</span>onformational <span className='rdo-emphasize'>A</span>lphabet of <span className='rdo-emphasize'>N</span>ucleic <span className='rdo-emphasize'>A</span>cids</div>,
         };
 
+        const columns = [chainColumn, stepColumn, ntcColumn, canaColumn];
+
         for (let row = 0; row < steps._rowCount; row++) {
             const modelNum = Cif.Column.value(PDB_model_number, row)!;
             if (selectedModelNum !== InvalidModelIndex && selectedModelNum !== modelNum)
@@ -118,49 +121,52 @@ export class AssignedNtCs extends View<View.Props> {
                 continue;
 
             const tag = Cif.Column.value(name, row)!;
+            const tags = columns.map(() => tag);
             const _step = StepsMapper.byName(this.props.dnatcofication, tag)!; // tag is the internal step name
+            const assignedNtC = Cif.Column.value(assigned_NtC, row)!;
+            const assignedCANA = Cif.Column.value(assigned_CANA, row)!;
 
-            chainColumn.cells.push({ data: Cif.Column.value(auth_asym_id_1, row)!, tag });
-            stepColumn.cells.push({
-                data: tag,
-                elem: niceStepName(_step, selectedModelNum === InvalidModelIndex),
-                tag
-            });
-            ntcColumn.cells.push({
-                data: Cif.Column.value(assigned_NtC, row)!,
-                elem: (() => {
-                    const assigned = Cif.Column.value(assigned_NtC, row)!;
-                    return assigned === 'NANT'
-                        ?
-                            <Tooltip
-                                tag={<span className='rdo-unassigned-ntc'>{Cif.Column.value(closest_NtC, row)!}</span>}
-                                delayMsec={300}
-                            >
-                                This step is unassigned. Closest NtC is shown instead.
-                            </Tooltip>
-                        : <span>{assigned}</span>;
-                })(),
-                tag
-            });
-            canaColumn.cells.push({
-                data: Cif.Column.value(assigned_CANA, row)!,
-                elem: (() => {
-                    const assigned = Cif.Column.value(assigned_CANA, row)!;
-                    return assigned === 'NAN'
-                        ?
-                            <Tooltip
-                                tag={<span className='rdo-unassigned-ntc'>{Cif.Column.value(closest_CANA, row)!}</span>}
-                                delayMsec={300}
-                            >
-                                This step is unassigned. Closest CANA is shown instead.
-                            </Tooltip>
-                        : <span>{assigned}</span>;
-                })(),
-                tag
-            });
+            setDynamicTableModelColumns(
+                this.tableModel,
+                row,
+                columns,
+                tags,
+                [
+                    Cif.Column.value(auth_asym_id_1, row)!,
+                    tag,
+                    assignedNtC,
+                    assignedCANA
+                ],
+                [
+                    void 0,
+                    () => niceStepName(_step, selectedModelNum === InvalidModelIndex),
+                    () => (
+                        assignedNtC === 'NANT'
+                            ?
+                                <Tooltip
+                                    tag={<span className='rdo-unassigned-ntc'>{Cif.Column.value(closest_NtC, row)!}</span>}
+                                    delayMsec={300}
+                                >
+                                    This step is unassigned. Closest NtC is shown instead.
+                                </Tooltip>
+                            : <span>{assignedNtC}</span>
+                    ),
+                    () => (
+                        assignedCANA === 'NAN'
+                            ?
+                                <Tooltip
+                                    tag={<span className='rdo-unassigned-ntc'>{Cif.Column.value(closest_CANA, row)!}</span>}
+                                    delayMsec={300}
+                                >
+                                    This step is unassigned. Closest CANA is shown instead.
+                                </Tooltip>
+                            : <span>{assignedCANA}</span>
+                    )
+                ]
+            );
         }
 
-        return new DynamicTable.Model([chainColumn, stepColumn, ntcColumn, canaColumn]);
+        return new DynamicTable.Model(columns);
     }
 
     private modelNumFromIndex(modelIndex: number) {

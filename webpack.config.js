@@ -7,7 +7,7 @@ const DistDir = 'dist';
 
 function sharedConfig(productionBuild) {
     return {
-        mode: productionBuild ? 'production' : 'debug',
+        mode: productionBuild ? 'production' : 'development',
         module: {
             rules: [
                 {

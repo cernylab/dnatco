@@ -26,6 +26,10 @@ export namespace Refinement {
     }
 
     export class NtCSelector extends React.Component<NtCSelector.Props> {
+        shouldComponentUpdate(nextProps: Readonly<NtCSelector.Props>, nextState: Readonly<{}>, nextContext: any): boolean {
+            return this.props.value !== nextProps.value;
+        }
+
         render() {
             return (
                 <ComboBox
@@ -38,6 +42,9 @@ export namespace Refinement {
     }
     export namespace NtCSelector {
         export interface Props {
+            /*customNtCs: CustomNtCs;
+            currenCustomNtCsSet: string;
+            step: string;*/
             value: NtC.ValidClass;
             onChanged: (v: NtC.ValidClass) => void;
         }

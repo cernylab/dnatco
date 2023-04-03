@@ -9,6 +9,7 @@ import {
     InvalidAtom, InvalidChain, InvalidModelIndex, InvalidResidue, InvalidStepId,
     StructureSelection
 } from '../../structure-selection';
+import { setDynamicTableModelColumns } from '../../util';
 import { DynamicTable } from '../../../common/dynamic-table';
 import { NamedList, NamedListItem } from '../../../common/named-list';
 import { IconButton } from '../../../common/push-button';
@@ -33,7 +34,7 @@ export class ChangeNtCs extends View<Refinement.Props> {
         const steps = this.props.dnatcofication.table(NdbStructNtcStep);
         const summary = this.props.dnatcofication.table(NdbStructNtcStepSummary);
 
-        const { PDB_model_number, label_asym_id_1, name } = steps;
+        const { PDB_model_number, label_asym_id_1, auth_asym_id_1, name } = steps;
         const { assigned_NtC, closest_NtC } = summary;
 
         const chainColumn: DynamicTable.Column<string> = {
@@ -87,6 +88,8 @@ export class ChangeNtCs extends View<Refinement.Props> {
                 );
             };
 
+        const columns = [chainColumn, stepColumn, computedNtCColumn, customNtCColumn];
+
         for (let row = 0; row < steps._rowCount; row++) {
             const modelNum = Cif.Column.value(PDB_model_number, row)!;
             if (selectedModelNum !== -1 && selectedModelNum !== modelNum)
@@ -97,38 +100,44 @@ export class ChangeNtCs extends View<Refinement.Props> {
                 continue;
 
             const tag = Cif.Column.value(name, row)!;
+            const tags = [tag, tag, tag, void 0];
             const _step = StepsMapper.byName(this.props.dnatcofication, tag)!; // tag is the internal step name
+            const assignedNtC = Cif.Column.value(assigned_NtC, row)!;
+            const computedNtC = Cif.Column.value(closest_NtC, row)!
+            const customNtC = this.props.dnatcofication.customNtCs.getCustomNtC(this.props.selectedCustomNtCSet, tag);
+            const modelCustomNtC = `${this.props.selectedCustomNtCSet}-${customNtC ? customNtC : computedNtC}`;
 
-            chainColumn.cells.push({ data: chain, tag });
-            stepColumn.cells.push({
-                data: tag,
-                elem: niceStepName(_step),
-                tag
-            });
-            computedNtCColumn.cells.push({
-                data: Cif.Column.value(assigned_NtC, row)!,
-                elem: (() => {
-                    const assigned = Cif.Column.value(assigned_NtC, row)!;
-                    return assigned === 'NANT'
-                        ?
-                            <Tooltip
-                                tag={<span className='rdo-unassigned-ntc'>{Cif.Column.value(closest_NtC, row)!}</span>}
-                                delayMsec={300}
-                            >
-                                This step is unassigned. Closest NtC is shown instead.
-                            </Tooltip>
-                        : <span>{assigned}</span>;
-                })(),
-                tag
-            });
-
-            customNtCColumn.cells.push({
-                data: '',
-                elem: <div style={{ width: '9em', margin: 'auto' }}>{makeSelCell(row)}</div>,
-            });
+            setDynamicTableModelColumns(
+                this.tableModel,
+                row,
+                columns,
+                tags,
+                [
+                    Cif.Column.value(auth_asym_id_1, row)!,
+                    tag,
+                    assignedNtC,
+                    modelCustomNtC,
+                ],
+                [
+                    void 0,
+                    () => niceStepName(_step),
+                    () => (
+                        assignedNtC === 'NANT'
+                            ?
+                                <Tooltip
+                                    tag={<span className='rdo-unassigned-ntc'>{Cif.Column.value(closest_NtC, row)!}</span>}
+                                    delayMsec={300}
+                                >
+                                    This step is unassigned. Closest NtC is shown instead.
+                                </Tooltip>
+                            : <span>{assignedNtC}</span>
+                    ),
+                    () => <div style={{ width: '9em', margin: 'auto' }}>{makeSelCell(row)}</div>,
+                ]
+            );
         }
 
-        return new DynamicTable.Model([chainColumn, stepColumn, computedNtCColumn, customNtCColumn]);
+        return new DynamicTable.Model(columns);
     }
 
     private renderStepsTable() {
@@ -169,10 +178,12 @@ export class ChangeNtCs extends View<Refinement.Props> {
     componentDidMount() {
         this.subscribe(
             this.props.dnatcofication.customNtCs.events.changed,
-            () => {
-                const sel = this.props.structureSelection;
-                this.setTableModel(sel);
-                this.forceUpdate();
+            (update) => {
+                if (update.set === this.props.selectedCustomNtCSet) {
+                    const sel = this.props.structureSelection;
+                    this.setTableModel(sel);
+                    this.forceUpdate();
+                }
             }
         );
 

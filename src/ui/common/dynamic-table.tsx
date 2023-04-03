@@ -13,8 +13,87 @@ interface Comparator<T> {
     (a: T, b: T): number;
 }
 
+function cellShouldUpdate(oldCell: DynamicTable.Cell<any>, newCell: DynamicTable.Cell<any>) {
+    const data = oldCell.data !== newCell.data;
+    const elem = oldCell.elem !== newCell.elem;
+    const tag = oldCell.tag !== newCell.tag;
+    const tooltip = oldCell.tooltip !== newCell.tooltip;
+
+    return data || elem || tag || tooltip;
+}
+
 function getCellStyle<T>(v: T, getter?: (v: T) => React.CSSProperties) {
     return getter ? getter(v) : {};
+}
+
+class DynamicTableCell extends React.Component<{
+    item: DynamicTable.Cell<any>,
+    col: DynamicTable.Column<any>,
+    model: DynamicTable.Model,
+    rowIdx: number,
+    colIdx: number,
+    highlightedTag?: string,
+    onCellClicked?: (data: DynamicTable.Cell<any>, row: DynamicTable.Cell<any>[], colName: string) => void,
+}>  {
+    shouldComponentUpdate(nextProps: Readonly<{item: DynamicTable.Cell<any>; col: DynamicTable.Column<any>; model: DynamicTable.Model; rowIdx: number; colIdx: number; highlightedTag?: string | undefined; onCellClicked?: ((data: DynamicTable.Cell<any>, row: DynamicTable.Cell<any>[], colName: string) => void) | undefined;}>): boolean {
+        if (this.props.highlightedTag !== nextProps.highlightedTag && this.props.highlightedTag === this.props.item.tag || nextProps.highlightedTag === this.props.item.tag)
+            return true;
+
+        return cellShouldUpdate(this.props.item, nextProps.item);
+    }
+
+    render() {
+        return (
+            <td
+                className={`rdo-data-table ${(this.props.highlightedTag && this.props.highlightedTag === this.props.item.tag) ? 'rdo-data-table-selected' : ''}`}
+                id={this.props.item.tag ? `${this.props.item.tag}-${this.props.rowIdx}-${this.props.colIdx}` : undefined}
+                style={{
+                    ...getCellStyle(this.props.item.data, this.props.col.cellStyle),
+                    textAlign: this.props.model.columns[this.props.colIdx].alignment ?? 'left',
+                }}
+                onClick={() => {
+                    if (this.props.onCellClicked)
+                        this.props.onCellClicked(this.props.item.data, this.props.model.rows[this.props.rowIdx], this.props.col.name);
+                }}
+            >
+                {this.props.item.tooltip
+                    ? this.props.item.tooltip
+                    : this.props.item.elem
+                        ? this.props.item.elem
+                        : this.props.item.data
+                }
+            </td>
+        )
+    }
+}
+
+class DynamicTableRow extends React.Component<{
+    model: DynamicTable.Model,
+    rowIdx: number,
+    highlightedTag?: string,
+    children: React.ReactNode[]
+}> {
+    shouldComponentUpdate(nextProps: Readonly<{model: DynamicTable.Model; rowIdx: number; highlightedTag?: string; children: React.ReactNode[];}>): boolean {
+        const oldModel = this.props.model;
+        const newModel = nextProps.model;
+
+        if (oldModel.columns.length !== newModel.columns.length || this.props.highlightedTag !== nextProps.highlightedTag)
+            return true;
+
+        for (let colIdx = 0; colIdx < oldModel.columns.length; colIdx++) {
+            const oldCell = oldModel.columns[colIdx].cells[this.props.rowIdx];
+            const newCell = newModel.columns[colIdx].cells[this.props.rowIdx];
+
+            if (cellShouldUpdate(oldCell, newCell))
+                return true;
+        }
+
+        return false;
+    }
+
+    render() {
+        return <tr>{...this.props.children}</tr>
+    }
 }
 
 export class DynamicTable extends React.Component<DynamicTable.Props> {
@@ -52,35 +131,29 @@ export class DynamicTable extends React.Component<DynamicTable.Props> {
         for (let rowIdx = 0; rowIdx < rows.length; rowIdx++) {
             const row = rows[rowIdx];
             rowElems.push(
-                <tr key={rowIdx}>
+                <DynamicTableRow
+                    model={this.props.model}
+                    rowIdx={rowIdx}
+                    highlightedTag={this.props.highlightedTag}
+                    key={rowIdx}
+                >
                     {
                         row.map((item, colIdx) => {
                             const col = this.props.model.columns[colIdx];
                             return (
-                                <td
-                                    className={`rdo-data-table ${(this.props.highlightedTag && this.props.highlightedTag === item.tag) ? 'rdo-data-table-selected' : ''}`}
-                                    key={colIdx}
-                                    id={item.tag ? `${item.tag}-${rowIdx}-${colIdx}` : undefined}
-                                    style={{
-                                        ...getCellStyle(item.data, col.cellStyle),
-                                        textAlign: this.props.model.columns[colIdx].alignment ?? 'left',
-                                    }}
-                                    onClick={() => {
-                                        if (this.props.onCellClicked)
-                                            this.props.onCellClicked(item.data, row, col.name);
-                                    }}
-                                >
-                                    {item.tooltip
-                                        ? item.tooltip
-                                        : item.elem
-                                            ? item.elem
-                                            : item.data
-                                    }
-                                </td>
-                            )
+                                <DynamicTableCell
+                                    item={item}
+                                    col={col}
+                                    model={this.props.model}
+                                    rowIdx={rowIdx}
+                                    colIdx={colIdx}
+                                    highlightedTag={this.props.highlightedTag}
+                                    onCellClicked={this.props.onCellClicked}
+                                />
+                            );
                         })
                     }
-                </tr>
+                </DynamicTableRow>
             );
         }
 

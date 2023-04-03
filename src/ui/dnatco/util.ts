@@ -2,6 +2,7 @@ import { InvalidModelIndex, InvalidStepId } from './structure-selection';
 import { Cif } from '../../cif';
 import { Category, Schema } from '../../cif/categories';
 import { ComboBox } from '../common/combo-box';
+import { DynamicTable } from '../common/dynamic-table';
 import { Dnatcofication } from '../../dnatco/dnatcofication';
 import { Chain, Structure } from '../../dnatco/structure';
 import { StepsMapper } from '../../dnatco/steps-mapper';
@@ -112,6 +113,23 @@ export function niceCifDate(date: Schema.CifDate) {
     if (!date)
         return 'N/A';
     return `${date.year}-${date.month.toString().padStart(2, '0')}-${date.day.toString().padStart(2, '0')}`;
+}
+
+export function setDynamicTableModelColumns(oldModel: DynamicTable.Model, rowIdx: number, columns: DynamicTable.Column<any>[], tags: (string | undefined)[], newValues: (number | string)[], newElems: ((() => JSX.Element) | undefined)[]) {
+    for (let colIdx = 0; colIdx < columns.length; colIdx++) {
+        const col = columns[colIdx];
+        const oldValue = oldModel.columns[colIdx]?.cells[rowIdx]?.data;
+        if (oldValue !== undefined && oldValue === newValues[colIdx])
+            col.cells.push(oldModel.columns[colIdx]!.cells[rowIdx]);
+        else {
+            const eg = newElems[colIdx];
+            col.cells.push({
+                data: newValues[colIdx],
+                elem: eg ? eg() : void 0,
+                tag: tags[colIdx],
+            });
+        }
+    }
 }
 
 export function valueToSemaphore(v: number, greenValue: number, redValue: number) {
