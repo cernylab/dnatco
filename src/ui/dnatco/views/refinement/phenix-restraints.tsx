@@ -10,6 +10,18 @@ import { GlobalConfig } from '../../../../global-config';
 
 const LeadingWS = new RegExp(/^[ ]./);
 
+function renderLines(lines: Phenix.Line[]) {
+    if (lines.length > 10000)
+        return <div className='rdo-emphasize' style={{ textAlign: 'center' }}>Configuration is too long to be displayed. You can download it is a text file by clicking on the &ldquo;Download&rdquo; button</div>;
+    return lines.map((line, idx) => {
+        const text = replaceAll(line.text, LeadingWS, '\u00A0');
+        if (line.isOk)
+            return <div className='rdo-monospace' key={idx}>{text}</div>;
+        else
+            return <div className='rdo-monospace rdo-error-text' key={idx}>{text}</div>;
+    });
+}
+
 function replaceAll(where: string, what: string|RegExp, _with: string) {
     let ret = where;
     while (ret.search(what) >= 0) {
@@ -33,20 +45,7 @@ export class PhenixRestraints extends View<Refinement.Props, State> {
 
     render() {
         const restraints = Phenix.restraints(this.props.dnatcofication, this.props.selectedCustomNtCSet, this.state.maxRmsd);
-        const elems = new Array<JSX.Element>();
-
-
-        let ctr = 0;
-        const lines = Phenix.restraintsAsLines(restraints)
-        for (const line of lines) {
-            const text = replaceAll(line.text, LeadingWS, '\u00A0');
-            if (line.isOk)
-                elems.push(<div className='rdo-monospace' key={ctr}>{text}</div>);
-            else
-                elems.push(<div className='rdo-monospace rdo-error-text' key={ctr}>{text}</div>);
-
-            ctr++;
-        }
+        const lines = Phenix.restraintsAsLines(restraints);
 
         return (
             <div style={{ overflow: 'hidden', height: '100%', display: 'flex', flexDirection: 'column' }}>
@@ -77,7 +76,7 @@ export class PhenixRestraints extends View<Refinement.Props, State> {
                     </div>
                 </div>
                 <div className='rdo-offset' style={{ overflow: 'scroll', flex: 1 }}>
-                    {elems}
+                    {renderLines(lines)}
                 </div>
                 <div>
                     Note that this restraints file requires a modified &ldquo;NtC-aware&rdquo; version of Phenix. Contact the authors of the {GlobalConfig.data().displayedProductName} website for further information.
