@@ -1,5 +1,4 @@
 import { KnownCoordinateFileTypes, KnownDensityMapKinds, KnownDensityMapTypes } from './remote/db';
-import { UserRemoteDatabases } from './remote/db/register';
 import { StaticDb } from './remote/db/static-db';
 import { fromTemplate } from './util/json';
 
@@ -124,9 +123,6 @@ export namespace GlobalConfig {
 
         checkAndSet(GlobalConfigData, input);
         fixups(GlobalConfigData);
-
-        for (const db of GlobalConfigData.userDatabases)
-            UserRemoteDatabases.add(db);
 
         Status.isLoaded = true;
     }

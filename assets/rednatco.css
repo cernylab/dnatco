@@ -20,6 +20,7 @@
     --font-tiny: 8pt;
     --font-small: 10pt;
     --font-large: 14pt;
+    --font-xlarge: 18pt;
     --font-xxlarge: 22pt;
     --font-mega: 32pt;
     --font-uber: 48pt;
@@ -434,6 +435,38 @@ th.rdo-data-table-small {
     background-color: var(--color-b);
     border: var(--thickness-border) solid var(--color-b);
     object-fit: contain;
+}
+
+.rdo-init-error-container {
+    align-items: center;
+    display: flex;
+    height: 100%;
+    justify-content: center;
+    margin: auto;
+    width: 100%;
+}
+
+.rdo-init-error {
+    color: red;
+    font-size: var(--font-xxlarge);
+    text-align: center;
+}
+
+.rdo-init-error-frame {
+    align-items: center;
+    border: 3px solid red;
+    display: flex;
+    flex-direction: column;
+    gap: 3em;
+    justify-content: center;
+    max-width: 60em;
+    padding: 3em;
+}
+
+.rdo-init-error-message {
+    color: red;
+    font-size: var(--font-xlarge);
+    text-align: center;
 }
 
 .rdo-line-spacer {

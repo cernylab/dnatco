@@ -1,6 +1,7 @@
 import React from 'react';
 import * as RDC from 'react-dom/client';
 import { GlobalConfig } from './global-config';
+import { Globals } from './globals';
 import { isPdbId } from './util';
 import { Net } from './util/net';
 import { isError } from './dnatco';
@@ -598,13 +599,35 @@ export namespace App {
     }
 }
 
+function InitializationError(props: {e: Error}) {
+    return (
+        <div className='rdo-init-error-container'>
+            <div className='rdo-init-error-frame'>
+                <div className='rdo-init-error'>Application has failed to load because it is misconfigured. Please, report the error below to the site administrators.</div>
+                <div className='rdo-init-error-message'>{props.e.message}</div>
+                <span>
+                    <div className='rdo-strong' style={{ textAlign: 'center'}}>Contact</div>
+                    <span style={{ display: 'flex', gap: '1em' }}>
+                        {Globals.PrimaryContacts.map((c) => (<a href={`mailto:${c.email}`} style={{ color: 'black' }}>{c.name}</a>))}
+                    </span>
+                </span>
+            </div>
+        </div>
+    );
+}
+
 async function bootstrap() {
     const config = await GlobalConfig.fetchConfigFile();
 
-    GlobalConfig.load(config);
-
     const root = RDC.createRoot(document.getElementById('app')!);
-    root.render(<App {...config} />);
+    try {
+        GlobalConfig.load(config);
+        UserRemoteDatabases._import(GlobalConfig.data().userDatabases);
+
+        root.render(<App {...config} />);
+    } catch (e) {
+        root.render(<InitializationError e={e as Error} />);
+    }
 }
 
 bootstrap();
