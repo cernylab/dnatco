@@ -1,3 +1,4 @@
+import { Globals } from './globals';
 import { KnownCoordinateFileTypes, KnownDensityMapKinds, KnownDensityMapTypes } from './remote/db';
 import { StaticDb } from './remote/db/static-db';
 import { fromTemplate } from './util/json';
@@ -52,7 +53,7 @@ const GlobalConfigData: GlobalConfigData = {
     violinPlotMarkerColorA: '#fff70c',
     violinPlotMarkerColorB: '#000',
     exampleStructures: [{db: '', pdbId: ''}],
-    displayedProductName: 'ReDNATCO',
+    displayedProductName: Globals.DefaultProductName,
     currentStepColor: '#ffff00',
     previousStepColor: '#0000ff',
     nextStepColor: '#00ffff',
