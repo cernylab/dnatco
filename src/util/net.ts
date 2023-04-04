@@ -1,3 +1,5 @@
+const StringEncoder = new TextEncoder();
+
 export namespace Net {
     export type NullableAbrtCtrl = AbortController | null;
 
@@ -38,16 +40,22 @@ export namespace Net {
     }
 
     export function serveFile(mimeType: string, data: string, filename: string) {
-        const enc = encodeURIComponent(data);
-        const payload = `data:${mimeType},${enc}`;
+        let blob = new Blob([StringEncoder.encode(data)], { type: mimeType });
+        const objUrl = URL.createObjectURL(blob);
 
-        const e = document.createElement('a');
-        e.setAttribute('href', payload);
-        e.setAttribute('download', filename);
-        e.style.display = 'none';
+        try {
+            const e = document.createElement('a');
+            e.href = objUrl;
+            e.download = filename;
 
-        document.body.appendChild(e);
-        e.click();
-        document.body.removeChild(e);
+            document.body.appendChild(e);
+            e.click();
+            document.body.removeChild(e);
+        } catch (e) {
+            // This is unlikely to throw but since we can create very large memory leaks here
+            // if we do not release the objUrl, we better wrap this in try-catch just in case.
+        } finally {
+            URL.revokeObjectURL(objUrl);
+        }
     }
 }
