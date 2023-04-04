@@ -12,7 +12,7 @@ const LeadingWS = new RegExp(/^[ ]./);
 
 function renderLines(lines: Phenix.Line[]) {
     if (lines.length > 10000)
-        return <div className='rdo-emphasize' style={{ textAlign: 'center' }}>Configuration is too long to be displayed. You can download it is a text file by clicking on the &ldquo;Download&rdquo; button</div>;
+        return <div className='rdo-emphasize' style={{ textAlign: 'center' }}>Configuration is too long to be displayed. You can download it as a text file by clicking on the &ldquo;Download&rdquo; button</div>;
     return lines.map((line, idx) => {
         const text = replaceAll(line.text, LeadingWS, '\u00A0');
         if (line.isOk)
