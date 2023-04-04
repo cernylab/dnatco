@@ -463,13 +463,14 @@ export class App extends WithSubscriptions<{}, State> {
     }
 
     componentDidMount() {
+        const prefix = GlobalConfig.data().pathPrefix;
         const FailMsg = <div>{GlobalConfig.data().displayedProductName} cannot function when its engine fails to initialize. Try to refresh the page...</div>
 
         ClassificationContext.initialize(
-            './classification/clusters.csv',
-            './classification/confals.csv',
-            './classification/golden_steps.csv',
-            './classification/nu_angles.csv'
+            `${prefix}/classification/clusters.csv`,
+            `${prefix}/classification/confals.csv`,
+            `${prefix}/classification/golden_steps.csv`,
+            `${prefix}/classification/nu_angles.csv`
         ).then(retval => {
             if (retval === undefined) {
                 AnglesLengths.initialize().then(res => {
@@ -483,8 +484,8 @@ export class App extends WithSubscriptions<{}, State> {
                         );
                     } else {
                         Naval.initialize(
-                            './naval/angle_restraints.csv',
-                            './naval/bond_restraints.csv',
+                            `${prefix}/naval/angle_restraints.csv`,
+                            `${prefix}/naval/bond_restraints.csv`
                         ).then(res => {
                             if (isError(res)) {
                                 this.setState({ ...this.state, dnatcofierState: 'failed' });
@@ -537,7 +538,7 @@ export class App extends WithSubscriptions<{}, State> {
             );
         });
 
-        ListOfConformers.load('./conformers.csv');
+        ListOfConformers.load(`${prefix}/conformers.csv`);
     }
 
     componentWillUnmount() {
@@ -597,18 +598,10 @@ export namespace App {
     }
 }
 
-async function getConfig(): Promise<Record<string, any>> {
-    try {
-        return await (await fetch('./config.json')).json();
-    } catch (e) {
-        return {};
-    }
-}
-
 async function bootstrap() {
-    const config = await getConfig();
+    const config = await GlobalConfig.fetchConfigFile();
 
-    GlobalConfig.initialize(config);
+    GlobalConfig.load(config);
 
     const root = RDC.createRoot(document.getElementById('app')!);
     root.render(<App {...config} />);

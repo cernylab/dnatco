@@ -28,6 +28,7 @@ import {
 import { Struct } from '../cif/categories/struct';
 import { objKeys } from '../util';
 import { EventsKeeper } from '../util/events-keeper';
+import { GlobalConfigData } from '../global-config';
 
 function mapALM(residues: Measurements.Residue[]): MappedALM {
     const models = new Map<number, number[]>();
@@ -341,6 +342,7 @@ export namespace Dnatcofication {
         alCtx: AnglesLengthsContext,
         nvCtx: NavalContext,
         isCustomStructure: boolean,
+        config: GlobalConfigData,
         ctx: DnatcoficationTaskContext
     ) {
         const tStart = performance.now();
@@ -428,11 +430,9 @@ export namespace Dnatcofication {
                 structures[0],
             );
 
-            // TODO: We should add an option to calculate all connectivities beforehand
-            const precalculateConnsSimils = false;
             let connectivities;
             let similarities;
-            if (precalculateConnsSimils) {
+            if (config.precalculateConnectivitiesAndSimilarities) {
                 ctx.status = 'Gathering step atoms';
                 const stepsAtoms = ConnSimil.getStepsAtoms(steps.steps, cifData);
 

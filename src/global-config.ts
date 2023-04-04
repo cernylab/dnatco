@@ -33,6 +33,7 @@ export type GlobalConfigData = {
     currentStepColor: string,
     previousStepColor: string,
     nextStepColor: string,
+    precalculateConnectivitiesAndSimilarities: boolean,
 };
 const GlobalConfigData: GlobalConfigData = {
     isDevel: false,
@@ -56,6 +57,7 @@ const GlobalConfigData: GlobalConfigData = {
     currentStepColor: '#ffff00',
     previousStepColor: '#0000ff',
     nextStepColor: '#00ffff',
+    precalculateConnectivitiesAndSimilarities: false,
 };
 const AllowedPartials: Partial<{[k in keyof GlobalConfigData]: object}> = {
     anglesLengths: {}
@@ -92,6 +94,9 @@ function fixups(data: GlobalConfigData) {
     });
 }
 
+const Status = {
+    isLoaded: false,
+};
 export namespace GlobalConfig {
     export function data() {
         return GlobalConfigData;
@@ -101,13 +106,28 @@ export namespace GlobalConfig {
         return GlobalConfigData[k];
     }
 
-    export function initialize(input: Record<string, any>) {
+    export async function fetchConfigFile() {
+        try {
+            return await (await fetch('./config.json')).json();
+        } catch (e) {
+            return {};
+        }
+    }
+
+    export function isLoaded() {
+        return Status.isLoaded;
+    }
+
+    export function load(input: Record<string, any>) {
+        if (Status.isLoaded)
+            return;
+
         checkAndSet(GlobalConfigData, input);
         fixups(GlobalConfigData);
 
         for (const db of GlobalConfigData.userDatabases)
             UserRemoteDatabases.add(db);
 
-        console.log(GlobalConfigData);
+        Status.isLoaded = true;
     }
 }

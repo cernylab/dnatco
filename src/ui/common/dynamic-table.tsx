@@ -1,13 +1,15 @@
 import * as React from 'react';
 import { Icon } from './icon';
 import { Tooltip } from './tooltip';
-import { scrollIntoViewIfNeeded } from '../util';
+import { colorToHex, scrollIntoViewIfNeeded } from '../util';
 import { GlobalConfig } from '../../global-config';
 import { Downloader as _Downloader } from '../../util/downloader';
 import 'assets/imgs/data-transfer-download.svg';
 import 'assets/imgs/sort.svg';
 import 'assets/imgs/sorted-ascending.svg';
 import 'assets/imgs/sorted-descending.svg';
+
+const NotHighlighted = { background: 'none' };
 
 interface Comparator<T> {
     (a: T, b: T): number;
@@ -33,6 +35,7 @@ class DynamicTableCell extends React.Component<{
     rowIdx: number,
     colIdx: number,
     highlightedTag?: string,
+    highlightColor?: number,
     onCellClicked?: (data: DynamicTable.Cell<any>, row: DynamicTable.Cell<any>[], colName: string) => void,
 }>  {
     shouldComponentUpdate(nextProps: Readonly<{item: DynamicTable.Cell<any>; col: DynamicTable.Column<any>; model: DynamicTable.Model; rowIdx: number; colIdx: number; highlightedTag?: string | undefined; onCellClicked?: ((data: DynamicTable.Cell<any>, row: DynamicTable.Cell<any>[], colName: string) => void) | undefined;}>): boolean {
@@ -43,11 +46,15 @@ class DynamicTableCell extends React.Component<{
     }
 
     render() {
+        const highlight = this.props.highlightedTag && this.props.highlightedTag === this.props.item.tag && this.props.highlightColor !== undefined;
+        const hlStyle = highlight ? { backgroundColor: colorToHex(this.props.highlightColor!) } : NotHighlighted;
+
         return (
             <td
-                className={`rdo-data-table ${(this.props.highlightedTag && this.props.highlightedTag === this.props.item.tag) ? 'rdo-data-table-selected' : ''}`}
+                className='rdo-data-table'
                 id={this.props.item.tag ? `${this.props.item.tag}-${this.props.rowIdx}-${this.props.colIdx}` : undefined}
                 style={{
+                    ...hlStyle,
                     ...getCellStyle(this.props.item.data, this.props.col.cellStyle),
                     textAlign: this.props.model.columns[this.props.colIdx].alignment ?? 'left',
                 }}
@@ -71,6 +78,7 @@ class DynamicTableRow extends React.Component<{
     model: DynamicTable.Model,
     rowIdx: number,
     highlightedTag?: string,
+    highlightColor?: number,
     children: React.ReactNode[]
 }> {
     shouldComponentUpdate(nextProps: Readonly<{model: DynamicTable.Model; rowIdx: number; highlightedTag?: string; children: React.ReactNode[];}>): boolean {
@@ -135,6 +143,7 @@ export class DynamicTable extends React.Component<DynamicTable.Props> {
                     model={this.props.model}
                     rowIdx={rowIdx}
                     highlightedTag={this.props.highlightedTag}
+                    highlightColor={this.props.highlightColor}
                     key={rowIdx}
                 >
                     {
@@ -148,6 +157,7 @@ export class DynamicTable extends React.Component<DynamicTable.Props> {
                                     rowIdx={rowIdx}
                                     colIdx={colIdx}
                                     highlightedTag={this.props.highlightedTag}
+                                    highlightColor={this.props.highlightColor}
                                     onCellClicked={this.props.onCellClicked}
                                 />
                             );
@@ -348,6 +358,7 @@ export namespace DynamicTable {
         model: Model;
         onCellClicked?: (data: any, row: Cell<any>[], columnName: string) => void;
         highlightedTag?: string;
+        highlightColor?: number;
         scrollTainer?: string|HTMLElement; // This needs to be se to a reasonable element to make autoscrolling work reliably
         style?: Style;
         download?: {

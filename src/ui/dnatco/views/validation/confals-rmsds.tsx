@@ -9,6 +9,7 @@ import {
 } from '../../structure-selection';
 import { View } from '../view';
 import { confalPercentile, niceStepName, Common } from '../../common';
+import { Colors } from '../../colors';
 import { Constants } from '../../constants';
 import { SearchBox } from '../../search-box';
 import { StatsBar } from '../../stats-bar';
@@ -372,6 +373,7 @@ export class ConfalsRmsds extends View<View.Props> {
                     }
                 }}
                 highlightedTag={stepName}
+                highlightColor={Colors.CurrentStep()}
                 scrollTainer={this.tableTainer.current ?? void 0}
                 style='wide'
                 download={{

@@ -4,9 +4,17 @@ import { ComboBox } from './common/combo-box';
 export type Rgb = { r: number, g: number, b: number };
 export type ColorTuple = [r: number, g: number, b: number];
 
-function componentToHex(c: number) {
+function numToHex(c: number) {
     const hex = c.toString(16);
     return hex.length == 1 ? "0" + hex : hex;
+}
+
+export function colorToHex(clr: number) {
+    const r = clr >> 16 & 0xFF;
+    const g = (clr >> 8) & 0xFF;
+    const b = clr & 0xFF;
+
+    return `#${numToHex(r)}${numToHex(g)}${numToHex(b)}`;
 }
 
 export function colorToRgb(clr: number): Rgb {
@@ -53,8 +61,8 @@ export function rgbToColor(r: number, g: number, b: number) {
 
 export function rgbToHex(rgb: Rgb | ColorTuple) {
     return Array.isArray(rgb)
-        ? '#' + rgb.map(x => componentToHex(x)).join('')
-        : '#' + componentToHex(rgb.r) + componentToHex(rgb.g) + componentToHex(rgb.b);
+        ? '#' + rgb.map(x => numToHex(x)).join('')
+        : '#' + numToHex(rgb.r) + numToHex(rgb.g) + numToHex(rgb.b);
 }
 
 export function scrollIntoViewIfNeeded(elemId: string, tainer: string|HTMLElement) {

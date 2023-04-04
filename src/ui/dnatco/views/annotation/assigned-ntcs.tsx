@@ -4,6 +4,7 @@ import { ChainSelect, ModelSelect } from '../structure-selectors';
 import { View } from '../view';
 import { SearchBox } from '../../search-box';
 import { EmptyStructureSelection, InvalidAtom, InvalidChain, InvalidModelIndex, InvalidResidue, InvalidStepId, StructureSelection } from '../../structure-selection';
+import { Colors } from '../../colors';
 import { niceStepName, Common } from '../../common';
 import { setDynamicTableModelColumns } from '../../util';
 import { DynamicTable } from '../../../common/dynamic-table';
@@ -199,6 +200,7 @@ export class AssignedNtCs extends View<View.Props> {
                         );
                 }}
                 highlightedTag={stepName}
+                highlightColor={Colors.CurrentStep()}
                 scrollTainer={this.tableTainer.current ?? void 0}
                 style='wide'
                 download={{

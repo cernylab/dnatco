@@ -8,6 +8,7 @@ import { NavalContext } from './naval';
 import { UserRemoteDatabases, BuiltInRemoteDatabases } from '../remote/db/register';
 import { Rscc } from '../remote/rscc';
 import { StaticDb } from '../remote/db/static-db';
+import { GlobalConfig } from '../global-config';
 
 async function tryGetDensityMaps(dmFiles: { file: File, kind: DensityMap['kind'] }[]) {
     const results = [];
@@ -50,6 +51,16 @@ async function tryIngestData(
 ) {
     const errors = new Array<string>();
     const densityMaps = [];
+    const config =  await (async () => {
+        if (GlobalConfig.isLoaded())
+            return GlobalConfig.data();
+        else {
+            const input = await GlobalConfig.fetchConfigFile();
+            GlobalConfig.load(input);
+
+            return GlobalConfig.data();
+        }
+    })();
 
     if (isError(coordsResult))
         errors.push(`Problem with coordinates - ${coordsResult.message}`);
@@ -61,7 +72,7 @@ async function tryIngestData(
     }
 
     if (errors.length === 0) {
-        return Dnatcofication.ingest((coordsResult as OkResult<Coordinates>).data, densityMaps, sourceFileName, clsfResData, alCtx, nvCtx, isCustomStructure, ctx);
+        return Dnatcofication.ingest((coordsResult as OkResult<Coordinates>).data, densityMaps, sourceFileName, clsfResData, alCtx, nvCtx, isCustomStructure, config, ctx);
     } else {
         ctx.events.finished.next({ state: 'failed', message: errors.join(', ') });
 

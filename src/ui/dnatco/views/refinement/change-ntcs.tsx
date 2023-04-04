@@ -3,6 +3,7 @@ import { Refinement } from './common';
 import { CustomNtCSets } from './custom-ntc-sets';
 import { ChainSelect, ModelSelect } from '../structure-selectors';
 import { View } from '../view';
+import { Colors } from '../../colors';
 import { Common, niceStepName } from '../../common';
 import {
     EmptyStructureSelection,
@@ -162,6 +163,7 @@ export class ChangeNtCs extends View<Refinement.Props> {
                     }
                 }}
                 highlightedTag={stepName}
+                highlightColor={Colors.CurrentStep()}
                 scrollTainer={this.tableTainer.current ?? void 0}
                 style='wide'
             />
