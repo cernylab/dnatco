@@ -167,10 +167,10 @@ export namespace Phenix {
     }
 
     export function restraintsAsLines(restraints: Restraints): Line[] {
-        const lines = [ln('refinement.geometry_restraints.edits {')];
+        let lines = [ln('refinement.geometry_restraints.edits {')];
 
-        lines.push(...writeResidueAliases(restraints.residueAliases));
-        lines.push(...writeRestraints(restraints.restraints));
+        lines = lines.concat(writeResidueAliases(restraints.residueAliases));
+        lines = lines.concat(writeRestraints(restraints.restraints));
 
         lines.push(ln('}'));
 
