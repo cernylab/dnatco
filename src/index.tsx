@@ -16,7 +16,6 @@ import { ListOfConformers } from './dnatco/list-of-conformers';
 import { Step } from './dnatco/step';
 import { StepsMapper } from './dnatco/steps-mapper';
 import { UserRemoteDatabases } from './remote/db/register';
-import { StaticDb } from './remote/db/static-db';
 import { AboutTab } from './ui/about-tab';
 import { DnatcoViewerTab } from './ui/dnatco-viewer-tab';
 import { Footer } from './ui/footer';
@@ -247,9 +246,9 @@ export class App extends WithSubscriptions<{}, State> {
     }
 
     private fromPdbId(pdbId: string, dbId: string, onSuccess: () => void) {
-        const task: Task<{ pdbId: string, dbId: string, clsfResData: ClassificationResources.Data, alCtx: AnglesLengthsContext, nvCtx: NavalContext, userDatabases: StaticDb[] }> = {
+        const task: Task<{ pdbId: string, dbId: string, clsfResData: ClassificationResources.Data, alCtx: AnglesLengthsContext, nvCtx: NavalContext }> = {
             taskFunc: 'dnatco-from-pdb-id',
-            payload: { pdbId, dbId, clsfResData: ClassificationContext.data(), alCtx: AnglesLengths.context(), nvCtx: Naval.context(), userDatabases: UserRemoteDatabases._export() },
+            payload: { pdbId, dbId, clsfResData: ClassificationContext.data(), alCtx: AnglesLengths.context(), nvCtx: Naval.context() },
             initialStatus: ''
         };
 

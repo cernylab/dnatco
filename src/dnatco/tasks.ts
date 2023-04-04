@@ -7,8 +7,18 @@ import { Dnatcofication, DnatcoficationData, DnatcoficationTaskContext } from '.
 import { NavalContext } from './naval';
 import { UserRemoteDatabases, BuiltInRemoteDatabases } from '../remote/db/register';
 import { Rscc } from '../remote/rscc';
-import { StaticDb } from '../remote/db/static-db';
-import { GlobalConfig } from '../global-config';
+import { GlobalConfig, GlobalConfigData } from '../global-config';
+
+async function getConfigData() {
+    if (GlobalConfig.isLoaded())
+        return GlobalConfig.data();
+    else {
+        const input = await GlobalConfig.fetchConfigFile();
+        GlobalConfig.load(input);
+
+        return GlobalConfig.data();
+    }
+}
 
 async function tryGetDensityMaps(dmFiles: { file: File, kind: DensityMap['kind'] }[]) {
     const results = [];
@@ -47,20 +57,11 @@ async function tryIngestData(
     alCtx: AnglesLengthsContext,
     nvCtx: NavalContext,
     isCustomStructure: boolean,
+    configData: GlobalConfigData,
     ctx: DnatcoficationTaskContext
 ) {
     const errors = new Array<string>();
     const densityMaps = [];
-    const config =  await (async () => {
-        if (GlobalConfig.isLoaded())
-            return GlobalConfig.data();
-        else {
-            const input = await GlobalConfig.fetchConfigFile();
-            GlobalConfig.load(input);
-
-            return GlobalConfig.data();
-        }
-    })();
 
     if (isError(coordsResult))
         errors.push(`Problem with coordinates - ${coordsResult.message}`);
@@ -72,7 +73,7 @@ async function tryIngestData(
     }
 
     if (errors.length === 0) {
-        return Dnatcofication.ingest((coordsResult as OkResult<Coordinates>).data, densityMaps, sourceFileName, clsfResData, alCtx, nvCtx, isCustomStructure, config, ctx);
+        return Dnatcofication.ingest((coordsResult as OkResult<Coordinates>).data, densityMaps, sourceFileName, clsfResData, alCtx, nvCtx, isCustomStructure, configData, ctx);
     } else {
         ctx.events.finished.next({ state: 'failed', message: errors.join(', ') });
 
@@ -92,19 +93,25 @@ export const Tasks = {
             nvCtx: NavalContext,
         }
     ) {
-        ctx.status = 'Reading data';
-        const coordsResult = await Coordinates.fromFile(payload.coords.file, payload.coords.type);
-        const densityMaps = await tryGetDensityMaps(payload.densityMaps);
+        try {
+            const configData = await getConfigData();
+            UserRemoteDatabases._import(configData.userDatabases);
+            ctx.status = 'Reading data';
+            const coordsResult = await Coordinates.fromFile(payload.coords.file, payload.coords.type);
+            const densityMaps = await tryGetDensityMaps(payload.densityMaps);
 
-        const data = await tryIngestData(coordsResult, densityMaps, payload.coords.file.name, payload.clsfResData, payload.alCtx, payload.nvCtx, true, ctx);
-        if (!data)
-            return;
+            const data = await tryIngestData(coordsResult, densityMaps, payload.coords.file.name, payload.clsfResData, payload.alCtx, payload.nvCtx, true, configData, ctx);
+            if (!data)
+                return;
 
-        if (payload.densityMapCoeffs) {
-            // The "await" here is necessary for the worker thread to stay alive until the Rscc query finishes, apparently
-            await tryGetRscc(payload.coords.file, payload.densityMapCoeffs, ctx, data);
-        } else
-            ctx.events.finished.next({ state: 'succeeded', data });
+            if (payload.densityMapCoeffs) {
+                // The "await" here is necessary for the worker thread to stay alive until the Rscc query finishes, apparently
+                await tryGetRscc(payload.coords.file, payload.densityMapCoeffs, ctx, data);
+            } else
+                ctx.events.finished.next({ state: 'succeeded', data });
+        } catch (e) {
+            ctx.events.finished.next({ state: 'failed', message: (e as Error).message });
+        }
     },
     'dnatco-from-pdb-id': async function(
         ctx: DnatcoficationTaskContext,
@@ -114,29 +121,33 @@ export const Tasks = {
             clsfResData: ClassificationResources.Data,
             alCtx: AnglesLengthsContext,
             nvCtx: NavalContext,
-            userDatabases: StaticDb[],
         }
     ) {
-        UserRemoteDatabases._import(payload.userDatabases);
+        try {
+            const configData = await getConfigData();
+            UserRemoteDatabases._import(configData.userDatabases);
 
-        ctx.status = 'Downloading data';
+            ctx.status = 'Downloading data';
 
-        const db = UserRemoteDatabases.exists(payload.dbId)
-            ? UserRemoteDatabases.get(payload.dbId)
-            : BuiltInRemoteDatabases[payload.dbId as keyof typeof BuiltInRemoteDatabases];
-        if (!db) {
-            ctx.events.finished.next({ state: 'failed', message: 'Unknown database ID' });
-            return;
+            const db = UserRemoteDatabases.exists(payload.dbId)
+                ? UserRemoteDatabases.get(payload.dbId)
+                : BuiltInRemoteDatabases[payload.dbId as keyof typeof BuiltInRemoteDatabases];
+            if (!db) {
+                ctx.events.finished.next({ state: 'failed', message: 'Unknown database ID' });
+                return;
+            }
+
+            const coordsResult = await Coordinates.fromPdbId(payload.pdbId, db);
+            const densityMapResult = await DensityMap.fromPdbId(payload.pdbId, db);
+            if (isError(densityMapResult))
+                console.warn(densityMapResult.message); // Log a warning because we do not consider a density map fetch failure a hard failure
+
+            let data = await tryIngestData(coordsResult, isOk(densityMapResult) ? [densityMapResult] : [], null, payload.clsfResData, payload.alCtx, payload.nvCtx, false, configData, ctx);
+            if (data)
+                ctx.events.finished.next({ state: 'succeeded', data });
+        } catch (e) {
+            ctx.events.finished.next({ state: 'failed', message: (e as Error).message });
         }
-
-        const coordsResult = await Coordinates.fromPdbId(payload.pdbId, db);
-        const densityMapResult = await DensityMap.fromPdbId(payload.pdbId, db);
-        if (isError(densityMapResult))
-            console.warn(densityMapResult.message); // Log a warning because we do not consider a density map fetch failure a hard failure
-
-        let data = await tryIngestData(coordsResult, isOk(densityMapResult) ? [densityMapResult] : [], null, payload.clsfResData, payload.alCtx, payload.nvCtx, false, ctx);
-        if (data)
-            ctx.events.finished.next({ state: 'succeeded', data });
     },
     'dnatco-from-raw-link': async function(
         ctx: DnatcoficationTaskContext,
@@ -148,11 +159,18 @@ export const Tasks = {
             nvCtx: NavalContext,
         }
     ) {
-        ctx.status = 'Downloading data';
-        const coordsResult = await Coordinates.fromLink(payload.coords.link, payload.coords.type);
-        const densityMapResult = payload.densityMap ? await DensityMap.fromLink(payload.densityMap.link, payload.densityMap.type, payload.densityMap.kind) : null;
-        const data = await tryIngestData(coordsResult, densityMapResult ? [densityMapResult] : [], null, payload.clsfResData, payload.alCtx, payload.nvCtx, false, ctx);
-        if (data)
-            ctx.events.finished.next({ state: 'succeeded', data });
+        try {
+            const configData = await getConfigData();
+            UserRemoteDatabases._import(configData.userDatabases);
+
+            ctx.status = 'Downloading data';
+            const coordsResult = await Coordinates.fromLink(payload.coords.link, payload.coords.type);
+            const densityMapResult = payload.densityMap ? await DensityMap.fromLink(payload.densityMap.link, payload.densityMap.type, payload.densityMap.kind) : null;
+            const data = await tryIngestData(coordsResult, densityMapResult ? [densityMapResult] : [], null, payload.clsfResData, payload.alCtx, payload.nvCtx, false, configData, ctx);
+            if (data)
+                ctx.events.finished.next({ state: 'succeeded', data });
+        } catch (e) {
+            ctx.events.finished.next({ state: 'failed', message: (e as Error).message });
+        }
     }
 }
