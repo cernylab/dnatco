@@ -156,9 +156,12 @@ export type StepRmsdStats = { rmsdThreshold: number, count: number };
 
 export const DnatcoficationData = {
     isCustomStructure: false,
-    connectivities: { backward: [], forward: [] } as ConnSimil.AllConnectivities,
+    connectivities: {
+        backward: [] as (ConnSimil.Connectivities|null|undefined)[], // null = no connectivity, undefined = connectivity not calculated yet
+        forward: [] as (ConnSimil.Connectivities|null|undefined)[],
+    },
     entityKinds: [] as Dnatcofication.EntityKinds[],
-    similarities: [] as ConnSimil.AllSimilarities,
+    similarities: [] as (ConnSimil.Similarities|null|undefined)[], // null = no similarity, undefined = similarity data not calculated yet
     steps: StepsMapper.Mapping(),
     structures: new Array<_Structure>(),
     cifData: null as (Cif.Data|null),
@@ -189,6 +192,39 @@ export class Dnatcofication {
 
     get customNtCs() {
         return this._customNtCs;
+    }
+
+    getConnectivities(stepId: number): { backward: ConnSimil.Connectivities|null, forward: ConnSimil.Connectivities|null } {
+        const idx = StepsMapper.idToIndex(this, stepId);
+        const steps = this.data.steps.steps;
+
+        if (this.data.connectivities.backward[idx] === undefined) {
+            const currStep = steps[idx];
+            const prevStepIdx = this.data.steps.previous[idx];
+            const nextStepIdx = this.data.steps.next[idx];
+
+            const { backward, forward } = ConnSimil.calculateConnectivities(
+                currStep,
+                prevStepIdx !== -1 ? steps[prevStepIdx] : void 0,
+                nextStepIdx !== -1 ? steps[nextStepIdx] : void 0,
+                Cif.File.table(this.data.cifData!, AtomSite, 0)
+            )
+
+            this.data.connectivities.backward[idx] = backward;
+            this.data.connectivities.forward[idx] = forward;
+        }
+
+        return { backward: this.data.connectivities.backward[idx]!, forward: this.data.connectivities.forward[idx]! };
+    }
+
+    getSimilarities(stepId: number) {
+        const idx = StepsMapper.idToIndex(this, stepId);
+        const steps = this.data.steps.steps;
+
+        if (this.data.similarities[idx] === undefined)
+            this.data.similarities[idx] = ConnSimil.calculateSimilarities(steps[idx], Cif.File.table(this.data.cifData!, AtomSite, 0));
+
+        return this.data.similarities[idx];
     }
 
     get identifyingName() {
@@ -392,16 +428,28 @@ export namespace Dnatcofication {
                 structures[0],
             );
 
-            ctx.status = 'Gathering step atoms';
-            const stepsAtoms = ConnSimil.getStepsAtoms(steps.steps, cifData);
+            // TODO: We should add an option to calculate all connectivities beforehand
+            const precalculateConnsSimils = false;
+            let connectivities;
+            let similarities;
+            if (precalculateConnsSimils) {
+                ctx.status = 'Gathering step atoms';
+                const stepsAtoms = ConnSimil.getStepsAtoms(steps.steps, cifData);
 
-            ctx.status = 'Calculating connectivities';
-            const connectivities = ConnSimil.getConnectivities(steps.steps, stepsAtoms, steps.previous, steps.next);
+                ctx.status = 'Calculating connectivities';
+                connectivities = ConnSimil.calculateAllConnectivities(steps.steps, stepsAtoms, steps.previous, steps.next);
 
-            ctx.status = 'Calculating similarities';
-            const similarities = ConnSimil.getSimilarities(steps.steps, stepsAtoms);
+                ctx.status = 'Calculating similarities';
+                similarities = ConnSimil.calculateAllSimilarities(steps.steps, stepsAtoms);
 
-            stepsAtoms.delete();
+                stepsAtoms.delete();
+            } else {
+                connectivities = {
+                    backward: new Array(steps.steps.length),
+                    forward: new Array(steps.steps.length),
+                };
+                similarities = new Array(steps.steps.length);
+            }
 
             const tEnd = performance.now();
 

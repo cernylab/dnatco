@@ -6,8 +6,10 @@ import { ChainSelect, ModelSelect, StepSelect } from '../structure-selectors';
 import { View } from '../view';
 import { EmptySelectionPieces, InvalidAtom, InvalidResidue, InvalidStepId } from '../../structure-selection';
 import { NamedList, NamedListItem } from '../../../common/named-list';
+import { Cif } from '../../../../cif';
+import { AtomSite } from '../../../../cif/categories/atom-site';
 import { Constants } from '../../../dnatco/constants';
-import { getConnectivities, getStepsAtoms } from '../../../../dnatco/connectivity-similarity';
+import { calculateConnectivities } from '../../../../dnatco/connectivity-similarity';
 import { Dnatcofication } from '../../../../dnatco/dnatcofication';
 import { Step } from '../../../../dnatco/step';
 import { StepsMapper } from '../../../../dnatco/steps-mapper';
@@ -15,7 +17,6 @@ import { axesMaximumHints, valueToSemaphore } from '../../util';
 import { colorToRgb, rgbToHex } from '../../../util';
 
 const MinNumberOfPointsInPlot = 10;
-const ExcludeSecondStep = new Set([1]); // Used in connectivityPlotData
 
 const ConnPlotData = {
     x: new Array<number>(),
@@ -51,23 +52,25 @@ export class ConnectivityPlot extends View<Refinement.Props> {
         const s = this.props.dnatcofication.data.steps.steps;
 
         const centerIdx = StepsMapper.idToIndex(this.props.dnatcofication, centerStepId);
-        const surrIdx = StepsMapper.idToIndex(this.props.dnatcofication, surroundingStepId);
-
         const centerStep = Step.clone(s[centerIdx]); // We may need to modify the step props
         const customNtC = this.props.dnatcofication.customNtCs.getCustomNtC(this.props.selectedCustomNtCSet, centerStep.name);
 
-        // getConnectivities() checks against closestNtC. We need to replace it with the user's choice
+        // calculateConnectivities() checks against closestNtC. We need to replace it with the user's choice
         // if there is a custom NtC set
         if (customNtC)
             centerStep.closestNtC = customNtC;
 
-        const previous = direction == 'previous' ? [1, -1] : [-1, -1];
-        const next = direction == 'next' ? [1, -1] : [-1, -1];
+        const prevStepIdx = direction == 'previous' ? this.props.dnatcofication.data.steps.previous[centerIdx] : -1;
+        const nextStepIdx = direction == 'next' ? this.props.dnatcofication.data.steps.next[centerIdx] : -1;
 
-        const stepAtoms = getStepsAtoms([centerStep, s[surrIdx]], this.props.dnatcofication.data.cifData!);
-        const _conns = getConnectivities([centerStep, s[surrIdx]], stepAtoms, previous, next, ExcludeSecondStep);
+        const { backward, forward } = calculateConnectivities(
+            centerStep,
+            prevStepIdx !== -1 ? this.props.dnatcofication.data.steps.steps[prevStepIdx] : void 0,
+            nextStepIdx !== -1 ? this.props.dnatcofication.data.steps.steps[nextStepIdx] : void 0,
+            Cif.File.table(this.props.dnatcofication.data.cifData!, AtomSite, 0)
+        );
 
-        const conns = direction == 'previous' ? _conns.backward[0] : _conns.forward[0];
+        const conns = direction == 'previous' ? backward : forward;
         if (conns) {
             const clr = rgbToHex(colorToRgb(direction == 'previous' ? Constants.PrevStepColor : Constants.NextStepColor));
             for (const ntc in conns) {
@@ -78,9 +81,6 @@ export class ConnectivityPlot extends View<Refinement.Props> {
                 tags.push(ntc);
             }
         }
-
-        // This is what "automatic memory management" looks like
-        stepAtoms.delete();
 
         return { x, y, colors, tags };
     }
@@ -149,9 +149,8 @@ export class ConnectivityPlot extends View<Refinement.Props> {
         const colorsSel = [];
         const tagsSel = [];
 
-        const stepIdx = StepsMapper.idToIndex(this.props.dnatcofication, stepId);
-        const step = this.props.dnatcofication.data.steps.steps[stepIdx];
-        const similarities = this.props.dnatcofication.data.similarities[stepIdx];
+        const step = StepsMapper.byId(this.props.dnatcofication, stepId);
+        const similarities = this.props.dnatcofication.getSimilarities(stepId);
         const customNtC = this.props.dnatcofication.customNtCs.getCustomNtC(this.props.selectedCustomNtCSet, step.name);
         const selectedNtC = customNtC ?? step.closestNtC;
 

@@ -100,7 +100,7 @@ export function getStepsAtoms(steps: Step[], cif: Cif.Data) {
     return gatheredAtoms;
 }
 
-function getConnectivityInternal(currentStepStru: jsLLKA.LLKAStructure, prevStepStru: jsLLKA.LLKAStructure|undefined, nextStepStru: jsLLKA.LLKAStructure|undefined, ntc: jsLLKA.NtC) {
+function calculateConnectivitiesInternal(currentStepStru: jsLLKA.LLKAStructure, prevStepStru: jsLLKA.LLKAStructure|undefined, nextStepStru: jsLLKA.LLKAStructure|undefined, ntc: jsLLKA.NtC) {
     let backward: Connectivities|null = null;
     let forward: Connectivities|null = null;
     // Are we connected backwards?
@@ -140,7 +140,26 @@ function getConnectivityInternal(currentStepStru: jsLLKA.LLKAStructure, prevStep
     return { backward, forward };
 }
 
-export function getConnectivity(currentStep: Step, previousStep: Step|undefined, nextStep: Step|undefined, atoms: Cif.Table<AtomSite_Schema>) {
+export function calculateSimilaritiesInternal(stru: jsLLKA.LLKAStructure) {
+    const resSimil = jsLLKA.LLKA.measureStepSimilarityNtCMultiple(stru, NtCsVector);
+
+    if (resSimil.isSuccess()) {
+        const similarities: Similarities = {};
+        const succ = resSimil.success();
+        for (let jdx = 0; jdx < NumNtCs; jdx++)
+            similarities[NtCNames[jdx]] = { ...succ.get(jdx) };
+
+        succ.delete();
+        resSimil.delete();
+
+        return similarities;
+    } else {
+        resSimil.delete();
+        return null;
+    }
+}
+
+export function calculateConnectivities(currentStep: Step, previousStep: Step|undefined, nextStep: Step|undefined, atoms: Cif.Table<AtomSite_Schema>) {
     const prevStepStru = previousStep ? gatherStepAtoms(previousStep, atoms) : void 0;
     const currentStepStru = gatherStepAtoms(currentStep, atoms);
     const nextStepStru = nextStep ? gatherStepAtoms(nextStep, atoms) : void 0;
@@ -151,7 +170,7 @@ export function getConnectivity(currentStep: Step, previousStep: Step|undefined,
     const ntc = jsLLKA.LLKA.nameToNtC(currentStep.closestNtC);
     if (ntc != jsLLKA.LLKA.NtC.LLKA_NANT) {
         // We should not ever get NANT here
-        const conns = getConnectivityInternal(currentStepStru, prevStepStru, nextStepStru, ntc);
+        const conns = calculateConnectivitiesInternal(currentStepStru, prevStepStru, nextStepStru, ntc);
         backward = conns.backward;
         forward = conns.forward;
     }
@@ -163,7 +182,16 @@ export function getConnectivity(currentStep: Step, previousStep: Step|undefined,
     return { backward, forward };
 }
 
-export function getConnectivities(steps: Step[], stepsAtoms: jsLLKA.LLKAStructures, previous: number[], next: number[], excludeSteps: Set<number> = new Set()): AllConnectivities {
+export function calculateSimilarities(step: Step, atoms: Cif.Table<AtomSite_Schema>) {
+    const stru = gatherStepAtoms(step, atoms);
+    const similarities = calculateSimilaritiesInternal(stru);
+    stru.delete();
+
+    return similarities;
+}
+
+
+export function calculateAllConnectivities(steps: Step[], stepsAtoms: jsLLKA.LLKAStructures, previous: number[], next: number[], excludeSteps: Set<number> = new Set()): AllConnectivities {
     if (steps.length !== stepsAtoms.size())
         throw new Error(`Mismatching number of steps ${steps.length} and step atoms ${stepsAtoms.size()}`);
 
@@ -187,7 +215,7 @@ export function getConnectivities(steps: Step[], stepsAtoms: jsLLKA.LLKAStructur
             backward.push(null);
             forward.push(null);
         } else {
-            const conns = getConnectivityInternal(currentStepStru, prevStepStru, nextStepStru, ntc);
+            const conns = calculateConnectivitiesInternal(currentStepStru, prevStepStru, nextStepStru, ntc);
             backward.push(conns.backward);
             forward.push(conns.forward);
         }
@@ -200,7 +228,7 @@ export function getConnectivities(steps: Step[], stepsAtoms: jsLLKA.LLKAStructur
     return { backward, forward };
 }
 
-export function getSimilarities(steps: Step[], stepsAtoms: jsLLKA.LLKAStructures) {
+export function calculateAllSimilarities(steps: Step[], stepsAtoms: jsLLKA.LLKAStructures) {
     if (steps.length !== stepsAtoms.size())
         throw new Error(`Mismatching number of steps ${steps.length} and step atoms ${stepsAtoms.size()}`);
 
@@ -208,22 +236,8 @@ export function getSimilarities(steps: Step[], stepsAtoms: jsLLKA.LLKAStructures
 
     for (let idx = 0; idx < steps.length; idx++) {
         const stru = stepsAtoms.get(idx);
-
-        const resSimil = jsLLKA.LLKA.measureStepSimilarityNtCMultiple(stru, NtCsVector);
-        stru.delete();
-
-        if (resSimil.isSuccess()) {
-            const similarities: Similarities = {};
-            const succ = resSimil.success();
-            for (let jdx = 0; jdx < NumNtCs; jdx++)
-                similarities[NtCNames[jdx]] = { ...succ.get(jdx) };
-
-            succ.delete();
-            allSimilarities.push(similarities);
-        } else
-            allSimilarities.push(null);
-
-        resSimil.delete();
+        const similarities = calculateSimilaritiesInternal(stru);
+        allSimilarities.push(similarities);
     }
 
     return allSimilarities;

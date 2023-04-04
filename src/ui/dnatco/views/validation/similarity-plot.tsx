@@ -27,7 +27,7 @@ const PlotData = {
 type PlotData = typeof PlotData;
 
 export class SimilarityPlot extends View<View.Props> {
-    private plotData(stepIdx: number): PlotData {
+    private plotData(stepId: number): PlotData {
         const x = [];
         const y = [];
         const colors = [];
@@ -38,9 +38,8 @@ export class SimilarityPlot extends View<View.Props> {
         const colorsSel = [];
         const tagsSel = [];
 
-        const step = this.props.dnatcofication.data.steps.steps[stepIdx];
-
-        const similarities = this.props.dnatcofication.data.similarities[stepIdx];
+        const step = StepsMapper.byId(this.props.dnatcofication, stepId);
+        const similarities = this.props.dnatcofication.getSimilarities(stepId);
         for (const ntc in similarities) {
             const simil = similarities[ntc];
             const clr = valueToSemaphore(simil.rmsd, Constants.GreenRMSD, Constants.RedRMSD);
@@ -77,8 +76,8 @@ export class SimilarityPlot extends View<View.Props> {
         let plotData;
         let step: Step|undefined = void 0;
         if (this.props.structureSelection.steps.length > 0) {
-            const stepIdx = StepsMapper.idToIndex(this.props.dnatcofication, this.props.structureSelection.steps[0]);
-            plotData = this.plotData(stepIdx);
+            const stepId = this.props.structureSelection.steps[0];
+            plotData = this.plotData(stepId);
             step = StepsMapper.byId(this.props.dnatcofication, this.props.structureSelection.steps[0]);
         } else {
             plotData = PlotData;
