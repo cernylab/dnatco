@@ -273,6 +273,7 @@ export class ConfalsRmsds extends View<View.Props> {
 
             const tag = Cif.Column.value(name, row)!;
             const tags = [tag, tag, tag, tag, void 0, void 0, tag];
+            const confalScore = Cif.Column.value(confal_score, row)!;
             const assignedNtC = Cif.Column.value(assigned_NtC, row)!;
             const assignedCANA = Cif.Column.value(assigned_CANA, row)!;
             const _step = StepsMapper.byName(this.props.dnatcofication, tag)!; // tag is the internal step name
@@ -287,7 +288,7 @@ export class ConfalsRmsds extends View<View.Props> {
                     tag,
                     assignedNtC,
                     assignedCANA,
-                    Cif.Column.value(confal_score, row)!,
+                    confalScore,
                     Cif.Column.value(cartesian_rmsd_closest_NtC_representative, row)!,
                     '',
                 ],
@@ -316,6 +317,7 @@ export class ConfalsRmsds extends View<View.Props> {
                                 </Tooltip>
                             : <span>{assignedCANA}</span>
                     ),
+                    () => <span>{confalScore.toFixed(0)}</span>,
                     () => <span>{Cif.Column.value(cartesian_rmsd_closest_NtC_representative, row)!.toFixed(3)}</span>,
                     () => (
                         <Tooltip
