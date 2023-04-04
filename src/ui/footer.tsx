@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { Email } from './common/email';
 import { IconButton } from './common/push-button';
+import { Globals } from '../globals';
 import { Net } from '../util/net';
 import 'assets/imgs/ibt.png';
 import 'assets/imgs/elixir.png';
@@ -27,16 +28,13 @@ export class Footer extends React.Component {
                         <div style={PadderStyle}>
                             <div className='rdo-footer-text'>© 2022</div>
                         </div>
-                        <div style={PadderStyle}>
-                            <div className='rdo-footer-text'>
-                                <Email email='jiri.cerny@ibt.cas.cz'><span style={{ color: 'var(--color-c)' }}>Jiří Černý</span></Email>
+                        {Globals.PrimaryContacts.map((c) => (
+                            <div style={PadderStyle}>
+                                <div className='rdo-footer-text'>
+                                    <Email email={c.email}><span style={{ color: 'var(--color-c)' }}>{c.name}</span></Email>
+                                </div>
                             </div>
-                        </div>
-                        <div style={PadderStyle}>
-                            <div className='rdo-footer-text'>
-                                <Email email='bohdan.schneider@ibt.cas.cz'><span style={{ color: 'var(--color-c)' }}>Bohdan Schneider</span></Email>
-                            </div>
-                        </div>
+                        ))}
 
                         <div />
 
