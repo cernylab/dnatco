@@ -23,6 +23,7 @@ import { Footer } from './ui/footer';
 import { ConformersTab } from './ui/conformers-tab';
 import { NavigationBar } from './ui/navigation-bar';
 import { StartTab } from './ui/start-tab';
+import { Email } from './ui/common/email';
 import { Popup } from './ui/common/popup';
 import { InProgress } from './ui/common/in-progress';
 import { QuestionDialog } from './ui/common/question-dialog';
@@ -606,9 +607,9 @@ function InitializationError(props: {e: Error}) {
                 <div className='rdo-init-error'>Application has failed to load because it is misconfigured. Please, report the error below to the site administrators.</div>
                 <div className='rdo-init-error-message'>{props.e.message}</div>
                 <span>
-                    <div className='rdo-strong' style={{ textAlign: 'center'}}>Contact</div>
+                    <div className='rdo-strong' style={{ textAlign: 'center'}}>Contact:</div>
                     <span style={{ display: 'flex', gap: '1em' }}>
-                        {Globals.PrimaryContacts.map((c) => (<a href={`mailto:${c.email}`} style={{ color: 'black' }}>{c.name}</a>))}
+                        {Globals.PrimaryContacts.map((c) => <Email email={c.email}><span style={{ color: 'black' }}>{c.name}</span></Email>)}
                     </span>
                 </span>
             </div>
