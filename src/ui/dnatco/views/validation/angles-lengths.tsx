@@ -3,6 +3,7 @@ import Plot from 'react-plotly.js';
 import React from 'react';
 import { ChainSelect, ModelSelect } from '../structure-selectors';
 import { View } from '../view';
+import { Colors } from '../../colors';
 import { Constants } from '../../constants';
 import { SearchBox } from '../../search-box';
 import { StatsBar } from '../../stats-bar';
@@ -1988,7 +1989,7 @@ async function selectionDisplayer(pieces: SelectedPieces, d: Dnatcofication, vi:
     for (const r of pieces.residues) {
         const authRes = StructureSelection.cifToAuthResidue(d.data.structures[0], r);
         if (authRes) {
-            const cmdRes = ViewerApi.Commands.ResidueSelection(r.modelNum, authRes.chain, authRes.cifChain, authRes.seqId, authRes.insCode, authRes.altId, Constants.StepColor);
+            const cmdRes = ViewerApi.Commands.ResidueSelection(r.modelNum, authRes.chain, authRes.cifChain, authRes.seqId, authRes.insCode, authRes.altId, Colors.CurrentStep());
             selected.push(cmdRes);
         }
     }

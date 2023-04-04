@@ -30,6 +30,9 @@ export type GlobalConfigData = {
         pdbId: string,
     }[],
     displayedProductName: string,
+    currentStepColor: string,
+    previousStepColor: string,
+    nextStepColor: string,
 };
 const GlobalConfigData: GlobalConfigData = {
     isDevel: false,
@@ -50,6 +53,9 @@ const GlobalConfigData: GlobalConfigData = {
     violinPlotMarkerColorB: '#000',
     exampleStructures: [{db: '', pdbId: ''}],
     displayedProductName: 'ReDNATCO',
+    currentStepColor: '#ffff00',
+    previousStepColor: '#0000ff',
+    nextStepColor: '#00ffff',
 };
 const AllowedPartials: Partial<{[k in keyof GlobalConfigData]: object}> = {
     anglesLengths: {}
@@ -89,6 +95,10 @@ function fixups(data: GlobalConfigData) {
 export namespace GlobalConfig {
     export function data() {
         return GlobalConfigData;
+    }
+
+    export function defaultValue<K extends keyof GlobalConfigData>(k: K): GlobalConfigData[K] {
+        return GlobalConfigData[k];
     }
 
     export function initialize(input: Record<string, any>) {

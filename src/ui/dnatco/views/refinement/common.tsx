@@ -1,5 +1,5 @@
 import React from 'react';
-import { Constants } from '../../constants';
+import { Colors } from '../../colors';
 import { SelectedPieces } from '../../structure-selection';
 import { makeStepSelection } from '../../util';
 import { View } from '../../views/view';
@@ -26,7 +26,7 @@ export namespace Refinement {
     }
 
     export class NtCSelector extends React.Component<NtCSelector.Props> {
-        shouldComponentUpdate(nextProps: Readonly<NtCSelector.Props>, nextState: Readonly<{}>, nextContext: any): boolean {
+        shouldComponentUpdate(nextProps: Readonly<NtCSelector.Props>): boolean {
             return this.props.value !== nextProps.value;
         }
 
@@ -73,9 +73,9 @@ export namespace Refinement {
             const nextNtC = nextStep ? getNtC(d, nextStep, customNtCSet) : void 0;
 
             const step = ViewerApi.Commands.StepSelection(
-                ViewerApi.Payloads.StepSelection(selection.current.name, { NtC: currNtC, color: Constants.StepColor }),
-                prevNtC ? ViewerApi.Payloads.StepSelection(selection.previous!.name, { NtC: prevNtC, color: Constants.PrevStepColor }) : void 0,
-                nextNtC ? ViewerApi.Payloads.StepSelection(selection.next!.name, { NtC: nextNtC, color: Constants.NextStepColor }) : void 0
+                ViewerApi.Payloads.StepSelection(selection.current.name, { NtC: currNtC, color: Colors.CurrentStep() }),
+                prevNtC ? ViewerApi.Payloads.StepSelection(selection.previous!.name, { NtC: prevNtC, color: Colors.PreviousStep() }) : void 0,
+                nextNtC ? ViewerApi.Payloads.StepSelection(selection.next!.name, { NtC: nextNtC, color: Colors.NextStep() }) : void 0
             );
             selected.push(step);
         }

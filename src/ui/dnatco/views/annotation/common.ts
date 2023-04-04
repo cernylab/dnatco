@@ -1,4 +1,4 @@
-import { Constants } from '../../constants';
+import { Colors } from '../../colors';
 import { SelectedPieces } from '../../structure-selection';
 import { makeStepSelection } from '../../util';
 import { Dnatcofication } from '../../../../dnatco/dnatcofication';
@@ -20,7 +20,7 @@ export namespace Annotation {
             const currNtC = StepsMapper.byId(d, selection.current.id).closestNtC;
 
             const step = ViewerApi.Commands.StepSelection(
-                ViewerApi.Payloads.StepSelection(selection.current.name, { NtC: currNtC, color: Constants.StepColor }),
+                ViewerApi.Payloads.StepSelection(selection.current.name, { NtC: currNtC, color: Colors.CurrentStep() }),
                 void 0,
                 void 0
             );

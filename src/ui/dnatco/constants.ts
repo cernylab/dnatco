@@ -5,10 +5,6 @@ export namespace Constants {
     export const GreenRMSD = 0.0;
     export const RedRMSD = 1.0;
 
-    export const StepColor = 0xFFFF00;  // Yellow
-    export const NextStepColor = 0x00FFFF; // Cyan
-    export const PrevStepColor = 0x0000FF; // Blue
-
     export const DefaultConnectivityXRange = [0, 0.5];
     export const DefaultConnectivityYRange = [0, 0.5];
 

@@ -25,7 +25,7 @@ import { StartTab } from './ui/start-tab';
 import { Popup } from './ui/common/popup';
 import { InProgress } from './ui/common/in-progress';
 import { QuestionDialog } from './ui/common/question-dialog';
-import { Constants } from './ui/dnatco/constants';
+import { Colors } from './ui/dnatco/colors';
 import { MainScreen } from './ui/dnatco/main-screen';
 import { WithSubscriptions } from './ui/service/with-subscriptions';
 import { formatErrorText } from './ui/util';
@@ -177,7 +177,7 @@ export class App extends WithSubscriptions<{}, State> {
                 () => {
                     this.viewerInterop.api.command(ViewerApi.Commands.SelectStructures([
                         ViewerApi.Commands.StepSelection(
-                            ViewerApi.Payloads.StepSelection(stepName, { NtC: step.closestNtC, color: Constants.StepColor }),
+                            ViewerApi.Payloads.StepSelection(stepName, { NtC: step.closestNtC, color: Colors.CurrentStep() }),
                             void 0,
                             void 0
                         )

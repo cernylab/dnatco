@@ -47,9 +47,9 @@ export function htmlColorAsNumber(s: string) {
         g = parseInt(s.substring(3, 5), 16);
         b = parseInt(s.substring(5, 7), 16);
     } else if (s.match(ShortHtmlColor)) {
-        r = parseInt(s.substring(1, 2), 16);
-        g = parseInt(s.substring(2, 3), 16);
-        b = parseInt(s.substring(3, 4), 16);
+        r = parseInt(s.substring(1, 2), 16) * 16;
+        g = parseInt(s.substring(2, 3), 16) * 16;
+        b = parseInt(s.substring(3, 4), 16) * 16;
     } else
         return void 0;
 

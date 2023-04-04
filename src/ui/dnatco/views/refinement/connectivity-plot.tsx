@@ -8,6 +8,7 @@ import { EmptySelectionPieces, InvalidAtom, InvalidResidue, InvalidStepId } from
 import { NamedList, NamedListItem } from '../../../common/named-list';
 import { Cif } from '../../../../cif';
 import { AtomSite } from '../../../../cif/categories/atom-site';
+import { Colors } from '../../../dnatco/colors';
 import { Constants } from '../../../dnatco/constants';
 import { calculateConnectivities } from '../../../../dnatco/connectivity-similarity';
 import { Dnatcofication } from '../../../../dnatco/dnatcofication';
@@ -72,7 +73,7 @@ export class ConnectivityPlot extends View<Refinement.Props> {
 
         const conns = direction == 'previous' ? backward : forward;
         if (conns) {
-            const clr = rgbToHex(colorToRgb(direction == 'previous' ? Constants.PrevStepColor : Constants.NextStepColor));
+            const clr = rgbToHex(colorToRgb(direction == 'previous' ? Colors.PreviousStep() : Colors.NextStep()));
             for (const ntc in conns) {
                 const conn = conns[ntc];
                 x.push(conn.C5PrimeDistance);
