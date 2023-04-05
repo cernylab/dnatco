@@ -1,8 +1,8 @@
 import { Globals } from './globals';
 import { KnownCoordinateFileTypes, KnownDensityMapKinds, KnownDensityMapTypes } from './remote/db';
-import {BuiltInRemoteDatabases} from './remote/db/register';
+import { BuiltInRemoteDatabases } from './remote/db/register';
 import { StaticDb } from './remote/db/static-db';
-import { objKeys } from './util';
+import { deepCopy, objKeys } from './util';
 import { fromTemplate } from './util/json';
 
 export type AngleLengthPGroup = {
@@ -66,7 +66,7 @@ const GlobalConfigData: GlobalConfigData = {
 const AllowedPartials: Partial<{[k in keyof GlobalConfigData]: object}> = {
     anglesLengths: {}
 };
-const DefaultGlobalConfigData = { ...GlobalConfigData }; // FIXME: This is wrong - we need to do a proper deep copy!!!
+const DefaultGlobalConfigData = deepCopy(GlobalConfigData);
 
 function checkAndSetEntry<K extends keyof GlobalConfigData>(data: GlobalConfigData, k: K, inputObj: any, partials: typeof AllowedPartials) {
     const to = data[k];

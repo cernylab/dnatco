@@ -1,3 +1,5 @@
+import { clone as _justClone } from './just-clone';
+
 const ZeroChar = '0'.charCodeAt(0);
 const NineChar = '9'.charCodeAt(0);
 const MinusChar = '-';
@@ -21,6 +23,10 @@ export function copyString(s: string) {
     // NOTE: This feels super sketchy but StackOverflow offers a couple
     // of very odd suggestions, all of which are reported to have issues
     return '' + s;
+}
+
+export function deepCopy<T>(obj: T): T {
+    return _justClone(obj);
 }
 
 export function dequote(s: string) {
