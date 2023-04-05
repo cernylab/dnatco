@@ -1103,8 +1103,12 @@ th.rdo-data-table-small {
     font-weight: bold ;
 }
 
+/* This should be probably kept in sync with rdo-link */
 a.rdo-txa-link {
     color: black;
+}
+a.rdo-txa-link:visited {
+    color: #777
 }
 
 ul.rdo-txa-list {
