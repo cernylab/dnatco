@@ -622,7 +622,8 @@ async function bootstrap() {
     const root = RDC.createRoot(document.getElementById('app')!);
     try {
         GlobalConfig.load(config);
-        UserRemoteDatabases._import(GlobalConfig.data().userDatabases);
+        for (const db of GlobalConfig.data().userDatabases)
+            UserRemoteDatabases.add(db);
 
         root.render(<App {...config} />);
     } catch (e) {
