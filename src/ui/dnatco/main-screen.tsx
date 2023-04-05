@@ -1,4 +1,5 @@
 import React from 'react';
+import { Common } from './common';
 import { getCifValue } from './util';
 import {
     EmptySelectionPieces, EmptyStructureSelection,
@@ -165,7 +166,7 @@ export class MainScreen extends WithSubscriptions<MainScreen.Props, State> {
 
     private renderResolution() {
         const method = getCifValue(this.props.dnatcofication, Exptl, 'method');
-        if (method === 'x-ray diffraction') {
+        if (Common.MethodsWithCommonResolution.includes(method)) {
             return (
                 <div>
                     <span className='rdo-emphasize'>Low:{'\u00A0'}</span><span>{getCifValue(this.props.dnatcofication, Refine, 'ls_d_res_low')?.toFixed(3) ?? 'N/A'}</span>

@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { View } from '../view';
+import { Common } from '../../common';
 import { getCifValue, niceCifDate } from '../../util';
 import { CollapsibleVertical } from '../../../common/collapsible-vertical';
 import { NamedList, NamedListItem } from '../../../common/named-list';
@@ -51,7 +52,7 @@ function primaryPublication(d: Dnatcofication) {
 
 function resolution(d: Dnatcofication) {
     const method = getCifValue(d, Exptl, 'method');
-    if (method === 'x-ray diffraction') {
+    if (Common.MethodsWithCommonResolution.includes(method)) {
         return `Low: ${getCifValue(d, Refine, 'ls_d_res_low')?.toFixed(3) ?? NA}, High: ${getCifValue(d, Refine, 'ls_d_res_high')?.toFixed(3) ?? NA}`;
     } else if (method === 'electron microscopy') {
         return `${getCifValue(d, Em3dReconstruction, 'resolution')?.toFixed(3) ?? NA} (${getCifValue(d, Em3dReconstruction, 'resolution_method')})`;

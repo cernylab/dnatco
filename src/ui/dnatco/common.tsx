@@ -8,6 +8,8 @@ import { Step } from '../../dnatco/step';
 export namespace Common {
     export const NA = 'N/A';
 
+    export const MethodsWithCommonResolution = ['x-ray diffraction', 'neutron diffraction', 'fiber diffraction', 'electron crystallography', 'powder diffraction'];
+
     export const BarHeightEm = 0.75;
     export const VScrollElement = { overflow: 'hidden', flex: 1 } as StandardLonghandProperties;
     export const VScrollJail = { overflow: 'hidden', height: '100%', display: 'flex', flexDirection: 'column' } as StandardLonghandProperties;
