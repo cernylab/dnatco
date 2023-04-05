@@ -1,6 +1,8 @@
 import { Globals } from './globals';
 import { KnownCoordinateFileTypes, KnownDensityMapKinds, KnownDensityMapTypes } from './remote/db';
+import {BuiltInRemoteDatabases} from './remote/db/register';
 import { StaticDb } from './remote/db/static-db';
+import { objKeys } from './util';
 import { fromTemplate } from './util/json';
 
 export type AngleLengthPGroup = {
@@ -16,6 +18,7 @@ export type GlobalConfigData = {
     isDevel: boolean,
     pathPrefix: string,
     userDatabases: StaticDb[],
+    primaryDatabase: string,
     anglesLengths: {
         chartMarkerColor: string,
         maxWorst: number,
@@ -39,6 +42,7 @@ const GlobalConfigData: GlobalConfigData = {
     isDevel: false,
     pathPrefix: '.',
     userDatabases: [],
+    primaryDatabase: '',
     anglesLengths: {
         chartMarkerColor: '#ff03f2',
         navalMarkerColor: '#ff8080',
@@ -62,6 +66,7 @@ const GlobalConfigData: GlobalConfigData = {
 const AllowedPartials: Partial<{[k in keyof GlobalConfigData]: object}> = {
     anglesLengths: {}
 };
+const DefaultGlobalConfigData = { ...GlobalConfigData }; // FIXME: This is wrong - we need to do a proper deep copy!!!
 
 function checkAndSetEntry<K extends keyof GlobalConfigData>(data: GlobalConfigData, k: K, inputObj: any, partials: typeof AllowedPartials) {
     const to = data[k];
@@ -92,6 +97,13 @@ function fixups(data: GlobalConfigData) {
 
         return ok;
     });
+
+    if (!data.primaryDatabase) {
+        if (data.userDatabases.length > 0)
+            data.primaryDatabase = data.userDatabases[0].id;
+        else
+            data.primaryDatabase = objKeys(BuiltInRemoteDatabases)[0];
+    }
 }
 
 const Status = {
@@ -103,7 +115,7 @@ export namespace GlobalConfig {
     }
 
     export function defaultValue<K extends keyof GlobalConfigData>(k: K): GlobalConfigData[K] {
-        return GlobalConfigData[k];
+        return DefaultGlobalConfigData[k];
     }
 
     export async function fetchConfigFile() {
@@ -120,11 +132,13 @@ export namespace GlobalConfig {
 
     export function load(input: Record<string, any>) {
         if (Status.isLoaded)
-            return;
+            return GlobalConfigData;
 
         checkAndSet(GlobalConfigData, input);
         fixups(GlobalConfigData);
 
         Status.isLoaded = true;
+
+        return GlobalConfigData;
     }
 }

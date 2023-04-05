@@ -58,4 +58,8 @@ export namespace Net {
             URL.revokeObjectURL(objUrl);
         }
     }
+
+    export function setBaseUrl() {
+        history.pushState(null, "", "/");
+    }
 }

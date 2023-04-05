@@ -15,7 +15,7 @@ import { Dnatcofication, DnatcoficationData } from './dnatco/dnatcofication';
 import { ListOfConformers } from './dnatco/list-of-conformers';
 import { Step } from './dnatco/step';
 import { StepsMapper } from './dnatco/steps-mapper';
-import { UserRemoteDatabases } from './remote/db/register';
+import { UserRemoteDatabases, isBuiltIn } from './remote/db/register';
 import { AboutTab } from './ui/about-tab';
 import { DnatcoViewerTab } from './ui/dnatco-viewer-tab';
 import { Footer } from './ui/footer';
@@ -52,6 +52,7 @@ import 'assets/rednatco.css';
 const Params = {
     cifcode: '',
     stepName: '',
+    db: '',
 };
 
 const TabsForModes = {
@@ -552,9 +553,10 @@ export class App extends WithSubscriptions<{}, State> {
             this.initialSearchDone = true;
 
             const params = Net.paramsFromUrl(Params);
+            Net.setBaseUrl();
             if (params.cifcode) {
                 if (!isPdbId(params.cifcode)) {
-                    console.warn(`${params.cifcode} is not a valid PDB ID`);
+                    Popup.create(<div className='rdo-error-text'>{`${params.cifcode} is not a valid PDB ID`}</div>);
                     return;
                 }
 
@@ -566,9 +568,11 @@ export class App extends WithSubscriptions<{}, State> {
                     });
                 }
 
+                const db = params.db ? params.db : GlobalConfig.data().primaryDatabase;
+
                 this.fromPdbId(
                     params.cifcode,
-                    'rcsb',
+                    db,
                     () => this.setState({ ...this.state, mode: 'structure', selectedTab: 'annotation' })
                 );
             }
@@ -621,9 +625,11 @@ async function bootstrap() {
 
     const root = RDC.createRoot(document.getElementById('app')!);
     try {
-        GlobalConfig.load(config);
-        for (const db of GlobalConfig.data().userDatabases)
+        const configData = GlobalConfig.load(config);
+        for (const db of configData.userDatabases)
             UserRemoteDatabases.add(db);
+        if (!(isBuiltIn(configData.primaryDatabase) || UserRemoteDatabases.exists(configData.primaryDatabase)))
+            throw new Error(`Primary database ID "${configData.primaryDatabase}" is not known`);
 
         root.render(<App {...config} />);
     } catch (e) {

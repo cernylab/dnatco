@@ -7,7 +7,7 @@ const _UserRemoteDatabases = new Map<string, StaticDb>();
 
 export namespace UserRemoteDatabases {
     export function add(db: StaticDb) {
-        if (objKeys(BuiltInRemoteDatabases).find((x) => x as string === db.id))
+        if (isBuiltIn(db.id))
             throw new Error(`"${db.id}" ID is reserved for a built-in database`);
         if (_UserRemoteDatabases.has(db.id))
             throw new Error(`User database ${db.id} already exists`);
@@ -49,3 +49,7 @@ export const BuiltInRemoteDatabases = {
     'rcsb': RcsbDb(),
     'redo-pdb': RedoPdbDb,
 };
+
+export function isBuiltIn(id: string) {
+    return !!(objKeys(BuiltInRemoteDatabases).find((x) => (x as string) === id));
+}
