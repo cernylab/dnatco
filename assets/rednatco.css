@@ -39,6 +39,13 @@ body {
     margin: 0;
 }
 
+a.rdo-link {
+    color: black;
+}
+a.rdo-link:visited {
+    color: #777;
+}
+
 img.rdo-autosized {
     width: 100%;
     object-fit: cover;
