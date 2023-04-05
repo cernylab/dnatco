@@ -159,6 +159,7 @@ export class DynamicTable extends React.Component<DynamicTable.Props> {
                                     highlightedTag={this.props.highlightedTag}
                                     highlightColor={this.props.highlightColor}
                                     onCellClicked={this.props.onCellClicked}
+                                    key={colIdx}
                                 />
                             );
                         })
