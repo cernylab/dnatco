@@ -70,7 +70,7 @@ class DynamicTableCell extends React.Component<{
                         : this.props.item.data
                 }
             </td>
-        )
+        );
     }
 }
 
