@@ -31,7 +31,7 @@ export class Footer extends React.Component {
                         {Globals.PrimaryContacts.map((c) => (
                             <div style={PadderStyle}>
                                 <div className='rdo-footer-text'>
-                                    <Email email={c.email}><span style={{ color: 'var(--color-c)' }}>{c.name}</span></Email>
+                                    <Email email={c.email} subject='DNATCO'><span style={{ color: 'var(--color-c)' }}>{c.name}</span></Email>
                                 </div>
                             </div>
                         ))}

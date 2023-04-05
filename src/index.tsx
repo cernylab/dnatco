@@ -612,7 +612,7 @@ function InitializationError(props: {e: Error}) {
                 <span>
                     <div className='rdo-strong' style={{ textAlign: 'center'}}>Contact:</div>
                     <span style={{ display: 'flex', gap: '1em' }}>
-                        {Globals.PrimaryContacts.map((c) => <Email email={c.email}><span style={{ color: 'black' }}>{c.name}</span></Email>)}
+                        {Globals.PrimaryContacts.map((c) => <Email email={c.email} subject='DNATCO misconfiguration error'><span style={{ color: 'black' }}>{c.name}</span></Email>)}
                     </span>
                 </span>
             </div>
