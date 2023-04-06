@@ -4,7 +4,7 @@ import { Validation } from './common';
 import { ChainSelect, ModelSelect, StepSelect } from '../structure-selectors';
 import { View } from '../view';
 import { EmptySelectionPieces, InvalidAtom, InvalidResidue } from '../../structure-selection';
-import { valueToSemaphore } from '../../util';
+import { axesMaximumHints, valueToSemaphore } from '../../util';
 import { NamedList, NamedListItem } from '../../../common/named-list';
 import { Constants } from '../../../dnatco/constants';
 import { rgbToHex } from '../../../util';
@@ -25,6 +25,8 @@ const PlotData = {
 
 };
 type PlotData = typeof PlotData;
+
+const MinNumberOfPointsInPlot = 10;
 
 export class SimilarityPlot extends View<View.Props> {
     private plotData(stepId: number): PlotData {
@@ -82,6 +84,8 @@ export class SimilarityPlot extends View<View.Props> {
         } else {
             plotData = PlotData;
         }
+
+        const axesHints = axesMaximumHints(plotData.x, plotData.y, MinNumberOfPointsInPlot, Constants.DefaultSimilarityXRange[1], Constants.DefaultSimilarityYRange[1]);
 
         return (
             <div>
@@ -163,8 +167,16 @@ export class SimilarityPlot extends View<View.Props> {
                                 autosize: true,
                                 dragmode: 'pan',
                                 hovermode: 'closest',
-                                xaxis: { range: Constants.DefaultSimilarityXRange, title: 'Cartesian RMSD [Å]', automargin: true },
-                                yaxis: { range: Constants.DefaultSimilarityYRange, title: 'Euclidean distance', automargin: true },
+                                xaxis: {
+                                    range: [Constants.DefaultSimilarityXRange[0], axesHints[0]],
+                                    title: 'Cartesian RMSD [Å]',
+                                    automargin: true
+                                },
+                                yaxis: {
+                                    range: [Constants.DefaultSimilarityYRange[0], axesHints[1]],
+                                    title: 'Euclidean distance',
+                                    automargin: true
+                                },
                                 plot_bgcolor: 'white',
                                 paper_bgcolor: 'white',
                                 margin: {
