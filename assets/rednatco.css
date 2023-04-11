@@ -761,13 +761,43 @@ th.rdo-data-table-small {
 .rdo-side-switching-panel {
     display: flex;
     flex-direction: column;
+    width: min-content;
+}
+
+.rdo-side-switching-panel-hamburger-icon {
+    filter: invert();
+    height: 1.5em;
+    transition: filter var(--anim-speed);
+}
+.rdo-side-switching-panel-hamburger-icon-active {
+    filter: none;
+}
+.rdo-side-switching-panel-hamburger-icon-inactive {
+    filter: invert();
+}
+
+.rdo-side-switching-panel-hamburger-icon-container {
+    background-color: var(--color-f);
+    padding: 0.25em;
+    transition: background-color var(--anim-speed);
+}
+.rdo-side-switching-panel-hamburger-icon-container:hover {
+    background-color: var(--color-c);
 }
 
 .rdo-side-switching-panel-item {
     align-items: center;
     display: flex;
-    padding: var(--x-gap);
     transition: background-color var(--anim-speed), color var(--anim-speed);
+}
+
+.rdo-side-switching-panel-item-compact {
+    justify-content: center;
+    padding: var(--x-gap) 0 var(--x-gap) 0;
+}
+
+.rdo-side-switching-panel-item-standard {
+    padding: var(--x-gap);
 }
 
 .rdo-side-switching-panel-item-not-last {
@@ -787,8 +817,18 @@ th.rdo-data-table-small {
     background-color: var(--color-c);
 }
 
+.rdo-side-switching-panel-item-selected-compact {
+    background-color: var(--color-c);
+}
+
 .rdo-side-switching-panel-item-text {
     font-weight: bold;
+    white-space: nowrap;
+}
+
+.rdo-side-switching-panel-item-text-compact {
+    writing-mode: vertical-lr;
+    text-orientation: sideways;
 }
 
 .rdo-side-switching-panel-padder {

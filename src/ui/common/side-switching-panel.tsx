@@ -1,4 +1,9 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import * as RDC from 'react-dom/client';
+import { GlobalConfig } from '../../global-config';
+import '../../../../assets/imgs/grid-three-up.svg';
+
+const MinimumWidthForStandardPanel = 1024;
 
 interface Item {
     caption: string;
@@ -13,7 +18,7 @@ function makeList<K extends string>(items: readonly (readonly [id: K, item: Item
         const last = idx === items.length - 1;
         list.push(
             <div key={id}
-                className={`rdo-side-switching-panel-item ${selectedItemId === id ? 'rdo-side-switching-panel-item-selected' : 'rdo-side-switching-panel-item-deselected'} ${!last ? 'rdo-side-switching-panel-item-not-last' : ''}`}
+                className={`rdo-side-switching-panel-item rdo-side-switching-panel-item-standard ${selectedItemId === id ? 'rdo-side-switching-panel-item-selected' : 'rdo-side-switching-panel-item-deselected'} ${!last ? 'rdo-side-switching-panel-item-not-last' : ''}`}
                 onClick={() => onSwitched(id)}
             >
                 <div className='rdo-side-switching-panel-item-text'>{view[1].caption}</div>
@@ -24,15 +29,110 @@ function makeList<K extends string>(items: readonly (readonly [id: K, item: Item
     return list;
 }
 
+function makeMenu<K extends string>(items: readonly (readonly [id: K, item: Item])[], selectedItemId: K, onSwitched: (id: K) => void, x: number, y: number) {
+    const tainer = document.createElement('div');
+    document.body.appendChild(tainer);
+
+    const reactRoot = RDC.createRoot(tainer!);
+    reactRoot.render(
+        <Menu
+            items={items}
+            selectedItemId={selectedItemId}
+            onSwitched={onSwitched}
+            x={x} y={y}
+            parentElement={tainer}
+        />
+    );
+}
+
+export function Menu<K extends string>(props: {
+    items: readonly (readonly [id: K, item: Item])[],
+    selectedItemId: K,
+    onSwitched: (id: K) => void,
+    x: number,
+    y: number,
+    parentElement: HTMLElement,
+}) {
+    return (
+        <div style={{
+            border: 'var(--thickness-border) solid var(--color-a)',
+            left: `${props.x}px`,
+            position: 'absolute',
+            top: `${props.y}px`,
+            zIndex: 100,
+        }}>
+            {makeList(props.items, props.selectedItemId, (id) => {
+                props.onSwitched(id);
+                document.body.removeChild(props.parentElement);
+            })}
+        </div>
+    );
+}
+
 export function SideSwitchingPanel<K extends string>(props: {
     items: readonly (readonly [id: K, item: Item])[],
     selectedItemId: K,
     onSwitched: (id: K) => void,
 }) {
-    return (
-        <div className='rdo-side-switching-panel'>
-            {makeList(props.items, props.selectedItemId, props.onSwitched)}
-            <div key='padder' className='rdo-side-switching-panel-padder' />
-        </div>
-    );
+    const [compact, setCompact] = useState(window.innerWidth < MinimumWidthForStandardPanel);
+    const [hamburgerHovered, setHamburberHovered] = useState(false);
+    const [hamburgerOpen, setHamburberOpen] = useState(false);
+
+    useEffect(() => {
+        const compactToggler = () => {
+            setCompact(window.innerWidth < MinimumWidthForStandardPanel);
+        };
+
+        addEventListener('resize', compactToggler);
+
+        return () => {
+            removeEventListener('resize', compactToggler);
+        };
+    });
+
+    if (compact) {
+        return (
+            <div className='rdo-side-switching-panel'>
+                <div
+                    className='rdo-side-switching-panel-hamburger-icon-container'
+                    onMouseEnter={() => setHamburberHovered(true)}
+                    onMouseLeave={() => setHamburberHovered(false)}
+                    onClick={(ev) => {
+                        if (hamburgerOpen)
+                            return;
+
+                        makeMenu(
+                            props.items,
+                            props.selectedItemId,
+                            (id) => {
+                                props.onSwitched(id);
+                                setHamburberOpen(false);
+                            },
+                            ev.clientX,
+                            ev.clientY
+                        );
+                        setHamburberOpen(true);
+                    }}
+                >
+                    <img
+                        className={`rdo-side-switching-panel-hamburger-icon rdo-side-switching-panel-hamburger-icon-${hamburgerHovered ? 'active' : 'inactive'}`}
+                        src={`${GlobalConfig.data().pathPrefix}/imgs/grid-three-up.svg`}
+                    />
+                </div>
+                <div className='rdo-side-switching-panel-item rdo-side-switching-panel-item-compact rdo-side-switching-panel-item-selected-compact'>
+                    <div className='rdo-side-switching-panel-item-text rdo-side-switching-panel-item-text-compact'>
+                        {props.items.find((item) => item[0] === props.selectedItemId)![1].caption}
+                    </div>
+                </div>
+                <div key='padder' className='rdo-side-switching-panel-padder' />
+            </div>
+        );
+    } else {
+        return (
+            <div className='rdo-side-switching-panel'>
+                {makeList(props.items, props.selectedItemId, props.onSwitched)}
+                <div key='padder' className='rdo-side-switching-panel-padder' />
+            </div>
+        );
+    }
 }
