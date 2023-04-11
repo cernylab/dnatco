@@ -16,10 +16,10 @@ import { GlobalConfig } from '../global-config';
 import 'assets/html/about-ntcs.html';
 
 const Tabs = [
-    ['about-ntcs', { name: 'About NtCs', caption: 'About NtCs' }],
-    ['table-of-conformers', { name: 'Table of conformers', caption: 'Table of conformers' }],
-    ['browse-conformers', { name: 'Browse', caption: 'Search PDB database for dinucleotide steps of given conformation (NtC)' }],
-    ['contour-plots', { name: 'Contour plots', caption: '' }],
+    ['about-ntcs', { caption: 'About NtCs', title: 'About NtCs' }],
+    ['table-of-conformers', { caption: 'Table of conformers', title: 'Table of conformers' }],
+    ['browse-conformers', { caption: 'Browse', title: 'Search PDB database for dinucleotide steps of given conformation (NtC)' }],
+    ['contour-plots', { caption: 'Contour plots', title: '' }],
 ] as const;
 
 function fmtInt(n: number) {
@@ -353,7 +353,7 @@ export class ConformersTab extends React.Component<ConformersTab.Props, State> {
                         />
                         <div style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
                             <div className='rdo-primary-caption'>
-                                {Tabs.find((tab) => tab[0] === this.state.selected)![1].caption}
+                                {Tabs.find((tab) => tab[0] === this.state.selected)![1].title}
                             </div>
                             <div className='rdo-offset' style={{ overflow: 'scroll' }}>
                                 {this.renderTab()}
