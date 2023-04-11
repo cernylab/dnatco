@@ -15,20 +15,12 @@ import { Serialization } from '../util/serialization';
 import { GlobalConfig } from '../global-config';
 import 'assets/html/about-ntcs.html';
 
-const Tabs = {
-    'about-ntcs': { name: 'About NtCs', caption: 'About NtCs' },
-    'table-of-conformers': { name: 'Table of conformers', caption: 'Table of conformers' },
-    'browse-conformers': { name: 'Browse', caption: 'Search PDB database for dinucleotide steps of given conformation (NtC)' },
-    'contour-plots': { name: 'Contour plots', caption: '' },
-};
-type TabId = keyof typeof Tabs;
-
-const TabsOrder: TabId[] = [
-    'about-ntcs',
-    'table-of-conformers',
-    'browse-conformers',
-    'contour-plots'
-];
+const Tabs = [
+    ['about-ntcs', { name: 'About NtCs', caption: 'About NtCs' }],
+    ['table-of-conformers', { name: 'Table of conformers', caption: 'Table of conformers' }],
+    ['browse-conformers', { name: 'Browse', caption: 'Search PDB database for dinucleotide steps of given conformation (NtC)' }],
+    ['contour-plots', { name: 'Contour plots', caption: '' }],
+] as const;
 
 function fmtInt(n: number) {
     if (isNaN(n))
@@ -321,7 +313,7 @@ class TableOfConformers extends React.Component {
 }
 
 interface State {
-    selected: TabId;
+    selected: typeof Tabs[number][0];
 }
 export class ConformersTab extends React.Component<ConformersTab.Props, State> {
     constructor(props: ConformersTab.Props) {
@@ -355,13 +347,13 @@ export class ConformersTab extends React.Component<ConformersTab.Props, State> {
                 <ShadowedBox>
                     <div className='rdo-screen-with-side-panel' style={{ overflow: 'hidden' }}>
                         <SideSwitchingPanel
-                            items={TabsOrder.map(id => ({ id: id, caption: Tabs[id].name }))}
-                            selectedItem={this.state.selected}
-                            onSwitched={id => this.setState({ ...this.state, selected: id as TabId })}
+                            items={Tabs}
+                            selectedItemId={this.state.selected}
+                            onSwitched={id => this.setState({ ...this.state, selected: id })}
                         />
                         <div style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
                             <div className='rdo-primary-caption'>
-                                {Tabs[this.state.selected].caption}
+                                {Tabs.find((tab) => tab[0] === this.state.selected)![1].caption}
                             </div>
                             <div className='rdo-offset' style={{ overflow: 'scroll' }}>
                                 {this.renderTab()}

@@ -11,8 +11,8 @@ export class ViewsList extends React.Component<ViewsList.Props> {
         return (
             <SideSwitchingPanel
                 items={this.props.views}
-                selectedItem={this.props.selected}
-                onSwitched={id => this.props.onSwitchView(id as keyof typeof Register.Views)}
+                selectedItemId={this.props.selected}
+                onSwitched={id => this.props.onSwitchView(id)}
             />
         );
     }
@@ -20,7 +20,7 @@ export class ViewsList extends React.Component<ViewsList.Props> {
 
 export namespace ViewsList {
     export interface Props {
-        views: { id: keyof typeof Register.Views, caption: string }[];
+        views: readonly (readonly [id: keyof typeof Register.Views, item: { caption: string }])[];
         onSwitchView: (id: keyof typeof Register.Views) => void;
         selected: keyof typeof Register.Views | 'empty' // HAKZ;
     }

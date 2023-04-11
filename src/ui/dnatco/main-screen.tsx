@@ -45,14 +45,14 @@ const AnnotationViews: ViewType[] = ['assigned-ntcs', 'structure-info', 'downloa
 const ValidationViews: ViewType[] = ['confals-rmsds', 'step-torsions', 'similarity-plot', 'rscc-plot', 'angles-lengths'];
 const RefinementViews: ViewType[] = ['connectivity-plot', 'refmac-restraints', 'phenix-restraints', 'mmb-commands-file', 'change-ntcs'];
 
-function masterModeViews(mode: MasterMode): { id: ViewType, caption: string }[] {
+function masterModeViews(mode: MasterMode): [id: string, item: { caption: string }][] {
     switch (mode) {
     case 'annotation':
-        return AnnotationViews.map(view => { return { id: view, caption: AvailableViews[view].caption }; } );
+        return AnnotationViews.map((view) => [view, { caption: AvailableViews[view].caption }]);
     case 'validation':
-        return ValidationViews.map(view => { return { id: view, caption: AvailableViews[view].caption }; } );
+        return ValidationViews.map((view) => [view, { caption: AvailableViews[view].caption }]);
     case 'refinement':
-        return RefinementViews.map(view => { return { id: view, caption: AvailableViews[view].caption }; } );
+        return RefinementViews.map((view) => [view, { caption: AvailableViews[view].caption }]);
     }
 }
 

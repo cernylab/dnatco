@@ -15,19 +15,14 @@ import 'assets/html/versions.html';
 import 'assets/imgs/ibt.png';
 import 'assets/imgs/CAS_centred_logo_ENG_rgb.png';
 
-const Tabs = {
-    'how-to-cite': 'How to cite',
-    help: 'Help',
-    'version-history': 'Version history',
-    downloads: 'Downloads',
-    contact: 'Contact',
-    technical: 'Technical', // This will probably get removed in the release version
-};
-type TabId = keyof typeof Tabs;
-
-const TabsOrder: TabId[] = [
-    'how-to-cite', 'help', 'downloads', 'contact', 'version-history', 'technical'
-];
+const Tabs = [
+    ['how-to-cite', { caption: 'How to cite' }],
+    ['help', { caption: 'Help' }],
+    ['version-history', { caption: 'Version history' }],
+    ['downloads', { caption: 'Downloads' }],
+    ['contact', { caption: 'Contact' }],
+    ['technical', { caption: 'Technical' }], // This will probably get removed in the release version
+] as const;
 
 class Contact extends React.Component {
     render() {
@@ -102,7 +97,7 @@ class VersionHistory extends React.Component {
 }
 
 interface State {
-    selected: keyof typeof Tabs;
+    selected: typeof Tabs[number][0];
 }
 export class AboutTab extends React.Component<{}, State> {
     constructor(props: {}) {
@@ -130,13 +125,13 @@ export class AboutTab extends React.Component<{}, State> {
                 <ShadowedBox>
                     <div className='rdo-screen-with-side-panel' style={{ overflow: 'hidden' }}>
                         <SideSwitchingPanel
-                            items={TabsOrder.map(id => ({ id: id, caption: Tabs[id] }))}
-                            selectedItem={this.state.selected}
-                            onSwitched={id => this.setState({ ...this.state, selected: id as keyof typeof Tabs })}
+                            items={Tabs}
+                            selectedItemId={this.state.selected}
+                            onSwitched={id => this.setState({ ...this.state, selected: id})}
                         />
                         <div style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
                             <div className='rdo-primary-caption'>
-                                {Tabs[this.state.selected]}
+                                {Tabs.find((tab) => tab[0] === this.state.selected)![1].caption}
                             </div>
                             <div className='rdo-offset' style={{ overflow: 'hidden' }}>
                                 {this.renderTab()}
