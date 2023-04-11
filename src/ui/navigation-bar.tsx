@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { EquiBox } from './common/equibox';
 import { BasePushButton } from './common/push-button';
 import { GlobalConfig }  from '../global-config';
 
@@ -59,9 +60,11 @@ export class NavigationBar extends React.Component<NavigationBar.Props> {
     render() {
         return (
             <div className='rdo-navigation-bar'>
-                <div className='rdo-navigation-bar-padder' />
-                {this.makeTabs(this.props.tabs)}
-                <div className='rdo-navigation-bar-padder' />
+                <EquiBox
+                    items={this.makeTabs(this.props.tabs)}
+                    padding={33}
+                    orientation='row'
+                />
             </div>
         );
     }

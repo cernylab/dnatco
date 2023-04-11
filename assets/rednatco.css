@@ -517,7 +517,6 @@ th.rdo-data-table-small {
 
 .rdo-navigation-bar {
     background-color: var(--color-b);
-    display: flex;
 }
 
 .rdo-navigation-bar-padder {
