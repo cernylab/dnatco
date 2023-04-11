@@ -19,7 +19,12 @@ function makeList<K extends string>(items: readonly (readonly [id: K, item: Item
         list.push(
             <div key={id}
                 className={`rdo-side-switching-panel-item rdo-side-switching-panel-item-standard ${selectedItemId === id ? 'rdo-side-switching-panel-item-selected' : 'rdo-side-switching-panel-item-deselected'} ${!last ? 'rdo-side-switching-panel-item-not-last' : ''}`}
-                onClick={() => onSwitched(id)}
+                onClick={(ev) =>{
+                    ev.preventDefault();
+                    ev.stopPropagation();
+
+                    onSwitched(id);
+                }}
             >
                 <div className='rdo-side-switching-panel-item-text'>{view[1].caption}</div>
             </div>
@@ -29,7 +34,7 @@ function makeList<K extends string>(items: readonly (readonly [id: K, item: Item
     return list;
 }
 
-function makeMenu<K extends string>(items: readonly (readonly [id: K, item: Item])[], selectedItemId: K, onSwitched: (id: K) => void, x: number, y: number) {
+function makeMenu<K extends string>(items: readonly (readonly [id: K, item: Item])[], selectedItemId: K, onSwitched: (id: K) => void, x: number, y: number, onDismissed: () => void) {
     const tainer = document.createElement('div');
     document.body.appendChild(tainer);
 
@@ -39,6 +44,7 @@ function makeMenu<K extends string>(items: readonly (readonly [id: K, item: Item
             items={items}
             selectedItemId={selectedItemId}
             onSwitched={onSwitched}
+            onDismissed={onDismissed}
             x={x} y={y}
             parentElement={tainer}
         />
@@ -49,10 +55,22 @@ export function Menu<K extends string>(props: {
     items: readonly (readonly [id: K, item: Item])[],
     selectedItemId: K,
     onSwitched: (id: K) => void,
+    onDismissed: () => void,
     x: number,
     y: number,
     parentElement: HTMLElement,
 }) {
+    const dismisser = () => {
+        document.body.removeChild(props.parentElement);
+        document.body.removeEventListener('click', dismisser);
+        props.onDismissed();
+    };
+
+    useEffect(() => {
+        document.body.addEventListener('click', dismisser);
+        return () => document.body.removeEventListener('click', dismisser);
+    });
+
     return (
         <div style={{
             border: 'var(--thickness-border) solid var(--color-a)',
@@ -63,7 +81,7 @@ export function Menu<K extends string>(props: {
         }}>
             {makeList(props.items, props.selectedItemId, (id) => {
                 props.onSwitched(id);
-                document.body.removeChild(props.parentElement);
+                dismisser();
             })}
         </div>
     );
@@ -98,18 +116,19 @@ export function SideSwitchingPanel<K extends string>(props: {
                     onMouseEnter={() => setHamburberHovered(true)}
                     onMouseLeave={() => setHamburberHovered(false)}
                     onClick={(ev) => {
+                        ev.preventDefault();
+                        ev.stopPropagation();
+
                         if (hamburgerOpen)
                             return;
 
                         makeMenu(
                             props.items,
                             props.selectedItemId,
-                            (id) => {
-                                props.onSwitched(id);
-                                setHamburberOpen(false);
-                            },
+                            props.onSwitched,
                             ev.clientX,
-                            ev.clientY
+                            ev.clientY,
+                            () => setHamburberOpen(false),
                         );
                         setHamburberOpen(true);
                     }}
