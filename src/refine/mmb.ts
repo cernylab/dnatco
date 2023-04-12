@@ -68,8 +68,8 @@ export namespace Mmb {
 
         for (const step of d.data.steps.steps) {
             const NtC = NtCSet === ''
-                ? step.NtC
-                : d.customNtCs.getCustomNtC(NtCSet, step.name) ?? step.NtC;
+                ? step.closestNtC
+                : d.customNtCs.getCustomNtC(NtCSet, step.name) ?? step.closestNtC
             lines.push(makeNtCDirective(step.chain, step.resNo1, step.resNo2, NtC));
         }
 

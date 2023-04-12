@@ -42,9 +42,6 @@ export namespace Refinement {
     }
     export namespace NtCSelector {
         export interface Props {
-            /*customNtCs: CustomNtCs;
-            currenCustomNtCsSet: string;
-            step: string;*/
             value: NtC.ValidClass;
             onChanged: (v: NtC.ValidClass) => void;
         }
