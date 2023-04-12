@@ -37,6 +37,8 @@ export type GlobalConfigData = {
     previousStepColor: string,
     nextStepColor: string,
     precalculateConnectivitiesAndSimilarities: boolean,
+    highlightColor: string,
+    highlightThickness: number,
 };
 const GlobalConfigData: GlobalConfigData = {
     isDevel: false,
@@ -62,6 +64,8 @@ const GlobalConfigData: GlobalConfigData = {
     previousStepColor: '#0000ff',
     nextStepColor: '#00ffff',
     precalculateConnectivitiesAndSimilarities: false,
+    highlightColor: '#49ff92',
+    highlightThickness: 2.0,
 };
 const AllowedPartials: Partial<{[k in keyof GlobalConfigData]: object}> = {
     anglesLengths: {}

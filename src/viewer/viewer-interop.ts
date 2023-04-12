@@ -2,7 +2,7 @@ import { Subject } from 'rxjs';
 import { ReDNATCOMspApi as ViewerApi } from 'viewer-api';
 import { DensityMap } from '../dnatco/density-map';
 import { EventsKeeper } from '../util/events-keeper';
-import { sleep } from '../util';
+import { htmlColorAsNumber, sleep } from '../util';
 
 export type ViewerEvents = {
     ready: Subject<void>,
@@ -34,8 +34,9 @@ export class ViewerInterop {
             throw new Error('Viewer is not initialized yet');
         return this._api;
     }
+    async bind(viewerContainerId: string, options: { highlightColor: string, highlightThickness: number }) {
+        const highlightColor = options.highlightColor ? htmlColorAsNumber(options.highlightColor) : void 0;
 
-    async bind(viewerContainerId: string) {
         for (let attempt = 0; attempt < 5; attempt++) {
             //@ts-ignore
             if (!molstar || !molstar.ReDNATCOMspApi)
@@ -70,6 +71,10 @@ export class ViewerInterop {
                             console.log('"atom" request type is currently not handled');
                     } else if (ev.type === 'structure-loaded')
                         this.events.structureLoaded.next();
+                },
+                {
+                    highlightColor,
+                    highlightThickness: options.highlightThickness
                 }
             );
         }

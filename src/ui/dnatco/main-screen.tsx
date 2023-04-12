@@ -19,6 +19,7 @@ import { Dnatcofication } from '../../dnatco/dnatcofication';
 import { StepsMapper } from '../../dnatco/steps-mapper';
 import { objKeys } from '../../util';
 import { EventsKeeper } from '../../util/events-keeper';
+import { GlobalConfig } from '../../global-config';
 import { Filters } from 'viewer-filters';
 import 'assets/molstar.js';
 import 'assets/molstar.css';
@@ -268,7 +269,10 @@ export class MainScreen extends WithSubscriptions<MainScreen.Props, State> {
             }
         )
 
-        this.props.viewerInterop.bind('rdo-id-molstar-container').then(() => {
+        this.props.viewerInterop.bind(
+            'rdo-id-molstar-container',
+            { highlightColor: GlobalConfig.data().highlightColor, highlightThickness: GlobalConfig.data().highlightThickness }
+        ).then(() => {
             this.subscribe(
                 this.props.viewerInterop.events.residueRequested,
                 (residue) => {
