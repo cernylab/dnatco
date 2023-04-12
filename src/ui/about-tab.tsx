@@ -55,24 +55,9 @@ class Technical extends React.Component {
                 Supported browser features
                 <div className='rdo-offset'>
                     <NamedList horizontalPosition='center'>
-                        <NamedListItem name='WebAssembly'>
-                            <span>
-                                {WasmSupport.wasm ? 'Yes' : <span className='rdo-error-text'>No</span>}
-                                {'\u00A0'}
-                                <Tooltip
-                                    tag='[?]'
-                                >
-                                    <div style={{ maxWidth: '25em' }}>
-                                        WebAssembly support allows the browser to use a compiled variant of the DNATCO library which offers better performance.
-                                        In the absence of WebAssembly support, plain JavaScript version of the library will be used instead.
-                                    </div>
-                                </Tooltip>
-                            </span>
-                        </NamedListItem>
                         <NamedListItem name='WebAssembly SIMD'>
                             <span>
                                 {WasmSupport.simd ? 'Yes' : <span className='rdo-error-text'>No</span>}
-                                {'\u00A0'}
                                 <Tooltip
                                     tag='[?]'
                                 >

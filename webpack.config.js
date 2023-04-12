@@ -2,6 +2,7 @@ const path = require('path');
 const CopyPlugin = require('copy-webpack-plugin');
 const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+////  const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
 const DistDir = 'dist';
 
@@ -92,7 +93,8 @@ function sharedConfig(productionBuild) {
                         filter: async (resourcePath) => { return resourcePath.endsWith('.png') || resourcePath.endsWith('.pdf'); },
                     },
                 ]
-            })
+            }),
+            // new BundleAnalyzerPlugin()
         ],
         resolve: {
             modules: [

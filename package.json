@@ -14,7 +14,8 @@
         "build-webpack-dev": "webpack --mode development --config ./webpack.config.js",
         "lint": "eslint ./**/*.{ts,tsx}",
         "lint-fix": "eslint ./**/*.{ts,tsx} --fix",
-        "test": "npm run lint"
+        "test": "npm run lint",
+        "profile": "webpack --profile --json"
     },
     "author": "DNATCO contributors",
     "contributors": [],
@@ -36,7 +37,8 @@
         "plotly.js": "^2.20.0",
         "typescript": "^4.9.4",
         "webpack": "^5.74.0",
-        "webpack-cli": "^4.10.0"
+        "webpack-cli": "^4.10.0",
+        "webpack-bundle-analyzer": "^4.8.0"
     },
     "dependencies": {
         "@types/dompurify": "^2.3.4",
