@@ -221,6 +221,26 @@ export class MainScreen extends WithSubscriptions<MainScreen.Props, State> {
         }
     }
 
+    private updateViewer() {
+        const av = Register.Views[this.activeView()];
+        const haveVisualizer = AvailableViews[this.activeView()].visualizer;
+
+        if (haveVisualizer) {
+            const pieces = {
+                steps: this.structureSelection.steps,
+                residues: this.structureSelection.residues,
+                atoms: this.structureSelection.atoms,
+                reconstruct: true,
+            };
+            this.changeSelection(pieces, av.selectionDisplayer);
+            if (av.granularity !== 'dont-care')
+                this.props.viewerInterop.api.command(ViewerApi.Commands.SwitchSelectionGranularity(av.granularity));
+            this.props.viewerInterop.api.command(ViewerApi.Commands.Freeze(false));
+        } else {
+            this.props.viewerInterop.api.command(ViewerApi.Commands.Freeze(true));
+        }
+    }
+
     componentDidMount() {
         this.subscribe(this.props.dnatcofication.events.structureChanged, () => this.forceUpdate());
         this.subscribe(
@@ -315,42 +335,12 @@ export class MainScreen extends WithSubscriptions<MainScreen.Props, State> {
     componentDidUpdate(prevProps: MainScreen.Props, prevState: State) {
         if (this.props.viewerInterop.ready()) {
             if (this.props.masterMode !== prevProps.masterMode) {
-                this.props.viewerInterop.api.command(ViewerApi.Commands.Redraw()).then(() => {
-                    const av = Register.Views[this.activeView()];
-
-                    const pieces = {
-                        steps: this.structureSelection.steps,
-                        residues: this.structureSelection.residues,
-                        atoms: this.structureSelection.atoms,
-                        reconstruct: true,
-                    };
-                    this.changeSelection(pieces, av.selectionDisplayer);
-                    if (av.granularity !== 'dont-care')
-                        this.props.viewerInterop.api.command(ViewerApi.Commands.SwitchSelectionGranularity(av.granularity));
-                })
+                this.updateViewer();
             } else if (this.state.activeViews[this.props.masterMode] !== prevState.activeViews[this.props.masterMode]) {
-                const av = Register.Views[this.activeView()];
-
-                const pieces = {
-                    steps: this.structureSelection.steps,
-                    residues: this.structureSelection.residues,
-                    atoms: this.structureSelection.atoms,
-                    reconstruct: true,
-                };
-                this.changeSelection(pieces, av.selectionDisplayer);
-                if (av.granularity !== 'dont-care')
-                    this.props.viewerInterop.api.command(ViewerApi.Commands.SwitchSelectionGranularity(av.granularity));
+                this.updateViewer();
             } else if (this.state.selectedCustomNtCSet !== prevState.selectedCustomNtCSet) {
-                if (this.props.masterMode === 'refinement') {
-                    const pieces = {
-                        steps: this.structureSelection.steps,
-                        residues: this.structureSelection.residues,
-                        atoms: this.structureSelection.atoms,
-                        reconstruct: false,
-                    };
-                    const displayer = Register.Views[this.activeView()].selectionDisplayer;
-                    displayer(pieces, this.props.dnatcofication, this.props.viewerInterop, this.state.selectedCustomNtCSet);
-                }
+                if (this.props.masterMode === 'refinement')
+                    this.updateViewer();
             }
         }
     }
