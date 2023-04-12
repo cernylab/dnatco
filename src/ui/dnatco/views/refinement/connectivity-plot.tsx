@@ -325,10 +325,10 @@ export class ConnectivityPlot extends View<Refinement.Props> {
                         />
                     </div>
 
-                    <div className='rdo-secondary-caption'>Connectivity to previous residue</div>
+                    <div className='rdo-secondary-caption'>Connectivity to previous step</div>
                     {this.renderConnectivityPlot(prevConnPlotData, prevConnMaxHints)}
 
-                    <div className='rdo-secondary-caption'>Connectivity to next residue</div>
+                    <div className='rdo-secondary-caption'>Connectivity to next step</div>
                     {this.renderConnectivityPlot(nextConnPlotData, nextConnMaxHints)}
                 </div>
             </div>
