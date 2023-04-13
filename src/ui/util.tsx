@@ -1,8 +1,15 @@
 import React from 'react';
 import { ComboBox } from './common/combo-box';
+import { htmlColorAsNumber } from '../util';
 
 export type Rgb = { r: number, g: number, b: number };
+export function Rgb(r: number, g: number, b: number): Rgb { return { r, g, b }; }
+
+export type Rgba = { r: number, g: number, b: number, a: number };
+export function Rgba(r: number, g: number, b: number, a: number): Rgba { return { r, g, b, a }; }
+
 export type ColorTuple = [r: number, g: number, b: number];
+export type ColorAlphaTuple = [r: number, g: number, b: number, a: number];
 
 function numToHex(c: number) {
     const hex = c.toString(16);
@@ -44,6 +51,30 @@ export function formatErrorText(text: string) {
 
     const elems = toks.map(x => <div className='rdo-error-text'>{x}</div>);
     return <div>{elems}</div>;
+}
+
+export function hexToRgb(hex: string): Rgb {
+    const clr = htmlColorAsNumber(hex);
+    if (!clr)
+        throw new Error(`${hex} is not a valid HEX color`);
+
+    const r = clr >> 16 & 0xFF;
+    const g = (clr >> 8) & 0xFF;
+    const b = clr & 0xFF;
+
+    return { r, g, b };
+}
+
+export function hexToTuple(hex: string): ColorTuple {
+    const clr = htmlColorAsNumber(hex);
+    if (!clr)
+        throw new Error(`${hex} is not a valid HEX color`);
+
+    const r = clr >> 16 & 0xFF;
+    const g = (clr >> 8) & 0xFF;
+    const b = clr & 0xFF;
+
+    return [r, g, b];
 }
 
 /* https://alienryderflex.com/hsp.html */
