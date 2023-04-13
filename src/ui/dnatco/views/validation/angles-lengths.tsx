@@ -90,6 +90,12 @@ const DetailsTableStyle = {
     columnGap: '1em',
     position: 'relative',
 } as StandardLonghandProperties;
+const WorstValuesTableStyle = {
+    display: 'grid',
+    gridTemplateColumns: 'auto 1em auto auto auto 1fr',
+    columnGap: '1em',
+    position: 'relative',
+} as StandardLonghandProperties;
 
 type AveragesChartDownloader = Downloader<Serialization.Serializable>;
 const AveragesChartDownloaders = [
@@ -137,6 +143,49 @@ const StatsDownloaders = [
         fileType: FileTypes.json,
     }
 ] as StatsDownloader[];
+
+function amendResidueSelection(selection: StructureSelection, residue: Measurements.Residue, strategy: 'add' | 'remove') {
+    const cifRes = {
+        modelNum: residue.modelNum,
+        chain: residue.chain,
+        seqId: residue.seqId,
+        altId: residue.altId
+    };
+
+    let cifAtomPrev: CifAtom | undefined = void 0;
+    if (Measurements.Residue.hasPrevious(residue)) {
+        cifAtomPrev = {
+            modelNum: residue.modelNum,
+            chain: residue.chain,
+            seqId: residue.prevSeqId!,
+            altId: residue.prevAltId!,
+            atomId: "O3'",
+        };
+    }
+
+    if (strategy === 'add') {
+        selection.residues = selection.residues.filter((x) => x.modelNum === cifRes.modelNum);
+        selection.residues.push(cifRes);
+
+        if (cifAtomPrev) {
+            selection.atoms = selection.atoms.filter((x) => x.modelNum === cifAtomPrev!.modelNum);
+            selection.atoms.push(cifAtomPrev);
+        }
+    } else if (strategy === 'remove') {
+        selection.residues = selection.residues.filter((x) => !cifResidueMatches(x, cifRes));
+        if (cifAtomPrev)
+            selection.atoms = selection.atoms.filter((x) => x.modelNum === cifAtomPrev!.modelNum);
+    }
+}
+
+function cifResidueMatches(a: CifResidue, b: CifResidue) {
+    return (
+        a.modelNum === b.modelNum &&
+        a.chain === b.chain &&
+        a.seqId === b.seqId &&
+        a.altId === b.altId
+    );
+}
 
 function colorStyle(clr: [r: number, g: number, b: number]) {
     return `rgb(${clr.join(',')})`;
@@ -1228,33 +1277,18 @@ class Residue extends React.Component<ResidueElemProps & { structureSelection: S
         this.collapserRef.current?.collapseExpand(change);
     }
 
-    render() {
+    private isInitiallyExpanded() {
         const cifRes = {
             modelNum: this.props.residue.modelNum,
             chain: this.props.residue.chain,
             seqId: this.props.residue.seqId,
             altId: this.props.residue.altId
         };
-        let cifAtomPrev: CifAtom;
-        if (Measurements.Residue.hasPrevious(this.props.residue)) {
-            cifAtomPrev = {
-                modelNum: this.props.residue.modelNum,
-                chain: this.props.residue.chain,
-                seqId: this.props.residue.prevSeqId!,
-                altId: this.props.residue.prevAltId!,
-                atomId: "O3'",
-            };
-        }
 
-        const cifResMatches = (r: CifResidue) => {
-            return (
-                r.modelNum === cifRes.modelNum &&
-                r.chain === cifRes.chain &&
-                r.seqId === cifRes.seqId &&
-                r.altId === cifRes.altId
-            );
-        };
+        return !!this.props.structureSelection.residues.find((x) => cifResidueMatches(x, cifRes));
+    }
 
+    render() {
         return (
             <CollapsibleVertical
                 ref={this.collapserRef}
@@ -1273,25 +1307,26 @@ class Residue extends React.Component<ResidueElemProps & { structureSelection: S
                 )}
                 onCollapsedExpanded={(change) => {
                     if (change === 'expanded') {
-                        if (this.props.structureSelection.residues.find(cifResMatches))
+                        const cifRes = {
+                            modelNum: this.props.residue.modelNum,
+                            chain: this.props.residue.chain,
+                            seqId: this.props.residue.seqId,
+                            altId: this.props.residue.altId
+                        };
+
+                        if (this.props.structureSelection.residues.find((x) => cifResidueMatches(x, cifRes)))
                             return;
 
-                        this.props.structureSelection.residues = this.props.structureSelection.residues.filter((x) => x.modelNum === cifRes.modelNum);
-                        this.props.structureSelection.residues.push(cifRes);
-
-                        if (cifAtomPrev) {
-                            this.props.structureSelection.atoms = this.props.structureSelection.atoms.filter((x) => x.modelNum === cifAtomPrev.modelNum);
-                            this.props.structureSelection.atoms.push(cifAtomPrev);
-                        }
+                        amendResidueSelection(this.props.structureSelection, this.props.residue, 'add');
 
                         selectionDisplayer({ steps: [], residues: this.props.structureSelection.residues, atoms: this.props.structureSelection.atoms, reconstruct: false }, this.props.d, this.props.viewerInterop);
                     } else {
-                        this.props.structureSelection.residues = this.props.structureSelection.residues.filter((x) => !cifResMatches(x));
-                        this.props.structureSelection.atoms = this.props.structureSelection.atoms.filter((x) => x.modelNum === cifAtomPrev.modelNum);
+                        amendResidueSelection(this.props.structureSelection, this.props.residue, 'remove');
+
                         selectionDisplayer({ steps: [], residues: this.props.structureSelection.residues, atoms: this.props.structureSelection.atoms, reconstruct: true }, this.props.d, this.props.viewerInterop);
                     }
                 }}
-                initiallyExpanded={!!this.props.structureSelection.residues.find(cifResMatches)}
+                initiallyExpanded={this.isInitiallyExpanded()}
             >
                 <ResidueDetails
                     onHideRequested={() => this.collapserRef.current?.collapseExpand('collapse')}
@@ -1343,6 +1378,51 @@ class SubstructureSummary extends React.Component<{ countsInGroups: Summarize.Co
         );
     }
 }
+
+function WorstValueResidueName(props: { name: React.ReactNode, residue: Measurements.Residue, selection: StructureSelection, d: Dnatcofication, vi: ViewerInterop }) {
+    const cifRes = {
+        modelNum: props.residue.modelNum,
+        chain: props.residue.chain,
+        seqId: props.residue.seqId,
+        altId: props.residue.altId
+    };
+
+    const isSelected = !!props.selection.residues.find((x) => cifResidueMatches(x, cifRes));
+    const [selected, setSelected] = React.useState(isSelected);
+
+    React.useEffect(() => {
+        const residueSelected = props.vi.events.residueSelected.subscribe((r) => {
+            const isSelected = cifResidueMatches(r, cifRes);
+            setSelected(isSelected);
+        });
+
+        const struDeselected = props.vi.events.structuresDeselected.subscribe(() => setSelected(false));
+
+        return () => {
+            residueSelected.unsubscribe();
+            struDeselected.unsubscribe();
+        }
+    }, []);
+
+    return (
+        <div
+            onClick={() => {
+                if (!selected) {
+                    amendResidueSelection(props.selection, props.residue, 'add');
+                    selectionDisplayer({ steps: [], residues: props.selection.residues, atoms: props.selection.atoms, reconstruct: false }, props.d, props.vi);
+                    setSelected(true);
+                } else {
+                    amendResidueSelection(props.selection, props.residue, 'remove');
+                    selectionDisplayer({ steps: [], residues: props.selection.residues, atoms: props.selection.atoms, reconstruct: true }, props.d, props.vi);
+                    setSelected(false);
+                }
+            }}
+        >
+            {props.name}
+        </div>
+    );
+}
+
 
 const DefaultShownResiduesLimit = 100;
 const ShownResiduesIncrement = 100;
@@ -1512,17 +1592,25 @@ export class AnglesLengths extends View<
         const pgrpIndices = sequence(0, DAnglesLengths.pGroupCount() - 1);
 
         return (
-            <div style={ DetailsTableStyle }>
+            <div style={ WorstValuesTableStyle }>
                 {...worst.map((x, idx) => {
+                    const residueName = this.renderResidueName(x.residue, multipleModels);
                     return (
                         <React.Fragment key={idx}>
+                            <WorstValueResidueName
+                                name={residueName}
+                                residue={x.residue}
+                                selection={this.props.structureSelection}
+                                d={this.props.dnatcofication}
+                                vi={this.props.viewerInterop}
+                            />
                             {renderBondAngleDetail(
                                 this.props.dnatcofication,
                                 x.bond,
                                 x.maybeBin,
                                 x.pGroup,
                                 x.residue,
-                                this.renderResidueName(x.residue, multipleModels),
+                                residueName,
                                 structureName,
                                 outlierColor,
                                 pgrpIndices,
@@ -1542,17 +1630,25 @@ export class AnglesLengths extends View<
         const pgrpIndices = sequence(0, DAnglesLengths.pGroupCount() - 1);
 
         return (
-            <div style={ DetailsTableStyle }>
+            <div style={ WorstValuesTableStyle }>
                 {...worst.map((x, idx) => {
+                    const residueName = this.renderResidueName(x.residue, multipleModels);
                     return (
                         <React.Fragment key={idx}>
+                            <WorstValueResidueName
+                                name={residueName}
+                                residue={x.residue}
+                                selection={this.props.structureSelection}
+                                d={this.props.dnatcofication}
+                                vi={this.props.viewerInterop}
+                            />
                             {renderBondLengthDetail(
                                 this.props.dnatcofication,
                                 x.bond,
                                 x.maybeBin,
                                 x.pGroup,
                                 x.residue,
-                                this.renderResidueName(x.residue, multipleModels),
+                                residueName,
                                 structureName,
                                 outlierColor,
                                 pgrpIndices,
