@@ -24,61 +24,49 @@ const Tabs = [
     ['technical', { caption: 'Technical' }], // This will probably get removed in the release version
 ] as const;
 
-class Contact extends React.Component {
-    render() {
-        return <TextContainer assetUrl={`${GlobalConfig.data().pathPrefix}/html/contact.html`} />;
-    }
+function Contact() {
+    return <TextContainer assetUrl={`${GlobalConfig.data().pathPrefix}/html/contact.html`} />;
 }
 
-class Downloads extends React.Component {
-    render() {
-        return <TextContainer assetUrl={`${GlobalConfig.data().pathPrefix}/html/downloads.html`} />;
-    }
+function Downloads() {
+    return <TextContainer assetUrl={`${GlobalConfig.data().pathPrefix}/html/downloads.html`} />;
 }
 
-class Help extends React.Component {
-    render() {
-        return <TextContainer assetUrl={`${GlobalConfig.data().pathPrefix}/html/help.html`} />;
-    }
+function Help() {
+    return <TextContainer assetUrl={`${GlobalConfig.data().pathPrefix}/html/help.html`} />;
 }
 
-class HowToCite extends React.Component {
-    render() {
-        return <TextContainer assetUrl={`${GlobalConfig.data().pathPrefix}/html/how-to-cite.html`} />;
-    }
+function HowToCite() {
+    return <TextContainer assetUrl={`${GlobalConfig.data().pathPrefix}/html/how-to-cite.html`} />;
 }
 
-class Technical extends React.Component {
-    render() {
-        return (
-            <div className='rdo-section-caption'>
-                Supported browser features
-                <div className='rdo-offset'>
-                    <NamedList horizontalPosition='center'>
-                        <NamedListItem name='WebAssembly SIMD'>
-                            <span>
-                                {WasmSupport.simd ? 'Yes' : <span className='rdo-error-text'>No</span>}
-                                <Tooltip
-                                    tag='[?]'
-                                >
-                                    <div style={{ maxWidth: '25em' }}>
-                                        WebAssembly SIMD support allows the browser to use a variant of the DNATCO library that makes use of SIMD (Single Instruction, Multiple Data) instructions. SIMD instructions
-                                        can speed up some mathematical operations that manipulate with large sets of numbers.
-                                    </div>
-                                </Tooltip>
-                            </span>
-                        </NamedListItem>
-                    </NamedList>
-                </div>
+function Technical() {
+    return (
+        <div className='rdo-section-caption'>
+            Supported browser features
+            <div className='rdo-offset'>
+                <NamedList horizontalPosition='center'>
+                    <NamedListItem name='WebAssembly SIMD'>
+                        <span>
+                            {WasmSupport.simd ? 'Yes' : <span className='rdo-error-text'>No</span>}
+                            <Tooltip
+                                tag='[?]'
+                            >
+                                <div style={{ maxWidth: '25em' }}>
+                                    WebAssembly SIMD support allows the browser to use a variant of the DNATCO library that makes use of SIMD (Single Instruction, Multiple Data) instructions. SIMD instructions
+                                    can speed up some mathematical operations that manipulate with large sets of numbers.
+                                </div>
+                            </Tooltip>
+                        </span>
+                    </NamedListItem>
+                </NamedList>
             </div>
-        );
-    }
+        </div>
+    );
 }
 
-class VersionHistory extends React.Component {
-    render() {
-        return <TextContainer assetUrl={`${GlobalConfig.data().pathPrefix}/html/versions.html`} />;
-    }
+function VersionHistory() {
+    return <TextContainer assetUrl={`${GlobalConfig.data().pathPrefix}/html/versions.html`} />;
 }
 
 interface State {

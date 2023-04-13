@@ -24,7 +24,7 @@ export class NamedList extends React.Component<NamedList.Props> {
             <div className='rdo-named-list-centered'>
                 {Array.isArray(children)
                     ? children.map(e => <><div />{e}<div /></>)
-                    : <><div />children<div /></>
+                    : <><div />{children}<div /></>
                 }
             </div>
         )
