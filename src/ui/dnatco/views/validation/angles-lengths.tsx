@@ -1,6 +1,7 @@
 import type { StandardLonghandProperties } from 'csstype';
 import Plot from 'react-plotly.js';
 import React from 'react';
+import { Subject } from 'rxjs';
 import { ChainSelect, ModelSelect } from '../structure-selectors';
 import { View } from '../view';
 import { Colors } from '../../colors';
@@ -39,6 +40,7 @@ import { htmlColorAsNumber, parseIntStrict, replaceAll, sequence } from '../../.
 import { doDownload, Downloader, FileTypes } from '../../../../util/downloader';
 import { Serialization } from '../../../../util/serialization';
 import { isWithin } from '../../../../util';
+import { EventsKeeper } from '../../../../util/events-keeper';
 import { M } from '../../../../util/math';
 import { Net } from '../../../../util/net';
 import { ViewerInterop, ViewerApi } from '../../../../viewer/viewer-interop';
@@ -370,6 +372,17 @@ function makeBondName(bond: Pair | Triplet) {
     return <span>{...toks}</span>;
 }
 
+function isResidueInSelection(r: Measurements.Residue, selection: StructureSelection) {
+    const cifRes = {
+        modelNum: r.modelNum,
+        chain: r.chain,
+        seqId: r.seqId,
+        altId: r.altId
+    };
+
+    return !!selection.residues.find((x) => cifResidueMatches(x, cifRes));
+}
+
 function pairBondName(p: Pair, tag: string) {
     let name = PairBondNameCache.get(tag);
     if (!name) {
@@ -390,7 +403,8 @@ function renderBondAngleDetail(
     structureName: string,
     outlierColor: [r: number, g: number, b: number],
     pgrpIndices: number[],
-    vi: ViewerInterop
+    vi: ViewerInterop,
+    onAtomsClicked?: (r: Measurements.Residue, triplet: Triplet) => void
 ) {
     const pgrpDatas = pgrpIndices.map(idx => DAnglesLengths.anglePGroupData(idx, residue.compound, bondAngle.triplet)!);
     const dlName = `${residueIdentifyingName(structureName, residue)}_${fileNameFriendlyTag(tripletTag(bondAngle.triplet))}`;
@@ -408,6 +422,7 @@ function renderBondAngleDetail(
             residue={residue}
             residueName={residueName}
             vi={vi}
+            onAtomsClicked={onAtomsClicked}
         />
     );
 }
@@ -422,7 +437,8 @@ function renderBondLengthDetail(
     structureName: string,
     outlierColor: [r: number, g: number, b: number],
     pgrpIndices: number[],
-    vi: ViewerInterop
+    vi: ViewerInterop,
+    onAtomsClicked?: (r: Measurements.Residue, pair: Pair) => void,
 ) {
     const pgrpDatas = pgrpIndices.map(idx => DAnglesLengths.lengthPGroupData(idx, residue.compound, bondLength.pair)!);
     const dlName = `${residueIdentifyingName(structureName, residue)}${fileNameFriendlyTag(pairTag(bondLength.pair))}`;
@@ -440,6 +456,7 @@ function renderBondLengthDetail(
             residue={residue}
             residueName={residueName}
             vi={vi}
+            onAtomsClicked={onAtomsClicked}
         />
     );
 }
@@ -700,6 +717,7 @@ class BondAngleDetails extends React.Component<{
     residue: Measurements.Residue,
     residueName: JSX.Element,
     vi: ViewerInterop,
+    onAtomsClicked?: (r: Measurements.Residue, triplet: Triplet) => void,
 }> {
     render() {
         const ba = this.props.bondAngle;
@@ -748,6 +766,10 @@ class BondAngleDetails extends React.Component<{
                     </span>
                 </Tooltip>
                 <span
+                    onClick={() => {
+                        if (this.props.onAtomsClicked)
+                            this.props.onAtomsClicked(this.props.residue, this.props.bondAngle.triplet);
+                    }}
                     onMouseEnter={doHighlight}
                     onMouseLeave={doUnhighlight}
                 >
@@ -777,6 +799,7 @@ class BondLengthDetails extends React.Component<{
     residue: Measurements.Residue,
     residueName: JSX.Element,
     vi: ViewerInterop,
+    onAtomsClicked?: (r: Measurements.Residue, pair: Pair) => void,
 }> {
     render() {
         const bl = this.props.bondLength;
@@ -823,6 +846,10 @@ class BondLengthDetails extends React.Component<{
                     </span>
                 </Tooltip>
                 <span
+                    onClick={() => {
+                        if (this.props.onAtomsClicked)
+                            this.props.onAtomsClicked(this.props.residue, this.props.bondLength.pair);
+                    }}
                     onMouseEnter={doHighlight}
                     onMouseLeave={doUnhighlight}
                 >
@@ -1277,17 +1304,6 @@ class Residue extends React.Component<ResidueElemProps & { structureSelection: S
         this.collapserRef.current?.collapseExpand(change);
     }
 
-    private isInitiallyExpanded() {
-        const cifRes = {
-            modelNum: this.props.residue.modelNum,
-            chain: this.props.residue.chain,
-            seqId: this.props.residue.seqId,
-            altId: this.props.residue.altId
-        };
-
-        return !!this.props.structureSelection.residues.find((x) => cifResidueMatches(x, cifRes));
-    }
-
     render() {
         return (
             <CollapsibleVertical
@@ -1326,7 +1342,7 @@ class Residue extends React.Component<ResidueElemProps & { structureSelection: S
                         selectionDisplayer({ steps: [], residues: this.props.structureSelection.residues, atoms: this.props.structureSelection.atoms, reconstruct: true }, this.props.d, this.props.viewerInterop);
                     }
                 }}
-                initiallyExpanded={this.isInitiallyExpanded()}
+                initiallyExpanded={isResidueInSelection(this.props.residue, this.props.structureSelection)}
             >
                 <ResidueDetails
                     onHideRequested={() => this.collapserRef.current?.collapseExpand('collapse')}
@@ -1379,31 +1395,14 @@ class SubstructureSummary extends React.Component<{ countsInGroups: Summarize.Co
     }
 }
 
-function WorstValueResidueName(props: { name: React.ReactNode, residue: Measurements.Residue, selection: StructureSelection, d: Dnatcofication, vi: ViewerInterop }) {
-    const cifRes = {
-        modelNum: props.residue.modelNum,
-        chain: props.residue.chain,
-        seqId: props.residue.seqId,
-        altId: props.residue.altId
-    };
-
-    const isSelected = !!props.selection.residues.find((x) => cifResidueMatches(x, cifRes));
-    const [selected, setSelected] = React.useState(isSelected);
-
-    React.useEffect(() => {
-        const residueSelected = props.vi.events.residueSelected.subscribe((r) => {
-            const isSelected = cifResidueMatches(r, cifRes);
-            setSelected(isSelected);
-        });
-
-        const struDeselected = props.vi.events.structuresDeselected.subscribe(() => setSelected(false));
-
-        return () => {
-            residueSelected.unsubscribe();
-            struDeselected.unsubscribe();
-        }
-    }, []);
-
+function WorstValueResidueName(props: {
+    name: React.ReactNode,
+    residue: Measurements.Residue,
+    selection: StructureSelection,
+    d: Dnatcofication,
+    vi: ViewerInterop,
+    toggleEvent: Subject<{ residue: Measurements.Residue, transition: 'selected' | 'deselected' }>,
+}) {
     const doHighlight = () => {
         const r = props.residue;
         const sel = ViewerApi.Payloads.ResidueSelection(r.modelNum, r.authChain, r.chain, r.authSeqId, r.insCode, r.altId, 0);
@@ -1415,14 +1414,15 @@ function WorstValueResidueName(props: { name: React.ReactNode, residue: Measurem
     return (
         <div
             onClick={() => {
-                if (!selected) {
+                const isSelected = isResidueInSelection(props.residue, props.selection);
+                if (!isSelected) {
                     amendResidueSelection(props.selection, props.residue, 'add');
                     selectionDisplayer({ steps: [], residues: props.selection.residues, atoms: props.selection.atoms, reconstruct: false }, props.d, props.vi);
-                    setSelected(true);
+                    props.toggleEvent.next({ residue: props.residue, transition: 'selected' });
                 } else {
                     amendResidueSelection(props.selection, props.residue, 'remove');
                     selectionDisplayer({ steps: [], residues: props.selection.residues, atoms: props.selection.atoms, reconstruct: true }, props.d, props.vi);
-                    setSelected(false);
+                    props.toggleEvent.next({ residue: props.residue, transition: 'deselected' });
                 }
             }}
             onMouseEnter={doHighlight}
@@ -1458,6 +1458,11 @@ export class AnglesLengths extends View<
     // that was not rendered when the jump was requested and gotoResidue needs
     // access to the current mapping of rendered Residues.
     private residueBlocksMapping = new Map<string, React.RefObject<Residue>>();
+
+    private readonly ek = new EventsKeeper();
+    readonly events = {
+        residueToggled: this.ek.subject<{ residue: Measurements.Residue, transition: 'selected' | 'deselected' }>(),
+    };
 
     private readonly Searching = {
         onSearch: (prompt: string) => {
@@ -1605,6 +1610,19 @@ export class AnglesLengths extends View<
             <div style={ WorstValuesTableStyle }>
                 {...worst.map((x, idx) => {
                     const residueName = this.renderResidueName(x.residue, multipleModels);
+                    const onAtomsClicked = (r: Measurements.Residue) => {
+                        const isSelected = isResidueInSelection(x.residue, this.props.structureSelection)
+                        if (!isSelected) {
+                            amendResidueSelection(this.props.structureSelection, x.residue, 'add');
+                            selectionDisplayer({ steps: [], residues: this.props.structureSelection.residues, atoms: this.props.structureSelection.atoms, reconstruct: false }, this.props.dnatcofication, this.props.viewerInterop);
+                            this.events.residueToggled.next({ residue: x.residue, transition: 'selected' });
+                        } else {
+                            amendResidueSelection(this.props.structureSelection, x.residue, 'remove');
+                            selectionDisplayer({ steps: [], residues: this.props.structureSelection.residues, atoms: this.props.structureSelection.atoms, reconstruct: true }, this.props.dnatcofication, this.props.viewerInterop);
+                            this.events.residueToggled.next({ residue: x.residue, transition: 'deselected' });
+                        }
+                    };
+
                     return (
                         <React.Fragment key={idx}>
                             <WorstValueResidueName
@@ -1613,6 +1631,7 @@ export class AnglesLengths extends View<
                                 selection={this.props.structureSelection}
                                 d={this.props.dnatcofication}
                                 vi={this.props.viewerInterop}
+                                toggleEvent={this.events.residueToggled}
                             />
                             {renderBondAngleDetail(
                                 this.props.dnatcofication,
@@ -1624,7 +1643,8 @@ export class AnglesLengths extends View<
                                 structureName,
                                 outlierColor,
                                 pgrpIndices,
-                                this.props.viewerInterop
+                                this.props.viewerInterop,
+                                onAtomsClicked
                             )}
                             <div />
                         </React.Fragment>
@@ -1643,6 +1663,19 @@ export class AnglesLengths extends View<
             <div style={ WorstValuesTableStyle }>
                 {...worst.map((x, idx) => {
                     const residueName = this.renderResidueName(x.residue, multipleModels);
+                    const onAtomsClicked = (r: Measurements.Residue) => {
+                        const isSelected = isResidueInSelection(x.residue, this.props.structureSelection)
+                        if (!isSelected) {
+                            amendResidueSelection(this.props.structureSelection, x.residue, 'add');
+                            selectionDisplayer({ steps: [], residues: this.props.structureSelection.residues, atoms: this.props.structureSelection.atoms, reconstruct: false }, this.props.dnatcofication, this.props.viewerInterop);
+                            this.events.residueToggled.next({ residue: x.residue, transition: 'selected' });
+                        } else {
+                            amendResidueSelection(this.props.structureSelection, x.residue, 'remove');
+                            selectionDisplayer({ steps: [], residues: this.props.structureSelection.residues, atoms: this.props.structureSelection.atoms, reconstruct: true }, this.props.dnatcofication, this.props.viewerInterop);
+                            this.events.residueToggled.next({ residue: x.residue, transition: 'deselected' });
+                        }
+                    };
+
                     return (
                         <React.Fragment key={idx}>
                             <WorstValueResidueName
@@ -1651,6 +1684,7 @@ export class AnglesLengths extends View<
                                 selection={this.props.structureSelection}
                                 d={this.props.dnatcofication}
                                 vi={this.props.viewerInterop}
+                                toggleEvent={this.events.residueToggled}
                             />
                             {renderBondLengthDetail(
                                 this.props.dnatcofication,
@@ -1662,7 +1696,8 @@ export class AnglesLengths extends View<
                                 structureName,
                                 outlierColor,
                                 pgrpIndices,
-                                this.props.viewerInterop
+                                this.props.viewerInterop,
+                                onAtomsClicked
                             )}
                             <div />
                         </React.Fragment>
@@ -1765,6 +1800,17 @@ export class AnglesLengths extends View<
                 );
             }
         });
+        this.subscribe(this.events.residueToggled, (ev) => {
+            const { residue, transition } = ev;
+            const id = residueIdentifyingName(structureIdentifyingName(this.props.dnatcofication), residue);
+            const block = this.residueBlocksMapping.get(id);
+            if (block?.current) {
+                if (transition === 'selected')
+                    this.gotoResidue(id, block);
+                else
+                    block.current.collapseExpand('collapse');
+            }
+        });
     }
 
     componentDidUpdate(prevProps: View.Props) {
@@ -1844,7 +1890,7 @@ export class AnglesLengths extends View<
         this.residueBlocksMapping = residueBlocks.mapping;
 
         return (
-            <div style={{ ...Common.VScrollGridJail, gridTemplateRows: 'auto auto auto auto auto 1fr' }}>
+            <div style={{ ...Common.VScrollGridJail, gridTemplateRows: 'auto auto auto auto auto auto 1fr auto' }}>
                 <NamedList sizing='min-content' rowSpacing='half'>
                 {
                     multipleModels
@@ -2037,6 +2083,8 @@ export class AnglesLengths extends View<
                         </div>
                     </CollapsibleVertical>
                 </div>
+
+                <div />
 
                 <div style={{ width: '100%', maxWidth: '30em', margin: 'auto' }}>
                     <div className='rdo-talgn-center rdo-strong'>Naval validation reports</div>
