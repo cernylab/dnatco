@@ -1404,6 +1404,14 @@ function WorstValueResidueName(props: { name: React.ReactNode, residue: Measurem
         }
     }, []);
 
+    const doHighlight = () => {
+        const r = props.residue;
+        const sel = ViewerApi.Payloads.ResidueSelection(r.modelNum, r.authChain, r.chain, r.authSeqId, r.insCode, r.altId, 0);
+
+        props.vi.api.command(ViewerApi.Commands.Highlight([sel]));
+    };
+    const doUnhighlight = () => props.vi.api.command(ViewerApi.Commands.Unhighlight());
+
     return (
         <div
             onClick={() => {
@@ -1417,6 +1425,8 @@ function WorstValueResidueName(props: { name: React.ReactNode, residue: Measurem
                     setSelected(false);
                 }
             }}
+            onMouseEnter={doHighlight}
+            onMouseLeave={doUnhighlight}
         >
             {props.name}
         </div>
