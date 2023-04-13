@@ -1788,7 +1788,7 @@ export class AnglesLengths extends View<
                 const numSelected = this.selectionToIndices(modelIdx, chain).length;
 
                 if (this.state.shownResiduesLimit < numSelected)
-                    this.increaseShownResiduesLimit(numSelected);
+                    this.increaseShownResiduesLimit(numSelected - this.state.shownResiduesLimit + 1);
 
                 setTimeout(
                     () => {
@@ -1804,12 +1804,24 @@ export class AnglesLengths extends View<
             const { residue, transition } = ev;
             const id = residueIdentifyingName(structureIdentifyingName(this.props.dnatcofication), residue);
             const block = this.residueBlocksMapping.get(id);
-            if (block?.current) {
-                if (transition === 'selected')
+
+            if (transition === 'selected') {
+                if (!block) {
+                    const { modelIdx, chain } = this.getSelection();
+                    const numSelected = this.selectionToIndices(modelIdx, chain).length;
+
+                    if (this.state.shownResiduesLimit < numSelected)
+                        this.increaseShownResiduesLimit(numSelected - this.state.shownResiduesLimit + 1);
+
+                    setTimeout(() => {
+                        const block = this.residueBlocksMapping.get(id);
+                        if (block)
+                            this.gotoResidue(id, block);
+                    }, 1);
+                } else
                     this.gotoResidue(id, block);
-                else
-                    block.current.collapseExpand('collapse');
-            }
+            } else
+                block?.current?.collapseExpand('collapse');
         });
     }
 
