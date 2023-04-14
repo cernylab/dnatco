@@ -1219,7 +1219,7 @@ class ResidueDetails extends React.Component<ResidueDetailsProps, { floaterYOffs
 
     render() {
         return (
-            <div ref={this.selfRef}>
+            <div style={{ position: 'relative' }} ref={this.selfRef}>
                 {this.state.floaterYOffset > 0
                     ? <div style={{
                         border: 'var(--thickness-border) solid var(--color-a)',
