@@ -225,6 +225,12 @@ function countsInGroups(counts: Summarize.Counts, thresholds: number[]): Summari
     return cig;
 }
 
+function deselectResidue(residue: Measurements.Residue, selection: StructureSelection, event: Events['residueToggled'], d: Dnatcofication, vi: ViewerInterop) {
+    amendStructureSelection(selection, residue, 'remove');
+    selectionDisplayer({ steps: [], residues: selection.residues, atoms: selection.atoms, reconstruct: true }, d, vi);
+    event.next({ residue, transition: 'deselected' });
+}
+
 function fmtDecimal(n: number, decimals: number) {
     const fvdd = M.firstValidDecimalDigit(n);
     return fvdd > decimals ? n.toExponential(decimals - 1) : n.toFixed(decimals);
@@ -475,6 +481,12 @@ function renderSubstructureStats(caption: string | JSX.Element, summaryCounts: S
 
 function residueIdentifyingName(structureName: string, r: Measurements.Residue) {
     return `${structureName}-m${r.modelNum}-${r.authChain}-${r.authSeqId}${r.insCode ? `.${r.insCode}` : ''}${r.altId ? `_alt${r.altId}` : ''}_`;
+}
+
+function selectResidue(residue: Measurements.Residue, selection: StructureSelection, event: Events['residueToggled'], d: Dnatcofication, vi: ViewerInterop) {
+    amendStructureSelection(selection, residue, 'add');
+    selectionDisplayer({ steps: [], residues: selection.residues, atoms: selection.atoms, reconstruct: false }, d, vi);
+    event.next({ residue, transition: 'selected' });
 }
 
 function structureIdentifyingName(d: Dnatcofication) {
@@ -1368,13 +1380,9 @@ class Residue extends React.Component<ResidueElemProps & {
                 onCollapsedExpanded={(change) => {
                     const isSelected = isResidueInSelection(this.props.residue, this.props.structureSelection);
                     if (change === 'expanded' && !isSelected) {
-                        amendStructureSelection(this.props.structureSelection, this.props.residue, 'add');
-                        selectionDisplayer({ steps: [], residues: this.props.structureSelection.residues, atoms: this.props.structureSelection.atoms, reconstruct: false }, this.props.d, this.props.viewerInterop);
-                        this.props.events.residueToggled.next({ residue: this.props.residue, transition: 'selected' });
+                        selectResidue(this.props.residue, this.props.structureSelection, this.props.events.residueToggled, this.props.d, this.props.vi);
                     } else if (change === 'collapsed' && isSelected) {
-                        amendStructureSelection(this.props.structureSelection, this.props.residue, 'remove');
-                        selectionDisplayer({ steps: [], residues: this.props.structureSelection.residues, atoms: this.props.structureSelection.atoms, reconstruct: true }, this.props.d, this.props.viewerInterop);
-                        this.props.events.residueToggled.next({ residue: this.props.residue, transition: 'deselected' });
+                        deselectResidue(this.props.residue, this.props.structureSelection, this.props.events.residueToggled, this.props.d, this.props.vi);
                     }
                 }}
                 initiallyExpanded={isResidueInSelection(this.props.residue, this.props.structureSelection)}
@@ -1470,13 +1478,9 @@ function WorstValueResidueName(props: {
             onClick={() => {
                 const isSelected = isResidueInSelection(props.residue, props.selection);
                 if (!isSelected) {
-                    amendStructureSelection(props.selection, props.residue, 'add');
-                    selectionDisplayer({ steps: [], residues: props.selection.residues, atoms: props.selection.atoms, reconstruct: false }, props.d, props.vi);
-                    props.events.residueToggled.next({ residue: props.residue, transition: 'selected' });
+                    selectResidue(props.residue, props.selection, props.events.residueToggled, props.d, props.vi);
                 } else {
-                    amendStructureSelection(props.selection, props.residue, 'remove');
-                    selectionDisplayer({ steps: [], residues: props.selection.residues, atoms: props.selection.atoms, reconstruct: true }, props.d, props.vi);
-                    props.events.residueToggled.next({ residue: props.residue, transition: 'deselected' });
+                    deselectResidue(props.residue, props.selection, props.events.residueToggled, props.d, props.vi);
                 }
             }}
             onMouseEnter={doHighlight}
@@ -1519,8 +1523,8 @@ export class AnglesLengths extends View<
 
     private readonly ek = new EventsKeeper();
     readonly events: Events = {
-        allResiduesDeselected: this.ek.subject<void>(),
-        residueToggled: this.ek.subject<{ residue: Measurements.Residue, transition: 'selected' | 'deselected' }>(),
+        allResiduesDeselected: this.ek.subject(),
+        residueToggled: this.ek.subject(),
     };
 
     private readonly Searching = {
@@ -1677,13 +1681,9 @@ export class AnglesLengths extends View<
                     const onAtomsClicked = (r: Measurements.Residue) => {
                         const isSelected = isResidueInSelection(x.residue, this.props.structureSelection)
                         if (!isSelected) {
-                            amendStructureSelection(this.props.structureSelection, x.residue, 'add');
-                            selectionDisplayer({ steps: [], residues: this.props.structureSelection.residues, atoms: this.props.structureSelection.atoms, reconstruct: false }, this.props.dnatcofication, this.props.viewerInterop);
-                            this.events.residueToggled.next({ residue: x.residue, transition: 'selected' });
+                            selectResidue(x.residue, this.props.structureSelection, this.events.residueToggled, this.props.dnatcofication, this.props.viewerInterop);
                         } else {
-                            amendStructureSelection(this.props.structureSelection, x.residue, 'remove');
-                            selectionDisplayer({ steps: [], residues: this.props.structureSelection.residues, atoms: this.props.structureSelection.atoms, reconstruct: true }, this.props.dnatcofication, this.props.viewerInterop);
-                            this.events.residueToggled.next({ residue: x.residue, transition: 'deselected' });
+                            deselectResidue(x.residue, this.props.structureSelection, this.events.residueToggled, this.props.dnatcofication, this.props.viewerInterop);
                         }
                     };
 
@@ -1737,13 +1737,9 @@ export class AnglesLengths extends View<
                     const onAtomsClicked = (r: Measurements.Residue) => {
                         const isSelected = isResidueInSelection(x.residue, this.props.structureSelection);
                         if (!isSelected) {
-                            amendStructureSelection(this.props.structureSelection, x.residue, 'add');
-                            selectionDisplayer({ steps: [], residues: this.props.structureSelection.residues, atoms: this.props.structureSelection.atoms, reconstruct: false }, this.props.dnatcofication, this.props.viewerInterop);
-                            this.events.residueToggled.next({ residue: x.residue, transition: 'selected' });
+                            selectResidue(x.residue, this.props.structureSelection, this.events.residueToggled, this.props.dnatcofication, this.props.viewerInterop);
                         } else {
-                            amendStructureSelection(this.props.structureSelection, x.residue, 'remove');
-                            selectionDisplayer({ steps: [], residues: this.props.structureSelection.residues, atoms: this.props.structureSelection.atoms, reconstruct: true }, this.props.dnatcofication, this.props.viewerInterop);
-                            this.events.residueToggled.next({ residue: x.residue, transition: 'deselected' });
+                            deselectResidue(x.residue, this.props.structureSelection, this.events.residueToggled, this.props.dnatcofication, this.props.viewerInterop);
                         }
                     };
 
@@ -1781,6 +1777,31 @@ export class AnglesLengths extends View<
         );
     }
 
+    private scrollResidueIntoView(residueIdentifyingName: string, doAfterScroll?: (block: React.RefObject<Residue>) => void) {
+        const block = this.residueBlocksMapping.get(residueIdentifyingName);
+
+        if (!block) {
+            const { modelIdx, chain } = this.getSelection();
+            const numSelected = this.selectionToIndices(modelIdx, chain).length;
+
+            if (this.state.shownResiduesLimit < numSelected)
+                this.increaseShownResiduesLimit(numSelected - this.state.shownResiduesLimit + 1);
+
+            setTimeout(() => {
+                const block = this.residueBlocksMapping.get(residueIdentifyingName);
+                if (block) {
+                    if (doAfterScroll)
+                        doAfterScroll(block);
+                    this.gotoResidue(residueIdentifyingName, block);
+                }
+            }, 50);
+        } else {
+            if (doAfterScroll)
+                doAfterScroll(block);
+            this.gotoResidue(residueIdentifyingName, block);
+        }
+    }
+
     private selectionName(multipleModels: boolean, modelIdx: number, chain: string) {
         let name = multipleModels
             ? modelIdx === InvalidModelIndex
@@ -1810,7 +1831,6 @@ export class AnglesLengths extends View<
     gotoResidue = (id: string, ref: React.RefObject<Residue>) => {
         if (this.residuesTainerRef.current)
             scrollIntoViewIfNeeded(id, this.residuesTainerRef.current);
-        ref.current?.collapseExpand('expand');
     }
 
     increaseShownResiduesLimit = (increaseBy = ShownResiduesIncrement) => {
@@ -1848,74 +1868,17 @@ export class AnglesLengths extends View<
                 bondLengths: [] // Irrelevant
             }
 
-            const struName = structureIdentifyingName(this.props.dnatcofication);
-            const id = residueIdentifyingName(struName, mr);
-
-            const ref = this.residueBlocksMapping.get(id);
-            if (document.getElementById(id)) {
-                // Corresponding residue block is displayed, scroll to it
-                if (ref)
-                    this.gotoResidue(id, ref);
-            } else {
-                // Corresponding residue block is not displayed. Expand the residue blocks list and scroll to it then.
-                const { modelIdx, chain } = this.getSelection();
-                const numSelected = this.selectionToIndices(modelIdx, chain).length;
-
-                if (this.state.shownResiduesLimit < numSelected)
-                    this.increaseShownResiduesLimit(numSelected - this.state.shownResiduesLimit + 1);
-
-                setTimeout(
-                    () => {
-                        const ref = this.residueBlocksMapping.get(id);
-                        if (ref)
-                            this.gotoResidue(id, ref);
-                    },
-                    100
-                );
-            }
-        });
-        this.subscribe(this.props.viewerInterop.events.residueSelected, (sel) => {
-            const cifRes = StructureSelection.authToCifResidue(this.props.dnatcofication.data.structures[0], sel);
-            if (cifRes) {
-                const mr: Measurements.Residue = {
-                    modelNum: cifRes.modelNum,
-                    chain: cifRes.chain,
-                    seqId: cifRes.seqId,
-                    altId: cifRes.altId,
-                    authChain: sel.chain,
-                    authSeqId: sel.seqId,
-                    insCode: sel.insCode,
-                    compound: 'A', // Irrelevant,
-                    bondAngles: [], // Irrelevant
-                    bondLengths: [] // Irrelevant
-                };
-                this.events.residueToggled.next({ residue: mr, transition: 'selected' });
-            }
+            selectResidue(mr, this.props.structureSelection, this.events.residueToggled, this.props.dnatcofication, this.props.viewerInterop);
         });
         this.subscribe(this.events.residueToggled, (ev) => {
-            console.log(ev.residue, ev.transition);
-
             const { residue, transition } = ev;
             const id = residueIdentifyingName(structureIdentifyingName(this.props.dnatcofication), residue);
-            const block = this.residueBlocksMapping.get(id);
-
-            if (transition === 'selected') {
-                if (!block) {
-                    const { modelIdx, chain } = this.getSelection();
-                    const numSelected = this.selectionToIndices(modelIdx, chain).length;
-
-                    if (this.state.shownResiduesLimit < numSelected)
-                        this.increaseShownResiduesLimit(numSelected - this.state.shownResiduesLimit + 1);
-
-                    setTimeout(() => {
-                        const block = this.residueBlocksMapping.get(id);
-                        if (block)
-                            this.gotoResidue(id, block);
-                    }, 1);
-                } else
-                    this.gotoResidue(id, block);
-            } else
+            if (transition === 'selected')
+                this.scrollResidueIntoView(id, (block) => block.current?.collapseExpand('expand'));
+            else if (transition === 'deselected') {
+                const block = this.residueBlocksMapping.get(id);
                 block?.current?.collapseExpand('collapse');
+            }
         });
     }
 
@@ -2088,19 +2051,7 @@ export class AnglesLengths extends View<
                                             onRenderResult: (residue: Measurements.Residue) => this.renderResidueName(residue, multipleModels),
                                             onUseResult: (r) => {
                                                 const id = residueIdentifyingName(structureIdentifyingName(this.props.dnatcofication), r);
-                                                const ref = this.residueBlocksMapping.get(id);
-
-                                                if (!ref) {
-                                                    if (selectedResidues.length > this.state.shownResiduesLimit) {
-                                                        this.increaseShownResiduesLimit(selectedResidues.length);
-                                                        setTimeout(() => {
-                                                            const ref = this.residueBlocksMapping.get(id);
-                                                            if (ref)
-                                                                this.gotoResidue(id, ref);
-                                                        }, 1);
-                                                    }
-                                                } else
-                                                    this.gotoResidue(id, ref);
+                                                this.scrollResidueIntoView(id, (block) => block.current?.collapseExpand('expand'));
                                             },
                                         };
                                         const sbprops = { ...this.SearchBoxProps, searching };

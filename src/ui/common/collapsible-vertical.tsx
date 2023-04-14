@@ -36,7 +36,10 @@ export class CollapsibleVertical extends React.Component<CollapsibleVertical.Pro
     }
 
     collapseExpand = (change: 'collapse' | 'expand') => {
-        this.setState({ ...this.state, collapsed: change === 'collapse' });
+        const collapsed = change === 'collapse';
+
+        if (this.state.collapsed !== collapsed)
+            this.setState({ ...this.state, collapsed });
     }
 
     componentDidUpdate(prevProps: CollapsibleVertical.Props, prevState: State) {
