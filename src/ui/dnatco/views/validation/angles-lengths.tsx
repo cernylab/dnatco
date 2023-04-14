@@ -63,12 +63,6 @@ const EmptyPlotPoints = new Array<number>();
 const PairBondNameCache: Map<string, React.ReactElement> = new Map();
 const TripletBondNameCache: Map<string, React.ReactElement> = new Map();
 
-const DetailsCaptionStyle = {
-    alignItems: 'center',
-    display: 'flex',
-    fontWeight: 'bold',
-    justifyContent: 'center',
-};
 const StayAboveStyle = { position: 'absolute', zIndex: 1 } as StandardLonghandProperties;
 const BarCaptionStyle = {
     color: 'white',
@@ -85,18 +79,6 @@ const ResidueBarCaptionStyle = {
     right: 'calc(var(--h-gap) / 2)',
     ...BarCaptionStyle,
     ...StayAboveStyle,
-} as StandardLonghandProperties;
-const DetailsTableStyle = {
-    display: 'grid',
-    gridTemplateColumns: '1em auto auto auto 1fr',
-    columnGap: '1em',
-    position: 'relative',
-} as StandardLonghandProperties;
-const WorstValuesTableStyle = {
-    display: 'grid',
-    gridTemplateColumns: 'auto 1em auto auto auto 1fr',
-    columnGap: '1em',
-    position: 'relative',
 } as StandardLonghandProperties;
 
 type AveragesChartDownloader = Downloader<Serialization.Serializable>;
@@ -716,7 +698,7 @@ class AveragesChart extends React.Component<{
     }
 }
 
-class BondAngleDetails extends React.Component<{
+function BondAngleDetails(props: {
     bondAngle: Measurements.BondAngle,
     downloadName: string,
     maybeBin: EmptiableMaybeBin,
@@ -728,26 +710,39 @@ class BondAngleDetails extends React.Component<{
     residueName: JSX.Element,
     vi: ViewerInterop,
     onAtomsClicked?: (r: Measurements.Residue, triplet: Triplet) => void,
-}> {
-    render() {
-        const ba = this.props.bondAngle;
-        const clr = this.props.pGroup ? colorToTuple(this.props.pGroup.color) : this.props.outlierColor;
+}) {
+    const ba = props.bondAngle;
+    const clr = props.pGroup ? colorToTuple(props.pGroup.color) : props.outlierColor;
 
-        const doHighlight = () => {
-            const r = this.props.residue;
-            const a = makeAtomSelectionPayload(r, this.props.bondAngle.triplet[0]);
-            const b = makeAtomSelectionPayload(r, this.props.bondAngle.triplet[1]);
-            const c = makeAtomSelectionPayload(r, this.props.bondAngle.triplet[2]);
+    const doHighlight = () => {
+        const r = props.residue;
+        const a = makeAtomSelectionPayload(r, props.bondAngle.triplet[0]);
+        const b = makeAtomSelectionPayload(r, props.bondAngle.triplet[1]);
+        const c = makeAtomSelectionPayload(r, props.bondAngle.triplet[2]);
 
-            if (a && b && c)
-                this.props.vi.api.command(ViewerApi.Commands.Highlight([a, b, c]));
-        };
-        const doUnhighlight = () => this.props.vi.api.command(ViewerApi.Commands.Unhighlight());
+        if (a && b && c)
+            props.vi.api.command(ViewerApi.Commands.Highlight([a, b, c]));
+    };
+    const doUnhighlight = () => props.vi.api.command(ViewerApi.Commands.Unhighlight());
 
-        return (
-            <>
+    // Do not look at this code. This code is a major workaround
+    // of CSS being fucking stupid.
+    const [cueHeight, setCueHeight] = React.useState(0);
+    const cueRef = React.useRef<HTMLTableCellElement>(null);
+    React.useLayoutEffect(() => {
+        const cue = cueRef.current;
+        if (cue && cueHeight === 0)
+            setCueHeight(cue.clientHeight);
+    });
+
+    return (
+        <>
+            <td
+                style={{ backgroundColor: colorStyle(clr), width: '1em' }}
+                ref={cueRef}
+            >
                 <Tooltip
-                    tag=<div style={{ width: '100%', height: '100%', backgroundColor: colorStyle(clr) }} />
+                    tag=<div style={{ height: `${cueHeight}px`, width: '1em' }} />
                     delayMsec={Constants.TooltipDelayMSec}
                     display='block'
                 >
@@ -755,50 +750,53 @@ class BondAngleDetails extends React.Component<{
                         onMouseLeave={doUnhighlight} // We need to do it like this because componentWillUnmount() won't fire on Tooltipped components
                     >
                         <PGroupSummary
-                            bins={DAnglesLengths.angleAverages(this.props.residue.compound, ba.triplet)!}
+                            bins={DAnglesLengths.angleAverages(props.residue.compound, ba.triplet)!}
                             caption={tripletBondName(ba.triplet, ba.tag)}
-                            pGroup={this.props.pGroup}
-                            pGroupDatas={this.props.pGroupDatas}
+                            pGroup={props.pGroup}
+                            pGroupDatas={props.pGroupDatas}
                             rangeFormatter={(v) => M.r2d(v).toFixed(2)}
-                            residueName={this.props.residueName}
+                            residueName={props.residueName}
                             suffix={'\u00B0'}
                             value={ba.angle}
                             valueFormatter={(v) => M.r2d(v).toFixed(2)}
-                            naval={this.props.navalItem} // Contained value is already in degrees
+                            naval={props.navalItem} // Contained value is already in degrees
                             xTitle={'Angle (\u00B0)'}
                             yTitle='Prob. (%)'
                             xTransform={(x) => M.r2d(x)}
                             yTransform={(y) => y * 100}
-                            downloadFileName={this.props.downloadName}
+                            downloadFileName={props.downloadName}
                             highlighter={doHighlight}
-                            vi={this.props.vi}
+                            vi={props.vi}
                         />
                     </span>
                 </Tooltip>
-                <span
-                    onClick={() => {
-                        if (this.props.onAtomsClicked)
-                            this.props.onAtomsClicked(this.props.residue, this.props.bondAngle.triplet);
-                    }}
-                    onMouseEnter={doHighlight}
-                    onMouseLeave={doUnhighlight}
-                >
-                    {tripletBondName(ba.triplet, ba.tag)}
-                </span>
-                <div
-                    onMouseEnter={doHighlight}
-                    onMouseLeave={doUnhighlight}
-                    className='rdo-monospace rdo-talgn-right'
-                >
-                    {M.r2d(ba.angle).toFixed(2)}{'\u00B0'}
-                </div>
-                <Prosco bin={this.props.maybeBin} />
-            </>
-        );
-    }
+            </td>
+            <td
+                className='rdo-angles-lengths'
+                onClick={() => {
+                    if (props.onAtomsClicked)
+                        props.onAtomsClicked(props.residue, props.bondAngle.triplet);
+                }}
+                onMouseEnter={doHighlight}
+                onMouseLeave={doUnhighlight}
+            >
+                {tripletBondName(ba.triplet, ba.tag)}
+            </td>
+            <td
+                onMouseEnter={doHighlight}
+                onMouseLeave={doUnhighlight}
+                className='rdo-monospace rdo-talgn-right rdo-angles-lengths'
+            >
+                {M.r2d(ba.angle).toFixed(2)}{'\u00B0'}
+            </td>
+            <td className='rdo-angles-lengths'>
+                <Prosco bin={props.maybeBin} />
+            </td>
+        </>
+    );
 }
 
-class BondLengthDetails extends React.Component<{
+function BondLengthDetails(props: {
     bondLength: Measurements.BondLength,
     downloadName: string,
     maybeBin: EmptiableMaybeBin,
@@ -810,72 +808,88 @@ class BondLengthDetails extends React.Component<{
     residueName: JSX.Element,
     vi: ViewerInterop,
     onAtomsClicked?: (r: Measurements.Residue, pair: Pair) => void,
-}> {
-    render() {
-        const bl = this.props.bondLength;
-        const clr = this.props.pGroup ? colorToTuple(this.props.pGroup.color) : this.props.outlierColor;
+}) {
+    const bl = props.bondLength;
+    const clr = props.pGroup ? colorToTuple(props.pGroup.color) : props.outlierColor;
 
-        const doHighlight = () => {
-            const r = this.props.residue;
-            const a = makeAtomSelectionPayload(r, this.props.bondLength.pair[0]);
-            const b = makeAtomSelectionPayload(r, this.props.bondLength.pair[1]);
+    const doHighlight = () => {
+        const r = props.residue;
+        const a = makeAtomSelectionPayload(r, props.bondLength.pair[0]);
+        const b = makeAtomSelectionPayload(r, props.bondLength.pair[1]);
 
-            if (a && b)
-                this.props.vi.api.command(ViewerApi.Commands.Highlight([a, b]));
-        };
-        const doUnhighlight = () => this.props.vi.api.command(ViewerApi.Commands.Unhighlight());
+        if (a && b)
+            props.vi.api.command(ViewerApi.Commands.Highlight([a, b]));
+    };
+    const doUnhighlight = () => props.vi.api.command(ViewerApi.Commands.Unhighlight());
 
-        return (
-            <>
+    // Do not look at this code. This code is a major workaround
+    // of CSS being fucking stupid.
+    const [cueHeight, setCueHeight] = React.useState(0);
+    const cueRef = React.useRef<HTMLTableCellElement>(null);
+    React.useLayoutEffect(() => {
+        const cue = cueRef.current;
+        if (cue && cueHeight === 0)
+            setCueHeight(cue.clientHeight);
+    });
+
+    return (
+        <>
+            <td
+                style={{ backgroundColor: colorStyle(clr), width: '1em' }}
+                ref={cueRef}
+            >
                 <Tooltip
-                    tag=<div style={{ width: '100%', height: '100%', backgroundColor: colorStyle(clr) }} />
+                    tag=<div style={{ height: `${cueHeight}px`, width: '1em' }} />
                     delayMsec={Constants.TooltipDelayMSec}
                     display='block'
                 >
-                    <span
+                    <div
                         onMouseLeave={doUnhighlight} // We need to do it like this because componentWillUnmount() won't fire on Tooltipped components
                     >
                         <PGroupSummary
-                            bins={DAnglesLengths.lengthAverages(this.props.residue.compound, bl.pair)!}
+                            bins={DAnglesLengths.lengthAverages(props.residue.compound, bl.pair)!}
                             caption={pairBondName(bl.pair, bl.tag)}
-                            pGroup={this.props.pGroup}
-                            pGroupDatas={this.props.pGroupDatas}
+                            pGroup={props.pGroup}
+                            pGroupDatas={props.pGroupDatas}
                             rangeFormatter={(v) => v.toFixed(3)}
-                            residueName={this.props.residueName}
+                            residueName={props.residueName}
                             suffix={'\u00A0\u212B'}
                             value={bl.length}
                             valueFormatter={(v) => v.toFixed(3)}
-                            naval={this.props.navalItem}
+                            naval={props.navalItem}
                             xTitle={'Length (\u212B)'}
                             yTitle='Prob. (%)'
                             yTransform={(y) => y * 100}
-                            downloadFileName={this.props.downloadName}
+                            downloadFileName={props.downloadName}
                             highlighter={doHighlight}
-                            vi={this.props.vi}
+                            vi={props.vi}
                         />
-                    </span>
+                    </div>
                 </Tooltip>
-                <span
-                    onClick={() => {
-                        if (this.props.onAtomsClicked)
-                            this.props.onAtomsClicked(this.props.residue, this.props.bondLength.pair);
-                    }}
-                    onMouseEnter={doHighlight}
-                    onMouseLeave={doUnhighlight}
-                >
-                    {pairBondName(bl.pair, bl.tag)}
-                </span>
-                <div
-                    className='rdo-monospace rdo-talgn-right'
-                    onMouseEnter={doHighlight}
-                    onMouseLeave={doUnhighlight}
-                >
-                    {bl.length.toFixed(3)}{'\u00A0\u212B'}
-                </div>
-                <Prosco bin={this.props.maybeBin} />
-            </>
-        );
-    }
+            </td>
+            <td
+                className='rdo-angles-lengths'
+                onClick={() => {
+                    if (props.onAtomsClicked)
+                        props.onAtomsClicked(props.residue, props.bondLength.pair);
+                }}
+                onMouseEnter={doHighlight}
+                onMouseLeave={doUnhighlight}
+            >
+                {pairBondName(bl.pair, bl.tag)}
+            </td>
+            <td
+                className='rdo-monospace rdo-talgn-right rdo-angles-lengths'
+                onMouseEnter={doHighlight}
+                onMouseLeave={doUnhighlight}
+            >
+                {bl.length.toFixed(3)}{'\u00A0\u212B'}
+            </td>
+            <td className='rdo-angles-lengths'>
+                <Prosco bin={props.maybeBin} />
+            </td>
+        </>
+    );
 }
 
 class DownloadButtons extends React.Component<{
@@ -1193,7 +1207,7 @@ class ResidueDetails extends React.Component<ResidueDetailsProps, { floaterYOffs
 
     render() {
         return (
-            <div style={DetailsTableStyle} ref={this.selfRef}>
+            <div ref={this.selfRef}>
                 {this.state.floaterYOffset > 0
                     ? <div style={{
                         border: 'var(--thickness-border) solid var(--color-a)',
@@ -1208,47 +1222,62 @@ class ResidueDetails extends React.Component<ResidueDetailsProps, { floaterYOffs
                     : undefined
                 }
 
-                <div style={{ gridColumnStart: 'span 5', ...DetailsCaptionStyle }}>Bond lengths</div>
-                {this.props.residue.bondLengths.map((x, idx) => {
-                    return (
-                        <React.Fragment key={idx}>
-                            {renderBondLengthDetail(
-                                this.props.d,
-                                x,
-                                this.props.stats.lengths[idx].bin,
-                                this.props.stats.lengths[idx].pGroup,
-                                this.props.residue,
-                                this.props.residueName,
-                                this.props.structureName,
-                                this.props.outlierColor,
-                                this.props.pgrpIndices,
-                                this.props.vi
-                            )}
-                            <div />
-                        </React.Fragment>
-                    );
-                })}
+                <table className='rdo-angles-lengths' style={{ width: '100%' }}>
+                    <tbody>
+                        <tr>
+                            <td
+                                colSpan={5}
+                                className='rdo-strong'
+                                style={{ textAlign: 'center' }}
+                            >Bond lengths</td>
+                        </tr>
+                        {this.props.residue.bondLengths.map((x, idx) => {
+                            return (
+                                <tr className='rdo-angles-lengths' key={idx}>
+                                    {renderBondLengthDetail(
+                                        this.props.d,
+                                        x,
+                                        this.props.stats.lengths[idx].bin,
+                                        this.props.stats.lengths[idx].pGroup,
+                                        this.props.residue,
+                                        this.props.residueName,
+                                        this.props.structureName,
+                                        this.props.outlierColor,
+                                        this.props.pgrpIndices,
+                                        this.props.vi
+                                    )}
+                                    <td style={{ width: '100%' }} />
+                                </tr>
+                            );
+                        })}
 
-                <div style={{ gridColumnStart: 'span 5', ...DetailsCaptionStyle }}>Bond angles</div>
-                {this.props.residue.bondAngles.map((x, idx) => {
-                    return (
-                        <React.Fragment key={idx}>
-                            {renderBondAngleDetail(
-                                this.props.d,
-                                x,
-                                this.props.stats.angles[idx].bin,
-                                this.props.stats.angles[idx].pGroup,
-                                this.props.residue,
-                                this.props.residueName,
-                                this.props.structureName,
-                                this.props.outlierColor,
-                                this.props.pgrpIndices,
-                                this.props.vi
-                            )}
-                            <div />
-                        </React.Fragment>
-                    );
-                })}
+                        <tr>
+                            <td colSpan={5}
+                                className='rdo-strong'
+                                style={{ textAlign: 'center' }}
+                            >Bond angles</td>
+                        </tr>
+                        {this.props.residue.bondAngles.map((x, idx) => {
+                            return (
+                                <tr className='rdo-angles-lengths' key={idx}>
+                                    {renderBondAngleDetail(
+                                        this.props.d,
+                                        x,
+                                        this.props.stats.angles[idx].bin,
+                                        this.props.stats.angles[idx].pGroup,
+                                        this.props.residue,
+                                        this.props.residueName,
+                                        this.props.structureName,
+                                        this.props.outlierColor,
+                                        this.props.pgrpIndices,
+                                        this.props.vi
+                                    )}
+                                    <td style={{ width: '100%' }} />
+                                </tr>
+                            );
+                        })}
+                    </tbody>
+                </table>
             </div>
         );
     }
@@ -1641,7 +1670,8 @@ export class AnglesLengths extends View<
         const backgroundColorSelected = Rgba(rgb.r, rgb.g, rgb.b, 0.5);
 
         return (
-            <div style={ WorstValuesTableStyle }>
+            <table className='rdo-angles-lengths'>
+                <tbody>
                 {...worst.map((x, idx) => {
                     const residueName = this.renderResidueName(x.residue, multipleModels);
                     const onAtomsClicked = (r: Measurements.Residue) => {
@@ -1658,16 +1688,18 @@ export class AnglesLengths extends View<
                     };
 
                     return (
-                        <React.Fragment key={idx}>
-                            <WorstValueResidueName
-                                name={residueName}
-                                residue={x.residue}
-                                selection={this.props.structureSelection}
-                                backgroundColorSelected={backgroundColorSelected}
-                                d={this.props.dnatcofication}
-                                vi={this.props.viewerInterop}
-                                events={this.events}
-                            />
+                        <tr className='rdo-angles-lengths' key={idx}>
+                            <td className='rdo-angles-lengths'>
+                                <WorstValueResidueName
+                                    name={residueName}
+                                    residue={x.residue}
+                                    selection={this.props.structureSelection}
+                                    backgroundColorSelected={backgroundColorSelected}
+                                    d={this.props.dnatcofication}
+                                    vi={this.props.viewerInterop}
+                                    events={this.events}
+                                />
+                            </td>
                             {renderBondAngleDetail(
                                 this.props.dnatcofication,
                                 x.bond,
@@ -1681,11 +1713,11 @@ export class AnglesLengths extends View<
                                 this.props.viewerInterop,
                                 onAtomsClicked
                             )}
-                            <div />
-                        </React.Fragment>
+                        </tr>
                     );
                 })}
-            </div>
+                </tbody>
+            </table>
         );
     }
 
@@ -1698,7 +1730,8 @@ export class AnglesLengths extends View<
         const backgroundColorSelected = Rgba(rgb.r, rgb.g, rgb.b, 0.5);
 
         return (
-            <div style={ WorstValuesTableStyle }>
+            <table className='rdo-angles-lengths'>
+                <tbody>
                 {...worst.map((x, idx) => {
                     const residueName = this.renderResidueName(x.residue, multipleModels);
                     const onAtomsClicked = (r: Measurements.Residue) => {
@@ -1715,16 +1748,18 @@ export class AnglesLengths extends View<
                     };
 
                     return (
-                        <React.Fragment key={idx}>
-                            <WorstValueResidueName
-                                name={residueName}
-                                residue={x.residue}
-                                selection={this.props.structureSelection}
-                                backgroundColorSelected={backgroundColorSelected}
-                                d={this.props.dnatcofication}
-                                vi={this.props.viewerInterop}
-                                events={this.events}
-                            />
+                        <tr className='rdo-angles-lengths' key={idx}>
+                            <td className='rdo-angles-lengths'>
+                                <WorstValueResidueName
+                                    name={residueName}
+                                    residue={x.residue}
+                                    selection={this.props.structureSelection}
+                                    backgroundColorSelected={backgroundColorSelected}
+                                    d={this.props.dnatcofication}
+                                    vi={this.props.viewerInterop}
+                                    events={this.events}
+                                />
+                            </td>
                             {renderBondLengthDetail(
                                 this.props.dnatcofication,
                                 x.bond,
@@ -1738,11 +1773,11 @@ export class AnglesLengths extends View<
                                 this.props.viewerInterop,
                                 onAtomsClicked
                             )}
-                            <div />
-                        </React.Fragment>
+                        </tr>
                     );
                 })}
-            </div>
+                </tbody>
+            </table>
         );
     }
 

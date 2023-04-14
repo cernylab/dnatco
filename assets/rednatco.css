@@ -127,12 +127,21 @@ select {
     box-sizing: border-box;
 }
 
+table.rdo-angles-lengths {
+    border-collapse: collapse;
+}
+
 table.rdo-list-of-conformers {
     border-collapse: collapse;
 }
 
 table.rdo-list-of-conformers td, table.rdo-list-of-conformers th {
     padding: 0.2em;
+}
+
+td.rdo-angles-lengths {
+    padding-right: 1em;
+    white-space: nowrap;
 }
 
 td.rdo-list-of-conformers-bb , th.rdo-list-of-conformers-bb {
@@ -145,6 +154,10 @@ td.rdo-list-of-conformers-rb , th.rdo-list-of-conformers-rb {
 
 td.rdo-list-of-conformers-tb , th.rdo-list-of-conformers-tb {
     border-top: var(--thickness-border) solid black;
+}
+
+tr.rdo-angles-lengths:hover {
+    background-color: var(--color-c);
 }
 
 tr.rdo-list-of-conformers-alternate-clr {
