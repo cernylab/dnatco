@@ -659,7 +659,7 @@ class AveragesChart extends React.Component<{
                         },
                         {
                             x: [tm],
-                            y: [yMax],
+                            y: [yMax * 1.05],
                             type: 'bar',
                             width: 2 * (xt[1] - xt[0]),
                             marker: {
@@ -672,7 +672,7 @@ class AveragesChart extends React.Component<{
                         },
                         {
                             x: this.props.naval.quality !== 'none' ? [this.props.naval.value] : EmptyPlotPoints,
-                            y: this.props.naval.quality !== 'none' ? [yMax] : EmptyPlotPoints,
+                            y: this.props.naval.quality !== 'none' ? [yMax / 2] : EmptyPlotPoints,
                             type: 'bar',
                             width: 2 * (xt[1] - xt[0]),
                             marker: {
@@ -1149,7 +1149,7 @@ class Prosco extends React.Component<{ bin: Bin|'below'|'above'|'no-data' }> {
             return (
                 <Tooltip
                     tag=<div className='rdo-monospace rdo-talgn-right'>
-                        {fmtDecimal(bin.prosco, 3)}
+                        {fmtDecimal(bin.prosco * 100, 1)}{'\u00A0'}%
                     </div>
                 >
                     <div>
