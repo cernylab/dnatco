@@ -2,6 +2,7 @@ import type { StandardLonghandProperties } from 'csstype';
 import Plot from 'react-plotly.js';
 import React from 'react';
 import { Subject, Subscription } from 'rxjs';
+import { AnglesLengthsCommon } from './angles-lengths-common';
 import { ChainSelect, ModelSelect } from '../structure-selectors';
 import { View } from '../view';
 import { Colors } from '../../colors';
@@ -356,6 +357,85 @@ function gatherWorst<T extends keyof GatherWorst>(gather: T, residues: Measureme
         worst.length = maxCount;
 
     return worst;
+}
+
+
+function makeAngleDetails(props: ResidueDetailsProps) {
+    const displayOrder = AnglesLengthsCommon.AnglesDisplayOrder[props.residue.compound];
+
+    let elems = [];
+    for (const tripletTag of displayOrder) {
+        let idx = -1;
+
+        for (let _idx = 0; _idx < props.residue.bondAngles.length; _idx++) {
+            if (props.residue.bondAngles[_idx].tag === tripletTag) {
+                idx = _idx;
+                break;
+            }
+        }
+        if (idx < 0)
+            throw new Error(`Bad tripletTag ${tripletTag}`);
+
+        const x = props.residue.bondAngles[idx];
+        elems.push(
+            <tr className='rdo-angles-lengths' key={idx}>
+                {renderBondAngleDetail(
+                    props.d,
+                    x,
+                    props.stats.angles[idx].bin,
+                    props.stats.angles[idx].pGroup,
+                    props.residue,
+                    props.residueName,
+                    props.structureName,
+                    props.outlierColor,
+                    props.pgrpIndices,
+                    props.vi
+                )}
+                <td style={{ width: '100%' }} />
+            </tr>
+        );
+    }
+
+    return elems;
+}
+
+function makeLengthDetails(props: ResidueDetailsProps) {
+    const displayOrder = AnglesLengthsCommon.LengthsDisplayOrder[props.residue.compound];
+
+    let elems = [];
+    for (const pairTag of displayOrder) {
+        let idx = -1;
+
+        for (let _idx = 0; _idx < props.residue.bondLengths.length; _idx++) {
+            if (props.residue.bondLengths[_idx].tag === pairTag) {
+                idx = _idx;
+                break;
+            }
+        }
+        if (idx < 0)
+            throw new Error(`Bad pairTag ${pairTag}`);
+
+        const x = props.residue.bondLengths[idx];
+        elems.push(
+            <tr className='rdo-angles-lengths' key={idx}>
+                {renderBondLengthDetail(
+                    props.d,
+                    x,
+                    props.stats.lengths[idx].bin,
+                    props.stats.lengths[idx].pGroup,
+                    props.residue,
+                    props.residueName,
+                    props.structureName,
+                    props.outlierColor,
+                    props.pgrpIndices,
+                    props.vi
+                )}
+                <td style={{ width: '100%' }} />
+            </tr>
+        );
+    }
+
+    return elems;
 }
 
 function makeBondName(bond: Pair | Triplet) {
@@ -1243,51 +1323,14 @@ class ResidueDetails extends React.Component<ResidueDetailsProps, { floaterYOffs
                                 style={{ textAlign: 'center' }}
                             >Bond lengths</td>
                         </tr>
-                        {this.props.residue.bondLengths.map((x, idx) => {
-                            return (
-                                <tr className='rdo-angles-lengths' key={idx}>
-                                    {renderBondLengthDetail(
-                                        this.props.d,
-                                        x,
-                                        this.props.stats.lengths[idx].bin,
-                                        this.props.stats.lengths[idx].pGroup,
-                                        this.props.residue,
-                                        this.props.residueName,
-                                        this.props.structureName,
-                                        this.props.outlierColor,
-                                        this.props.pgrpIndices,
-                                        this.props.vi
-                                    )}
-                                    <td style={{ width: '100%' }} />
-                                </tr>
-                            );
-                        })}
-
+                        {makeLengthDetails(this.props)}
                         <tr>
                             <td colSpan={5}
                                 className='rdo-strong'
                                 style={{ textAlign: 'center' }}
                             >Bond angles</td>
                         </tr>
-                        {this.props.residue.bondAngles.map((x, idx) => {
-                            return (
-                                <tr className='rdo-angles-lengths' key={idx}>
-                                    {renderBondAngleDetail(
-                                        this.props.d,
-                                        x,
-                                        this.props.stats.angles[idx].bin,
-                                        this.props.stats.angles[idx].pGroup,
-                                        this.props.residue,
-                                        this.props.residueName,
-                                        this.props.structureName,
-                                        this.props.outlierColor,
-                                        this.props.pgrpIndices,
-                                        this.props.vi
-                                    )}
-                                    <td style={{ width: '100%' }} />
-                                </tr>
-                            );
-                        })}
+                        {makeAngleDetails(this.props)}
                     </tbody>
                 </table>
             </div>
