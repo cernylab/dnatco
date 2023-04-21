@@ -182,6 +182,7 @@ export type DnatcoficationData = typeof DnatcoficationData;
 export class Dnatcofication {
     private readonly ek = new EventsKeeper();
     private _customNtCs = new CustomNtCs();
+    private fingerprint: string = '';
     data = DnatcoficationData;
 
     readonly events = {
@@ -276,6 +277,13 @@ export class Dnatcofication {
                 ? 'RNA' : 'unknown';
     }
 
+    parametersFingerprint() {
+        if (this.fingerprint === '')
+            throw new Error('No fingerprint is set');
+
+        return this.fingerprint;
+    }
+
     get pdbId() {
         if (!this.data.cifData)
             return '';
@@ -299,6 +307,13 @@ export class Dnatcofication {
         this.data = data;
         this._customNtCs = new CustomNtCs();
         this.events.structureChanged.next(true);
+    }
+
+    setParametersFingerprint(fingerprint: string, expectededFinder?: string) {
+        if (expectededFinder && fingerprint !== expectededFinder)
+            console.warn(`Fingerprint ${fingerprint} differs from the expected fingerprint ${expectededFinder}`);
+
+        this.fingerprint = fingerprint;
     }
 }
 

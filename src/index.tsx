@@ -48,6 +48,7 @@ import 'assets/imgs/document.svg';
 // Base assets
 import 'assets/index.php';
 import 'assets/rednatco.css';
+import {Fingerprint} from './dnatco/fingerprint';
 
 const Params = {
     cifcode: '',
@@ -475,51 +476,63 @@ export class App extends WithSubscriptions<{}, State> {
             `${prefix}/classification/nu_angles.csv`
         ).then(retval => {
             if (retval === undefined) {
-                AnglesLengths.initialize().then(res => {
-                    if (isError(res)) {
-                        this.setState({ ...this.state, dnatcofierState: 'failed' });
-                        Popup.create(
-                            <div className='rdo-error-text'>
-                                <div>Angles and lengths - {res.message}</div>
-                                {FailMsg}
-                            </div>
-                        );
-                    } else {
-                        Naval.initialize(
-                            `${prefix}/naval/angle_restraints.csv`,
-                            `${prefix}/naval/bond_restraints.csv`
-                        ).then(res => {
-                            if (isError(res)) {
-                                this.setState({ ...this.state, dnatcofierState: 'failed' });
-                                Popup.create(
-                                    <div className='rdo-error-text'>
-                                        <div>Naval - {res.message}</div>
-                                        {FailMsg}
-                                    </div>
-                                );
-                            } else
-                                this.setState({ ...this.state, dnatcofierState: 'ready' });
-                        }).catch(e => {
-                            // We should not really get here but let's catch just in case
+                Fingerprint.fingerprintFromUrls(`${prefix}/classification/golden_steps.csv`, `${prefix}/classification/order_of_steps.txt`).then(fprint => {
+                    this.dnatcofication.setParametersFingerprint(fprint, GlobalConfig.data().expectedParametersFingerprint);
+
+                    AnglesLengths.initialize().then(res => {
+                        if (isError(res)) {
                             this.setState({ ...this.state, dnatcofierState: 'failed' });
                             Popup.create(
                                 <div className='rdo-error-text'>
-                                    <div>Naval - {e.toString()}</div>
+                                    <div>Angles and lengths - {res.message}</div>
                                     {FailMsg}
                                 </div>
                             );
-                        });
-                    }
+                        } else {
+                            Naval.initialize(
+                                `${prefix}/naval/angle_restraints.csv`,
+                                `${prefix}/naval/bond_restraints.csv`
+                            ).then(res => {
+                                if (isError(res)) {
+                                    this.setState({ ...this.state, dnatcofierState: 'failed' });
+                                    Popup.create(
+                                        <div className='rdo-error-text'>
+                                            <div>Naval - {res.message}</div>
+                                            {FailMsg}
+                                        </div>
+                                    );
+                                } else
+                                    this.setState({ ...this.state, dnatcofierState: 'ready' });
+                            }).catch(e => {
+                                // We should not really get here but let's catch just in case
+                                this.setState({ ...this.state, dnatcofierState: 'failed' });
+                                Popup.create(
+                                    <div className='rdo-error-text'>
+                                        <div>Naval - {e.toString()}</div>
+                                        {FailMsg}
+                                    </div>
+                                );
+                            });
+                        }
+                    }).catch(e => {
+                        // We should not really get here but let's catch just in case
+                        this.setState({ ...this.state, dnatcofierState: 'failed' });
+                        Popup.create(
+                            <div className='rdo-error-text'>
+                                <div>Angles and lengths - {e.toString()}</div>
+                                {FailMsg}
+                            </div>
+                        );
+                    });
                 }).catch(e => {
-                    // We should not really get here but let's catch just in case
                     this.setState({ ...this.state, dnatcofierState: 'failed' });
                     Popup.create(
                         <div className='rdo-error-text'>
-                            <div>Angles and lengths - {e.toString()}</div>
+                            <div>Failed to calculate fingerprint of classification parameters: {(e as Error).message}</div>
                             {FailMsg}
                         </div>
                     );
-                });
+                })
             } else {
                 this.setState({ ...this.state, dnatcofierState: 'failed' });
                 Popup.create(

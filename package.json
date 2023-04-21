@@ -21,6 +21,7 @@
     "contributors": [],
     "license": "MIT",
     "devDependencies": {
+        "@types/crypto-js": "^4.1.1",
         "@types/react": "^18.0.21",
         "@types/react-dom": "^18.0.6",
         "@types/react-plotly.js": "^2.6.0",
@@ -37,13 +38,14 @@
         "plotly.js": "^2.20.0",
         "typescript": "^4.9.4",
         "webpack": "^5.74.0",
-        "webpack-cli": "^4.10.0",
-        "webpack-bundle-analyzer": "^4.8.0"
+        "webpack-bundle-analyzer": "^4.8.0",
+        "webpack-cli": "^4.10.0"
     },
     "dependencies": {
         "@types/dompurify": "^2.3.4",
         "@types/plotly.js": "^2.12.18",
         "@types/uuid": "^8.3.4",
+        "crypto-js": "^4.1.1",
         "dompurify": "^2.4.0",
         "jsllka": "file:./jsllka",
         "react": "^18.2.0",
@@ -51,8 +53,8 @@
         "react-plotly.js": "^2.6.0",
         "rxjs": "^7.5.6",
         "tscif": "file:./tscif",
-        "tspdb": "file:./tspdb",
         "tslib": "^2.4.0",
+        "tspdb": "file:./tspdb",
         "uuid": "^8.3.2"
     }
 }

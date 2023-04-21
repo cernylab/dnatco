@@ -39,6 +39,7 @@ export type GlobalConfigData = {
     precalculateConnectivitiesAndSimilarities: boolean,
     highlightColor: string,
     highlightThickness: number,
+    expectedParametersFingerprint: string,
 };
 const GlobalConfigData: GlobalConfigData = {
     isDevel: false,
@@ -66,6 +67,7 @@ const GlobalConfigData: GlobalConfigData = {
     precalculateConnectivitiesAndSimilarities: false,
     highlightColor: '#49ff92',
     highlightThickness: 2.0,
+    expectedParametersFingerprint: '',
 };
 const AllowedPartials: Partial<{[k in keyof GlobalConfigData]: object}> = {
     anglesLengths: {}
