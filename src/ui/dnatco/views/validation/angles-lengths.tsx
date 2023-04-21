@@ -329,9 +329,9 @@ function gatherWorst<T extends keyof GatherWorst>(gather: T, residues: Measureme
         for (let jdx = 0; jdx < r.bondLengths.length; jdx++) {
             const x = getter.bond(r)[jdx];
             const ls = getter.stats(s, jdx);
-            const thr = ls.pGroup?.threshold ?? 'outlier';
+            const thr: typeof threshold = ls.pGroup?.threshold ?? 'outlier';
 
-            if (thr === 'outlier' || thr >= threshold) {
+            if (thr === 'outlier' || (threshold !== 'outlier' && thr >= threshold)) {
                 let kdx = 0;
                 for (; kdx < worst.length; kdx++) {
                     if (compareMaybeBins(ls.bin, worst[kdx].maybeBin) <= 0)

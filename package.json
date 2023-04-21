@@ -36,7 +36,7 @@
         "file-loader": "^6.2.0",
         "mini-css-extract-plugin": "^2.5.3",
         "plotly.js": "^2.20.0",
-        "typescript": "^4.9.4",
+        "typescript": "^5.0.4",
         "webpack": "^5.74.0",
         "webpack-bundle-analyzer": "^4.8.0",
         "webpack-cli": "^4.10.0"
@@ -53,7 +53,7 @@
         "react-plotly.js": "^2.6.0",
         "rxjs": "^7.5.6",
         "tscif": "file:./tscif",
-        "tslib": "^2.4.0",
+        "tslib": "^2.5.0",
         "tspdb": "file:./tspdb",
         "uuid": "^8.3.2"
     }
