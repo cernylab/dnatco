@@ -10,6 +10,7 @@ import { PhenixRestraints } from './refinement/phenix-restraints';
 import { RefmacRestraints } from './refinement/refmac-restraints';
 import { ConnectivityPlot } from './refinement/connectivity-plot';
 import { AnglesLengths } from './validation/angles-lengths';
+import { AnglesLengths2 } from './validation/angles-lengths-2';
 import { ConfalsRmsds } from './validation/confals-rmsds';
 import { RsccPlot } from './validation/rscc-plot';
 import { SimilarityPlot } from './validation/similarity-plot';
@@ -51,6 +52,13 @@ export namespace Register {
             selectionDisplayer: AnglesLengths.SelectionDisplayer,
             selectionMaker: AnglesLengths.SelectionMaker,
             unscrollableContainer: AnglesLengths.unscrollableContainer,
+            granularity: 'residue',
+        },
+        'angles-lengths-2': {
+            render:(props: View.Props) => <AnglesLengths2 {...props} />,
+            selectionDisplayer: AnglesLengths2.SelectionDisplayer,
+            selectionMaker: AnglesLengths2.SelectionMaker,
+            unscrollableContainer: AnglesLengths2.unscrollableContainer,
             granularity: 'residue',
         },
         'change-ntcs': {

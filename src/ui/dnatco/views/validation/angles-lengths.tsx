@@ -1,46 +1,38 @@
 import type { StandardLonghandProperties } from 'csstype';
-import Plot from 'react-plotly.js';
 import React from 'react';
 import { Subject, Subscription } from 'rxjs';
-import { AnglesLengthsCommon } from './angles-lengths-common';
+import { AnglesLengthsCommon, NavalItem, PGroupSummary, Prosco, ResidueName } from './angles-lengths-common';
 import { ChainSelect, ModelSelect } from '../structure-selectors';
 import { View } from '../view';
-import { Colors } from '../../colors';
 import { Constants } from '../../constants';
 import { SearchBox } from '../../search-box';
-import { StatsBar } from '../../stats-bar';
 import {
+    InvalidModelIndex,
     AuthResidue, CifAtom, CifResidue,
-    InvalidAtom, InvalidChain, InvalidModelIndex,
-    SelectedPieces,
     StructureSelection,
 } from '../../structure-selection';
 import { Common } from '../../common';
-import { colorToRgb, colorToTuple, ColorTuple, hexToRgb, scrollIntoViewIfNeeded } from '../../../util';
+import { colorStyle, colorToRgb, colorToTuple, hexToRgb, scrollIntoViewIfNeeded, rgbToHex, ColorTuple, Rgba } from '../../../util';
 import { CollapsibleVertical } from '../../../common/collapsible-vertical';
 import { ComboBox } from '../../../common/combo-box';
 import { NamedList, NamedListItem } from '../../../common/named-list';
 import { Icon } from '../../../common/icon';
-import { IconButton, ToggleButton } from '../../../common/push-button';
+import { IconButton } from '../../../common/push-button';
 import { SpinBox } from '../../../common/spin-box';
 import { Tooltip } from '../../../common/tooltip';
-import { ALMResidueStats, Dnatcofication, MaybeBin } from '../../../../dnatco/dnatcofication';
+import { ALM } from '../../../../dnatco/alm';
+import { Dnatcofication } from '../../../../dnatco/dnatcofication';
 import { AnglesLengths as DAnglesLengths } from '../../../../dnatco/angles-lengths';
-import { isShiftedName, unshiftName } from '../../../../dnatco/angles-lengths/atoms';
 import { tripletTag, Triplet } from '../../../../dnatco/angles-lengths/angles';
-import { Bin, Bins } from '../../../../dnatco/angles-lengths/bin';
+import { Bin } from '../../../../dnatco/angles-lengths/bin';
 import { pairTag, Pair } from '../../../../dnatco/angles-lengths/lengths';
 import { Measurements } from '../../../../dnatco/angles-lengths/measurements';
 import { Serialize } from '../../../../dnatco/angles-lengths/serialize';
 import { Summarize } from '../../../../dnatco/angles-lengths/summarize';
 import { Naval } from '../../../../dnatco/naval';
-import { Validation } from '../../../../dnatco/naval/validation';
-import { rgbToHex, Rgba } from '../../../util';
 import { GlobalConfig } from '../../../../global-config';
-import { htmlColorAsNumber, parseIntStrict, replaceAll, sequence } from '../../../../util';
+import { parseIntStrict, replaceAll, sequence } from '../../../../util';
 import { doDownload, Downloader, FileTypes } from '../../../../util/downloader';
-import { Serialization } from '../../../../util/serialization';
-import { isWithin } from '../../../../util';
 import { EventsKeeper } from '../../../../util/events-keeper';
 import { M } from '../../../../util/math';
 import { Net } from '../../../../util/net';
@@ -49,66 +41,13 @@ import 'assets/imgs/data-transfer-download.svg';
 import 'assets/imgs/triangle-down.svg';
 import 'assets/imgs/triangle-up.svg';
 
-type EmptiableMaybeBin = MaybeBin|'no-data';
-
-type NavalItem = {
-    value: number;
-    quality: Naval.Quality | 'none';
-}
-function NavalItem(item: Validation.ReportItem<Validation.AngleAtoms | Validation.BondAtoms>): NavalItem {
-    return { value: item.target_value, quality: Naval.quality(item) };
-}
-const EmptyNavalItem: NavalItem = { value: 0, quality: 'none' };
-
-const EmptyPlotPoints = new Array<number>();
-const PairBondNameCache: Map<string, React.ReactElement> = new Map();
-const TripletBondNameCache: Map<string, React.ReactElement> = new Map();
-
-const StayAboveStyle = { position: 'absolute', zIndex: 1 } as StandardLonghandProperties;
-const BarCaptionStyle = {
-    color: 'white',
-    fontWeight: 'bold',
-    textShadow: '0px 0px 3px #000',
-    ...StayAboveStyle,
-};
-const ResidueBarCaptionStyle = {
-    height: '100%',
-    width: '100%',
-    textAlign: 'right',
-    fontSize: 'var(--font-small)',
-    top: 0,
-    right: 'calc(var(--h-gap) / 2)',
-    ...BarCaptionStyle,
-    ...StayAboveStyle,
-} as StandardLonghandProperties;
-
-type AveragesChartDownloader = Downloader<Serialization.Serializable>;
-const AveragesChartDownloaders = [
-    {
-        caption: 'CSV',
-        download: function(fileNameStem, data) {
-            const text = Serialization.toCsv(data);
-            doDownload(fileNameStem, text, this.fileType);
-        },
-        fileType: FileTypes.csv,
-    },
-    {
-        caption: 'JSON',
-        download: function(fileNameStem, data) {
-            const text = Serialization.toJson(data);
-            doDownload(fileNameStem, text, this.fileType);
-        },
-        fileType: FileTypes.json,
-    },
-] as AveragesChartDownloader[];
-
 type StatsDownloader = Downloader<{
     residues: Measurements.Residue[],
     counts: {
         angles: Summarize.CountsInGroup[],
         lengths: Summarize.CountsInGroup[]
     },
-    stats: ALMResidueStats[],
+    stats: ALM.ResidueStats[],
 }>;
 const StatsDownloaders = [
     {
@@ -182,11 +121,7 @@ function cifResidueMatches(a: CifResidue, b: CifResidue) {
     );
 }
 
-function colorStyle(clr: [r: number, g: number, b: number]) {
-    return `rgb(${clr.join(',')})`;
-}
-
-function compareMaybeBins(a: EmptiableMaybeBin, b: EmptiableMaybeBin) {
+function compareMaybeBins(a: ALM.MaybeBin, b: ALM.MaybeBin) {
     const aOut = a === 'above' || a === 'below' || a === 'no-data';
     const bOut = b === 'above' || b === 'below' || b === 'no-data';
 
@@ -201,40 +136,10 @@ function compareMaybeBins(a: EmptiableMaybeBin, b: EmptiableMaybeBin) {
         return (a as Bin).prosco - (b as Bin).prosco;
 }
 
-function compareNavalAtom(a: Validation.Atom, name: string, seqId: number, altId: string) {
-    const altIdMatch = a.altloc === '' || altId === '' || a.altloc === altId;
-    const isShifted = isShiftedName(name);
-    const _name = isShifted ? unshiftName(name) : name;
-    const _seqId = isShifted ? seqId - 1 : seqId;
-
-    return a.name === _name && a.seqId === _seqId && altIdMatch;
-}
-
-function countsInGroups(counts: Summarize.Counts, thresholds: number[]): Summarize.CountsInGroup[] {
-    const cig = [];
-
-    for (let idx = 0; idx <= thresholds.length; idx++) {
-        const thr = thresholds[idx];
-        cig.push({
-            threshold: thr ?? 100,
-            exclusive: counts.exclusive[idx],
-            cumulative: counts.cumulative[idx],
-            pGroupIdx: (thr ? idx : 'outlier') as Summarize.CountsInGroup['pGroupIdx'],
-        });
-    }
-
-    return cig;
-}
-
 function deselectResidue(residue: Measurements.Residue, selection: StructureSelection, event: Events['residueToggled'], d: Dnatcofication, vi: ViewerInterop) {
     amendStructureSelection(selection, residue, 'remove');
-    selectionDisplayer({ steps: [], residues: selection.residues, atoms: selection.atoms, reconstruct: true }, d, vi);
+    AnglesLengths.SelectionDisplayer({ steps: [], residues: selection.residues, atoms: selection.atoms, reconstruct: true }, d, vi);
     event.next({ residue, transition: 'deselected' });
-}
-
-function fmtDecimal(n: number, decimals: number) {
-    const fvdd = M.firstValidDecimalDigit(n);
-    return fvdd > decimals ? n.toExponential(decimals - 1) : n.toFixed(decimals);
 }
 
 function fileNameFriendlyTag(tag: string) {
@@ -245,60 +150,14 @@ function fileNameFriendlyTag(tag: string) {
     );
 }
 
-function getNavalAngle(d: Dnatcofication, r: Measurements.Residue, triplet: Triplet) {
-    const [ na, nb, nc ] = triplet;
-    const niIdx = d.data.naval.anglesMapping.get(r.modelNum)
-        ?.get(r.chain)
-        ?.get(r.seqId)
-        ?.find(idx => {
-            const { a, b, c } = d.data.naval.angles[idx].atoms;
-            return (
-                (compareNavalAtom(a, na, r.seqId, r.altId) || compareNavalAtom(a, nc, r.seqId, r.altId)) &&
-                compareNavalAtom(b, nb, r.seqId, r.altId) &&
-                (compareNavalAtom(c, na, r.seqId, r.altId) || compareNavalAtom(c, nc, r.seqId, r.altId))
-            );
-        }) ?? -1;
-    return niIdx === -1 ? EmptyNavalItem : NavalItem(d.data.naval.angles[niIdx]);
-}
-
-function getNavalBond(d: Dnatcofication, r: Measurements.Residue, pair: Pair) {
-    const [ na, nb ] = pair;
-    const niIdx = d.data.naval.bondsMapping.get(r.modelNum)
-        ?.get(r.chain)
-        ?.get(r.seqId)
-        ?.find(idx => {
-            const rr = d.data.naval.bonds[idx];
-            const { a, b } = rr.atoms;
-            return (
-                (compareNavalAtom(a, na, r.seqId, r.altId) || compareNavalAtom(a, nb, r.seqId, r.altId)) &&
-                (compareNavalAtom(b, na, r.seqId, r.altId) || compareNavalAtom(b, nb, r.seqId, r.altId))
-            );
-        }) ?? -1;
-    return niIdx === -1 ? EmptyNavalItem : NavalItem(d.data.naval.bonds[niIdx]);
-}
-
-function makeAtomSelectionPayload(r: Measurements.Residue, atomName: string) {
-    if (isShiftedName(atomName)) {
-        if (Measurements.Residue.hasPrevious(r))
-            return ViewerApi.Payloads.AtomSelection(r.modelNum, r.authChain, r.chain, r.prevAuthSeqId!, r.prevInsCode!, r.prevAltId!, unshiftName(atomName), 0);
-        else
-            return void 0;
-    } else
-        return ViewerApi.Payloads.AtomSelection(r.modelNum, r.authChain, r.chain, r.authSeqId, r.insCode, r.altId, atomName, 0);
-}
-
-function makeCollapsibleHeader(collapsed: React.ReactNode, expanded?: React.ReactNode): { collapsed: React.ReactNode, expanded: React.ReactNode } {
-    return { collapsed, expanded: expanded ? expanded : collapsed };
-}
-
 type GatherWorst = {
     angles: {
         bond: (r: Measurements.Residue) => Measurements.BondAngle[],
-        stats: (s: ALMResidueStats, idx: number) => ALMResidueStats['angles'][number],
+        stats: (s: ALM.ResidueStats, idx: number) => ALM.ResidueStats['angles'][number],
     },
     lengths: {
         bond: (r: Measurements.Residue) => Measurements.BondLength[],
-        stats: (s: ALMResidueStats, idx: number) => ALMResidueStats['lengths'][number],
+        stats: (s: ALM.ResidueStats, idx: number) => ALM.ResidueStats['lengths'][number],
     },
 };
 const GatherWorst: GatherWorst = {
@@ -312,12 +171,12 @@ const GatherWorst: GatherWorst = {
     },
 
 };
-function gatherWorst<T extends keyof GatherWorst>(gather: T, residues: Measurements.Residue[], stats: ALMResidueStats[], threshold: number|'outlier', maxCount: number) {
+function gatherWorst<T extends keyof GatherWorst>(gather: T, residues: Measurements.Residue[], stats: ALM.ResidueStats[], threshold: number|'outlier', maxCount: number) {
     type PT = ReturnType<GatherWorst[T]['bond']>[number];
     const worst = new Array<{
         bond: PT,
         residue: Measurements.Residue,
-        maybeBin: EmptiableMaybeBin,
+        maybeBin: ALM.MaybeBin,
         pGroup: DAnglesLengths.PGroup,
     }>();
     const getter = GatherWorst[gather];
@@ -438,18 +297,6 @@ function makeLengthDetails(props: ResidueDetailsProps) {
     return elems;
 }
 
-function makeBondName(bond: Pair | Triplet) {
-    const toks = bond.map(x => isShiftedName(x) ? <span>{unshiftName(x)}<span className='rdo-sup'>(-1)</span></span> : <span>{x}</span>);
-    let idx = 1;
-    while (idx < toks.length) {
-        const tail = toks.splice(idx, toks.length - idx, <span>-</span>);
-        toks.push(...tail);
-        idx += 2;
-    }
-
-    return <span>{...toks}</span>;
-}
-
 function isResidueInSelection(r: Measurements.Residue, selection: StructureSelection) {
     const cifRes = {
         modelNum: r.modelNum,
@@ -461,20 +308,10 @@ function isResidueInSelection(r: Measurements.Residue, selection: StructureSelec
     return !!selection.residues.find((x) => cifResidueMatches(x, cifRes));
 }
 
-function pairBondName(p: Pair, tag: string) {
-    let name = PairBondNameCache.get(tag);
-    if (!name) {
-        name = makeBondName(p);
-        PairBondNameCache.set(tag, name);
-    }
-
-    return name;
-}
-
 function renderBondAngleDetail(
     d: Dnatcofication,
     bondAngle: Measurements.BondAngle,
-    maybeBin: EmptiableMaybeBin,
+    maybeBin: ALM.MaybeBin,
     pGroup: DAnglesLengths.PGroup,
     residue: Measurements.Residue,
     residueName: JSX.Element,
@@ -486,7 +323,7 @@ function renderBondAngleDetail(
 ) {
     const pgrpDatas = pgrpIndices.map(idx => DAnglesLengths.anglePGroupData(idx, residue.compound, bondAngle.triplet)!);
     const dlName = `${residueIdentifyingName(structureName, residue)}_${fileNameFriendlyTag(tripletTag(bondAngle.triplet))}`;
-    const ni = getNavalAngle(d, residue, bondAngle.triplet);
+    const ni = AnglesLengthsCommon.getNavalAngle(d, residue, bondAngle.triplet);
 
     return (
         <BondAngleDetails
@@ -508,7 +345,7 @@ function renderBondAngleDetail(
 function renderBondLengthDetail(
     d: Dnatcofication,
     bondLength: Measurements.BondLength,
-    maybeBin: EmptiableMaybeBin,
+    maybeBin: ALM.MaybeBin,
     pGroup: DAnglesLengths.PGroup,
     residue: Measurements.Residue,
     residueName: JSX.Element,
@@ -520,7 +357,7 @@ function renderBondLengthDetail(
 ) {
     const pgrpDatas = pgrpIndices.map(idx => DAnglesLengths.lengthPGroupData(idx, residue.compound, bondLength.pair)!);
     const dlName = `${residueIdentifyingName(structureName, residue)}${fileNameFriendlyTag(pairTag(bondLength.pair))}`;
-    const ni = getNavalBond(d, residue, bondLength.pair);
+    const ni = AnglesLengthsCommon.getNavalBond(d, residue, bondLength.pair);
 
     return (
         <BondLengthDetails
@@ -539,261 +376,35 @@ function renderBondLengthDetail(
     );
 }
 
-function renderSubstructureStats(caption: string | JSX.Element, summaryCounts: Summarize.Counts, countsInGroups: Summarize.CountsInGroup[], colorsForCounts: string[]) {
-    return (
-        <AnglesLengthsBar
-            caption={
-                <div style={{ ...StayAboveStyle, top: 0, width: '100%' }}>
-                    <Tooltip
-                        tag={caption}
-                        delayMsec={Constants.TooltipDelayMSec}
-                        display='block'
-                    >
-                        <SubstructureSummary countsInGroups={countsInGroups} />
-                    </Tooltip>
-                </div>
-            }
-            counts={summaryCounts}
-            colors={colorsForCounts}
-        />
-    );
-}
-
 function residueIdentifyingName(structureName: string, r: Measurements.Residue) {
     return `${structureName}-m${r.modelNum}-${r.authChain}-${r.authSeqId}${r.insCode ? `.${r.insCode}` : ''}${r.altId ? `_alt${r.altId}` : ''}_`;
 }
 
 function selectResidue(residue: Measurements.Residue, selection: StructureSelection, event: Events['residueToggled'], d: Dnatcofication, vi: ViewerInterop) {
     amendStructureSelection(selection, residue, 'add');
-    selectionDisplayer({ steps: [], residues: selection.residues, atoms: selection.atoms, reconstruct: false }, d, vi);
+    AnglesLengths.SelectionDisplayer({ steps: [], residues: selection.residues, atoms: selection.atoms, reconstruct: false }, d, vi);
     event.next({ residue, transition: 'selected' });
 }
 
-function structureIdentifyingName(d: Dnatcofication) {
-    return d.identifyingName ?? d.pdbId;
-}
 
-function tripletBondName(t: Triplet, tag: string) {
-    let name = TripletBondNameCache.get(tag);
-    if (!name) {
-        name = makeBondName(t);
-        TripletBondNameCache.set(tag, name);
-    }
+function selectionToIndices(d: Dnatcofication, modelIdx: number, chain: string) {
+    const alm = d.data.almByResidue;
+    if (modelIdx === InvalidModelIndex) {
+        return sequence(0, alm.residues.length - 1);
+    } else {
+        const modelNum = d.data.structures[0].models[modelIdx].num;
 
-    return name;
-}
-
-class AnglesLengthsBar extends React.Component<{ caption?: string | React.ReactNode, counts: Summarize.Counts, colors: string[] }> {
-    private renderCaption() {
-        if (!this.props.caption)
-            return void 0;
-
-        if (typeof this.props.caption === 'string') {
-            return <div style={{ top: 0, left: 'var(--h-gap)', ...StayAboveStyle, ...BarCaptionStyle }}>{this.props.caption}</div>
-        } else {
-            return this.props.caption;
-        }
-    }
-
-    render() {
-        return (
-            <div style={{ width: '100%', height: '100%', position: 'relative', display: 'flex', flexDirection: 'row' }}>
-                <StatsBar counts={this.props.counts.exclusive} colors={this.props.colors} />
-                {this.renderCaption()}
-            </div>
-        );
-    }
-}
-
-class AveragesChart extends React.Component<{
-    bins: Bins,
-    pGroupDatas: DAnglesLengths.PGroupData[],
-    mark: number,
-    naval: NavalItem,
-    xTitle: string,
-    yTitle: string,
-    xTransform?: (x: number) => number;
-    yTransform?: (y: number) => number;
-    downloadFileName?: string,
-}> {
-    private binsToPGroupIndices(bins: Bins, pGroupDatas: DAnglesLengths.PGroupData[]) {
-        const allGroupedBins = pGroupDatas.flatMap(
-            (x, idx) => x.groupedBins.map(
-                bin => ({ bin: bin, pGroupIdx: idx })
-            )
-        );
-
-        const indices = [];
-        for (const b of bins) {
-            const mid = b.from + (b.to - b.from) / 2;
-
-            let pgIdx = -1;
-            for (const gb of allGroupedBins) {
-                if (isWithin(mid, gb.bin)) {
-                    pgIdx = gb.pGroupIdx;
-                    break;
-                }
-            }
-
-            indices.push(pgIdx);
-        }
-
-        return indices;
-    }
-
-    render() {
-        const markerColorTup = colorToTuple(htmlColorAsNumber(GlobalConfig.data().anglesLengths.chartMarkerColor) ?? 0);
-        const navalColorTup = colorToTuple(htmlColorAsNumber(GlobalConfig.data().anglesLengths.navalMarkerColor) ?? 16744576);
-        const outlierColor = DAnglesLengths.outlierColor();
-        const pGroupIndices = this.binsToPGroupIndices(this.props.bins, this.props.pGroupDatas);
-
-        const color = pGroupIndices.map(pgIdx => {
-            const tup = colorToTuple(pgIdx === -1 ? outlierColor : DAnglesLengths.pGroupColor(pgIdx));
-            return `$rgb(${tup[0]}, ${tup[1]}, ${tup[2]})`;
-        });
-
-        const tm = this.props.xTransform ? this.props.xTransform(this.props.mark) : this.props.mark;
-        const xt = this.props.bins.map(b => this.props.xTransform ? this.props.xTransform(b.from) : b.from);
-        const yt = this.props.bins.map(b => this.props.yTransform ? this.props.yTransform(b.probability) : b.probability);
-        const yMax = Math.max(...yt);
-
-        const xtFrom = xt[0];
-        const xtTo = xt[xt.length - 1];
-        const xAxisMargin = (xtTo - xtFrom) * 0.05;
-        const xRange = [
-            (xtFrom > tm ? tm : xtFrom) - xAxisMargin,
-            (xtTo < tm ? tm : xtTo) + xAxisMargin
-        ];
-
-        return (
-            <div>
-                <div className='rdo-dynamic-table-download-bar'>
-                    {AveragesChartDownloaders.map((dl, idx) => {
-                        return (
-                            <div
-                                className='rdo-dynamic-table-download-button'
-                                onClick={(e) => {
-                                    e.nativeEvent.stopImmediatePropagation();
-                                    e.stopPropagation();
-
-                                    let markInRange = false;
-                                    const actual = new Array<number>();
-                                    this.props.bins.forEach(bin => {
-                                        if (isWithin(this.props.mark, bin)) {
-                                            actual.push(yMax);
-                                            markInRange = true;
-                                        } else
-                                            actual.push(0);
-                                    });
-
-                                    const _xt = [...xt];
-                                    const _yt = [...yt];
-                                    const _pGroupIndices = [...pGroupIndices];
-
-                                    if (!markInRange) {
-                                        const bf = this.props.bins[0];
-
-                                        if (this.props.mark < bf.from) {
-                                            _xt.unshift(tm);
-                                            _yt.unshift(0);
-                                            _pGroupIndices.unshift(-1);
-                                            actual.unshift(yMax);
-                                        } else {
-                                            _xt.push(tm);
-                                            _yt.push(0);
-                                            _pGroupIndices.push(-1);
-                                            actual.push(yMax);
-                                        }
-                                    }
-
-                                    const tags = ['x', 'y', 'pGroupIndex', 'actual'];
-                                    const values = [
-                                        _xt,
-                                        _yt,
-                                        _pGroupIndices,
-                                        actual
-                                    ];
-
-                                    dl.download(this.props.downloadFileName ?? 'angle_length_prob_chart', { tags, values });
-                                }}
-                                key={idx}
-                            >
-                                <Icon img={`${GlobalConfig.data().pathPrefix}/imgs/data-transfer-download.svg`} size='text' />
-                                {dl.caption}
-                            </div>
-                        );
-                    })}
-                    <div style={{ flex: 1 }} />
-                </div>
-
-                <Plot
-                    data={[
-                        {
-                            x: xt,
-                            y: yt,
-                            width: xt[1] - xt[0],
-                            marker: { color: color },
-                            hoverinfo: 'none',
-                            type: 'bar',
-                            showlegend: false,
-                        },
-                        {
-                            x: [tm],
-                            y: [yMax * 1.05],
-                            type: 'bar',
-                            width: 2 * (xt[1] - xt[0]),
-                            marker: {
-                                color: `rgb(${markerColorTup[0]}, ${markerColorTup[1]}, ${markerColorTup[2]})`,
-                            },
-                            hoverinfo: 'text',
-                            hovertext: 'Actual value',
-                            hoveron: 'fills',
-                            showlegend: false,
-                        },
-                        {
-                            x: this.props.naval.quality !== 'none' ? [this.props.naval.value] : EmptyPlotPoints,
-                            y: this.props.naval.quality !== 'none' ? [yMax / 2] : EmptyPlotPoints,
-                            type: 'bar',
-                            width: 2 * (xt[1] - xt[0]),
-                            marker: {
-                                color: `rgb(${navalColorTup[0]}, ${navalColorTup[1]}, ${navalColorTup[2]})`,
-                            },
-                            hoverinfo: 'text',
-                            hovertext: 'Naval target value',
-                            hoveron: 'fills',
-                            showlegend: false,
-                        }
-                    ]}
-                    layout={{
-                        autosize: true,
-                        bargap: 0,
-                        dragmode: 'pan',
-                        hovermode: 'closest',
-                        margin: { t: 0, l: 0, b: 45, r: 0 },
-                        xaxis: { title: this.props.xTitle, range: xRange },
-                        yaxis: { showticklabels: false },
-                        plot_bgcolor: 'white',
-                        paper_bgcolor: 'white',
-                    }}
-                    config={{
-                        displayModeBar: false,
-                        scrollZoom: true,
-                    }}
-                    style={{
-                        width: '30em',
-                        height: '30em',
-                        margin: 0
-                    }}
-                />
-            </div>
-        );
+        if (chain)
+            return alm.chains.get(modelNum)?.get(chain) ?? [];
+        else
+            return alm.models.get(modelNum) ?? [];
     }
 }
 
 function BondAngleDetails(props: {
     bondAngle: Measurements.BondAngle,
     downloadName: string,
-    maybeBin: EmptiableMaybeBin,
+    maybeBin: ALM.MaybeBin,
     navalItem: NavalItem,
     outlierColor: [r: number, g: number, b: number],
     pGroup: DAnglesLengths.PGroup,
@@ -808,9 +419,9 @@ function BondAngleDetails(props: {
 
     const doHighlight = () => {
         const r = props.residue;
-        const a = makeAtomSelectionPayload(r, props.bondAngle.triplet[0]);
-        const b = makeAtomSelectionPayload(r, props.bondAngle.triplet[1]);
-        const c = makeAtomSelectionPayload(r, props.bondAngle.triplet[2]);
+        const a = AnglesLengthsCommon.makeAtomSelectionPayload(r, props.bondAngle.triplet[0]);
+        const b = AnglesLengthsCommon.makeAtomSelectionPayload(r, props.bondAngle.triplet[1]);
+        const c = AnglesLengthsCommon.makeAtomSelectionPayload(r, props.bondAngle.triplet[2]);
 
         if (a && b && c)
             props.vi.api.command(ViewerApi.Commands.Highlight([a, b, c]));
@@ -843,7 +454,7 @@ function BondAngleDetails(props: {
                     >
                         <PGroupSummary
                             bins={DAnglesLengths.angleAverages(props.residue.compound, ba.triplet)!}
-                            caption={tripletBondName(ba.triplet, ba.tag)}
+                            caption={AnglesLengthsCommon.tripletBondName(ba.triplet, ba.tag)}
                             pGroup={props.pGroup}
                             pGroupDatas={props.pGroupDatas}
                             rangeFormatter={(v) => M.r2d(v).toFixed(2)}
@@ -872,7 +483,7 @@ function BondAngleDetails(props: {
                 onMouseEnter={doHighlight}
                 onMouseLeave={doUnhighlight}
             >
-                {tripletBondName(ba.triplet, ba.tag)}
+                {AnglesLengthsCommon.tripletBondName(ba.triplet, ba.tag)}
             </td>
             <td
                 onMouseEnter={doHighlight}
@@ -891,7 +502,7 @@ function BondAngleDetails(props: {
 function BondLengthDetails(props: {
     bondLength: Measurements.BondLength,
     downloadName: string,
-    maybeBin: EmptiableMaybeBin,
+    maybeBin: ALM.MaybeBin,
     navalItem: NavalItem,
     outlierColor: [r: number, g: number, b: number],
     pGroup: DAnglesLengths.PGroup,
@@ -906,8 +517,8 @@ function BondLengthDetails(props: {
 
     const doHighlight = () => {
         const r = props.residue;
-        const a = makeAtomSelectionPayload(r, props.bondLength.pair[0]);
-        const b = makeAtomSelectionPayload(r, props.bondLength.pair[1]);
+        const a = AnglesLengthsCommon.makeAtomSelectionPayload(r, props.bondLength.pair[0]);
+        const b = AnglesLengthsCommon.makeAtomSelectionPayload(r, props.bondLength.pair[1]);
 
         if (a && b)
             props.vi.api.command(ViewerApi.Commands.Highlight([a, b]));
@@ -940,7 +551,7 @@ function BondLengthDetails(props: {
                     >
                         <PGroupSummary
                             bins={DAnglesLengths.lengthAverages(props.residue.compound, bl.pair)!}
-                            caption={pairBondName(bl.pair, bl.tag)}
+                            caption={AnglesLengthsCommon.pairBondName(bl.pair, bl.tag)}
                             pGroup={props.pGroup}
                             pGroupDatas={props.pGroupDatas}
                             rangeFormatter={(v) => v.toFixed(3)}
@@ -968,7 +579,7 @@ function BondLengthDetails(props: {
                 onMouseEnter={doHighlight}
                 onMouseLeave={doUnhighlight}
             >
-                {pairBondName(bl.pair, bl.tag)}
+                {AnglesLengthsCommon.pairBondName(bl.pair, bl.tag)}
             </td>
             <td
                 className='rdo-monospace rdo-talgn-right rdo-angles-lengths'
@@ -984,264 +595,55 @@ function BondLengthDetails(props: {
     );
 }
 
-class DownloadButtons extends React.Component<{
+function DownloadButtons(props: {
     counts: { angles: Summarize.CountsInGroup[], lengths: Summarize.CountsInGroup[] },
     downloaders: StatsDownloader[],
     fileName: string,
     residues: Measurements.Residue[],
-    stats: ALMResidueStats[],
-}> {
-    render() {
-        const prefix = GlobalConfig.data().pathPrefix;
+    stats: ALM.ResidueStats[],
+}) {
+    const prefix = GlobalConfig.data().pathPrefix;
 
-        return (
-            <div style={{ display: 'flex', flexDirection: 'column' }}>
-                {this.props.downloaders.map((dl, idx) => (
-                    <div
-                        key={idx}
-                        className='rdo-dynamic-table-download-button'
-                        style={{ flex: 1 }}
-                        onClick={e => {
-                            e.stopPropagation();
-                            dl.download(this.props.fileName, { residues: this.props.residues, counts: this.props.counts, stats: this.props.stats });
-                    }}>
-                        <Icon img={`${prefix}/imgs/data-transfer-download.svg`} size='text' />
-                        {dl.caption}
-                    </div>
-                ))}
-            </div>
-        );
-    }
+    return (
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
+            {props.downloaders.map((dl, idx) => (
+                <div
+                    key={idx}
+                    className='rdo-dynamic-table-download-button'
+                    style={{ flex: 1 }}
+                    onClick={e => {
+                        e.stopPropagation();
+                        dl.download(props.fileName, { residues: props.residues, counts: props.counts, stats: props.stats });
+                }}>
+                    <Icon img={`${prefix}/imgs/data-transfer-download.svg`} size='text' />
+                    {dl.caption}
+                </div>
+            ))}
+        </div>
+    );
 }
 
-class OverallStatsBar extends React.Component<{
+export function OverallStatsBar(props: {
     children: React.ReactNode,
     counts: { angles: Summarize.CountsInGroup[], lengths: Summarize.CountsInGroup[] },
     downloaders: StatsDownloader[],
     name: string,
     residues: Measurements.Residue[],
-    stats: ALMResidueStats[],
+    stats: ALM.ResidueStats[],
     style?: StandardLonghandProperties
-}> {
-    render() {
-        return (
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', columnGap: 'calc(var(--v-gap) / 2)', ...this.props.style }}>
-                {this.props.children}
-                <DownloadButtons
-                    counts={this.props.counts}
-                    downloaders={this.props.downloaders}
-                    fileName={`${this.props.name}angles_lenghts`}
-                    residues={this.props.residues}
-                    stats={this.props.stats}
-                />
-            </div>
-        );
-    }
-}
-
-type PGroupSummaryProps = {
-    bins: Bins,
-    caption: string | JSX.Element,
-    pGroup: DAnglesLengths.PGroup,
-    pGroupDatas: DAnglesLengths.PGroupData[],
-    rangeFormatter: (v: number) => string,
-    residueName: JSX.Element,
-    value: number,
-    valueFormatter: (v: number) => string,
-    naval: NavalItem,
-    xTitle: string,
-    yTitle: string,
-    suffix?: string,
-    xTransform?: (x: number) => number,
-    yTransform?: (y: number) => number,
-    downloadFileName?: string,
-    highlighter: () => void,
-    vi: ViewerInterop,
-};
-class PGroupSummary extends React.Component<PGroupSummaryProps, { mode: 'chart'|'details' }> {
-    constructor(props: PGroupSummaryProps) {
-        super(props);
-
-        this.state = {
-            mode: 'chart',
-        };
-    }
-
-    private makeToggleButton(caption: string, mode: typeof this.state.mode) {
-        return (
-            <ToggleButton
-                    caption={caption}
-                    onClick={e => {
-                        e.stopPropagation();
-                        e.nativeEvent.stopImmediatePropagation();
-                        if (mode !== this.state.mode)
-                            this.setState({ ...this.state, mode });
-                    }}
-                    selected={this.state.mode === mode}
+}) {
+    return (
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', columnGap: 'calc(var(--v-gap) / 2)', ...props.style }}>
+            {props.children}
+            <DownloadButtons
+                counts={props.counts}
+                downloaders={props.downloaders}
+                fileName={`${props.name}angles_lenghts_by_residue`}
+                residues={props.residues}
+                stats={props.stats}
             />
-        );
-    }
-
-    private renderChart() {
-        return <AveragesChart
-            bins={this.props.bins}
-            mark={this.props.value}
-            naval={this.props.naval}
-            pGroupDatas={this.props.pGroupDatas}
-            xTitle={this.props.xTitle}
-            yTitle={this.props.yTitle}
-            xTransform={this.props.xTransform}
-            yTransform={this.props.yTransform}
-            downloadFileName={this.props.downloadFileName}
-        />;
-    }
-
-    private renderHeader() {
-        return (
-            <div className='rdo-strong' style={{ display: 'flex', flexDirection: 'row', gap: '0.25em', alignItems: 'center' }}>
-                {this.props.residueName}
-                <div>|</div>
-                {this.props.caption}
-                <div style={{ flex: 1 }} />
-                <div className='rdo-monospace rdo-text-large'>
-                    {this.props.valueFormatter(this.props.value)}{this.props.suffix}
-                </div>
-            </div>
-        );
-    }
-
-    private renderNaval() {
-        return <>
-            <div className='rdo-strong' style={{ gridColumnStart: 'span 2' }} >Naval quality</div>
-            <div>{this.props.naval.quality === 'none' ? 'N/A' : Naval.QualityName[this.props.naval.quality]}</div>
-        </>
-    }
-
-    private renderPercentile() {
-        if (!this.props.pGroup) {
-            return (
-                <div style={{ display: 'grid', gridTemplateColumns: 'auto auto auto', columnGap: 'var(--h-gap)' }}>
-                    <div style={{ gridColumnStart: 'span 2' }} />{this.renderPGroup()}
-                    <div className='rdo-line-spacer' style={{ gridColumn: 'span 3' }} />
-                    {this.renderNaval()}
-                </div>
-            )
-        }
-
-        return (
-            <div style={{ display: 'grid', gridTemplateColumns: 'auto auto auto', columnGap: 'var(--h-gap)' }}>
-                <div className='rdo-strong'>From</div><div className='rdo-strong'>To</div><div className='rdo-strong'>Probability (%)</div>
-                {this.props.pGroup.groupedBins.map((x, idx) => {
-                    const strg = isWithin(this.props.value, x) ? 'rdo-strong' : '';
-                    const from = this.props.rangeFormatter(x.from);
-                    const to = this.props.rangeFormatter(x.to);
-
-                    return (
-                        <React.Fragment key={idx}>
-                            <div className={`rdo-monospace rdo-talgn-right ${strg}`}>{`${from}${this.props.suffix ?? ''}`}</div>
-                            <div className={`rdo-monospace rdo-talgn-right ${strg}`}>{`${to}${this.props.suffix ?? ''}`}</div>
-                            <div className={`rdo-monospace rdo-talgn-right ${strg}`}>{(x.probability * 100).toFixed(2)}</div>
-                        </React.Fragment>
-                    );
-                })}
-                <div className='rdo-line-spacer' style={{ gridColumnStart: 'span 3' }} />
-                <div className='rdo-strong' style={{ gridColumnStart: 'span 2' }}>Percentile</div>
-                {this.renderPGroup()}
-                <div className='rdo-line-spacer' style={{ gridColumn: 'span 3' }} />
-                {this.renderNaval()}
-            </div>
-        );
-    }
-
-    private renderMain() {
-        switch (this.state.mode) {
-        case 'chart':
-            return this.renderChart();
-        case 'details':
-            return this.renderPercentile();
-        }
-    }
-
-    private renderPGroup() {
-        const clr = colorToTuple(this.props.pGroup ? this.props.pGroup.color : DAnglesLengths.outlierColor());
-        const text = this.props.pGroup ? this.props.pGroup.threshold.toFixed(4) : 'Outlier';
-
-        return (
-            <div style={{ display: 'grid', gridTemplateColumns: '1em 1fr' }}>
-                <div style={{ backgroundColor: colorStyle(clr) }} />
-                <div className='rdo-monospace rdo-talgn-right'>{text}</div>
-            </div>
-        );
-    }
-
-    componentDidMount() {
-        this.props.highlighter();
-    }
-
-    render() {
-        return (
-            <div>
-                {this.renderHeader()}
-                <div style={{ height: 'calc(var(--h-gap) / 2)' }} />
-
-                <div style={{ display: 'flex' }}>
-                    <div style={{ display: 'flex' }}>
-                        <div style={{ flex: 1 }}>
-                            {this.makeToggleButton('Chart', 'chart')}
-                        </div>
-                        <div style={{ flex: 1 }}>
-                            {this.makeToggleButton('Details', 'details')}
-                        </div>
-                    </div>
-                    <div style={{ flex: 1 }} />
-                </div>
-
-                <div style={{ height: 'calc(var(--h-gap) / 2)' }} />
-                {this.renderMain()}
-            </div>
-        );
-    }
-}
-
-class Prosco extends React.Component<{ bin: Bin|'below'|'above'|'no-data' }> {
-    private renderUnavailable(belowAbove: 'below'|'above') {
-        return (
-            <Tooltip
-                tag=<div className='rdo-monospace rdo-talgn-right'>
-                    {belowAbove === 'below' ? 'N/A (<)' : 'N/A (>)'}
-                </div>
-            >
-                <div>
-                    Relative probability is unavailable because the value is outside the range of values observed in the reference dataset.
-                </div>
-            </Tooltip>
-        );
-    }
-
-    render() {
-        const bin = this.props.bin;
-
-        if (bin === 'no-data') {
-            <div className='rdo-monospace rdo-talgn-right'>No data</div>
-        } else if (bin === 'below' || bin === 'above')
-            return this.renderUnavailable(bin);
-        else {
-            return (
-                <Tooltip
-                    tag=<div className='rdo-monospace rdo-talgn-right'>
-                        {fmtDecimal(bin.prosco * 100, 1)}{'\u00A0'}%
-                    </div>
-                >
-                    <div>
-                        {this.props.bin
-                            ? `Relative probability of bin [${bin.from}\u00A0-\u00A0${bin.to}] within its respective distribution.`
-                            : 'Relative probability is unavailable because the value is outside the range of values observed in the reference dataset.'
-                        }
-                    </div>
-                </Tooltip>
-            );
-        }
-    }
+        </div>
+    );
 }
 
 interface ResidueElemProps {
@@ -1255,7 +657,7 @@ interface ResidueElemProps {
     residue: Measurements.Residue,
     residueName: JSX.Element,
     residueIdentifyingName: string,
-    stats: ALMResidueStats,
+    stats: ALM.ResidueStats,
     structureName: string,
     vi: ViewerInterop,
 }
@@ -1342,7 +744,7 @@ class ResidueHeader extends React.Component<{
     caption: string | JSX.Element,
     residue: Measurements.Residue,
     residueIdentifyingName: string,
-    stats: ALMResidueStats,
+    stats: ALM.ResidueStats,
     structureName: string,
     summary: Summarize.Summary,
     countsAngles: Summarize.CountsInGroup[],
@@ -1361,10 +763,10 @@ class ResidueHeader extends React.Component<{
                 id={this.props.residueIdentifyingName}
             >
                 <div style={{
-                        ...StayAboveStyle,
+                        ...AnglesLengthsCommon.StayAboveStyle,
                         top: 0,
                         left: 'calc(var(--h-gap) / 2)',
-                        ...BarCaptionStyle
+                        ...AnglesLengthsCommon.BarCaptionStyle
                     }}
                 >
                     {this.props.caption}
@@ -1379,10 +781,10 @@ class ResidueHeader extends React.Component<{
                 >
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
                         <div style={{ flex: 1 }}>
-                            {renderSubstructureStats(<div style={ResidueBarCaptionStyle}>L</div>, this.props.summary.lengths, this.props.countsLengths, this.props.colorsForStatsBar)}
+                            {AnglesLengthsCommon.renderSubstructureStats(<div style={AnglesLengthsCommon.StatsBarCaptionStyle}>L</div>, this.props.summary.lengths, this.props.countsLengths, this.props.colorsForStatsBar)}
                         </div>
                         <div style={{ flex: 1 }}>
-                            {renderSubstructureStats(<div style={ResidueBarCaptionStyle}>A</div>, this.props.summary.angles, this.props.countsAngles, this.props.colorsForStatsBar)}
+                            {AnglesLengthsCommon.renderSubstructureStats(<div style={AnglesLengthsCommon.StatsBarCaptionStyle}>A</div>, this.props.summary.angles, this.props.countsAngles, this.props.colorsForStatsBar)}
                         </div>
                     </div>
                 </OverallStatsBar>
@@ -1407,7 +809,7 @@ class Residue extends React.Component<ResidueElemProps & {
         return (
             <CollapsibleVertical
                 ref={this.collapserRef}
-                header={makeCollapsibleHeader(
+                header={AnglesLengthsCommon.makeCollapsibleHeader(
                     <ResidueHeader
                         caption={this.props.residueName}
                         residue={this.props.residue}
@@ -1435,48 +837,6 @@ class Residue extends React.Component<ResidueElemProps & {
                     { ...this.props }
                 />
             </CollapsibleVertical>
-        );
-    }
-}
-
-class SubstructureSummary extends React.Component<{ countsInGroups: Summarize.CountsInGroup[] }> {
-    render() {
-        const maxDecimals = Math.max(...this.props.countsInGroups.map(x => {
-            const s = x.threshold.toString();
-            const dot = s.indexOf('.');
-            return dot >= 0 ? s.substring(dot + 1).length : 0;
-        }));
-        const outlierColor = DAnglesLengths.outlierColor();
-        const total = this.props.countsInGroups[this.props.countsInGroups.length - 1].cumulative;
-
-        return (
-            <div style={{ display: 'grid', gridTemplateColumns: '1em auto auto auto', columnGap: 'var(--h-gap)' }}>
-                <div style={{ gridColumnStart: 'span 2' }} />
-                <div className='rdo-strong' style={{ gridColumn: '3 / span 2', textAlign: 'center', display: 'flex', justifyContent: 'center' }}>Counts</div>
-
-                <div className='rdo-strong' style={{ gridColumnStart: 'span 2 '}}>
-                    Percentile
-                </div>
-                <div className='rdo-strong'>
-                    Exclusive
-                </div>
-                <div className='rdo-strong'>
-                    Cumulative
-                </div>
-                {this.props.countsInGroups.map((x, idx) => {
-                    const thr = x.pGroupIdx === 'outlier' ? 'Outliers' : x.threshold.toFixed(maxDecimals);
-                    const clr = DAnglesLengths.pGroupColor(idx) ?? outlierColor;
-                    const perc = 100 * (x.cumulative / total);
-                    return (
-                        <React.Fragment key={idx}>
-                            <div style={{ backgroundColor: colorStyle(colorToTuple(clr)) }} />
-                            <div className='rdo-monospace rdo-talgn-right'>{thr}</div>
-                            <div className='rdo-monospace rdo-talgn-right' style={{ textAlign: 'right' }}>{x.exclusive}</div>
-                            <div className='rdo-monospace rdo-talgn-right' style={{ textAlign: 'right' }}>{`${x.cumulative}\u00A0(${perc.toFixed(2)}\u00A0%)`}</div>
-                        </React.Fragment>
-                    );
-                })}
-            </div>
         );
     }
 }
@@ -1579,11 +939,11 @@ export class AnglesLengths extends View<
             if (isNaN(authSeqId))
                 return [];
 
-            const { modelIdx, chain } = this.getSelection();
-            const alm = this.props.dnatcofication.data.alm;
+            const { modelIdx, chain } = AnglesLengthsCommon.getSelection(this.props);
+            const alm = this.props.dnatcofication.data.almByResidue;
 
-            const selectedIndices = this.selectionToIndices(modelIdx, chain);
-            const selectedResidues = selectedIndices.map(x => alm.residues[x]);
+            const selectedIndices = selectionToIndices(this.props.dnatcofication, modelIdx, chain);
+            const selectedResidues = selectedIndices.map((x) => alm.residues[x]);
 
             const results = [];
             for (const r of selectedResidues) {
@@ -1620,33 +980,6 @@ export class AnglesLengths extends View<
         };
     }
 
-    private getSelection() {
-        const modelIdx = this.props.structureSelection.modelIndex;
-        const chain = this.props.structureSelection.chain === InvalidChain ? '' : this.props.structureSelection.chain;
-
-        return { modelIdx, chain };
-    }
-
-    private renderResidueName(r: Measurements.Residue, multipleModels: boolean) {
-        let inner = [];
-
-        if (multipleModels) {
-            inner.push(<span className='rdo-nice-step-model'>M{r.modelNum}</span>);
-            inner.push(<span>{'\u00A0'}</span>);
-        }
-
-        inner.push(<span>{r.authChain}</span>);
-        inner.push(<span>{'\u00A0'}</span>);
-        inner.push(<span className='rdo-nice-step-base' style={{ fontWeight: BarCaptionStyle.fontWeight }}>{r.compound}</span>);
-        inner.push(<span>{r.authSeqId}</span>);
-        if (r.insCode)
-            inner.push(<span>{r.insCode}</span>);
-        if (r.altId)
-            inner.push(<span className='rdo-nice-step-altpos'>(alt. {r.altId})</span>);
-
-        return <div>{...inner}</div>;
-    }
-
     private renderSelection(
         tainer: React.RefObject<HTMLDivElement>,
         indices: number[],
@@ -1657,8 +990,8 @@ export class AnglesLengths extends View<
         maxResidues: number,
         loadNext: () => void
     ): { elems: JSX.Element[], mapping: Map<string, React.RefObject<Residue>> } {
-        const r = this.props.dnatcofication.data.alm.residues;
-        const s = this.props.dnatcofication.data.alm.stats;
+        const r = this.props.dnatcofication.data.almByResidue.residues;
+        const s = this.props.dnatcofication.data.almByResidue.stats;
         const outlierColor = colorToTuple(DAnglesLengths.outlierColor());
 
         const mapping = new Map<string, React.RefObject<Residue>>();
@@ -1669,10 +1002,10 @@ export class AnglesLengths extends View<
 
             const _r = r[idx];
             const _s = s[idx];
-            const countsAngles = countsInGroups(_s.summary.angles, thresholds);
-            const countsLenghts = countsInGroups(_s.summary.lengths, thresholds);
-            const residueName = this.renderResidueName(_r, multipleModels);
-            const structureName = structureIdentifyingName(this.props.dnatcofication);
+            const countsAngles = AnglesLengthsCommon.countsInGroups(_s.summary.angles, thresholds);
+            const countsLenghts = AnglesLengthsCommon.countsInGroups(_s.summary.lengths, thresholds);
+            const residueName = <ResidueName r={_r} multipleModels={multipleModels} />
+            const structureName = AnglesLengthsCommon.structureIdentifyingName(this.props.dnatcofication);
             const identResName = residueIdentifyingName(structureName, _r);
 
             const ref = React.createRef<Residue>();
@@ -1708,7 +1041,7 @@ export class AnglesLengths extends View<
         return { elems, mapping };
     }
 
-    private renderWorstAngles(residues: Measurements.Residue[], stats: ALMResidueStats[], maxCount: number, threshold: number|'outlier', structureName: string, multipleModels: boolean) {
+    private renderWorstAngles(residues: Measurements.Residue[], stats: ALM.ResidueStats[], maxCount: number, threshold: number|'outlier', structureName: string, multipleModels: boolean) {
         const worst = gatherWorst('angles', residues, stats, threshold, maxCount);
         const outlierColor = colorToTuple(DAnglesLengths.outlierColor());
         const pgrpIndices = sequence(0, DAnglesLengths.pGroupCount() - 1);
@@ -1720,7 +1053,7 @@ export class AnglesLengths extends View<
             <table className='rdo-angles-lengths'>
                 <tbody>
                 {...worst.map((x, idx) => {
-                    const residueName = this.renderResidueName(x.residue, multipleModels);
+                    const residueName = <ResidueName r={x.residue} multipleModels={multipleModels} />
                     const onAtomsClicked = (r: Measurements.Residue) => {
                         const isSelected = isResidueInSelection(x.residue, this.props.structureSelection)
                         if (!isSelected) {
@@ -1764,7 +1097,7 @@ export class AnglesLengths extends View<
         );
     }
 
-    private renderWorstLengths(residues: Measurements.Residue[], stats: ALMResidueStats[], maxCount: number, threshold: number|'outlier', structureName: string, multipleModels: boolean) {
+    private renderWorstLengths(residues: Measurements.Residue[], stats: ALM.ResidueStats[], maxCount: number, threshold: number|'outlier', structureName: string, multipleModels: boolean) {
         const worst = gatherWorst('lengths', residues, stats, threshold, maxCount);
         const outlierColor = colorToTuple(DAnglesLengths.outlierColor());
         const pgrpIndices = sequence(0, DAnglesLengths.pGroupCount() - 1);
@@ -1776,7 +1109,7 @@ export class AnglesLengths extends View<
             <table className='rdo-angles-lengths'>
                 <tbody>
                 {...worst.map((x, idx) => {
-                    const residueName = this.renderResidueName(x.residue, multipleModels);
+                    const residueName = <ResidueName r={x.residue} multipleModels={multipleModels} />
                     const onAtomsClicked = (r: Measurements.Residue) => {
                         const isSelected = isResidueInSelection(x.residue, this.props.structureSelection);
                         if (!isSelected) {
@@ -1824,8 +1157,8 @@ export class AnglesLengths extends View<
         const block = this.residueBlocksMapping.get(residueIdentifyingName);
 
         if (!block) {
-            const { modelIdx, chain } = this.getSelection();
-            const numSelected = this.selectionToIndices(modelIdx, chain).length;
+            const { modelIdx, chain } = AnglesLengthsCommon.getSelection(this.props);
+            const numSelected = selectionToIndices(this.props.dnatcofication, modelIdx, chain).length;
 
             if (this.state.shownResiduesLimit < numSelected)
                 this.increaseShownResiduesLimit(numSelected - this.state.shownResiduesLimit + 1);
@@ -1842,32 +1175,6 @@ export class AnglesLengths extends View<
             if (doAfterScroll)
                 doAfterScroll(block);
             this.gotoResidue(residueIdentifyingName, block);
-        }
-    }
-
-    private selectionName(multipleModels: boolean, modelIdx: number, chain: string) {
-        let name = multipleModels
-            ? modelIdx === InvalidModelIndex
-                ? '' : `m${this.props.dnatcofication.data.structures[0].models[modelIdx].num}`
-            : '';
-        name += chain === InvalidChain
-            ? ''
-            : name ? `-${chain}` : chain;
-
-        return `${structureIdentifyingName(this.props.dnatcofication)}_${name ? `${name}_` : ''}`;
-    }
-
-    private selectionToIndices(modelIdx: number, chain: string) {
-        const alm = this.props.dnatcofication.data.alm;
-        if (modelIdx === InvalidModelIndex) {
-            return sequence(0, alm.residues.length - 1);
-        } else {
-            const modelNum = this.props.dnatcofication.data.structures[0].models[modelIdx].num;
-
-            if (chain)
-                return alm.chains.get(modelNum)?.get(chain) ?? [];
-            else
-                return alm.models.get(modelNum) ?? [];
         }
     }
 
@@ -1915,7 +1222,7 @@ export class AnglesLengths extends View<
         });
         this.subscribe(this.events.residueToggled, (ev) => {
             const { residue, transition } = ev;
-            const id = residueIdentifyingName(structureIdentifyingName(this.props.dnatcofication), residue);
+            const id = residueIdentifyingName(AnglesLengthsCommon.structureIdentifyingName(this.props.dnatcofication), residue);
             if (transition === 'selected')
                 this.scrollResidueIntoView(id, (block) => block.current?.collapseExpand('expand'));
             else if (transition === 'deselected') {
@@ -1941,12 +1248,12 @@ export class AnglesLengths extends View<
 
     render() {
         const multipleModels = Dnatcofication.Structure.numberOfModels(this.props.dnatcofication) > 1;
-        const { modelIdx, chain } = this.getSelection();
-        const alm = this.props.dnatcofication.data.alm;
+        const { modelIdx, chain } = AnglesLengthsCommon.getSelection(this.props);
+        const alm = this.props.dnatcofication.data.almByResidue;
 
-        const selectedIndices = this.selectionToIndices(modelIdx, chain);
-        const selectedResidues = selectedIndices.map(x => alm.residues[x]);
-        const selectedResidueStats = selectedIndices.map(x => alm.stats[x]);
+        const selectedIndices = selectionToIndices(this.props.dnatcofication, modelIdx, chain);
+        const selectedResidues = selectedIndices.map((x) => alm.residues[x]);
+        const selectedResidueStats = selectedIndices.map((x) => alm.stats[x]);
 
         const summary = Summarize.substructure(selectedResidues);
         const thresholds = DAnglesLengths.pGroupThresholds();
@@ -1957,8 +1264,8 @@ export class AnglesLengths extends View<
             htmlColorsForStatsBar.push(rgbToHex(colorToRgb(DAnglesLengths.pGroupColor(idx))));
         htmlColorsForStatsBar.push(rgbToHex(colorToRgb(DAnglesLengths.outlierColor())));
 
-        const countsAngles = countsInGroups(summary.angles, thresholds);
-        const countsLenghts = countsInGroups(summary.lengths, thresholds);
+        const countsAngles = AnglesLengthsCommon.countsInGroups(summary.angles, thresholds);
+        const countsLenghts = AnglesLengthsCommon.countsInGroups(summary.lengths, thresholds);
 
         const percentileOptions = [
             { caption: 'Outliers', value: '' },
@@ -2028,17 +1335,17 @@ export class AnglesLengths extends View<
                 <OverallStatsBar
                     counts={{ angles: countsAngles, lengths: countsLenghts }}
                     downloaders={StatsDownloaders}
-                    name={this.selectionName(multipleModels, modelIdx, chain)}
+                    name={AnglesLengthsCommon.selectionName(this.props.dnatcofication, multipleModels, modelIdx, chain)}
                     residues={selectedResidues}
                     stats={selectedResidueStats}
                     style={{ height: '4em' }}
                 >
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
                         <div style={{ flex: 1 }}>
-                            {renderSubstructureStats(<div style={{ ...BarCaptionStyle, left: 'calc(var(--h-gap) / 2)' }}>Lengths</div>, summary.lengths, countsLenghts, htmlColorsForStatsBar)}
+                            {AnglesLengthsCommon.renderSubstructureStats(<div style={{ ...AnglesLengthsCommon.BarCaptionStyle, left: 'calc(var(--h-gap) / 2)' }}>Lengths</div>, summary.lengths, countsLenghts, htmlColorsForStatsBar)}
                         </div>
                         <div style={{ flex: 1 }}>
-                            {renderSubstructureStats(<div style={{ ...BarCaptionStyle, left: 'calc(var(--h-gap) / 2)' }}>Angles</div>, summary.angles, countsAngles, htmlColorsForStatsBar)}
+                            {AnglesLengthsCommon.renderSubstructureStats(<div style={{ ...AnglesLengthsCommon.BarCaptionStyle, left: 'calc(var(--h-gap) / 2)' }}>Angles</div>, summary.angles, countsAngles, htmlColorsForStatsBar)}
                         </div>
                     </div>
                 </OverallStatsBar>
@@ -2058,7 +1365,7 @@ export class AnglesLengths extends View<
                         >
                             <div
                                 className='rdo-scroll-vertically-with-scrollbar'
-                                style={{ display: 'flex', flexDirection: 'column', gap: 'calc(var(--h2-gap) / 2)' }}
+                                style={AnglesLengthsCommon.BlockListStyle}
                                 ref={this.residuesTainerRef}
                                 onScroll={(ev) => {
                                     // Debounce
@@ -2091,9 +1398,9 @@ export class AnglesLengths extends View<
 
                                         const searching: SearchBox.Searching<Measurements.Residue> = {
                                             ...this.Searching,
-                                            onRenderResult: (residue: Measurements.Residue) => this.renderResidueName(residue, multipleModels),
+                                            onRenderResult: (residue: Measurements.Residue) => <ResidueName r={residue} multipleModels={multipleModels} />,
                                             onUseResult: (r) => {
-                                                const id = residueIdentifyingName(structureIdentifyingName(this.props.dnatcofication), r);
+                                                const id = residueIdentifyingName(AnglesLengthsCommon.structureIdentifyingName(this.props.dnatcofication), r);
                                                 this.scrollResidueIntoView(id, (block) => block.current?.collapseExpand('expand'));
                                             },
                                         };
@@ -2138,7 +1445,7 @@ export class AnglesLengths extends View<
                                     selectedResidueStats,
                                     this.state.maxWorstLengths,
                                     this.state.worstLengthsThreshold ? parseFloat(this.state.worstLengthsThreshold) : 'outlier',
-                                    structureIdentifyingName(this.props.dnatcofication),
+                                    AnglesLengthsCommon.structureIdentifyingName(this.props.dnatcofication),
                                     multipleModels
                                 )}
                             </div>
@@ -2176,7 +1483,7 @@ export class AnglesLengths extends View<
                                     selectedResidueStats,
                                     this.state.maxWorstAngles,
                                     this.state.worstAnglesThreshold ? parseFloat(this.state.worstAnglesThreshold) : 'outlier',
-                                    structureIdentifyingName(this.props.dnatcofication),
+                                    AnglesLengthsCommon.structureIdentifyingName(this.props.dnatcofication),
                                     multipleModels
                                 )}
                             </div>
@@ -2232,84 +1539,7 @@ export class AnglesLengths extends View<
     }
 }
 
-async function selectionDisplayer(pieces: SelectedPieces, d: Dnatcofication, vi: ViewerInterop) {
-    if (pieces.reconstruct)
-        await vi.api.command(ViewerApi.Commands.DeselectStructures());
-
-    if (pieces.residues.length < 1)
-        return;
-
-    const selected = [];
-    for (const r of pieces.residues) {
-        const authRes = StructureSelection.cifToAuthResidue(d.data.structures[0], r);
-        if (authRes) {
-            const cmdRes = ViewerApi.Commands.ResidueSelection(r.modelNum, authRes.chain, authRes.cifChain, authRes.seqId, authRes.insCode, authRes.altId, Colors.CurrentStep());
-            selected.push(cmdRes);
-        }
-    }
-    for (const a of pieces.atoms) {
-        const authAtom = StructureSelection.cifToAuthAtom(d.data.structures[0], a);
-        if (authAtom) {
-            const cmdAtom = ViewerApi.Commands.AtomSelection(authAtom.modelNum, authAtom.chain, authAtom.cifChain, authAtom.seqId, authAtom.insCode, authAtom.altId, authAtom.cifAtomId, 0);
-            selected.push(cmdAtom);
-        }
-    }
-
-    await vi.api.command(ViewerApi.Commands.SelectStructures(selected));
-}
-
-function selectionMaker(
-    newStepId: SelectedPieces['steps'][0], newResidue: SelectedPieces['residues'][0], newAtom: SelectedPieces['atoms'][0],
-    steps: number[], residues: SelectedPieces['residues'], atoms: SelectedPieces['atoms'],
-    d: Dnatcofication
-): SelectedPieces {
-    let newResidues;
-    if (residues.find((x) => StructureSelection.cifResiduesMatch(x, newResidue)))
-        newResidues = residues;
-    else
-        newResidues = [...residues.filter((x) => x.modelNum === newResidue.modelNum), newResidue];
-
-    // If the selection event came from the viewer, the viewer does not know that we want to
-    // select the residue AND the preceding O3' atom - if there is any. We need to augment the input atom
-    // accordingly by hand here.
-    if (newAtom === InvalidAtom) {
-        const chain = d.data.alm.chains.get(newResidue.modelNum)?.get(newResidue.chain);
-        if (chain) {
-            for (const idx of chain) {
-                const r = d.data.alm.residues[idx];
-                if (r.seqId === newResidue.seqId && r.altId === newResidue.altId) {
-                    if (Measurements.Residue.hasPrevious(r)) {
-                        newAtom = {
-                            modelNum: r.modelNum,
-                            chain: r.chain,
-                            seqId: r.prevSeqId!,
-                            altId: r.prevAltId!,
-                            atomId: "O3'",
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    let newAtoms;
-    if (atoms.find((x) => StructureSelection.cifAtomsMatch(x, newAtom)))
-        newAtoms = atoms;
-    else {
-        newAtoms = atoms.filter((x) => x.modelNum === newAtom.modelNum);
-        if (newAtom !== InvalidAtom)
-            newAtoms.push(newAtom);
-    }
-
-    return {
-        steps: [],
-        residues: newResidues,
-        atoms: newAtoms,
-        reconstruct: steps.length > 0
-    };
-}
-
 export namespace AnglesLengths {
-    export const SelectionDisplayer = selectionDisplayer;
-    export const SelectionMaker = selectionMaker;
+    export const SelectionDisplayer = AnglesLengthsCommon.SelectionDisplayer;
+    export const SelectionMaker = AnglesLengthsCommon.SelectionMaker;
 }

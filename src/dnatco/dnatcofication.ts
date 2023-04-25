@@ -1,10 +1,8 @@
 import * as ConnSimil from './connectivity-similarity';
 import { PdbParser } from 'tspdb';
 import { MmCifConverter } from 'tspdb';
-import { AnglesLengths, AnglesLengthsContext } from './angles-lengths';
-import { Bin } from './angles-lengths/bin';
-import { Measurements } from './angles-lengths/measurements';
-import { Summarize } from './angles-lengths/summarize';
+import { AnglesLengthsContext } from './angles-lengths';
+import { ALM, ALMByResidue, ALMCompoundAngleLength } from './alm';
 import { Coordinates } from './coordinates';
 import { ClassificationResources } from './classification-resources';
 import { CustomNtCs } from './custom-ntcs';
@@ -29,55 +27,6 @@ import { Struct } from '../cif/categories/struct';
 import { objKeys } from '../util';
 import { EventsKeeper } from '../util/events-keeper';
 import { GlobalConfigData } from '../global-config';
-
-function mapALM(residues: Measurements.Residue[]): MappedALM {
-    const models = new Map<number, number[]>();
-    const chains = new Map<number, Map<string, number[]>>();
-    const stats = [] as ALMResidueStats[];
-
-    for (let idx = 0; idx < residues.length; idx++) {
-        const r = residues[idx];
-
-        // Create mapping
-        const m = r.modelNum;
-        if (models.has(m))
-            models.get(m)!.push(idx);
-        else
-            models.set(m, [idx]);
-
-        if (chains.has(m)) {
-            const cm = chains.get(m)!;
-            if (cm.has(r.chain))
-                cm.get(r.chain)!.push(idx);
-            else
-                cm.set(r.chain, [idx]);
-        } else {
-            const cm = new Map([[r.chain, [idx]]]);
-            chains.set(m, cm);
-        }
-
-        // Precompute stats
-        const angles = [];
-        for (const a of r.bondAngles) {
-            const pgrp = AnglesLengths.anglePGroup(r.compound, a);
-            const bin = AnglesLengths.angleBin(r.compound, a) ?? 'no-data' as MaybeBin;
-
-            angles.push({ pGroup: pgrp, bin });
-        }
-
-        const lengths = [];
-        for (const l of r.bondLengths) {
-            const pgrp = AnglesLengths.lengthPGroup(r.compound, l);
-            const bin = AnglesLengths.lengthBin(r.compound, l) ?? 'no-data' as MaybeBin;
-
-            lengths.push({ pGroup: pgrp, bin });
-        }
-
-        stats.push({ angles, lengths, summary: Summarize.residue(r) });
-    }
-
-    return { models, chains, residues, stats };
-}
 
 type NavalValidationMapping = Map<number, Map<string,Map<number, number[]>>>;
 function mapNaval(naval: NavalResult): MappedNaval {
@@ -134,18 +83,7 @@ const RequiredDnatcoCategories: Category<any>[] = [
 ];
 
 export type DnatcoficationTaskContext = TaskContext<DnatcoficationData>;
-export type MaybeBin = Bin|'below'|'above'|'no-data';
-export type ALMResidueStats = {
-    angles: { pGroup?: AnglesLengths.PGroup, bin: MaybeBin }[],
-    lengths: { pGroup?: AnglesLengths.PGroup, bin: MaybeBin }[],
-    summary: Summarize.Summary;
-};
-export type MappedALM = {
-    models: Map<number, number[]>,
-    chains: Map<number, Map<string, number[]>>,
-    residues: Measurements.Residue[],
-    stats: ALMResidueStats[],
-};
+
 export type MappedNaval = {
     angles: Validation.Report<Validation.AngleAtoms>,
     bonds: Validation.Report<Validation.BondAtoms>,
@@ -173,7 +111,8 @@ export const DnatcoficationData = {
     averageConfals: new Array<number>(),
     stepRmsdStats: new Array<StepRmsdStats[]>(),
 
-    alm: { models: new Map(), chains: new Map() } as MappedALM,
+    almByResidue: { models: new Map(), chains: new Map() } as ALMByResidue,
+    almByCompound: { models: new Map(), chains: new Map() } as ALMCompoundAngleLength,
     naval: { angles: [], bonds: [], geometry: [], anglesMapping: new Map(), bondsMapping: new Map() } as MappedNaval,
     rscc: new Array<Rscc.Rscc>(),
 };
@@ -401,9 +340,9 @@ export namespace Dnatcofication {
                 }
             }
 
-            let alm;
+            let anglesLengths;
             try {
-                alm = Dnatcofier.measureAnglesAndLengths(llkaSteps, alCtx, ctx);
+                anglesLengths = Dnatcofier.measureAnglesAndLengths(llkaSteps, alCtx, ctx);
             } catch (e) {
                 llkaSteps.delete();
                 Dnatcofier.destroyImported(llkaImported);
@@ -484,7 +423,8 @@ export namespace Dnatcofication {
                 densityMaps,
                 averageConfals: ExtractInfo.averageConfals(steps),
                 stepRmsdStats: ExtractInfo.stepRmsdStats([0.5, 1.0], steps),
-                alm: mapALM(alm),
+                almByResidue: ALM.mapByResidue(anglesLengths),
+                almByCompound: ALM.mapByCompoundAngleLength(anglesLengths),
                 naval: mapNaval(naval),
                 rscc: [],
             };

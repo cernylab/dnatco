@@ -2,9 +2,9 @@ import { AnglesLengths } from '.';
 import { Triplet } from './angles';
 import { Pair } from './lengths';
 import { Measurements } from './measurements';
-import { Serialization } from '../../util/serialization';
 import { Summarize } from './summarize';
-import {ALMResidueStats, MaybeBin} from '../dnatcofication';
+import { ALM } from '../alm';
+import { Serialization } from '../../util/serialization';
 
 const DetailsHeader = ['kind', 'model', 'chain', 'seqid', 'inscode', 'altid', 'auth_chain', 'auth_seqid', 'compound', 'percentile', 'name', 'value', 'prosco'];
 
@@ -26,7 +26,7 @@ export namespace Serialize {
         return t.join('-');
     }
 
-    function anglesToSerializable(residues: Measurements.Residue[], stats: ALMResidueStats[]): Serialization.Serializable {
+    function anglesToSerializable(residues: Measurements.Residue[], stats: ALM.ResidueStats[]): Serialization.Serializable {
         const tags = DetailsHeader;
         const values = new Array<(number|string)[]>();
 
@@ -54,7 +54,7 @@ export namespace Serialize {
         return p.join('-');
     }
 
-    function lengthsToSerializable(residues: Measurements.Residue[], stats: ALMResidueStats[]): Serialization.Serializable {
+    function lengthsToSerializable(residues: Measurements.Residue[], stats: ALM.ResidueStats[]): Serialization.Serializable {
         const tags = DetailsHeader;
         const values = new Array<(number|string)[]>();
 
@@ -77,7 +77,7 @@ export namespace Serialize {
         return { tags, values };
     }
 
-    function maybeBinValue(mb: MaybeBin) {
+    function maybeBinValue(mb: ALM.MaybeBin) {
         return (mb === 'below' || mb === 'above' || mb === 'no-data') ? null : mb;
     }
 
@@ -107,7 +107,7 @@ export namespace Serialize {
         return { tags, values };
     }
 
-    export function toCsv(countsAngles: Summarize.CountsInGroup[], countsLengths: Summarize.CountsInGroup[], residues: Measurements.Residue[], stats: ALMResidueStats[]) {
+    export function toCsv(countsAngles: Summarize.CountsInGroup[], countsLengths: Summarize.CountsInGroup[], residues: Measurements.Residue[], stats: ALM.ResidueStats[]) {
         const statsAngles = Serialization.toCsv(statsToSerializable(countsAngles, 'a'));
         const statsLengths = Serialization.toCsv(statsToSerializable(countsLengths, 'l'));
         const angles = Serialization.toCsv(anglesToSerializable(residues, stats));
@@ -116,7 +116,7 @@ export namespace Serialize {
         return statsLengths + '\n' + statsAngles + '\n' + lengths + '\n' + angles;
     }
 
-    export function toJson(countsAngles: Summarize.CountsInGroup[], countsLengths: Summarize.CountsInGroup[], residues: Measurements.Residue[], stats: ALMResidueStats[]) {
+    export function toJson(countsAngles: Summarize.CountsInGroup[], countsLengths: Summarize.CountsInGroup[], residues: Measurements.Residue[], stats: ALM.ResidueStats[]) {
         type Stats = { percentile: number|null, cumulativeCount: number, exclusiveCount: number };
 
         const anglesStats: Stats[] = countsAngles.map(x => ({ percentile: x.threshold, cumulativeCount: x.cumulative, exclusiveCount: x.exclusive }));

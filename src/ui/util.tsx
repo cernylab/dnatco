@@ -16,6 +16,10 @@ function numToHex(c: number) {
     return hex.length == 1 ? "0" + hex : hex;
 }
 
+export function colorStyle(clr: [r: number, g: number, b: number]) {
+    return `rgb(${clr.join(',')})`;
+}
+
 export function colorToHex(clr: number) {
     const r = clr >> 16 & 0xFF;
     const g = (clr >> 8) & 0xFF;
