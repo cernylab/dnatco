@@ -119,32 +119,9 @@ const TabsForModes = {
             enabled: true,
         }
     },
-    browse: {
-        start: {
-            icon: 'imgs/home.svg',
-            caption: 'Home',
-            enabled: true,
-        },
-        annotation: {
-            icon: 'imgs/list.svg',
-            caption: 'Annotation',
-            enabled: true,
-        },
-        'list-of-conformers': {
-            icon: 'imgs/document.svg',
-            caption: 'Conformers',
-            enabled: true,
-        },
-        about: {
-            icon: 'imgs/info.svg',
-            caption: 'About',
-            enabled: true,
-        }
-    },
-
 };
 
-type TabKeys = ((keyof (typeof TabsForModes)['nothing']) | (keyof (typeof TabsForModes['structure'])) | (keyof (typeof TabsForModes['browse'])));
+type TabKeys = ((keyof (typeof TabsForModes)['nothing']) | (keyof (typeof TabsForModes['structure'])));
 
 interface State {
     mode: keyof typeof TabsForModes;
