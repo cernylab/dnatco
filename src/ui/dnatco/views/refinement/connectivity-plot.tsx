@@ -125,7 +125,7 @@ export class ConnectivityPlot extends View<Refinement.Props> {
         };
     }
 
-    private renderConnectivityPlot(data: PlotData, hints: [xMax: number, yMax: number]) {
+    private renderConnectivityPlot(data: PlotData, hints: [xMax: number, yMax: number], changeCustomNtC: (NtC: string) => void) {
         return (
             <div className='rdo-plot-container' style={{ flex: 1, minHeight: Constants.MinimumFlexiblePlotHeight }}>
                 <Plot
@@ -196,6 +196,13 @@ export class ConnectivityPlot extends View<Refinement.Props> {
                     }}
                     useResizeHandler={true}
                     style={{ width: "100%", height: "100%" }}
+                    onClick={ev => {
+                        const pt = ev.points[0];
+                        if (pt) {
+                            // @ts-ignore
+                            changeCustomNtC(pt.text);
+                        }
+                    }}
                 />
             </div>
         );
@@ -291,6 +298,43 @@ export class ConnectivityPlot extends View<Refinement.Props> {
                 NtC
             );
         }
+
+        const changeCustomNtCPrev = (NtC: string) => {
+            const stepId = this.props.structureSelection.steps[0];
+            if (this.props.selectedCustomNtCSet === '' || stepId === undefined)
+                return;
+
+            const refIdx = StepsMapper.idToIndex(this.props.dnatcofication, stepId);
+            const idx = this.props.dnatcofication.data.steps.previous[refIdx] ?? -1;
+            if (idx === -1)
+                return;
+
+            const step = this.props.dnatcofication.data.steps.steps[idx];
+            this.props.dnatcofication.customNtCs.setCustomNtC(
+                this.props.selectedCustomNtCSet,
+                step.name,
+                NtC
+            );
+        }
+
+        const changeCustomNtCNext = (NtC: string) => {
+            const stepId = this.props.structureSelection.steps[0];
+            if (this.props.selectedCustomNtCSet === '' || stepId === undefined)
+                return;
+
+            const refIdx = StepsMapper.idToIndex(this.props.dnatcofication, stepId);
+            const idx = this.props.dnatcofication.data.steps.next[refIdx] ?? -1;
+            if (idx === -1)
+                return;
+
+            const step = this.props.dnatcofication.data.steps.steps[idx];
+            this.props.dnatcofication.customNtCs.setCustomNtC(
+                this.props.selectedCustomNtCSet,
+                step.name,
+                NtC
+            );
+        }
+
 
         const prevConnMaxHints = axesMaximumHints(prevConnPlotData.x, prevConnPlotData.y, MinNumberOfPointsInPlot, Constants.DefaultConnectivityXRange[1], Constants.DefaultConnectivityYRange[1]);
         const nextConnMaxHints = axesMaximumHints(nextConnPlotData.x, nextConnPlotData.y, MinNumberOfPointsInPlot, Constants.DefaultConnectivityXRange[1], Constants.DefaultConnectivityYRange[1]);
@@ -413,10 +457,10 @@ export class ConnectivityPlot extends View<Refinement.Props> {
                     </div>
 
                     <div className='rdo-secondary-caption'>Connectivity to previous step</div>
-                    {this.renderConnectivityPlot(prevConnPlotData, prevConnMaxHints)}
+                    {this.renderConnectivityPlot(prevConnPlotData, prevConnMaxHints, changeCustomNtCPrev)}
 
                     <div className='rdo-secondary-caption'>Connectivity to next step</div>
-                    {this.renderConnectivityPlot(nextConnPlotData, nextConnMaxHints)}
+                    {this.renderConnectivityPlot(nextConnPlotData, nextConnMaxHints, changeCustomNtCNext)}
                 </div>
             </div>
         );
