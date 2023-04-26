@@ -28,10 +28,10 @@ export class SearchConformers extends React.Component<SearchConformers.Props, St
         super(props);
 
         this.state = {
-            largeStructures: props.initial?.largeStructures ?? false,
-            maxCount: props.initial?.maxCount ?? 200,
-            NtC: props.initial?.NtC ?? 'AA00',
-            redundancy: (props.initial?.redundant ? 'all' : 'non-redundant') ?? 'non-redundant',
+            largeStructures: false,
+            maxCount: 200,
+            NtC: 'AA00',
+            redundancy: 'non-redundant',
         };
     }
 
@@ -95,6 +95,5 @@ export class SearchConformers extends React.Component<SearchConformers.Props, St
 export namespace SearchConformers {
     export interface Props {
         onDoSearch: (criteria: Search.Criteria) => void;
-        initial?: Search.Criteria;
     }
 }

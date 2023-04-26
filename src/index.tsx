@@ -8,12 +8,12 @@ import { isError } from './dnatco';
 import { AnglesLengths, AnglesLengthsContext } from './dnatco/angles-lengths';
 import { ClassificationContext } from './dnatco/classification-context';
 import { ClassificationResources } from './dnatco/classification-resources';
+import { Fingerprint } from './dnatco/fingerprint';
 import { Naval, NavalContext } from './dnatco/naval';
 import { Coordinates } from './dnatco/coordinates';
 import { DensityMap } from './dnatco/density-map';
 import { Dnatcofication, DnatcoficationData } from './dnatco/dnatcofication';
 import { ListOfConformers } from './dnatco/list-of-conformers';
-import { Step } from './dnatco/step';
 import { StepsMapper } from './dnatco/steps-mapper';
 import { UserRemoteDatabases, isBuiltIn } from './remote/db/register';
 import { AboutTab } from './ui/about-tab';
@@ -23,14 +23,13 @@ import { ConformersTab } from './ui/conformers-tab';
 import { NavigationBar } from './ui/navigation-bar';
 import { StartTab } from './ui/start-tab';
 import { Email } from './ui/common/email';
-import { Popup } from './ui/common/popup';
 import { InProgress } from './ui/common/in-progress';
+import { Popup } from './ui/common/popup';
 import { QuestionDialog } from './ui/common/question-dialog';
 import { Colors } from './ui/dnatco/colors';
 import { MainScreen } from './ui/dnatco/main-screen';
 import { WithSubscriptions } from './ui/service/with-subscriptions';
 import { formatErrorText } from './ui/util';
-import { Search } from './remote/search';
 import { BackgroundWorker, WorkerMessage } from './tasks/worker';
 import { ViewerApi, ViewerInterop } from './viewer/viewer-interop';
 import { Task } from './tasks/task';
@@ -48,7 +47,6 @@ import 'assets/imgs/document.svg';
 // Base assets
 import 'assets/index.php';
 import 'assets/rednatco.css';
-import {Fingerprint} from './dnatco/fingerprint';
 
 const Params = {
     cifcode: '',
@@ -155,7 +153,6 @@ interface State {
 }
 export class App extends WithSubscriptions<{}, State> {
     private dnatcofication = new Dnatcofication();
-    private search = new Search();
     private ingestionInProgress = false;
     private viewerInterop = new ViewerInterop();
     private initialSearchDone = false;
@@ -360,7 +357,6 @@ export class App extends WithSubscriptions<{}, State> {
                             () => this.setState({ ...this.state, mode: 'structure', selectedTab: 'annotation' })
                         )
                     }}
-                    onDoSearchConformers={(options) => this.searchConformers(options)}
                     dnatcofierState={this.state.dnatcofierState}
                 />
             );
@@ -396,12 +392,7 @@ export class App extends WithSubscriptions<{}, State> {
             );
         case 'list-of-conformers':
             return (
-                <ConformersTab
-                    criteria={this.search.criteria}
-                    onSearch={(criteria) => this.searchConformers(criteria)}
-                    onStepSelected={(stepName) => this.showSearchResult(stepName)}
-                    steps={this.search.results}
-                />
+                <ConformersTab />
             );
         default:
             return <AboutTab />
@@ -417,52 +408,6 @@ export class App extends WithSubscriptions<{}, State> {
             );
         } else
             this.setState({ ...this.state, selectedTab: tk });
-    }
-
-    private async searchConformers(criteria: Search.Criteria) {
-        const inProgressDlg = await InProgress.create('Searching...', '', true);
-        const p = Search.requestSearch(criteria.NtC, criteria.maxCount, criteria.redundant, criteria.largeStructures);
-
-        InProgress.bindAbort(inProgressDlg, () => p.aborter.abort());
-
-        const resp = await Search.resolveSearch(p);
-
-        InProgress.dismiss(inProgressDlg);
-
-        if (resp.success === false) {
-            Popup.create(
-                <div className='rdo-error-text'>
-                    {resp.message ?? 'Search failed'}
-                </div>
-            );
-        } else {
-            this.search.setResults(resp.payload, criteria);
-            if (this.search.haveResults())
-                this.showSearchResult(this.search.results[0].name)
-        }
-    }
-
-    private showSearchResult(stepName: string) {
-        try {
-            const pdbId = Step.nameToPdbId(stepName);
-            if (!pdbId) {
-                console.warn(`${stepName} contains invalid PDB ID`);
-                return;
-            }
-
-            const sub = this.viewerInterop.events.structureLoaded.subscribe(() => {
-                sub.unsubscribe();
-                this.goToStep(stepName);
-            });
-
-            this.fromPdbId(
-                pdbId,
-                'rcsb',
-                () => this.setState({ ...this.state, mode: 'browse', selectedTab: 'annotation' })
-            );
-        } catch (e) {
-            console.warn(`${stepName} is not a valid step name`);
-        }
     }
 
     componentDidMount() {

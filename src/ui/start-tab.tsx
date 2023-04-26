@@ -8,7 +8,6 @@ import { ShadowedBox } from './common/shadowed-box';
 import { Common } from './dnatco/common';
 import { DensityMap, DensityMapKinds } from '../dnatco/density-map';
 import { BuiltInRemoteDatabases, UserRemoteDatabases } from '../remote/db/register';
-import { Search } from '../remote/search';
 import { copyString, isPdbId } from '../util';
 import { GlobalConfig, GlobalConfigData } from '../global-config';
 import 'assets/imgs/magnifying-glass.svg';
@@ -526,7 +525,6 @@ export namespace StartTab {
         onDoPdbId: (pdbId: string, db: string) => void,
         onDoCustomStructure: (coordsFile: File, densityMaps: { file: File, kind: DensityMap['kind'] }[], densityMapCoeffs: File|null) => void,
         onDoRawLink: (link: string) => void,
-        onDoSearchConformers: (options: Search.Criteria) => void,
         dnatcofierState: 'ready' | 'initializing' | 'failed';
     }
 }

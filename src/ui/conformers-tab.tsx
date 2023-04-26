@@ -2,15 +2,18 @@ import React from 'react';
 import { ContourPlots } from './contour-plots';
 import { SearchConformers } from './search-conformers';
 import { DynamicTable } from './common/dynamic-table';
-import { ShadowedBox } from './common/shadowed-box';
+import { InProgress } from './common/in-progress';
 import { NamedList, NamedListItem } from './common/named-list';
+import { Popup } from './common/popup';
+import { ShadowedBox } from './common/shadowed-box';
 import { SideSwitchingPanel } from './common/side-switching-panel';
 import { TextContainer } from './common/text-container';
 import { DownloadButton } from './dnatco/common';
 import { ListOfConformers } from '../dnatco/list-of-conformers';
+import { Step } from '../dnatco/step';
 import { Search } from '../remote/search';
-import { Net } from '../util/net';
 import { doDownload, FileTypes } from '../util/downloader';
+import { Net } from '../util/net';
 import { Serialization } from '../util/serialization';
 import { GlobalConfig } from '../global-config';
 import 'assets/html/about-ntcs.html';
@@ -49,23 +52,19 @@ class AboutNtCs extends React.Component {
     }
 }
 
-export interface BrowseConformersProps {
-    criteria: Search.Criteria;
-    onSearch: (criteria: Search.Criteria) => void;
-    onStepSelected: (name: string) => void;
-    steps: Search.FoundStep[];
-}
-class BrowseConformers extends React.Component<BrowseConformersProps> {
+class BrowseConformers extends React.Component {
+    private search = new Search();
+
     private renderStepsTable() {
         const names: DynamicTable.Column<string> = { name: 'Name', cells: new Array<DynamicTable.Cell<string>>() };
         const CANAs: DynamicTable.Column<string> = { name: 'CANA', cells: new Array<DynamicTable.Cell<string>>() };
         const NtCs: DynamicTable.Column<string> = { name: 'NtC', cells: new Array<DynamicTable.Cell<string>>() };
         const confals: DynamicTable.Column<number> = { name: 'Confal', cells: new Array<DynamicTable.Cell<number>>() };
         const rmsds: DynamicTable.Column<number> = { name: 'RMSD', cells: new Array<DynamicTable.Cell<number>>() };
-        const resolutions: DynamicTable.Column<number> = { name: 'Resolution [Å]', cells: new Array<DynamicTable.Cell<number>>() };
+        const resolutions: DynamicTable.Column<number> = { name: 'Resolution [\u212B]', cells: new Array<DynamicTable.Cell<number>>() };
         const haveMaps: DynamicTable.Column<string> = { name: 'Map', cells: new Array<DynamicTable.Cell<string>>() };
 
-        for (const step of this.props.steps) {
+        for (const step of this.search.results) {
             names.cells.push({ data: step.name });
             CANAs.cells.push({ data: step.CANA });
             NtCs.cells.push({ data: step.NtC });
@@ -82,7 +81,7 @@ class BrowseConformers extends React.Component<BrowseConformersProps> {
         }
 
         const model = new DynamicTable.Model([names, CANAs, NtCs, confals, rmsds, resolutions, haveMaps]);
-        const download = this.props.steps.length > 0
+        const download = this.search.results.length > 0
             ? {
                 downloaders: [
                     {
@@ -102,7 +101,7 @@ class BrowseConformers extends React.Component<BrowseConformersProps> {
                         fileType: FileTypes.json,
                     },
                 ] as DynamicTable.Downloader[],
-                fileName: `search_${this.props.criteria.NtC}_count_${this.props.criteria.maxCount}_${this.props.criteria.largeStructures ? 'with' : 'without'}_large_${this.props.criteria.redundant ? 'with' : 'without'}_redundant`,
+                fileName: `search_${this.search.criteria.NtC}_count_${this.search.criteria.maxCount}_${this.search.criteria.largeStructures ? 'with' : 'without'}_large_${this.search.criteria.redundant ? 'with' : 'without'}_redundant`,
             }
             : undefined;
 
@@ -110,12 +109,42 @@ class BrowseConformers extends React.Component<BrowseConformersProps> {
             <div>
                 <DynamicTable
                     model={model}
-                    onCellClicked={(row, column, value) => this.props.onStepSelected(value)}
                     style='wide'
                     download={download}
+                    onCellClicked={(data, row, colName) => {
+                        if (colName !== 'Name')
+                            return;
+
+                        const pdbId = Step.nameToPdbId(data);
+                        const redirectTo = `${window.location.origin}?cifcode=${pdbId}&stepName=${data}`;
+
+                        Net.openLink(redirectTo, true);
+                    }}
                 />
             </div>
         );
+    }
+
+    searchConformers = async (criteria: Search.Criteria) => {
+        const inProgressDlg = await InProgress.create('Searching...', '', true);
+        const p = Search.requestSearch(criteria.NtC, criteria.maxCount, criteria.redundant, criteria.largeStructures);
+
+        InProgress.bindAbort(inProgressDlg, () => p.aborter.abort());
+
+        const resp = await Search.resolveSearch(p);
+
+        InProgress.dismiss(inProgressDlg);
+
+        if (resp.success === false) {
+            Popup.create(
+                <div className='rdo-error-text'>
+                    {resp.message ?? 'Search failed'}
+                </div>
+            );
+        } else {
+            this.search.setResults(resp.payload, criteria);
+            this.forceUpdate();
+        }
     }
 
     render() {
@@ -123,9 +152,9 @@ class BrowseConformers extends React.Component<BrowseConformersProps> {
             <div className='rdo-offset'>
                 <div className='rdo-width-limiter'>
                     <div style={{ display: 'grid', height: '100%', gridTemplateRows: 'auto auto 1fr', gridTemplateColumns: 'auto', rowGap: 'var(--x-gap)', columnGap: 'var(--x-gap)' }}>
-                        <SearchConformers onDoSearch={this.props.onSearch} initial={this.props.criteria} />
-                        {this.props.steps.length > 0
-                            ? <div className='rdo-secondary-caption'>{`Steps with NtC class ${this.props.criteria.NtC} (randomly selected ${this.props.steps.length} steps from PDB database)`}</div>
+                        <SearchConformers onDoSearch={this.searchConformers} />
+                        {this.search.results.length > 0
+                            ? <div className='rdo-secondary-caption'>{`Steps with NtC class ${this.search.criteria.NtC} (randomly selected ${this.search.results.length} steps from PDB database)`}</div>
                             : undefined
                         }
                         <div style={{ overflow: 'hidden' }}>
@@ -329,12 +358,7 @@ export class ConformersTab extends React.Component<ConformersTab.Props, State> {
         case 'about-ntcs': return <AboutNtCs />;
         case 'browse-conformers':
             return (
-                <BrowseConformers
-                    criteria={this.props.criteria}
-                    onSearch={this.props.onSearch}
-                    onStepSelected={this.props.onStepSelected}
-                    steps={this.props.steps}
-                />
+                <BrowseConformers />
             );
         case 'table-of-conformers': return <TableOfConformers />;
         case 'contour-plots': return <ContourPlots />;
@@ -368,9 +392,5 @@ export class ConformersTab extends React.Component<ConformersTab.Props, State> {
 
 export namespace ConformersTab {
     export interface Props {
-        criteria: Search.Criteria;
-        onSearch: (criteria: Search.Criteria) => void;
-        onStepSelected: (name: string) => void;
-        steps: Search.FoundStep[];
     }
 }
