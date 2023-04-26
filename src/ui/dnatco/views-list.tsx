@@ -22,6 +22,6 @@ export namespace ViewsList {
     export interface Props {
         views: readonly (readonly [id: keyof typeof Register.Views, item: { caption: string }])[];
         onSwitchView: (id: keyof typeof Register.Views) => void;
-        selected: keyof typeof Register.Views | 'empty' // HAKZ;
+        selected: keyof typeof Register.Views;
     }
 }

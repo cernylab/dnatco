@@ -821,7 +821,7 @@ type Events = {
 const DefaultShownResiduesLimit = 100;
 const ShownResiduesIncrement = 100;
 const LoadNextElemId = 'rdo-angles-lenghts-load-next-elem';
-export class AnglesLengths extends View<
+export class AnglesLengthsByResidue extends View<
     View.Props,
     {
         maxWorstAngles: number,
@@ -1456,9 +1456,4 @@ export class AnglesLengths extends View<
             </div>
         );
     }
-}
-
-export namespace AnglesLengths {
-    export const SelectionDisplayer = AnglesLengthsCommon.SelectionDisplayer;
-    export const SelectionMaker = AnglesLengthsCommon.SelectionMaker;
 }

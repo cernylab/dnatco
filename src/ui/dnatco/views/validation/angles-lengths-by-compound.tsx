@@ -586,7 +586,7 @@ type Events = {
     allResiduesDeselected: Subject<void>,
     residueToggled: AnglesLengthsCommon.ResidueToggledEvent,
 }
-export class AnglesLengths2 extends View<View.Props> {
+export class AnglesLengthsByCompound extends View<View.Props> {
     /*
      * This needs to be a class component because it has its own event Subjects
      * that must not change throughout the entire lifetime of the component.
@@ -786,9 +786,4 @@ export class AnglesLengths2 extends View<View.Props> {
             </div>
         );
     }
-}
-
-export namespace AnglesLengths2 {
-    export const SelectionDisplayer = AnglesLengthsCommon.SelectionDisplayer;
-    export const SelectionMaker = AnglesLengthsCommon.SelectionMaker;
 }

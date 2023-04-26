@@ -9,8 +9,7 @@ import { MmbCommandsFile } from './refinement/mmb-commands-file';
 import { PhenixRestraints } from './refinement/phenix-restraints';
 import { RefmacRestraints } from './refinement/refmac-restraints';
 import { ConnectivityPlot } from './refinement/connectivity-plot';
-import { AnglesLengths } from './validation/angles-lengths';
-import { AnglesLengths2 } from './validation/angles-lengths-2';
+import { AnglesLengthsUpper } from './validation/angles-lengths-upper';
 import { ConfalsRmsds } from './validation/confals-rmsds';
 import { RsccPlot } from './validation/rscc-plot';
 import { SimilarityPlot } from './validation/similarity-plot';
@@ -40,94 +39,97 @@ export namespace Register {
         unscrollableContainer?: boolean,
     };
 
-    export const Views: Record<string, View<any>> = {
+    export const Views = {
         'assigned-ntcs': {
             render: (props: View.Props) => <AssignedNtCs {...props} />,
             selectionDisplayer: AssignedNtCs.SelectionDisplayer,
             selectionMaker: AssignedNtCs.SelectionMaker,
-            granularity: 'two-residues',
+            unscrollableContainer: AssignedNtCs.unscrollableContainer,
+            granularity: 'two-residues' as View<any>['granularity'],
         },
         'angles-lengths': {
-            render:(props: View.Props) => <AnglesLengths {...props} />,
-            selectionDisplayer: AnglesLengths.SelectionDisplayer,
-            selectionMaker: AnglesLengths.SelectionMaker,
-            unscrollableContainer: AnglesLengths.unscrollableContainer,
-            granularity: 'residue',
-        },
-        'angles-lengths-2': {
-            render:(props: View.Props) => <AnglesLengths2 {...props} />,
-            selectionDisplayer: AnglesLengths2.SelectionDisplayer,
-            selectionMaker: AnglesLengths2.SelectionMaker,
-            unscrollableContainer: AnglesLengths2.unscrollableContainer,
-            granularity: 'residue',
+            render:(props: View.Props) => <AnglesLengthsUpper {...props} />,
+            selectionDisplayer: AnglesLengthsUpper.SelectionDisplayer,
+            selectionMaker: AnglesLengthsUpper.SelectionMaker,
+            unscrollableContainer: AnglesLengthsUpper.unscrollableContainer,
+            granularity: 'residue' as View<any>['granularity'],
         },
         'change-ntcs': {
             render: (props: Refinement.Props) => <ChangeNtCs {...props} />,
             selectionDisplayer: ChangeNtCs.SelectionDisplayer,
             selectionMaker: ChangeNtCs.SelectionMaker,
             unscrollableContainer: ChangeNtCs.unscrollableContainer,
-            granularity: 'two-residues',
+            granularity: 'two-residues' as View<any>['granularity'],
         },
         'confals-rmsds': {
             render: (props: View.Props) => <ConfalsRmsds {...props} />,
             selectionDisplayer: ConfalsRmsds.SelectionDisplayer,
             selectionMaker: ConfalsRmsds.SelectionMaker,
             unscrollableContainer: ConfalsRmsds.unscrollableContainer,
-            granularity: 'two-residues',
+            granularity: 'two-residues' as View<any>['granularity'],
         },
         'connectivity-plot': {
             render: (props: Refinement.Props) => <ConnectivityPlot {...props} />,
             selectionDisplayer: ConnectivityPlot.SelectionDisplayer,
             selectionMaker: ConnectivityPlot.SelectionMaker,
-            granularity: 'two-residues',
+            unscrollableContainer: false,
+            granularity: 'two-residues' as View<any>['granularity'],
         },
         'downloads': {
             render: (props: View.Props) => <Downloads {...props} />,
             selectionDisplayer: NullDisplayer,
             selectionMaker: NullMaker,
-            granularity: 'dont-care',
+            unscrollableContainer: false,
+            granularity: 'dont-care' as View<any>['granularity'],
         },
         'mmb-commands-file': {
             render: (props: Refinement.Props) => <MmbCommandsFile {...props} />,
             selectionDisplayer: NullDisplayer,
             selectionMaker: NullMaker,
-            granularity: 'dont-care',
+            unscrollableContainer: false,
+            granularity: 'dont-care' as View<any>['granularity'],
         },
         'phenix-restraints': {
             render: (props: Refinement.Props) => <PhenixRestraints {...props} />,
             selectionDisplayer: NullDisplayer,
             selectionMaker: NullMaker,
-            granularity: 'dont-care',
+            unscrollableContainer: false,
+            granularity: 'dont-care' as View<any>['granularity'],
         },
         'refmac-restraints': {
             render: (props: Refinement.Props) => <RefmacRestraints {...props} />,
             selectionDisplayer: NullDisplayer,
             selectionMaker: NullMaker,
-            granularity: 'dont-care',
+            unscrollableContainer: false,
+            granularity: 'dont-care' as View<any>['granularity'],
         },
         'rscc-plot': {
             render: (props: View.Props) => <RsccPlot {...props} />,
             selectionDisplayer: RsccPlot.SelectionDisplayer,
             selectionMaker: RsccPlot.SelectionMaker,
-            granularity: 'two-residues',
+            unscrollableContainer: false,
+            granularity: 'two-residues' as View<any>['granularity'],
         },
         'step-torsions': {
             render: (props: View.Props) => <StepTorsions {...props} />,
             selectionDisplayer: StepTorsions.SelectionDisplayer,
             selectionMaker: StepTorsions.SelectionMaker,
-            granularity: 'two-residues',
+            unscrollableContainer: false,
+            granularity: 'two-residues' as View<any>['granularity'],
         },
         'similarity-plot': {
             render: (props: View.Props) => <SimilarityPlot {...props} />,
             selectionDisplayer: SimilarityPlot.SelectionDisplayer,
             selectionMaker: SimilarityPlot.SelectionMaker,
-            granularity: 'two-residues',
+            unscrollableContainer: false,
+            granularity: 'two-residues' as View<any>['granularity'],
         },
         'structure-info': {
             render: (props: View.Props) => <StructureInfo {...props} />,
             selectionDisplayer: NullDisplayer,
             selectionMaker: NullMaker,
-            granularity: 'dont-care',
+            unscrollableContainer: false,
+            granularity: 'dont-care' as View<any>['granularity'],
         },
     };
 }

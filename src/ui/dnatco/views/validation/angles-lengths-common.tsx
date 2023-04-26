@@ -18,7 +18,7 @@ import { Tooltip } from '../../../common/tooltip';
 import { colorStyle, colorToTuple } from '../../../util';
 import { ALM } from '../../../../dnatco/alm';
 import { Dnatcofication } from '../../../../dnatco/dnatcofication';
-import { shiftedName, Atoms } from '../../../../dnatco/angles-lengths/atoms';
+import { shiftedName } from '../../../../dnatco/angles-lengths/atoms';
 import { AnglesLengths as DAnglesLengths } from '../../../../dnatco/angles-lengths';
 import { tripletTag, Triplet } from '../../../../dnatco/angles-lengths/angles';
 import { isShiftedName, unshiftName } from '../../../../dnatco/angles-lengths/atoms';

@@ -41,13 +41,12 @@ const AvailableViews: Record<ViewType, { caption: string, visualizer: boolean }>
     'connectivity-plot': { caption: 'Connectivity plot', visualizer: true },
     'rscc-plot': { caption: 'RSCC/RMSD plot', visualizer: true },
     'angles-lengths': { caption: 'Bond Lengths & Angles', visualizer: true },
-    'angles-lengths-2': { caption: 'Bond Lengths & Angles 2', visualizer: true },
 };
 const AnnotationViews: ViewType[] = ['assigned-ntcs', 'structure-info', 'downloads'];
-const ValidationViews: ViewType[] = ['confals-rmsds', 'step-torsions', 'similarity-plot', 'rscc-plot', 'angles-lengths', 'angles-lengths-2'];
+const ValidationViews: ViewType[] = ['confals-rmsds', 'step-torsions', 'similarity-plot', 'rscc-plot', 'angles-lengths'];
 const RefinementViews: ViewType[] = ['connectivity-plot', 'refmac-restraints', 'phenix-restraints', 'mmb-commands-file', 'change-ntcs'];
 
-function masterModeViews(mode: MasterMode): [id: string, item: { caption: string }][] {
+function masterModeViews(mode: MasterMode): [id: ViewType, item: { caption: string }][] {
     switch (mode) {
     case 'annotation':
         return AnnotationViews.map((view) => [view, { caption: AvailableViews[view].caption }]);
