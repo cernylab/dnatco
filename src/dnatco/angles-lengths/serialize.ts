@@ -4,28 +4,188 @@ import { Pair } from './lengths';
 import { Measurements } from './measurements';
 import { Summarize } from './summarize';
 import { ALM } from '../alm';
+import { Residues } from '../residues';
+import { filterObject, objKeys } from '../../util';
 import { Serialization } from '../../util/serialization';
 
 const DetailsHeader = ['kind', 'model', 'chain', 'seqid', 'inscode', 'altid', 'auth_chain', 'auth_seqid', 'compound', 'percentile', 'name', 'value', 'prosco'];
 
-export namespace Serialize {
-    type Detail = { name: string, value: number, threshold: number|null, prosco: number|null };
-    type Residue = {
-        model: number,
-        chain: string,
-        seqId: number,
-        insCode: string|null,
-        altId: string|null,
-        authChain: string,
-        authSeqId: number,
-        compound: string,
-        details: Detail[]
-    };
+type Detail = { name: string, value: number, threshold: number | null, prosco: number | null };
+type Residue = {
+    model: number,
+    chain: string,
+    seqId: number,
+    insCode: string | null,
+    altId: string | null,
+    authChain: string,
+    authSeqId: number,
+    compound: string,
+    details: Detail[]
+};
 
-    function angleName(t: Triplet) {
-        return t.join('-');
+function angleName(t: Triplet) {
+    return t.join('-');
+}
+
+function lengthName(p: Pair) {
+    return p.join('-');
+}
+
+function maybeBinValue(mb: ALM.MaybeBin) {
+    return (mb === 'below' || mb === 'above' || mb === 'no-data') ? null : mb;
+}
+
+function residueWithDetails(r: Measurements.Residue, details: Detail[]): Residue {
+    return {
+        model: r.modelNum,
+        chain: r.authChain,
+        seqId: r.authSeqId,
+        insCode: r.insCode || null,
+        altId: r.altId || null,
+        authChain: r.authChain,
+        authSeqId: r.authSeqId,
+        compound: r.compound,
+        details,
+    };
+}
+
+function statsToSerializable(counts: Summarize.CountsInGroup[], kind: 'a' | 'l'): Serialization.Serializable {
+    const tags = ['kind', 'percentile', 'cumulative_count', 'exclusive_count'];
+    const values = new Array<(number|string)[]>();
+
+    values.push((new Array<string>(counts.length)).fill(kind));
+    values.push(counts.map(x => x.threshold));
+    values.push(counts.map(x => x.cumulative));
+    values.push(counts.map(x => x.exclusive));
+
+    return { tags, values };
+}
+
+export namespace SerializeByCompound {
+    function anglesToSerializable(angles: ALM.AngleStats[]) {
+        const tags = DetailsHeader;
+        const values = new Array<(number|string)[]>();
+
+        values.push(angles.flatMap((x) => x.angles.map(() => 'a')));
+        values.push(angles.flatMap((x) => x.angles.map((a) => a.residue.modelNum)));
+        values.push(angles.flatMap((x) => x.angles.map((a) => a.residue.chain)));
+        values.push(angles.flatMap((x) => x.angles.map((a) => a.residue.seqId)));
+        values.push(angles.flatMap((x) => x.angles.map((a) => a.residue.insCode)));
+        values.push(angles.flatMap((x) => x.angles.map((a) => a.residue.altId)));
+        values.push(angles.flatMap((x) => x.angles.map((a) => a.residue.authChain)));
+        values.push(angles.flatMap((x) => x.angles.map((a) => a.residue.authSeqId)));
+        values.push(angles.flatMap((x) => x.angles.map((a) => a.residue.compound)));
+        values.push(angles.flatMap((x) => x.angles.map((a) => a.pGroup?.threshold ?? 'outlier')));
+        values.push(angles.flatMap((x) => x.angles.map((a) => angleName(a.angle.triplet))));
+        values.push(angles.flatMap((x) => x.angles.map((a) => a.angle.angle)));
+        values.push(angles.flatMap((x) => x.angles.map((a) => maybeBinValue(a.bin)?.prosco ?? a.bin as string)));
+
+        return { tags, values };
     }
 
+    function lengthsToSerializable(lengths: ALM.LengthStats[]) {
+        const tags = DetailsHeader;
+        const values = new Array<(number|string)[]>();
+
+        values.push(lengths.flatMap((x) => x.lengths.map(() => 'l')));
+        values.push(lengths.flatMap((x) => x.lengths.map((l) => l.residue.modelNum)));
+        values.push(lengths.flatMap((x) => x.lengths.map((l) => l.residue.chain)));
+        values.push(lengths.flatMap((x) => x.lengths.map((l) => l.residue.seqId)));
+        values.push(lengths.flatMap((x) => x.lengths.map((l) => l.residue.insCode)));
+        values.push(lengths.flatMap((x) => x.lengths.map((l) => l.residue.altId)));
+        values.push(lengths.flatMap((x) => x.lengths.map((l) => l.residue.authChain)));
+        values.push(lengths.flatMap((x) => x.lengths.map((l) => l.residue.authSeqId)));
+        values.push(lengths.flatMap((x) => x.lengths.map((l) => l.residue.compound)));
+        values.push(lengths.flatMap((x) => x.lengths.map((l) => l.pGroup?.threshold ?? 'outlier')));
+        values.push(lengths.flatMap((x) => x.lengths.map((l) => lengthName(l.length.pair))));
+        values.push(lengths.flatMap((x) => x.lengths.map((l) => l.length.length)));
+        values.push(lengths.flatMap((x) => x.lengths.map((l) => maybeBinValue(l.bin)?.prosco ?? l.bin as string)));
+
+        return { tags, values };
+    }
+
+    export function toCsv(angles: ALM.AngleStats[], countsAngles: Summarize.CountsInGroup[], lengths: ALM.LengthStats[], countsLengths: Summarize.CountsInGroup[]) {
+        const statsAngles = Serialization.toCsv(statsToSerializable(countsAngles, 'a'));
+        const statsLengths = Serialization.toCsv(statsToSerializable(countsLengths, 'l'));
+        const outAngles = Serialization.toCsv(anglesToSerializable(angles));
+        const outLengths = Serialization.toCsv(lengthsToSerializable(lengths));
+
+        return statsLengths + '\n' + statsAngles + '\n' + outLengths + '\n' + outAngles;
+    }
+
+    export function toJson(angles: ALM.AngleStats[], countsAngles: Summarize.CountsInGroup[], lengths: ALM.LengthStats[], countsLengths: Summarize.CountsInGroup[]) {
+        type Stats = { percentile: number|null, cumulativeCount: number, exclusiveCount: number };
+
+        const anglesStats: Stats[] = countsAngles.map(x => ({ percentile: x.threshold, cumulativeCount: x.cumulative, exclusiveCount: x.exclusive }));
+        const lengthsStats: Stats[] = countsLengths.map(x => ({ percentile: x.threshold, cumulativeCount: x.cumulative, exclusiveCount: x.exclusive }));
+
+        type OutStats<T extends ALM.AngleStats['angles'] | ALM.LengthStats['lengths']> = {
+            stats: Omit<T[0], 'residue'>,
+            residue: Omit<Measurements.Residue, 'bondAngles' | 'bondLengths'>,
+        }
+        type AngleOutStats = OutStats<ALM.AngleStats['angles']>;
+        type LengthOutStats = OutStats<ALM.LengthStats['lengths']>;
+
+        const outAngles: Record<Residues.ElementaryResidue, Map<string, AngleOutStats[]>> = {
+            'A': new Map(),
+            'C': new Map(),
+            'G': new Map(),
+            'U': new Map(),
+            'DA': new Map(),
+            'DC': new Map(),
+            'DG': new Map(),
+            'DT': new Map(),
+        };
+        const outLengths: Record<Residues.ElementaryResidue, Map<string, LengthOutStats[]>> = {
+            'A': new Map(),
+            'C': new Map(),
+            'G': new Map(),
+            'U': new Map(),
+            'DA': new Map(),
+            'DC': new Map(),
+            'DG': new Map(),
+            'DT': new Map(),
+        };
+
+        // We need to map the input arrays out to compoud -> metric mapping again to get nicely structured JSONs.
+        for (const a of angles) {
+            const dst = outAngles[a.base];
+            for (const x of a.angles) {
+                const key = angleName(x.angle.triplet);
+                if (!dst.has(key))
+                    dst.set(key, []);
+                const stats = dst.get(key)!;
+
+                const outResidue = filterObject(x.residue, objKeys(x.residue, ['bondAngles', 'bondLengths']));
+                stats.push({ stats: filterObject(x, ['angle', 'bin', 'pGroup']), residue: outResidue });
+            }
+        }
+        for (const l of lengths) {
+            const dst = outLengths[l.base];
+            for (const x of l.lengths) {
+                const key = lengthName(x.length.pair);
+                if (!dst.has(key))
+                    dst.set(key, []);
+                const stats = dst.get(key)!;
+
+                const outResidue = filterObject(x.residue, objKeys(x.residue, ['bondAngles', 'bondLengths']));
+                stats.push({ stats: filterObject(x, ['length', 'bin', 'pGroup']), residue: outResidue });
+            }
+        }
+
+        const demappedOutAngles = objKeys(outAngles).map((base) => ({ [base]: Array.from(outAngles[base].entries()).map(([metric, values]) => ({ [metric]: values })) }));
+        const demappedOutLengths = objKeys(outLengths).map((base) => ({ [base]: Array.from(outLengths[base].entries()).map(([metric, values]) => ({ [metric]: values })) }));
+
+        return JSON.stringify({
+            anglesStats,
+            lengthsStats,
+            angles: demappedOutAngles,
+            lengths: demappedOutLengths,
+        });
+    }
+}
+
+export namespace SerializeByResidue {
     function anglesToSerializable(residues: Measurements.Residue[], stats: ALM.ResidueStats[]): Serialization.Serializable {
         const tags = DetailsHeader;
         const values = new Array<(number|string)[]>();
@@ -50,10 +210,6 @@ export namespace Serialize {
         return { tags, values };
     }
 
-    function lengthName(p: Pair) {
-        return p.join('-');
-    }
-
     function lengthsToSerializable(residues: Measurements.Residue[], stats: ALM.ResidueStats[]): Serialization.Serializable {
         const tags = DetailsHeader;
         const values = new Array<(number|string)[]>();
@@ -74,36 +230,6 @@ export namespace Serialize {
             const mb = stats[idx].lengths[jdx].bin;
             return maybeBinValue(mb)?.prosco ?? mb as string;
         })));
-        return { tags, values };
-    }
-
-    function maybeBinValue(mb: ALM.MaybeBin) {
-        return (mb === 'below' || mb === 'above' || mb === 'no-data') ? null : mb;
-    }
-
-    function residueWithDetails(r: Measurements.Residue, details: Detail[]): Residue {
-        return {
-            model: r.modelNum,
-            chain: r.authChain,
-            seqId: r.authSeqId,
-            insCode: r.insCode || null,
-            altId: r.altId || null,
-            authChain: r.authChain,
-            authSeqId: r.authSeqId,
-            compound: r.compound,
-            details,
-        };
-    }
-
-    function statsToSerializable(counts: Summarize.CountsInGroup[], kind: 'a'|'l'): Serialization.Serializable {
-        const tags = ['kind', 'percentile', 'cumulative_count', 'exclusive_count'];
-        const values = new Array<(number|string)[]>();
-
-        values.push((new Array<string>(counts.length)).fill(kind));
-        values.push(counts.map(x => x.threshold));
-        values.push(counts.map(x => x.cumulative));
-        values.push(counts.map(x => x.exclusive));
-
         return { tags, values };
     }
 

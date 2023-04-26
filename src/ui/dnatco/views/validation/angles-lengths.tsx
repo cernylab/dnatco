@@ -8,7 +8,7 @@ import { Constants } from '../../constants';
 import { SearchBox } from '../../search-box';
 import {
     InvalidModelIndex,
-    AuthResidue, CifAtom, CifResidue,
+    AuthResidue,
     StructureSelection,
 } from '../../structure-selection';
 import { Common } from '../../common';
@@ -27,7 +27,7 @@ import { tripletTag, Triplet } from '../../../../dnatco/angles-lengths/angles';
 import { Bin } from '../../../../dnatco/angles-lengths/bin';
 import { pairTag, Pair } from '../../../../dnatco/angles-lengths/lengths';
 import { Measurements } from '../../../../dnatco/angles-lengths/measurements';
-import { Serialize } from '../../../../dnatco/angles-lengths/serialize';
+import { SerializeByResidue } from '../../../../dnatco/angles-lengths/serialize';
 import { Summarize } from '../../../../dnatco/angles-lengths/summarize';
 import { Naval } from '../../../../dnatco/naval';
 import { GlobalConfig } from '../../../../global-config';
@@ -53,7 +53,7 @@ const StatsDownloaders = [
     {
         caption: 'CSV',
         download: function(fileNameStem, data) {
-            const text = Serialize.toCsv(data.counts.angles, data.counts.lengths, data.residues, data.stats);
+            const text = SerializeByResidue.toCsv(data.counts.angles, data.counts.lengths, data.residues, data.stats);
             doDownload(fileNameStem, text, this.fileType);
         },
         fileType: FileTypes.csv,
@@ -61,65 +61,12 @@ const StatsDownloaders = [
     {
         caption: 'JSON',
         download: function(fileNameStem, data) {
-            const text = Serialize.toJson(data.counts.angles, data.counts.lengths, data.residues, data.stats);
+            const text = SerializeByResidue.toJson(data.counts.angles, data.counts.lengths, data.residues, data.stats);
             doDownload(fileNameStem, text, this.fileType);
         },
         fileType: FileTypes.json,
     }
 ] as StatsDownloader[];
-
-function amendStructureSelection(selection: StructureSelection, residue: Measurements.Residue, strategy: 'add' | 'remove') {
-    const cifRes = {
-        modelNum: residue.modelNum,
-        chain: residue.chain,
-        seqId: residue.seqId,
-        altId: residue.altId
-    };
-
-    let cifAtomPrev: CifAtom | undefined = void 0;
-    if (Measurements.Residue.hasPrevious(residue)) {
-        cifAtomPrev = {
-            modelNum: residue.modelNum,
-            chain: residue.chain,
-            seqId: residue.prevSeqId!,
-            altId: residue.prevAltId!,
-            atomId: "O3'",
-        };
-    }
-
-    if (strategy === 'add') {
-        selection.residues = selection.residues.filter((x) => x.modelNum === cifRes.modelNum);
-        selection.residues.push(cifRes);
-
-        if (cifAtomPrev) {
-            selection.atoms = selection.atoms.filter((x) => x.modelNum === cifAtomPrev!.modelNum);
-            selection.atoms.push(cifAtomPrev);
-        }
-    } else if (strategy === 'remove') {
-        selection.residues = selection.residues.filter((x) => !cifResidueMatches(x, cifRes));
-        if (cifAtomPrev)
-            selection.atoms = selection.atoms.filter((x) => !cifAtomMatches(x, cifAtomPrev!));
-    }
-}
-
-function cifAtomMatches(a: CifAtom, b: CifAtom) {
-    return (
-        a.modelNum === b.modelNum &&
-        a.chain === b.chain &&
-        a.seqId === b.seqId &&
-        a.altId === b.altId &&
-        a.atomId === b.atomId
-    );
-}
-
-function cifResidueMatches(a: CifResidue, b: CifResidue) {
-    return (
-        a.modelNum === b.modelNum &&
-        a.chain === b.chain &&
-        a.seqId === b.seqId &&
-        a.altId === b.altId
-    );
-}
 
 function compareMaybeBins(a: ALM.MaybeBin, b: ALM.MaybeBin) {
     const aOut = a === 'above' || a === 'below' || a === 'no-data';
@@ -134,12 +81,6 @@ function compareMaybeBins(a: ALM.MaybeBin, b: ALM.MaybeBin) {
         return 1;
     } else
         return (a as Bin).prosco - (b as Bin).prosco;
-}
-
-function deselectResidue(residue: Measurements.Residue, selection: StructureSelection, event: Events['residueToggled'], d: Dnatcofication, vi: ViewerInterop) {
-    amendStructureSelection(selection, residue, 'remove');
-    AnglesLengths.SelectionDisplayer({ steps: [], residues: selection.residues, atoms: selection.atoms, reconstruct: true }, d, vi);
-    event.next({ residue, transition: 'deselected' });
 }
 
 function fileNameFriendlyTag(tag: string) {
@@ -297,17 +238,6 @@ function makeLengthDetails(props: ResidueDetailsProps) {
     return elems;
 }
 
-function isResidueInSelection(r: Measurements.Residue, selection: StructureSelection) {
-    const cifRes = {
-        modelNum: r.modelNum,
-        chain: r.chain,
-        seqId: r.seqId,
-        altId: r.altId
-    };
-
-    return !!selection.residues.find((x) => cifResidueMatches(x, cifRes));
-}
-
 function renderBondAngleDetail(
     d: Dnatcofication,
     bondAngle: Measurements.BondAngle,
@@ -322,7 +252,7 @@ function renderBondAngleDetail(
     onAtomsClicked?: (r: Measurements.Residue, triplet: Triplet) => void
 ) {
     const pgrpDatas = pgrpIndices.map(idx => DAnglesLengths.anglePGroupData(idx, residue.compound, bondAngle.triplet)!);
-    const dlName = `${residueIdentifyingName(structureName, residue)}_${fileNameFriendlyTag(tripletTag(bondAngle.triplet))}`;
+    const dlName = `${AnglesLengthsCommon.residueIdentifyingName(structureName, residue)}_${fileNameFriendlyTag(tripletTag(bondAngle.triplet))}`;
     const ni = AnglesLengthsCommon.getNavalAngle(d, residue, bondAngle.triplet);
 
     return (
@@ -356,7 +286,7 @@ function renderBondLengthDetail(
     onAtomsClicked?: (r: Measurements.Residue, pair: Pair) => void,
 ) {
     const pgrpDatas = pgrpIndices.map(idx => DAnglesLengths.lengthPGroupData(idx, residue.compound, bondLength.pair)!);
-    const dlName = `${residueIdentifyingName(structureName, residue)}${fileNameFriendlyTag(pairTag(bondLength.pair))}`;
+    const dlName = `${AnglesLengthsCommon.residueIdentifyingName(structureName, residue)}${fileNameFriendlyTag(pairTag(bondLength.pair))}`;
     const ni = AnglesLengthsCommon.getNavalBond(d, residue, bondLength.pair);
 
     return (
@@ -375,17 +305,6 @@ function renderBondLengthDetail(
         />
     );
 }
-
-function residueIdentifyingName(structureName: string, r: Measurements.Residue) {
-    return `${structureName}-m${r.modelNum}-${r.authChain}-${r.authSeqId}${r.insCode ? `.${r.insCode}` : ''}${r.altId ? `_alt${r.altId}` : ''}_`;
-}
-
-function selectResidue(residue: Measurements.Residue, selection: StructureSelection, event: Events['residueToggled'], d: Dnatcofication, vi: ViewerInterop) {
-    amendStructureSelection(selection, residue, 'add');
-    AnglesLengths.SelectionDisplayer({ steps: [], residues: selection.residues, atoms: selection.atoms, reconstruct: false }, d, vi);
-    event.next({ residue, transition: 'selected' });
-}
-
 
 function selectionToIndices(d: Dnatcofication, modelIdx: number, chain: string) {
     const alm = d.data.almByResidue;
@@ -775,15 +694,15 @@ class ResidueHeader extends React.Component<{
                 <OverallStatsBar
                     counts={{ angles: this.props.countsAngles, lengths: this.props.countsLengths }}
                     downloaders={StatsDownloaders}
-                    name={residueIdentifyingName(this.props.structureName, r)}
+                    name={AnglesLengthsCommon.residueIdentifyingName(this.props.structureName, r)}
                     residues={[this.props.residue]}
                     stats={[this.props.stats]}
                 >
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
-                        <div style={{ flex: 1 }}>
+                        <div style={{ flex: 1, display: 'flex' }}>
                             {AnglesLengthsCommon.renderSubstructureStats(<div style={AnglesLengthsCommon.StatsBarCaptionStyle}>L</div>, this.props.summary.lengths, this.props.countsLengths, this.props.colorsForStatsBar)}
                         </div>
-                        <div style={{ flex: 1 }}>
+                        <div style={{ flex: 1, display: 'flex' }}>
                             {AnglesLengthsCommon.renderSubstructureStats(<div style={AnglesLengthsCommon.StatsBarCaptionStyle}>A</div>, this.props.summary.angles, this.props.countsAngles, this.props.colorsForStatsBar)}
                         </div>
                     </div>
@@ -823,14 +742,14 @@ class Residue extends React.Component<ResidueElemProps & {
                     />
                 )}
                 onCollapsedExpanded={(change) => {
-                    const isSelected = isResidueInSelection(this.props.residue, this.props.structureSelection);
+                    const isSelected = AnglesLengthsCommon.isResidueInSelection(this.props.residue, this.props.structureSelection);
                     if (change === 'expanded' && !isSelected) {
-                        selectResidue(this.props.residue, this.props.structureSelection, this.props.events.residueToggled, this.props.d, this.props.vi);
+                        AnglesLengthsCommon.selectResidue(this.props.residue, this.props.structureSelection, this.props.events.residueToggled, this.props.d, this.props.vi);
                     } else if (change === 'collapsed' && isSelected) {
-                        deselectResidue(this.props.residue, this.props.structureSelection, this.props.events.residueToggled, this.props.d, this.props.vi);
+                        AnglesLengthsCommon.deselectResidue(this.props.residue, this.props.structureSelection, this.props.events.residueToggled, this.props.d, this.props.vi);
                     }
                 }}
-                initiallyExpanded={isResidueInSelection(this.props.residue, this.props.structureSelection)}
+                initiallyExpanded={AnglesLengthsCommon.isResidueInSelection(this.props.residue, this.props.structureSelection)}
             >
                 <ResidueDetails
                     onHideRequested={() => this.collapserRef.current?.collapseExpand('collapse')}
@@ -858,11 +777,11 @@ function WorstValueResidueName(props: {
     };
     const doUnhighlight = () => props.vi.api.command(ViewerApi.Commands.Unhighlight());
 
-    const [selected, setSelected] = React.useState(isResidueInSelection(props.residue, props.selection));
+    const [selected, setSelected] = React.useState(AnglesLengthsCommon.isResidueInSelection(props.residue, props.selection));
     React.useEffect(() => {
         const subs = new Array<Subscription>();
         subs.push(props.events.residueToggled.subscribe(() => {
-            const isSelected = isResidueInSelection(props.residue, props.selection);
+            const isSelected = AnglesLengthsCommon.isResidueInSelection(props.residue, props.selection);
             setSelected(isSelected);
         }));
         subs.push(props.events.allResiduesDeselected.subscribe(() => {
@@ -879,11 +798,11 @@ function WorstValueResidueName(props: {
         <div
             style={selected ? { backgroundColor: `rgba(${r}, ${g}, ${b}, ${a})` } : {} }
             onClick={() => {
-                const isSelected = isResidueInSelection(props.residue, props.selection);
+                const isSelected = AnglesLengthsCommon.isResidueInSelection(props.residue, props.selection);
                 if (!isSelected) {
-                    selectResidue(props.residue, props.selection, props.events.residueToggled, props.d, props.vi);
+                    AnglesLengthsCommon.selectResidue(props.residue, props.selection, props.events.residueToggled, props.d, props.vi);
                 } else {
-                    deselectResidue(props.residue, props.selection, props.events.residueToggled, props.d, props.vi);
+                    AnglesLengthsCommon.deselectResidue(props.residue, props.selection, props.events.residueToggled, props.d, props.vi);
                 }
             }}
             onMouseEnter={doHighlight}
@@ -897,7 +816,7 @@ function WorstValueResidueName(props: {
 
 type Events = {
     allResiduesDeselected: Subject<void>,
-    residueToggled: Subject<{ residue: Measurements.Residue, transition: 'selected' | 'deselected' }>,
+    residueToggled: AnglesLengthsCommon.ResidueToggledEvent,
 }
 const DefaultShownResiduesLimit = 100;
 const ShownResiduesIncrement = 100;
@@ -1006,7 +925,7 @@ export class AnglesLengths extends View<
             const countsLenghts = AnglesLengthsCommon.countsInGroups(_s.summary.lengths, thresholds);
             const residueName = <ResidueName r={_r} multipleModels={multipleModels} />
             const structureName = AnglesLengthsCommon.structureIdentifyingName(this.props.dnatcofication);
-            const identResName = residueIdentifyingName(structureName, _r);
+            const identResName = AnglesLengthsCommon.residueIdentifyingName(structureName, _r);
 
             const ref = React.createRef<Residue>();
             const elem = <Residue
@@ -1055,11 +974,11 @@ export class AnglesLengths extends View<
                 {...worst.map((x, idx) => {
                     const residueName = <ResidueName r={x.residue} multipleModels={multipleModels} />
                     const onAtomsClicked = (r: Measurements.Residue) => {
-                        const isSelected = isResidueInSelection(x.residue, this.props.structureSelection)
+                        const isSelected = AnglesLengthsCommon.isResidueInSelection(x.residue, this.props.structureSelection)
                         if (!isSelected) {
-                            selectResidue(x.residue, this.props.structureSelection, this.events.residueToggled, this.props.dnatcofication, this.props.viewerInterop);
+                            AnglesLengthsCommon.selectResidue(x.residue, this.props.structureSelection, this.events.residueToggled, this.props.dnatcofication, this.props.viewerInterop);
                         } else {
-                            deselectResidue(x.residue, this.props.structureSelection, this.events.residueToggled, this.props.dnatcofication, this.props.viewerInterop);
+                            AnglesLengthsCommon.deselectResidue(x.residue, this.props.structureSelection, this.events.residueToggled, this.props.dnatcofication, this.props.viewerInterop);
                         }
                     };
 
@@ -1111,11 +1030,11 @@ export class AnglesLengths extends View<
                 {...worst.map((x, idx) => {
                     const residueName = <ResidueName r={x.residue} multipleModels={multipleModels} />
                     const onAtomsClicked = (r: Measurements.Residue) => {
-                        const isSelected = isResidueInSelection(x.residue, this.props.structureSelection);
+                        const isSelected = AnglesLengthsCommon.isResidueInSelection(x.residue, this.props.structureSelection);
                         if (!isSelected) {
-                            selectResidue(x.residue, this.props.structureSelection, this.events.residueToggled, this.props.dnatcofication, this.props.viewerInterop);
+                            AnglesLengthsCommon.selectResidue(x.residue, this.props.structureSelection, this.events.residueToggled, this.props.dnatcofication, this.props.viewerInterop);
                         } else {
-                            deselectResidue(x.residue, this.props.structureSelection, this.events.residueToggled, this.props.dnatcofication, this.props.viewerInterop);
+                            AnglesLengthsCommon.deselectResidue(x.residue, this.props.structureSelection, this.events.residueToggled, this.props.dnatcofication, this.props.viewerInterop);
                         }
                     };
 
@@ -1218,11 +1137,11 @@ export class AnglesLengths extends View<
                 bondLengths: [] // Irrelevant
             }
 
-            selectResidue(mr, this.props.structureSelection, this.events.residueToggled, this.props.dnatcofication, this.props.viewerInterop);
+            AnglesLengthsCommon.selectResidue(mr, this.props.structureSelection, this.events.residueToggled, this.props.dnatcofication, this.props.viewerInterop);
         });
         this.subscribe(this.events.residueToggled, (ev) => {
             const { residue, transition } = ev;
-            const id = residueIdentifyingName(AnglesLengthsCommon.structureIdentifyingName(this.props.dnatcofication), residue);
+            const id = AnglesLengthsCommon.residueIdentifyingName(AnglesLengthsCommon.structureIdentifyingName(this.props.dnatcofication), residue);
             if (transition === 'selected')
                 this.scrollResidueIntoView(id, (block) => block.current?.collapseExpand('expand'));
             else if (transition === 'deselected') {
@@ -1341,10 +1260,10 @@ export class AnglesLengths extends View<
                     style={{ height: '4em' }}
                 >
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
-                        <div style={{ flex: 1 }}>
+                        <div style={{ flex: 1, display: 'flex' }}>
                             {AnglesLengthsCommon.renderSubstructureStats(<div style={{ ...AnglesLengthsCommon.BarCaptionStyle, left: 'calc(var(--h-gap) / 2)' }}>Lengths</div>, summary.lengths, countsLenghts, htmlColorsForStatsBar)}
                         </div>
-                        <div style={{ flex: 1 }}>
+                        <div style={{ flex: 1, display: 'flex' }}>
                             {AnglesLengthsCommon.renderSubstructureStats(<div style={{ ...AnglesLengthsCommon.BarCaptionStyle, left: 'calc(var(--h-gap) / 2)' }}>Angles</div>, summary.angles, countsAngles, htmlColorsForStatsBar)}
                         </div>
                     </div>
@@ -1400,7 +1319,7 @@ export class AnglesLengths extends View<
                                             ...this.Searching,
                                             onRenderResult: (residue: Measurements.Residue) => <ResidueName r={residue} multipleModels={multipleModels} />,
                                             onUseResult: (r) => {
-                                                const id = residueIdentifyingName(AnglesLengthsCommon.structureIdentifyingName(this.props.dnatcofication), r);
+                                                const id = AnglesLengthsCommon.residueIdentifyingName(AnglesLengthsCommon.structureIdentifyingName(this.props.dnatcofication), r);
                                                 this.scrollResidueIntoView(id, (block) => block.current?.collapseExpand('expand'));
                                             },
                                         };

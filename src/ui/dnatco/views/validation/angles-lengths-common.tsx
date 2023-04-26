@@ -1,9 +1,11 @@
 import Plot from 'react-plotly.js';
 import React from 'react';
+import { Subject } from 'rxjs';
 import type { StandardLonghandProperties } from 'csstype';
 import { View } from '../view';
 import {
     InvalidAtom, InvalidChain, InvalidModelIndex,
+    CifAtom, CifResidue,
     SelectedPieces,
     StructureSelection,
 } from '../../structure-selection';
@@ -26,6 +28,7 @@ import { Measurements } from '../../../../dnatco/angles-lengths/measurements';
 import { Naval } from '../../../../dnatco/naval';
 import { Validation } from '../../../../dnatco/naval/validation';
 import { Summarize } from '../../../../dnatco/angles-lengths/summarize';
+import { Residues } from '../../../../dnatco/residues';
 import { GlobalConfig } from '../../../../global-config';
 import { htmlColorAsNumber, isWithin } from '../../../../util';
 import { doDownload, Downloader, FileTypes } from '../../../../util/downloader';
@@ -297,7 +300,7 @@ export function AnglesLengthsBar(props: { caption?: string | React.ReactNode, co
     }
 
     return (
-        <div style={{ width: '100%', height: '100%', position: 'relative', display: 'flex', flexDirection: 'row' }}>
+        <div style={{ width: '100%', position: 'relative', display: 'flex', flexDirection: 'row' }}>
             <StatsBar counts={props.counts.exclusive} colors={props.colors} />
             {renderCaption()}
         </div>
@@ -756,7 +759,9 @@ export function SubstructureSummary(props: { countsInGroups: Summarize.CountsInG
 }
 
 export namespace AnglesLengthsCommon {
-    export const AnglesDisplayOrder: Record<keyof typeof Atoms, string[]> = {
+    export type ResidueToggledEvent = Subject<{ residue: Measurements.Residue, transition: 'selected' | 'deselected' }>;
+
+    export const AnglesDisplayOrder: Record<Residues.ElementaryResidue, string[]> = {
         'A': AdenineAnglesOrder,
         'C': CytidineAnglesOrder,
         'G': GuanosineAnglesOrder,
@@ -767,7 +772,7 @@ export namespace AnglesLengthsCommon {
         'DT': ThymineAnglesOrder,
     };
 
-    export const LengthsDisplayOrder: Record<keyof typeof Atoms, string[]> = {
+    export const LengthsDisplayOrder: Record<Residues.ElementaryResidue, string[]> = {
         'A': AdenineLengthsOrder,
         'C': CytidineLengthsOrder,
         'G': GuanosineLengthsOrder,
@@ -796,6 +801,59 @@ export namespace AnglesLengthsCommon {
         ...AnglesLengthsCommon.BarCaptionStyle,
         ...AnglesLengthsCommon.StayAboveStyle,
     } as StandardLonghandProperties;
+
+    function amendStructureSelection(selection: StructureSelection, residue: Measurements.Residue, strategy: 'add' | 'remove') {
+        const cifRes = {
+            modelNum: residue.modelNum,
+            chain: residue.chain,
+            seqId: residue.seqId,
+            altId: residue.altId
+        };
+
+        let cifAtomPrev: CifAtom | undefined = void 0;
+        if (Measurements.Residue.hasPrevious(residue)) {
+            cifAtomPrev = {
+                modelNum: residue.modelNum,
+                chain: residue.chain,
+                seqId: residue.prevSeqId!,
+                altId: residue.prevAltId!,
+                atomId: "O3'",
+            };
+        }
+
+        if (strategy === 'add') {
+            selection.residues = selection.residues.filter((x) => x.modelNum === cifRes.modelNum);
+            selection.residues.push(cifRes);
+
+            if (cifAtomPrev) {
+                selection.atoms = selection.atoms.filter((x) => x.modelNum === cifAtomPrev!.modelNum);
+                selection.atoms.push(cifAtomPrev);
+            }
+        } else if (strategy === 'remove') {
+            selection.residues = selection.residues.filter((x) => !cifResidueMatches(x, cifRes));
+            if (cifAtomPrev)
+                selection.atoms = selection.atoms.filter((x) => !cifAtomMatches(x, cifAtomPrev!));
+        }
+    }
+
+    function cifAtomMatches(a: CifAtom, b: CifAtom) {
+        return (
+            a.modelNum === b.modelNum &&
+            a.chain === b.chain &&
+            a.seqId === b.seqId &&
+            a.altId === b.altId &&
+            a.atomId === b.atomId
+        );
+    }
+
+    function cifResidueMatches(a: CifResidue, b: CifResidue) {
+        return (
+            a.modelNum === b.modelNum &&
+            a.chain === b.chain &&
+            a.seqId === b.seqId &&
+            a.altId === b.altId
+        );
+    }
 
     function compareNavalAtom(a: Validation.Atom, name: string, seqId: number, altId: string) {
         const altIdMatch = a.altloc === '' || altId === '' || a.altloc === altId;
@@ -912,6 +970,12 @@ export namespace AnglesLengthsCommon {
         return cig;
     }
 
+    export function deselectResidue(residue: Measurements.Residue, selection: StructureSelection, event: ResidueToggledEvent, d: Dnatcofication, vi: ViewerInterop) {
+        amendStructureSelection(selection, residue, 'remove');
+        SelectionDisplayer({ steps: [], residues: selection.residues, atoms: selection.atoms, reconstruct: true }, d, vi);
+        event.next({ residue, transition: 'deselected' });
+    }
+
     export function getNavalAngle(d: Dnatcofication, r: Measurements.Residue, triplet: Triplet) {
         const [ na, nb, nc ] = triplet;
         const niIdx = d.data.naval.anglesMapping.get(r.modelNum)
@@ -944,6 +1008,24 @@ export namespace AnglesLengthsCommon {
         return niIdx === -1 ? EmptyNavalItem : NavalItem(d.data.naval.bonds[niIdx]);
     }
 
+    export function getSelection(props: View.Props) {
+        const modelIdx = props.structureSelection.modelIndex;
+        const chain = props.structureSelection.chain === InvalidChain ? '' : props.structureSelection.chain;
+
+        return { modelIdx, chain };
+    }
+
+    export function isResidueInSelection(r: Measurements.Residue, selection: StructureSelection) {
+        const cifRes = {
+            modelNum: r.modelNum,
+            chain: r.chain,
+            seqId: r.seqId,
+            altId: r.altId
+        };
+
+        return !!selection.residues.find((x) => cifResidueMatches(x, cifRes));
+    }
+
     export function makeAtomSelectionPayload(r: Measurements.Residue, atomName: string) {
         if (isShiftedName(atomName)) {
             if (Measurements.Residue.hasPrevious(r))
@@ -958,13 +1040,6 @@ export namespace AnglesLengthsCommon {
         return { collapsed, expanded: expanded ? expanded : collapsed };
     }
 
-    export function getSelection(props: View.Props) {
-        const modelIdx = props.structureSelection.modelIndex;
-        const chain = props.structureSelection.chain === InvalidChain ? '' : props.structureSelection.chain;
-
-        return { modelIdx, chain };
-    }
-
     export function pairBondName(p: Pair, tag: string) {
         let name = PairBondNameCache.get(tag);
         if (!name) {
@@ -973,6 +1048,16 @@ export namespace AnglesLengthsCommon {
         }
 
         return name;
+    }
+
+    export function residueIdentifyingName(structureName: string, r: Measurements.Residue) {
+        return `${structureName}-m${r.modelNum}-${r.authChain}-${r.authSeqId}${r.insCode ? `.${r.insCode}` : ''}${r.altId ? `_alt${r.altId}` : ''}_`;
+    }
+
+    export function selectResidue(residue: Measurements.Residue, selection: StructureSelection, event: ResidueToggledEvent, d: Dnatcofication, vi: ViewerInterop) {
+        amendStructureSelection(selection, residue, 'add');
+        SelectionDisplayer({ steps: [], residues: selection.residues, atoms: selection.atoms, reconstruct: false }, d, vi);
+        event.next({ residue, transition: 'selected' });
     }
 
     export function tripletBondName(t: Triplet, tag: string) {

@@ -44,6 +44,14 @@ export function fileSuffixes(name: string): string[] {
     return name.toLowerCase().split('.').slice(1);
 }
 
+export function filterObject<K extends string, RK extends K>(obj: Partial<Record<K, any>>, keep: RK[]): Record<RK, any> {
+    const filtered = {};
+    for (const rk of keep)
+        (filtered as Record<RK, any>)[rk] = obj[rk];
+
+    return filtered as Record<RK, any>;
+}
+
 const LongHtmlColor = /^#([0-9abcdefABCDEF]){6}$/;
 const ShortHtmlColor = /^#([0-9abcdefABCDEF]){3}$/;
 export function htmlColorAsNumber(s: string) {
