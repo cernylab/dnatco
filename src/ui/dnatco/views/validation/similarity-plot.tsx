@@ -154,7 +154,7 @@ export class SimilarityPlot extends View<View.Props> {
                                 {
                                     x: plotData.xSel,
                                     y: plotData.ySel,
-                                    marker: { size: 10, color: plotData.colorsSel, symbol: 'x' },
+                                    marker: { size: 14, color: plotData.colorsSel, symbol: 'x' },
                                     mode: 'text+markers',
                                     textposition: 'top center',
                                     text: plotData.tagsSel,
