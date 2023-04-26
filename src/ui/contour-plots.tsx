@@ -14,7 +14,7 @@ const Placeholder = <div style={EmptyTainerStyle}>Loading data...</div>;
 const NtCClassesWithNANT = [...NtC.Classes, 'NANT'];
 
 type PlotResolution = 'le18' | 'gt25';
-type PlotKind = 'euclid' | 'rmsd' | 'rmsd_euclid';
+type PlotKind = 'euclid' | 'rmsd';
 
 function plotTag(ntc: string, res: PlotResolution, kind: PlotKind) {
     return `${ntc}_${res}_${kind}`;
@@ -31,7 +31,7 @@ async function populateCache() {
 
     for (const ntc of NtCClassesWithNANT) {
         for (const res of [ 'le18', 'gt25' ] as PlotResolution[]) {
-            for (const kind of [ 'euclid', 'rmsd', 'rmsd_euclid' ] as PlotKind[]) {
+            for (const kind of [ 'euclid', 'rmsd' ] as PlotKind[]) {
                 const urlPrefix = `${pathPrefix}/contour_plots/${res}/${ntc}_${kind}`;
 
                 // We check if there is a file with the plot available on the server.
@@ -100,7 +100,7 @@ export class ContourPlots extends WithSubscriptions<{}, State> {
         return (
             <div style={{
                 display: 'grid',
-                gridTemplateColumns: 'auto 30% 30% 30%',
+                gridTemplateColumns: 'auto 45% 45%',
                 rowGap: '0.5em',
                 width: '100%',
                 alignItems: 'center',
@@ -115,19 +115,16 @@ export class ContourPlots extends WithSubscriptions<{}, State> {
                         disabled={PlotCompomentCache.size === 0}
                     />
                 </div>
-                <div className='rdo-section-caption' style={{ fontWeight: 'bold' }} >RSCC vs. Euclidean distance</div>
+                <div className='rdo-section-caption' style={{ fontWeight: 'bold' }} >RSCC vs. Torsion space</div>
                 <div className='rdo-section-caption' style={{ fontWeight: 'bold' }}>RSCC vs. Cartesian rmsd</div>
-                <div className='rdo-section-caption' style={{ fontWeight: 'bold' }}>Cartesian vs. Euclidean</div>
 
                 <div className='rdo-vertical-text rdo-section-caption' style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>{'At least 1.8\u212B resolution'}</div>
                 {PlotCompomentCache.get(plotTag(this.state.ntc, 'le18', 'euclid'))?.() ?? Placeholder}
                 {PlotCompomentCache.get(plotTag(this.state.ntc, 'le18', 'rmsd'))?.() ?? Placeholder}
-                {PlotCompomentCache.get(plotTag(this.state.ntc, 'le18', 'rmsd_euclid'))?.() ?? Placeholder}
 
                 <div className='rdo-vertical-text rdo-section-caption' style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>{'Worse than 2.5\u212B resolution'}</div>
                 {PlotCompomentCache.get(plotTag(this.state.ntc, 'gt25', 'euclid'))?.() ?? Placeholder}
                 {PlotCompomentCache.get(plotTag(this.state.ntc, 'gt25', 'rmsd'))?.() ?? Placeholder}
-                {PlotCompomentCache.get(plotTag(this.state.ntc, 'gt25', 'rmsd_euclid'))?.() ?? Placeholder}
             </div>
         );
     }
