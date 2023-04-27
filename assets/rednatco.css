@@ -208,24 +208,10 @@ tr.rdo-list-of-conformers-alternate-clr {
     -webkit-appearance: none;
     appearance: none;
 
-    background: none;
     border: none;
     color: black;
     flex: 1;
-    padding: 0.15em 1em 0.15em 0.15em;
     transition: background-color var(--anim-speed);
-    z-index: 2;
-}
-
-.rdo-combobox-arrow {
-    align-items: center;
-    color: black;
-    display: flex;
-    height: 100%;
-    width: 1em;
-    right: 0;
-    position: absolute;
-    z-index: 1;
 }
 
 .rdo-combobox-arrow > img {

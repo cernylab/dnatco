@@ -1,12 +1,18 @@
 import { type StandardLonghandProperties } from 'csstype';
-import * as React from 'react';
-import { GlobalConfig } from '../../global-config';
+import React from 'react';
 import 'assets/imgs/down_arrow.svg';
 
 const SizingPolicy = {
     'min-content': 'min-content',
     'maximum-available': '100%',
     'auto': 'auto',
+};
+
+const DropdownArrowStyle = {
+    'backgroundRepeat': 'no-repeat',
+    'backgroundImage': 'url("./imgs/down_arrow.svg")',
+    'backgroundPosition': 'right',
+    'backgroundSize': '1em',
 };
 
 export class ComboBox extends React.Component<ComboBox.Props> {
@@ -70,7 +76,7 @@ export class ComboBox extends React.Component<ComboBox.Props> {
                     className='rdo-combobox'
                     value={this.props.value}
                     onChange={e => this.props.onChange(e.currentTarget.value)}
-                    style={this.props.innerStyle}
+                    style={{ ...DropdownArrowStyle, ...this.props.innerStyle }}
                     disabled={this.props.disabled}
                 >
                     {this.props.options.map(o => {
@@ -78,13 +84,10 @@ export class ComboBox extends React.Component<ComboBox.Props> {
                             <option
                                 key={o.value}
                                 value={o.value}
-                            >{o.caption}</option>
+                            >{o.caption}{'\u00A0\u00A0'}</option>
                         );
                     })}
                 </select>
-                <div className='rdo-combobox-arrow'>
-                    <img src={`${GlobalConfig.data().pathPrefix}/imgs/down_arrow.svg`} />
-                </div>
             </div>
         );
     }
