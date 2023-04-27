@@ -319,20 +319,22 @@ export namespace DynamicTable {
     export type Style = 'normal' | 'wide';
 
     export class Model {
-        makeRows() {
-            const _rows = new Array<DynamicTable.Cell<any>[]>();
+        private _rows = new Array<DynamicTable.Cell<any>[]>();
+
+        private initRows() {
+            if (this.columns.length < 1)
+                return;
 
             for (let idx = 0; idx < this.columns[0].cells.length; idx++) {
                 const row = new Array<DynamicTable.Cell<any>>();
                 for (const col of this.columns)
                     row.push(col.cells[idx]);
-                _rows.push(row);
+                this._rows.push(row);
             }
-
-            return _rows;
         }
 
         constructor(readonly columns: Column<any>[] = []) {
+            this.initRows();
         }
 
         get columnNames() {
@@ -340,11 +342,11 @@ export namespace DynamicTable {
         }
 
         get rows() {
-            return this.makeRows();
+            return this._rows;
         }
 
         sortedRows(sorting: Sorting) {
-            const sortedRows = this.makeRows().map((row, idx) => ({ row: row, actualIndex: idx })); // actualIndex is the row index in unsorted data
+            const sortedRows = this._rows.map((row, idx) => ({ row: row, actualIndex: idx })); // actualIndex is the row index in unsorted data
 
             if (sorting.order === 'none' || sortedRows.length === 0)
                 return sortedRows;
