@@ -522,9 +522,25 @@ th.rdo-data-table-small {
     background-color: var(--color-b);
 }
 
+.rdo-navigation-menu {
+    background-color: var(--color-b);
+    border: var(--thickness-border) solid var(--color-a);
+    position: absolute;
+    z-index: 100;
+}
+
 .rdo-navigation-bar-padder {
     flex: 5;
 }
+
+.rdo-navigation-bar-hamburger-icon {
+    height: 1.5em;
+    transition: filter var(--anim-speed);
+}
+
+.rdo-navigation-bar-hamburger-icon-active {
+    filter: invert();
+};
 
 .rdo-nice-step-altpos {
     font-size: var(--font-tiny);
