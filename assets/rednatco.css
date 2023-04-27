@@ -127,6 +127,7 @@ select {
     appearance: none;
     background: none;
     box-sizing: border-box;
+    padding-left: 0.25em;
 }
 
 table.rdo-angles-lengths {
