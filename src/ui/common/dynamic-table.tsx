@@ -167,7 +167,7 @@ export class DynamicTable extends React.Component<DynamicTable.Props, { sorting:
                     rowIdx={srow.actualIndex}
                     highlightedTag={this.props.highlightedTag}
                     highlightColor={this.props.highlightColor}
-                    key={`${srow.actualIndex}-${this.state.sorting.columnIdx}_${this.state.sorting.order}`}
+                    key={srow.actualIndex}
                 >
                     {
                         srow.row.map((item, colIdx) => {
