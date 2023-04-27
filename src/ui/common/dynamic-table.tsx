@@ -41,6 +41,13 @@ function modelsAreSame(a: DynamicTable.Model, b: DynamicTable.Model) {
     );
 }
 
+function sortingsAreSame(a: DynamicTable.Sorting, b: DynamicTable.Sorting) {
+    return (
+        a.columnIdx === b.columnIdx &&
+        a.order === b.order
+    );
+}
+
 class DynamicTableCell extends React.Component<{
     item: DynamicTable.Cell<any>,
     col: DynamicTable.Column<any>,
@@ -91,12 +98,9 @@ class DynamicTableRow extends React.Component<{
     highlightColor?: number,
     children: React.ReactNode[]
 }> {
-    shouldComponentUpdate(nextProps: Readonly<{model: DynamicTable.Model; rowIdx: number; highlightedTag?: string; children: React.ReactNode[];}>, ): boolean {
+    shouldComponentUpdate(nextProps: Readonly<{model: DynamicTable.Model; rowIdx: number; highlightedTag?: string; children: React.ReactNode[];}>): boolean {
         const oldModel = this.props.model;
         const newModel = nextProps.model;
-
-        if (!modelsAreSame(oldModel, newModel))
-            return true;
 
         for (let colIdx = 0; colIdx < oldModel.columns.length; colIdx++) {
             const oldCell = oldModel.columns[colIdx].cells[this.props.rowIdx];
@@ -269,6 +273,19 @@ export class DynamicTable extends React.Component<DynamicTable.Props, { sorting:
         }
 
         return headers;
+    }
+
+    shouldComponentUpdate(nextProps: Readonly<DynamicTable.Props>, nextState: Readonly<{ sorting: DynamicTable.Sorting }>): boolean {
+        const oldModel = this.props.model;
+        const newModel = nextProps.model;
+
+        if (!modelsAreSame(oldModel, newModel))
+            return true;
+
+        if (nextProps.highlightedTag !== this.props.highlightedTag)
+            return true;
+
+        return !sortingsAreSame(nextState.sorting, this.state.sorting);
     }
 
     componentDidUpdate(prevProps: DynamicTable.Props) {
