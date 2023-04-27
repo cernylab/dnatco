@@ -10,6 +10,17 @@ const ZeroCode = '0'.charCodeAt(0);
 
 export const Utf8Decoder = new TextDecoder('utf-8');
 
+export function arraysAreSame<T>(a: Array<T>, b: Array<T>) {
+    if (a.length !== b.length)
+        return false;
+    for (let idx = 0; idx < a.length; idx++) {
+        if (a[idx] !== b[idx])
+            return false;
+    }
+
+    return true;
+}
+
 export function capitalize(s: string) {
     return s.substring(0, 1).toUpperCase() + s.substring(1);
 }
