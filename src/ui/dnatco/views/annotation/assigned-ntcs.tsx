@@ -207,15 +207,15 @@ export class AssignedNtCs extends View<View.Props> {
                     downloaders: [
                         {
                             caption: 'CSV',
-                            download: function(fileNameStem, model) {
-                                const text = Serialization.dynamicTable(model, 'csv');
+                            download(fileNameStem, model, sorting) {
+                                const text = Serialization.dynamicTable(model, 'csv', sorting);
                                 doDownload(fileNameStem, text, this.fileType);
                             },
                             fileType: FileTypes.csv,
                         },
                         {
                             caption: 'JSON',
-                            download: function(fileNameStem, model) {
+                            download(fileNameStem, model) {
                                 const text = Serialization.dynamicTable(model, 'json');
                                 doDownload(fileNameStem, text, this.fileType);
                             },

@@ -3,7 +3,7 @@ import { Icon } from './icon';
 import { Tooltip } from './tooltip';
 import { colorToHex, scrollIntoViewIfNeeded } from '../util';
 import { GlobalConfig } from '../../global-config';
-import { Downloader as _Downloader } from '../../util/downloader';
+import { type FileType } from '../../util/downloader';
 import { arraysAreSame } from '../../util';
 import 'assets/imgs/data-transfer-download.svg';
 import 'assets/imgs/sort.svg';
@@ -114,11 +114,7 @@ class DynamicTableRow extends React.Component<{
     }
 }
 
-type Sorting = {
-    columnIdx: number,
-    order: 'asc' | 'desc' | 'none',
-}
-export class DynamicTable extends React.Component<DynamicTable.Props, { sorting: Sorting }> {
+export class DynamicTable extends React.Component<DynamicTable.Props, { sorting: DynamicTable.Sorting }> {
     constructor(props: DynamicTable.Props) {
         super(props);
 
@@ -224,7 +220,7 @@ export class DynamicTable extends React.Component<DynamicTable.Props, { sorting:
                     className='rdo-dynamic-table-download-button'
                     onClick={e => {
                         e.stopPropagation();
-                        dl.download(fileName, this.props.model);
+                        dl.download(fileName, this.props.model, this.state.sorting);
                     }}
                 >
                     <Icon img={`${prefix}/imgs/data-transfer-download.svg`} size='text' />
@@ -316,6 +312,10 @@ export namespace DynamicTable {
         tooltip?: React.ReactNode;             // Optional tooltip to display when a column header is hovered
         elem?: JSX.Element|React.ReactElement; // Optional element to show as column header.
     }
+    export type Sorting = {
+        columnIdx: number,
+        order: 'asc' | 'desc' | 'none',
+    }
     export type Style = 'normal' | 'wide';
 
     export class Model {
@@ -370,7 +370,11 @@ export namespace DynamicTable {
         }
     }
 
-    export type Downloader = _Downloader<Model>;
+    export type Downloader = {
+        caption: string,
+        download: (fileNameStem: string, data: Model, sorting?: Sorting) => void,
+        fileType: FileType,
+    }
     export interface Props {
         model: Model;
         onCellClicked?: (data: any, row: Cell<any>[], columnName: string) => void;

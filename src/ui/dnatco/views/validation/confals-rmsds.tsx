@@ -382,8 +382,8 @@ export class ConfalsRmsds extends View<View.Props> {
                     downloaders: [
                         {
                             caption: 'CSV',
-                            download: function(fileNameStem, model) {
-                                const text = Serialization.dynamicTable(model, 'csv');
+                            download: function(fileNameStem, model, sorting) {
+                                const text = Serialization.dynamicTable(model, 'csv', sorting);
                                 doDownload(fileNameStem, text, this.fileType);
                             },
                             fileType: FileTypes.csv,

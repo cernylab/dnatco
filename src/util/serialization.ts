@@ -55,14 +55,16 @@ export namespace Serialization {
         }
     }
 
-    export function dynamicTable(model: DynamicTable.Model, format: 'csv'|'json') {
+    export function dynamicTable(model: DynamicTable.Model, format: 'csv'|'json', sorting?: DynamicTable.Sorting) {
         const tags = model.columns.filter(col => !col.noData).map(col => col.name);
         const N = tags.length;
         const values = new Array<Column>(N);
         for (let idx = 0; idx < N; idx++)
             values[idx] = new Array<Item>();
 
-        for (const row of model.rows) {
+        const rows = sorting ? model.sortedRows(sorting).map((sr) => sr.row) : model.rows;
+
+        for (const row of rows) {
             for (let idx = 0; idx < N; idx++) {
                 if (model.columns[idx].noData)
                     continue;
