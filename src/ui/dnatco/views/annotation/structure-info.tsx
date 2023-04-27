@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { EntitiesAndMolecules } from './entities-and-molecules';
 import { View } from '../view';
 import { Common } from '../../common';
 import { getCifValue, niceCifDate } from '../../util';
@@ -87,6 +88,11 @@ export class StructureInfo extends View {
                     <NamedListItem name='Deposited to PDB'>{niceCifDate(getCifValue(this.props.dnatcofication, PdbxDatabaseStatus, 'recvd_initial_deposition_date'))}</NamedListItem>
                 </NamedList>
                 <div className='rdo-line-spacer' />
+                <CollapsibleVertical
+                    header='Entities and Molecules'
+                >
+                    <EntitiesAndMolecules d={this.props.dnatcofication} />
+                </CollapsibleVertical>
                 <CollapsibleVertical
                     header='Literature'
                 >
