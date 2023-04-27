@@ -8,7 +8,7 @@ import { Popup } from './common/popup';
 import { ShadowedBox } from './common/shadowed-box';
 import { SideSwitchingPanel } from './common/side-switching-panel';
 import { TextContainer } from './common/text-container';
-import { DownloadButton } from './dnatco/common';
+import { Common, DownloadButton } from './dnatco/common';
 import { ListOfConformers } from '../dnatco/list-of-conformers';
 import { Step } from '../dnatco/step';
 import { Search } from '../remote/search';
@@ -74,8 +74,8 @@ class BrowseConformers extends React.Component {
                 elem: <span>{step.rmsd.toFixed(2)}</span>,
             });
             resolutions.cells.push({
-                data: step.resolution,
-                elem: <span>{step.resolution.toFixed(4)}</span>
+                data: step.resolution ?? 0,
+                elem: <span>{step.resolution?.toFixed(4) ?? Common.NA}</span>
             });
             haveMaps.cells.push({ data: 'N' });
         }

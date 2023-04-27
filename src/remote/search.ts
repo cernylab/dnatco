@@ -1,5 +1,6 @@
 import { CANA } from '../dnatco/cana';
 import { NtC } from '../dnatco/ntc';
+import { objKeys } from '../util';
 import { EventsKeeper } from '../util/events-keeper';
 import { WebApi } from '../web-api';
 import { Requests } from '../web-api/requests';
@@ -48,7 +49,7 @@ export namespace Search {
         delta2: 0,
         chi1: 0,
         chi2: 0,
-        resolution: 0,
+        resolution: 0 as (number | null),
         numsteps: 0,
         rmsd: 0,
     }
@@ -67,13 +68,16 @@ export namespace Search {
         if (obj === null || obj === undefined || typeof obj !== 'object')
             return false;
 
-        const keys = Object.keys(obj);
-        for (const prop in FoundStep) {
+        const keys = objKeys(obj);
+        for (const prop of objKeys(FoundStep)) {
             if (!keys.includes(prop))
                 return false;
 
+            if (prop === 'resolution' && obj[prop] === null)
+                continue; // Having null for "resolution" is fine
+
             if (typeof obj[prop] !== typeof FoundStep[prop as keyof FoundStep]) {
-                console.log(prop, typeof obj[prop], typeof  FoundStep[prop as keyof FoundStep])
+                console.log(prop, typeof obj[prop], typeof FoundStep[prop as keyof FoundStep], obj[prop]);
                 return false;
             }
         }
