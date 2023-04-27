@@ -319,26 +319,35 @@ export namespace DynamicTable {
     export type Style = 'normal' | 'wide';
 
     export class Model {
-        private _rows = new Array<DynamicTable.Cell<any>[]>();
+        private readonly _rows: Array<DynamicTable.Cell<any>[]>;
+        private readonly _columnNames: string[];
+
+        private initColumnNames() {
+            return this.columns.map(col => col.name);
+        }
 
         private initRows() {
             if (this.columns.length < 1)
-                return;
+                return [];
 
+            const rows = new Array<DynamicTable.Cell<any>[]>();
             for (let idx = 0; idx < this.columns[0].cells.length; idx++) {
                 const row = new Array<DynamicTable.Cell<any>>();
                 for (const col of this.columns)
                     row.push(col.cells[idx]);
-                this._rows.push(row);
+                rows.push(row);
             }
+
+            return rows;
         }
 
         constructor(readonly columns: Column<any>[] = []) {
-            this.initRows();
+            this._rows = this.initRows();
+            this._columnNames = this.initColumnNames();
         }
 
         get columnNames() {
-            return this.columns.map(col => col.name);
+            return this._columnNames;
         }
 
         get rows() {
