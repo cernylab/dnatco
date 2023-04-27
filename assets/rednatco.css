@@ -397,6 +397,16 @@ th.rdo-data-table-small {
     text-align: center;
 }
 
+.rdo-found-conformers-stepname-cell {
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color var(--anim-speed);
+}
+
+.rdo-found-conformers-stepname-cell:hover {
+    background-color: var(--color-c);
+}
+
 .rdo-hgap {
     gap: var(--h-gap);
 }

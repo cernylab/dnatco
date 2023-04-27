@@ -65,7 +65,10 @@ class BrowseConformers extends React.Component {
         const haveMaps: DynamicTable.Column<string> = { name: 'Map', cells: new Array<DynamicTable.Cell<string>>() };
 
         for (const step of this.search.results) {
-            names.cells.push({ data: step.name });
+            names.cells.push({
+                data: step.name,
+                elem: <div className='rdo-found-conformers-stepname-cell'>{step.name}</div>
+            });
             CANAs.cells.push({ data: step.CANA });
             NtCs.cells.push({ data: step.NtC });
             confals.cells.push({ data: step.confal });
