@@ -16,15 +16,18 @@ function moleculesInEntity(entityId: string, entityType: string, nMolecules: num
         return <div>Information about molecules is not available</div>;
 
     return (
-        <CollapsibleVertical
-            header='Molecules'
-        >
-            <NamedList>
-                <NamedListItem name='Type'>{type.values?.at(row) ?? Common.NA}</NamedListItem>
-                <NamedListItem name='Strand IDs'>{pdbx_strand_id.values?.at(row) ?? Common.NA}</NamedListItem>
-                <NamedListItem name='Count'>{nMolecules ? nMolecules : Common.NA}</NamedListItem>
-            </NamedList>
-        </CollapsibleVertical>
+        <div>
+            <CollapsibleVertical
+                header='Molecules'
+            >
+                <NamedList>
+                    <NamedListItem name='Type'>{type.values?.at(row) ?? Common.NA}</NamedListItem>
+                    <NamedListItem name='Strand IDs'>{pdbx_strand_id.values?.at(row) ?? Common.NA}</NamedListItem>
+                    <NamedListItem name='Count'>{nMolecules ? nMolecules : Common.NA}</NamedListItem>
+                </NamedList>
+            </CollapsibleVertical>
+            <div className='rdo-line-spacer' />
+        </div>
     );
 }
 
@@ -55,8 +58,6 @@ function entities(d: Dnatcofication) {
 }
 
 export function EntitiesAndMolecules(props: { d: Dnatcofication }) {
-
-
     return (
         <div>
             <NamedList>

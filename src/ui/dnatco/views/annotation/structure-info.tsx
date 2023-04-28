@@ -91,7 +91,9 @@ export class StructureInfo extends View {
                 <CollapsibleVertical
                     header='Entities and Molecules'
                 >
-                    <EntitiesAndMolecules d={this.props.dnatcofication} />
+                    <div className='rdo-offset'>
+                        <EntitiesAndMolecules d={this.props.dnatcofication} />
+                    </div>
                 </CollapsibleVertical>
                 <CollapsibleVertical
                     header='Literature'
