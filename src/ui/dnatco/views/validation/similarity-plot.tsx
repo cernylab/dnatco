@@ -1,5 +1,6 @@
 import React from 'react';
 import Plot from 'react-plotly.js';
+import { PlotPointsLegend } from '../../plot-points-legend';
 import { Validation } from './common';
 import { ChainSelect, ModelSelect, StepSelect } from '../structure-selectors';
 import { View } from '../view';
@@ -137,6 +138,7 @@ export class SimilarityPlot extends View<View.Props> {
                     </NamedListItem>
                 </NamedList>
                 <div className='rdo-offset'>
+                    <PlotPointsLegend />
                     <div className='rdo-plot-container'>
                         <Plot
                             data={[

@@ -4,6 +4,7 @@ import { Refinement } from './common';
 import { CustomNtCSets } from './custom-ntc-sets';
 import { ChainSelect, ModelSelect, StepSelect } from '../structure-selectors';
 import { View } from '../view';
+import { PlotPointsLegend } from '../../plot-points-legend';
 import { EmptySelectionPieces, InvalidAtom, InvalidResidue, InvalidStepId } from '../../structure-selection';
 import { NamedList, NamedListItem } from '../../../common/named-list';
 import { Cif } from '../../../../cif';
@@ -386,6 +387,7 @@ export class ConnectivityPlot extends View<Refinement.Props> {
                 <div className='rdo-line-spacer' />
 
                 <div className='rdo-offset' style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+                    <PlotPointsLegend computed={true} />
                     <div className='rdo-secondary-caption'>Similarity plot</div>
                     <div className='rdo-plot-container' style={{ flex: 1, minHeight: Constants.MinimumFlexiblePlotHeight }}>
                         <Plot
