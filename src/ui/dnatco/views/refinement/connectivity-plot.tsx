@@ -142,7 +142,7 @@ export class ConnectivityPlot extends View<Refinement.Props> {
     }
 
 
-    private renderConnectivityPlot(data: PlotData, hints: [xMax: number, yMax: number], changeCustomNtC: (NtC: string) => void) {
+    private renderConnectivityPlot(data: PlotData, hints: [xMax: number, yMax: number], changeCustomNtC: (NtC: string) => void, uirev: string) {
         return (
             <div className='rdo-plot-container' style={{ flex: 1, minHeight: Constants.MinimumFlexiblePlotHeight }}>
                 <Plot
@@ -191,7 +191,6 @@ export class ConnectivityPlot extends View<Refinement.Props> {
                                 hints[0],
                             ],
                             title: 'C5 distance [Å]',
-                            automargin: true,
                         },
                         yaxis: {
                             range: [
@@ -199,7 +198,6 @@ export class ConnectivityPlot extends View<Refinement.Props> {
                                 hints[1],
                             ],
                             title: 'O3 distance [Å]',
-                            automargin: true,
                         },
                         margin: {
                             t: 0,
@@ -208,7 +206,7 @@ export class ConnectivityPlot extends View<Refinement.Props> {
                         modebar: {
                             orientation: 'v',
                         },
-                        uirevision: 'true',
+                        uirevision: uirev,
                     }}
                     config={{
                         scrollZoom: true,
@@ -425,7 +423,7 @@ export class ConnectivityPlot extends View<Refinement.Props> {
                                 modebar: {
                                     orientation: 'v',
                                 },
-                                uirevision: 'true',
+                                uirevision: 'simil',
                             }}
                             config={{
                                 scrollZoom: true,
@@ -442,10 +440,10 @@ export class ConnectivityPlot extends View<Refinement.Props> {
                     </div>
 
                     <div className='rdo-secondary-caption'>Connectivity to previous step</div>
-                    {this.renderConnectivityPlot(prevConnPlotData, prevConnMaxHints, changeCustomNtCPrev)}
+                    {this.renderConnectivityPlot(prevConnPlotData, prevConnMaxHints, changeCustomNtCPrev, 'prev')}
 
                     <div className='rdo-secondary-caption'>Connectivity to next step</div>
-                    {this.renderConnectivityPlot(nextConnPlotData, nextConnMaxHints, changeCustomNtCNext)}
+                    {this.renderConnectivityPlot(nextConnPlotData, nextConnMaxHints, changeCustomNtCNext, 'next')}
                 </div>
             </div>
         );
