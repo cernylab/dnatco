@@ -31,10 +31,10 @@ const PlotData = {
     colorsSel: new Array<string>(),
     tagsSel: new Array<string>(),
 
-    xOrig: new Array<number>(),
-    yOrig: new Array<number>(),
-    colorsOrig: new Array<string>(),
-    tagsOrig: new Array<string>(),
+    xComputed: new Array<number>(),
+    yComputed: new Array<number>(),
+    colorsComputed: new Array<string>(),
+    tagsComputed: new Array<string>(),
 };
 type PlotData = typeof PlotData;
 
@@ -50,16 +50,16 @@ export class ConnectivityPlot extends View<Refinement.Props> {
         const colorsSel =new Array<string>();
         const tagsSel = new Array<string>();
 
-        const xOrig = new Array<number>();
-        const yOrig = new Array<number>();
-        const colorsOrig =new Array<string>();
-        const tagsOrig = new Array<string>();
+        const xComputed = new Array<number>();
+        const yComputed = new Array<number>();
+        const colorsComputed =new Array<string>();
+        const tagsComputed = new Array<string>();
 
         if (surroundingStepId == InvalidStepId) {
             return {
                 x, y, colors, tags,
                 xSel, ySel, colorsSel, tagsSel,
-                xOrig, yOrig, colorsOrig, tagsOrig
+                xComputed, yComputed, colorsComputed, tagsComputed
             };
         }
 
@@ -106,10 +106,10 @@ export class ConnectivityPlot extends View<Refinement.Props> {
                     colorsSel.push(clr);
                     tagsSel.push(ntc);
                 } else if (otherStep && ntc === otherStep.closestNtC) {
-                    xOrig.push(conn.C5PrimeDistance);
-                    yOrig.push(conn.O3PrimeDistance);
-                    colorsOrig.push(clr);
-                    tagsOrig.push(ntc);
+                    xComputed.push(conn.C5PrimeDistance);
+                    yComputed.push(conn.O3PrimeDistance);
+                    colorsComputed.push(clr);
+                    tagsComputed.push(ntc);
                 } else {
                     x.push(conn.C5PrimeDistance);
                     y.push(conn.O3PrimeDistance);
@@ -122,9 +122,25 @@ export class ConnectivityPlot extends View<Refinement.Props> {
         return {
             x, y, colors, tags,
             xSel, ySel, colorsSel, tagsSel,
-            xOrig, yOrig, colorsOrig, tagsOrig
+            xComputed, yComputed, colorsComputed, tagsComputed
         };
     }
+
+    private changeCustomNtC(NtC: string, targetStep: (stepId: number) => Step | undefined) {
+        const stepId = this.props.structureSelection.steps[0];
+        if (this.props.selectedCustomNtCSet === '' || stepId === undefined)
+            return;
+
+        const step = targetStep(stepId);
+        if (step) {
+            this.props.dnatcofication.customNtCs.setCustomNtC(
+                this.props.selectedCustomNtCSet,
+                step.name,
+                NtC
+            );
+        }
+    }
+
 
     private renderConnectivityPlot(data: PlotData, hints: [xMax: number, yMax: number], changeCustomNtC: (NtC: string) => void) {
         return (
@@ -140,6 +156,7 @@ export class ConnectivityPlot extends View<Refinement.Props> {
                             text: data.tags,
                             textposition: 'top center',
                             type: 'scattergl',
+                            showlegend: false,
                         },
                         {
                             x: data.xSel,
@@ -153,12 +170,12 @@ export class ConnectivityPlot extends View<Refinement.Props> {
                             showlegend: false,
                         },
                         {
-                            x: data.xOrig,
-                            y: data.yOrig,
-                            marker: { size: 14, color: data.colorsOrig, symbol: 'square' },
+                            x: data.xComputed,
+                            y: data.yComputed,
+                            marker: { size: 14, color: data.colorsComputed, symbol: 'square' },
                             mode: 'text+markers',
                             hovertemplate: '<i>RMSD</i>: %{x:.3f}, <i>ED</i>: %{y:.3f}<br />%{text}',
-                            text: data.tagsOrig,
+                            text: data.tagsComputed,
                             textposition: 'top center',
                             type: 'scattergl',
                             showlegend: false,
@@ -190,7 +207,8 @@ export class ConnectivityPlot extends View<Refinement.Props> {
                         },
                         modebar: {
                             orientation: 'v',
-                        }
+                        },
+                        uirevision: 'true',
                     }}
                     config={{
                         scrollZoom: true,
@@ -220,10 +238,10 @@ export class ConnectivityPlot extends View<Refinement.Props> {
         const colorsSel = [];
         const tagsSel = [];
 
-        const xOrig = [];
-        const yOrig = [];
-        const colorsOrig = [];
-        const tagsOrig = [];
+        const xComputed = [];
+        const yComputed = [];
+        const colorsComputed = [];
+        const tagsComputed = [];
 
         const step = StepsMapper.byId(this.props.dnatcofication, stepId);
         const similarities = this.props.dnatcofication.getSimilarities(stepId);
@@ -240,10 +258,10 @@ export class ConnectivityPlot extends View<Refinement.Props> {
                 colorsSel.push(rgbToHex(clr));
                 tagsSel.push(ntc);
             } else if (ntc === step.closestNtC) {
-                xOrig.push(simil.rmsd);
-                yOrig.push(simil.euclideanDistance);
-                colorsOrig.push(rgbToHex(clr));
-                tagsOrig.push(ntc);
+                xComputed.push(simil.rmsd);
+                yComputed.push(simil.euclideanDistance);
+                colorsComputed.push(rgbToHex(clr));
+                tagsComputed.push(ntc);
             } else {
                 x.push(simil.rmsd);
                 y.push(simil.euclideanDistance);
@@ -255,7 +273,7 @@ export class ConnectivityPlot extends View<Refinement.Props> {
         return {
             x, y, colors, tags,
             xSel, ySel, colorsSel, tagsSel,
-            xOrig, yOrig, colorsOrig, tagsOrig
+            xComputed, yComputed, colorsComputed, tagsComputed
         };
     }
 
@@ -287,55 +305,21 @@ export class ConnectivityPlot extends View<Refinement.Props> {
             nextConnPlotData = this.connectivityPlotData(this.props.structureSelection.steps[0], prevNext.nextId, 'next');
         }
 
-        const changeCustomNtC = (NtC: string) => {
-            const stepId = this.props.structureSelection.steps[0];
-            if (this.props.selectedCustomNtCSet === '' || stepId === undefined)
-                return;
-
-            const step = StepsMapper.byId(this.props.dnatcofication, stepId);
-            this.props.dnatcofication.customNtCs.setCustomNtC(
-                this.props.selectedCustomNtCSet,
-                step.name,
-                NtC
-            );
-        }
-
         const changeCustomNtCPrev = (NtC: string) => {
-            const stepId = this.props.structureSelection.steps[0];
-            if (this.props.selectedCustomNtCSet === '' || stepId === undefined)
-                return;
-
-            const refIdx = StepsMapper.idToIndex(this.props.dnatcofication, stepId);
-            const idx = this.props.dnatcofication.data.steps.previous[refIdx] ?? -1;
-            if (idx === -1)
-                return;
-
-            const step = this.props.dnatcofication.data.steps.steps[idx];
-            this.props.dnatcofication.customNtCs.setCustomNtC(
-                this.props.selectedCustomNtCSet,
-                step.name,
-                NtC
-            );
+            this.changeCustomNtC(NtC, (stepId: number) => {
+                const refIdx = StepsMapper.idToIndex(this.props.dnatcofication, stepId);
+                const idx = this.props.dnatcofication.data.steps.previous[refIdx] ?? -1;
+                return idx === -1 ? void 0 : this.props.dnatcofication.data.steps.steps[idx];
+            });
         }
 
         const changeCustomNtCNext = (NtC: string) => {
-            const stepId = this.props.structureSelection.steps[0];
-            if (this.props.selectedCustomNtCSet === '' || stepId === undefined)
-                return;
-
-            const refIdx = StepsMapper.idToIndex(this.props.dnatcofication, stepId);
-            const idx = this.props.dnatcofication.data.steps.next[refIdx] ?? -1;
-            if (idx === -1)
-                return;
-
-            const step = this.props.dnatcofication.data.steps.steps[idx];
-            this.props.dnatcofication.customNtCs.setCustomNtC(
-                this.props.selectedCustomNtCSet,
-                step.name,
-                NtC
-            );
+            this.changeCustomNtC(NtC, (stepId: number) => {
+                const refIdx = StepsMapper.idToIndex(this.props.dnatcofication, stepId);
+                const idx = this.props.dnatcofication.data.steps.next[refIdx] ?? -1;
+                return idx === -1 ? void 0 : this.props.dnatcofication.data.steps.steps[idx];
+            });
         }
-
 
         const prevConnMaxHints = axesMaximumHints(prevConnPlotData.x, prevConnPlotData.y, MinNumberOfPointsInPlot, Constants.DefaultConnectivityXRange[1], Constants.DefaultConnectivityYRange[1]);
         const nextConnMaxHints = axesMaximumHints(nextConnPlotData.x, nextConnPlotData.y, MinNumberOfPointsInPlot, Constants.DefaultConnectivityXRange[1], Constants.DefaultConnectivityYRange[1]);
@@ -415,12 +399,12 @@ export class ConnectivityPlot extends View<Refinement.Props> {
                                     showlegend: false,
                                 },
                                 {
-                                    x: simPlotData.xOrig,
-                                    y: simPlotData.yOrig,
-                                    marker: { size: 14, color: simPlotData.colorsOrig, symbol: 'square' },
+                                    x: simPlotData.xComputed,
+                                    y: simPlotData.yComputed,
+                                    marker: { size: 14, color: simPlotData.colorsComputed, symbol: 'square' },
                                     mode: 'text+markers',
                                     hovertemplate: '<i>RMSD</i>: %{x:.3f}, <i>ED</i>: %{y:.3f}<br />%{text}',
-                                    text: simPlotData.tagsOrig,
+                                    text: simPlotData.tagsComputed,
                                     textposition: 'top center',
                                     type: 'scattergl',
                                     showlegend: false,
@@ -451,8 +435,7 @@ export class ConnectivityPlot extends View<Refinement.Props> {
                             onClick={ev => {
                                 const pt = ev.points[0];
                                 if (pt) {
-                                    // @ts-ignore
-                                    changeCustomNtC(pt.text);
+                                    this.changeCustomNtC(pt.text, (stepId) => StepsMapper.byId(this.props.dnatcofication, stepId));
                                 }
                             }}
                         />
