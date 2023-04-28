@@ -2,7 +2,6 @@ import { type StandardLonghandProperties } from 'csstype';
 import React from 'react';
 import { Subject, type Subscription } from 'rxjs';
 import { AnglesLengthsCommon, PGroupSummary, Prosco, ResidueName as CommonResidueName } from './angles-lengths-common';
-import { ChainSelect, ModelSelect } from '../structure-selectors';
 import { View } from '../view';
 import { Common } from '../../common';
 import { Constants } from '../../constants';
@@ -13,7 +12,6 @@ import {
 } from '../../structure-selection';
 import { CollapsibleVertical } from '../../../common/collapsible-vertical';
 import { Icon } from '../../../common/icon';
-import { NamedList, NamedListItem } from '../../../common/named-list';
 import { Tooltip } from '../../../common/tooltip';
 import { colorStyle, colorToRgb, colorToTuple, hexToRgb, rgbToHex, type ColorTuple, Rgba } from '../../../util';
 import { ALM } from '../../../../dnatco/alm';
