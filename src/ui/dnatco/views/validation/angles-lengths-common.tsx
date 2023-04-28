@@ -954,22 +954,6 @@ export namespace AnglesLengthsCommon {
         };
     }
 
-    export function countsInGroups(counts: Summarize.Counts, thresholds: number[]): Summarize.CountsInGroup[] {
-        const cig = [];
-
-        for (let idx = 0; idx <= thresholds.length; idx++) {
-            const thr = thresholds[idx];
-            cig.push({
-                threshold: thr ?? 100,
-                exclusive: counts.exclusive[idx],
-                cumulative: counts.cumulative[idx],
-                pGroupIdx: (thr ? idx : 'outlier') as Summarize.CountsInGroup['pGroupIdx'],
-            });
-        }
-
-        return cig;
-    }
-
     export function deselectResidue(residue: Measurements.Residue, selection: StructureSelection, event: ResidueToggledEvent, d: Dnatcofication, vi: ViewerInterop) {
         amendStructureSelection(selection, residue, 'remove');
         SelectionDisplayer({ steps: [], residues: selection.residues, atoms: selection.atoms, reconstruct: true }, d, vi);

@@ -903,7 +903,6 @@ export class AnglesLengthsByResidue extends View<
         tainer: React.RefObject<HTMLDivElement>,
         indices: number[],
         multipleModels: boolean,
-        thresholds: number[],
         pgrpIndices: number[],
         colorsForStatsBar: string[],
         maxResidues: number,
@@ -921,8 +920,8 @@ export class AnglesLengthsByResidue extends View<
 
             const _r = r[idx];
             const _s = s[idx];
-            const countsAngles = AnglesLengthsCommon.countsInGroups(_s.summary.angles, thresholds);
-            const countsLenghts = AnglesLengthsCommon.countsInGroups(_s.summary.lengths, thresholds);
+            const countsAngles = Summarize.countsInGroups(_s.summary.angles);
+            const countsLenghts = Summarize.countsInGroups(_s.summary.lengths);
             const residueName = <ResidueName r={_r} multipleModels={multipleModels} />
             const structureName = AnglesLengthsCommon.structureIdentifyingName(this.props.dnatcofication);
             const identResName = AnglesLengthsCommon.residueIdentifyingName(structureName, _r);
@@ -1175,7 +1174,6 @@ export class AnglesLengthsByResidue extends View<
         const selectedResidueStats = selectedIndices.map((x) => alm.stats[x]);
 
         const summary = Summarize.substructure(selectedResidues);
-        const thresholds = DAnglesLengths.pGroupThresholds();
         const pgrpIndices = sequence(0, DAnglesLengths.pGroupCount() - 1);
 
         const htmlColorsForStatsBar = new Array<string>();
@@ -1183,12 +1181,12 @@ export class AnglesLengthsByResidue extends View<
             htmlColorsForStatsBar.push(rgbToHex(colorToRgb(DAnglesLengths.pGroupColor(idx))));
         htmlColorsForStatsBar.push(rgbToHex(colorToRgb(DAnglesLengths.outlierColor())));
 
-        const countsAngles = AnglesLengthsCommon.countsInGroups(summary.angles, thresholds);
-        const countsLenghts = AnglesLengthsCommon.countsInGroups(summary.lengths, thresholds);
+        const countsAngles = Summarize.countsInGroups(summary.angles);
+        const countsLenghts = Summarize.countsInGroups(summary.lengths);
 
         const percentileOptions = [
             { caption: 'Outliers', value: '' },
-            ...thresholds.reverse().map(thr => {
+            ...DAnglesLengths.pGroupThresholds().reverse().map(thr => {
                 const v = thr.toString();
                 return { caption: v, value: v };
             })
@@ -1219,7 +1217,6 @@ export class AnglesLengthsByResidue extends View<
             this.residuesTainerRef,
             selectedIndices,
             multipleModels,
-            thresholds,
             pgrpIndices,
             htmlColorsForStatsBar,
             this.state.shownResiduesLimit,
@@ -1421,7 +1418,7 @@ export class AnglesLengthsByResidue extends View<
                             onClick={() => Net.serveFile(
                                 FileTypes['csv'].mimeType,
                                 Naval.bondsAsCsv(this.props.dnatcofication.data.naval.bonds, ','),
-                                `${this.props.dnatcofication.pdbId}-naval-bonds-report.csv`
+                                `${this.props.dnatcofication.pdbId}_naval_bonds_report.csv`
                             )}
                         >
                             <Icon img={`${pathPrefix}/imgs/data-transfer-download.svg`} size='text' />
@@ -1433,7 +1430,7 @@ export class AnglesLengthsByResidue extends View<
                             onClick={() => Net.serveFile(
                                 FileTypes['csv'].mimeType,
                                 Naval.anglesAsCsv(this.props.dnatcofication.data.naval.angles, ','),
-                                `${this.props.dnatcofication.pdbId}-naval-angles-report.csv`
+                                `${this.props.dnatcofication.pdbId}_naval_angles_report.csv`
                             )}
                         >
                             <Icon img={`${pathPrefix}/imgs/data-transfer-download.svg`} size='text' />
@@ -1445,7 +1442,7 @@ export class AnglesLengthsByResidue extends View<
                             onClick={() => Net.serveFile(
                                 FileTypes['csv'].mimeType,
                                 Naval.geometryAsCsv(this.props.dnatcofication.data.naval.geometry, ','),
-                                `${this.props.dnatcofication.pdbId}-naval-geometry-report.csv`
+                                `${this.props.dnatcofication.pdbId}_naval_geometry_report.csv`
                             )}
                         >
                             <Icon img={`${pathPrefix}/imgs/data-transfer-download.svg`} size='text' />

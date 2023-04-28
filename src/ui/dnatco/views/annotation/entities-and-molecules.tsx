@@ -2,7 +2,6 @@ import React from 'react';
 import { Common } from '../../common';
 import { CollapsibleVertical } from '../../../common/collapsible-vertical';
 import { NamedList, NamedListItem } from '../../../common/named-list';
-//import { Cif } from '../../../../cif';
 import { Entity, EntityPoly } from '../../../../cif/categories/entity';
 import { Dnatcofication } from '../../../../dnatco/dnatcofication';
 

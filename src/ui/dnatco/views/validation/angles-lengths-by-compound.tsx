@@ -136,7 +136,6 @@ function Base<T extends ALM.AngleStats | ALM.LengthStats>(props: {
     base: Residues.ElementaryResidue,
     displayOrders: Record<Residues.ElementaryResidue, string[]>,
     stats: ALM.CompoundStats<T>,
-    thresholds: number[],
     colorsForCounts: string[],
     outlierColor: ColorTuple,
     pgrpIndices: number[],
@@ -159,7 +158,6 @@ function Base<T extends ALM.AngleStats | ALM.LengthStats>(props: {
                 <Metric
                     base={props.base}
                     stats={metric}
-                    thresholds={props.thresholds}
                     colorsForCounts={props.colorsForCounts}
                     outlierColor={props.outlierColor}
                     pgrpIndices={props.pgrpIndices}
@@ -175,7 +173,7 @@ function Base<T extends ALM.AngleStats | ALM.LengthStats>(props: {
     }
 
     const dlStats = { [props.base]: props.stats };
-    const dlCounts = AnglesLengthsCommon.countsInGroups(props.stats.overall, props.thresholds);
+    const dlCounts = Summarize.countsInGroups(props.stats.overall);
 
     return (
         <CollapsibleVertical
@@ -184,7 +182,7 @@ function Base<T extends ALM.AngleStats | ALM.LengthStats>(props: {
                     {AnglesLengthsCommon.renderSubstructureStats(
                         <div style={BarCaptionStyle}>{props.base}</div>,
                         props.stats.overall,
-                        AnglesLengthsCommon.countsInGroups(props.stats.overall, props.thresholds),
+                        Summarize.countsInGroups(props.stats.overall),
                         props.colorsForCounts
                     )}
                     <DownloadButtons
@@ -213,7 +211,6 @@ function Base<T extends ALM.AngleStats | ALM.LengthStats>(props: {
 function Bases<T extends ALM.AngleStats | ALM.LengthStats>(props: {
     data: Record<Residues.ElementaryResidue, ALM.CompoundStats<T>>,
     displayOrders: Record<Residues.ElementaryResidue, string[]>,
-    thresholds: number[],
     colorsForCounts: string[],
     outlierColor: ColorTuple,
     pgrpIndices: number[],
@@ -246,7 +243,6 @@ function Bases<T extends ALM.AngleStats | ALM.LengthStats>(props: {
                 base={k}
                 displayOrders={props.displayOrders}
                 stats={stats}
-                thresholds={props.thresholds}
                 colorsForCounts={props.colorsForCounts}
                 outlierColor={props.outlierColor}
                 pgrpIndices={props.pgrpIndices}
@@ -267,7 +263,6 @@ function Bases<T extends ALM.AngleStats | ALM.LengthStats>(props: {
 function Metric<T extends ALM.AngleStats | ALM.LengthStats>(props: {
     base: Residues.ElementaryResidue,
     stats: ALM.MetricStats<T>,
-    thresholds: number[],
     colorsForCounts: string[],
     outlierColor: ColorTuple,
     pgrpIndices: number[],
@@ -302,8 +297,8 @@ function Metric<T extends ALM.AngleStats | ALM.LengthStats>(props: {
         : <LengthMetricDetails { ...{ ...detailsProps, stats: props.stats.individual as ALM.LengthStats } } />;
 
     const dlData: DownloadableData = props.stats.type === 'angle'
-        ? { angles: [(props.stats.individual as ALM.AngleStats)], countsAngles: AnglesLengthsCommon.countsInGroups(props.stats.overall, props.thresholds), lengths: [], countsLengths: [] }
-        : { angles: [], countsAngles: [], lengths: [(props.stats.individual as ALM.LengthStats)], countsLengths: AnglesLengthsCommon.countsInGroups(props.stats.overall, props.thresholds) };
+        ? { angles: [(props.stats.individual as ALM.AngleStats)], countsAngles: Summarize.countsInGroups(props.stats.overall), lengths: [], countsLengths: [] }
+        : { angles: [], countsAngles: [], lengths: [(props.stats.individual as ALM.LengthStats)], countsLengths: Summarize.countsInGroups(props.stats.overall) };
 
     return (
         <CollapsibleVertical
@@ -313,7 +308,7 @@ function Metric<T extends ALM.AngleStats | ALM.LengthStats>(props: {
                     {AnglesLengthsCommon.renderSubstructureStats(
                         <div style={BarCaptionStyle}>{name}</div>,
                         props.stats.overall,
-                        AnglesLengthsCommon.countsInGroups(props.stats.overall, props.thresholds),
+                        Summarize.countsInGroups(props.stats.overall),
                         props.colorsForCounts
                     )}
                     <DownloadButtons
@@ -650,9 +645,8 @@ export class AnglesLengthsByCompound extends View<View.Props> {
 
         const overallAngles = selected.overallAngles
         const overallLengths = selected.overallLengths;
-        const thresholds = DAnglesLengths.pGroupThresholds();
-        const countsAngles = AnglesLengthsCommon.countsInGroups(overallAngles, thresholds);
-        const countsLengths = AnglesLengthsCommon.countsInGroups(overallLengths, thresholds);
+        const countsAngles = Summarize.countsInGroups(overallAngles);
+        const countsLengths = Summarize.countsInGroups(overallLengths);
 
         const htmlColorsForStatsBar = new Array<string>();
         for (let idx = 0; idx < DAnglesLengths.pGroupCount(); idx++)
@@ -736,7 +730,6 @@ export class AnglesLengthsByCompound extends View<View.Props> {
                                 <Bases
                                     data={selected.lengths}
                                     displayOrders={AnglesLengthsCommon.LengthsDisplayOrder}
-                                    thresholds={thresholds}
                                     colorsForCounts={htmlColorsForStatsBar}
                                     outlierColor={outlierColor}
                                     pgrpIndices={pgrpIndices}
@@ -765,7 +758,6 @@ export class AnglesLengthsByCompound extends View<View.Props> {
                                 <Bases
                                     data={selected.angles}
                                     displayOrders={AnglesLengthsCommon.AnglesDisplayOrder}
-                                    thresholds={thresholds}
                                     colorsForCounts={htmlColorsForStatsBar}
                                     outlierColor={outlierColor}
                                     pgrpIndices={pgrpIndices}

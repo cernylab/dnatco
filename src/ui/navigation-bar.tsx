@@ -7,13 +7,20 @@ import '../../../assets/imgs/grid-three-up.svg';
 
 const MinimumWidthForStandardBar = 1000;
 
-function makeMenu(
-    tabs: NavigationBar.Tabs,
-    selectedTab: keyof NavigationBar.Tabs,
-    onTabSwitched: (tk: string) => void,
+type Tabs<TK extends string> = Record<TK, {
+    icon: string,
+    caption: string,
+    enabled: boolean,
+    noCaps?: boolean,
+}>;
+
+function makeMenu<TK extends string>(
+    onTabSwitched: (tk: TK) => void,
+    tabs: Tabs<TK>,
+    selectedTab: TK,
     x: number,
     y: number,
-    onDismissed: () => void,
+    onDismissed: () => void
 ) {
     const tainer = document.createElement('div');
     document.body.appendChild(tainer);
@@ -31,7 +38,7 @@ function makeMenu(
     );
 }
 
-function makeTabs(tabs: NavigationBar.Tabs, selectedTab: keyof NavigationBar.Tabs, onTabSwitched: (tk: string) => void) {
+function makeTabs<TK extends string>(onTabSwitched: (tk: TK) => void, tabs: Tabs<TK>, selectedTab: TK)  {
     const list = new Array<JSX.Element>();
 
     for (const tk in tabs) {
@@ -81,10 +88,10 @@ function TabButton(props: {
     );
 }
 
-export function Menu(props: {
-    tabs: NavigationBar.Tabs,
-    selectedTab: keyof NavigationBar.Tabs,
-    onTabSwitched: (tk: string) => void,
+export function Menu<TK extends string>(props: {
+    onTabSwitched: (tk: TK) => void,
+    tabs: Tabs<TK>,
+    selectedTab: TK,
     x: number,
     y: number,
     onDismissed: () => void,
@@ -109,15 +116,15 @@ export function Menu(props: {
                 top: `${props.y}px`,
             }}
         >
-            {makeTabs(props.tabs, props.selectedTab, props.onTabSwitched)}
+            {makeTabs(props.onTabSwitched, props.tabs, props.selectedTab)}
         </div>
     );
 }
 
-function NavigationBarCompact(props: {
-    tabs: NavigationBar.Tabs;
-    selectedTab: keyof NavigationBar.Tabs;
-    onTabSwitched: (tk: string) => void;
+function NavigationBarCompact<TK extends string>(props: {
+    onTabSwitched: (tk: TK) => void,
+    tabs: Tabs<TK>,
+    selectedTab: TK,
 }) {
     const [hamburgerOpen, setHamburberOpen] = React.useState(false);
     const [hamburgerHovered, setHamburberHovered] = React.useState(false);
@@ -140,9 +147,9 @@ function NavigationBarCompact(props: {
                             return;
 
                         makeMenu(
+                            props.onTabSwitched,
                             props.tabs,
                             props.selectedTab,
-                            props.onTabSwitched,
                             ev.clientX,
                             ev.clientY,
                             () => setHamburberOpen(false),
@@ -167,26 +174,32 @@ function NavigationBarCompact(props: {
     );
 }
 
-function NavigationBarStandard(props: {
-    onTabSwitched: (tk: string) => void;
-    tabs: NavigationBar.Tabs;
-    selectedTab: keyof NavigationBar.Tabs;
+function NavigationBarStandard<TK extends string>(props: {
+    onTabSwitched: (tk: TK) => void,
+    tabs: Tabs<TK>,
+    selectedTab: TK,
 }) {
     return (
         <div className='rdo-navigation-bar'>
             <EquiBox
-                items={makeTabs(props.tabs, props.selectedTab, props.onTabSwitched)}
                 padding={33}
                 orientation='row'
-            />
+            >
+                {makeTabs(props.onTabSwitched, props.tabs, props.selectedTab)}
+            </EquiBox>
         </div>
     );
 }
 
-export function NavigationBar(props: {
-    onTabSwitched: (tk: string) => void;
-    tabs: NavigationBar.Tabs;
-    selectedTab: keyof NavigationBar.Tabs;
+export function NavigationBar<TK extends string>(props: {
+    onTabSwitched: (tk: TK) => void,
+    tabs: Record<TK, {
+        icon: string,
+        caption: string,
+        enabled: boolean,
+        noCaps?: boolean,
+    }>,
+    selectedTab: TK,
 }) {
     const [compact, setCompact] = React.useState(false);
 
@@ -214,15 +227,4 @@ export function NavigationBar(props: {
             }
         </div>
     );
-}
-
-export namespace NavigationBar {
-    export type Tab = {
-        icon: string,
-        caption: string,
-        enabled: boolean,
-        noCaps?: boolean
-    };
-
-    export type Tabs = Record<string, Tab>;
 }

@@ -46,6 +46,23 @@ export namespace Summarize {
         return counts;
     }
 
+    export function countsInGroups(counts: Counts): Summarize.CountsInGroup[] {
+        const thresholds = AnglesLengths.pGroupThresholds();
+        const cig = [];
+
+        for (let idx = 0; idx <= thresholds.length; idx++) {
+            const thr = thresholds[idx];
+            cig.push({
+                threshold: thr ?? 100,
+                exclusive: counts.exclusive[idx],
+                cumulative: counts.cumulative[idx],
+                pGroupIdx: (thr ? idx : 'outlier') as Summarize.CountsInGroup['pGroupIdx'],
+            });
+        }
+
+        return cig;
+    }
+
     export function lengths(lengths: { length: Measurements.BondLength, base: Residues.ElementaryResidue }[]) {
         const nPGroups = AnglesLengths.pGroupCount();
         const counts = Counts(nPGroups);

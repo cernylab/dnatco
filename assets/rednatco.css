@@ -300,6 +300,15 @@ th.rdo-data-table-small {
     gap: 0.25em;
 }
 
+.rdo-download-item {
+    margin-bottom: calc(2 * var(--v-gap));
+}
+
+.rdo-download-item-caption {
+    font-size: var(--font-large);
+    font-weight: bold;
+}
+
 .rdo-dynamic-table-download-button {
     align-items: center;
     background-color: var(--color-a);

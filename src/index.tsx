@@ -44,9 +44,11 @@ import 'assets/imgs/list.svg';
 import 'assets/imgs/task.svg';
 import 'assets/imgs/loop.svg';
 import 'assets/imgs/document.svg';
+import 'assets/imgs/data-transfer-download.svg';
 // Base assets
 import 'assets/index.php';
 import 'assets/rednatco.css';
+import {Downloads} from './ui/dnatco/downloads';
 
 const Params = {
     cifcode: '',
@@ -74,6 +76,11 @@ const TabsForModes = {
         refinement: {
             icon: 'imgs/loop.svg',
             caption: 'Refinement',
+            enabled: false,
+        },
+        downloads: {
+            icon: 'imgs/data-transfer-download.svg',
+            caption: 'Downloads',
             enabled: false,
         },
         'list-of-conformers': {
@@ -106,6 +113,11 @@ const TabsForModes = {
         refinement: {
             icon: 'imgs/loop.svg',
             caption: 'Refinement',
+            enabled: true,
+        },
+        downloads: {
+            icon: 'imgs/data-transfer-download.svg',
+            caption: 'Downloads',
             enabled: true,
         },
         'list-of-conformers': {
@@ -367,20 +379,20 @@ export class App extends WithSubscriptions<{}, State> {
                     />
                 </DnatcoViewerTab>
             );
+        case 'downloads':
+            return <Downloads dnatcofication={this.dnatcofication} />;
         case 'list-of-conformers':
-            return (
-                <ConformersTab />
-            );
+            return <ConformersTab />;
         default:
-            return <AboutTab />
+            return <AboutTab />;
         }
     }
 
     private tabSwitched(tk: TabKeys) {
-        if (this.state.mode === 'nothing' && ['annotation', 'validation', 'refinement'].includes(tk)) {
+        if (this.state.mode === 'nothing' && ['annotation', 'validation', 'refinement', 'downloads'].includes(tk)) {
             Popup.create(
                 <div>
-                    No structure is loaded. Please load a structure on the <i>Home</i> tab to activate these tabs.
+                    No structure is loaded. Please load a structure on the <i>Home</i> tab to activate this tab.
                 </div>
             );
         } else
@@ -518,7 +530,7 @@ export class App extends WithSubscriptions<{}, State> {
         return (
             <div id='rdo-app'>
                 <NavigationBar
-                    onTabSwitched={tab => this.tabSwitched(tab as TabKeys)}
+                    onTabSwitched={tab => this.tabSwitched(tab)}
                     tabs={TabsForModes[this.state.mode]}
                     selectedTab={this.state.selectedTab}
                 />

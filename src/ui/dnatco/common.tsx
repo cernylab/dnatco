@@ -1,9 +1,10 @@
 import type { StandardLonghandProperties } from 'csstype';
 import React from 'react';
-import { IconTextButton } from '../common/push-button';
+import { BasePushButton } from '../common/push-button';
 import { GlobalConfig } from '../../global-config';
 import { clamp } from '../../util';
 import { Step } from '../../dnatco/step';
+import '../../../../assets/imgs/data-transfer-download.svg';
 
 export namespace Common {
     export const NA = 'N/A';
@@ -38,7 +39,9 @@ export function niceStepName(step: Step, showModelNum = false) {
     return (
         <span>
             {showModelNum
-                ? <><span className='rdo-nice-step-model'>M{step.model}</span><div className='rdo-nice-step-msep'>{'\u00A0'}</div></>
+                ? <>
+                    <span className='rdo-nice-step-model'>M{step.model}</span><div className='rdo-nice-step-msep'>{'\u00A0'}</div>
+                </>
                 : undefined
             }
             <span className='rdo-nice-step-base'>{step.base1}</span>
@@ -71,22 +74,26 @@ export function niceStepNameText(step: Step, showModelNum = false) {
     return (showModelNum ? `M${step.model} ` : '') + nice;
 }
 
-export class DownloadButton extends React.Component<DownloadButton.Props> {
-    render() {
-        const prefix = GlobalConfig.data().pathPrefix;
-
-        return (
-            <IconTextButton
-                caption={this.props.caption}
-                src={`${prefix}/imgs/data-transfer-download.svg`}
-                onClick={this.props.onClick}
-            />
-        );
-    }
-}
-export namespace DownloadButton {
-    export interface Props {
-        caption: string;
-        onClick: (e: React.MouseEvent) => void;
-    }
+export function DownloadButton(props: { caption?: string, onClick: () => void }) {
+    return (
+        <BasePushButton
+            {...props}
+            className='rdo-icon-text-button'
+            classNameDisabled='rdo-icon-text-button-disabled'
+        >
+            <div
+                className='rdo-pushbutton-inner-container'
+                style={{ paddingLeft: '0.5em', paddingRight: '0.5em' }}
+            >
+                <img
+                    style={{ height: '50%' }}
+                    src={`${GlobalConfig.data().pathPrefix}/imgs/data-transfer-download.svg`}
+                />
+                {props.caption
+                    ? <span className='rdo-pushbutton-text' style={{ flex: 1, whiteSpace: 'nowrap' }}>{props.caption}</span>
+                    : void 0
+                }
+            </div>
+        </BasePushButton>
+    );
 }
