@@ -2,7 +2,6 @@ import type { StandardLonghandProperties } from 'csstype';
 import React from 'react';
 import { Subject, Subscription } from 'rxjs';
 import { AnglesLengthsCommon, NavalItem, PGroupSummary, Prosco, ResidueName } from './angles-lengths-common';
-import { ChainSelect, ModelSelect } from '../structure-selectors';
 import { View } from '../view';
 import { Constants } from '../../constants';
 import { SearchBox } from '../../search-box';
@@ -1225,28 +1224,7 @@ export class AnglesLengthsByResidue extends View<
         this.residueBlocksMapping = residueBlocks.mapping;
 
         return (
-            <div style={{ ...Common.VScrollGridJail, gridTemplateRows: 'auto auto auto auto auto auto 1fr auto' }}>
-                <NamedList sizing='min-content' rowSpacing='half'>
-                {
-                    multipleModels
-                        ? <NamedListItem name='Model'>
-                                <ModelSelect
-                                    dnatcofication={this.props.dnatcofication}
-                                    structureSelection={this.props.structureSelection}
-                                    switching={this.props.switching}
-                                />
-                            </NamedListItem>
-                        : undefined
-                }
-                    <NamedListItem name='Chain'>
-                        <ChainSelect
-                            dnatcofication={this.props.dnatcofication}
-                            structureSelection={this.props.structureSelection}
-                            switching={this.props.switching}
-                        />
-                    </NamedListItem>
-                </NamedList>
-
+            <div style={{ ...Common.VScrollGridJail, gridTemplateRows: 'auto auto auto auto auto 1fr auto' }}>
                 <div className='rdo-secondary-caption'>Structure/Selection</div>
                 <OverallStatsBar
                     counts={{ angles: countsAngles, lengths: countsLenghts }}

@@ -677,28 +677,7 @@ export class AnglesLengthsByCompound extends View<View.Props> {
         };
 
         return (
-            <div style={{ ...Common.VScrollGridJail, gridTemplateRows: 'auto auto auto auto auto 1fr' }}>
-                <NamedList sizing='min-content' rowSpacing='half'>
-                {
-                    multipleModels
-                        ? <NamedListItem name='Model'>
-                                <ModelSelect
-                                    dnatcofication={this.props.dnatcofication}
-                                    structureSelection={this.props.structureSelection}
-                                    switching={this.props.switching}
-                                />
-                            </NamedListItem>
-                        : undefined
-                }
-                    <NamedListItem name='Chain'>
-                        <ChainSelect
-                            dnatcofication={this.props.dnatcofication}
-                            structureSelection={this.props.structureSelection}
-                            switching={this.props.switching}
-                        />
-                    </NamedListItem>
-                </NamedList>
-
+            <div style={{ ...Common.VScrollGridJail, gridTemplateRows: 'auto auto auto auto 1fr' }}>
                 <div className='rdo-secondary-caption'>Structure/Selection</div>
                 <OverallStatsBar
                     counts={{ angles: countsAngles, lengths: countsLengths }}

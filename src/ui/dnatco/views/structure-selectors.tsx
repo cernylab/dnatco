@@ -75,7 +75,7 @@ export class ChainSelect extends WithSubscriptions<ChainSelect.Props, { modelInd
                         return;
                     this.props.switching.switchChain(v);
                 }}
-                sizing='maximum-available'
+                sizing='auto'
             />
         );
     }
@@ -114,7 +114,7 @@ export class ModelSelect extends WithSubscriptions<ModelSelect.Props, { modelInd
                         return;
                     this.props.switching.switchModel(modelIndex);
                 }}
-                sizing='maximum-available'
+                sizing='auto'
             />
         );
     }
@@ -169,7 +169,7 @@ export class StepSelect extends WithSubscriptions<StepSelect.Props, { modelIndex
                         return;
                     this.props.onChange(stepId);
                 }}
-                sizing='maximum-available'
+                sizing='auto'
             />
         );
     }
