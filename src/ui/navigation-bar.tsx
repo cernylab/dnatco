@@ -106,7 +106,7 @@ export function Menu<TK extends string>(props: {
     React.useEffect(() => {
         document.body.addEventListener('click', dismisser);
         return () => document.body.removeEventListener('click', dismisser);
-    });
+    }, []);
 
     return (
         <div
@@ -132,13 +132,16 @@ function NavigationBarCompact<TK extends string>(props: {
 
     return (
         <div className='rdo-navigation-bar'>
-            <div style={{ alignItems: 'center', display: 'flex', flexDirection: 'row', gap: 'var(--h-gap)' }}>
+            <div style={{ alignItems: 'center', display: 'flex', flexDirection: 'row' }}>
                 <div style={{ flex: 1 }} />
-                <img
+                <div style={{
+                    alignItems: 'center',
+                    display: 'flex',
+                    height: '1.75em',
+                    justifyContent: 'center',
+                    padding: '0.5em'}}
                     onMouseEnter={() => setHamburberHovered(true)}
                     onMouseLeave={() => setHamburberHovered(false)}
-                    className={`rdo-navigation-bar-hamburger-icon ${hamburgerHovered ? 'rdo-navigation-bar-hamburger-icon-active' : ''}`}
-                    src={`${GlobalConfig.data().pathPrefix}/imgs/grid-three-up.svg`}
                     onClick={(ev) => {
                         ev.preventDefault();
                         ev.stopPropagation();
@@ -156,7 +159,12 @@ function NavigationBarCompact<TK extends string>(props: {
                         );
                         setHamburberOpen(true);
                     }}
-                />
+                >
+                    <img
+                        className={`rdo-navigation-bar-hamburger-icon ${hamburgerHovered ? 'rdo-navigation-bar-hamburger-icon-active' : ''}`}
+                        src={`${GlobalConfig.data().pathPrefix}/imgs/grid-three-up.svg`}
+                    />
+                </div>
                 <div style={{ width: 'min-content' }}>
                     <TabButton
                         key={props.selectedTab}

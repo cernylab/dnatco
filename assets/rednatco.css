@@ -553,7 +553,7 @@ th.rdo-data-table-small {
 }
 
 .rdo-navigation-bar-hamburger-icon {
-    height: 1.5em;
+    height: 75%;
     transition: filter var(--anim-speed);
 }
 
