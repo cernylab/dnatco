@@ -1,16 +1,44 @@
+import { type PlotData } from 'plotly.js';
 import React from 'react';
 import { DownloadButton } from './common';
 import { Downloads as _Downloads } from './downloads-common';
+import { RsccPlot } from './rscc-plot';
+import { modelOptions } from './views/structure-selectors';
+import { ComboBox } from '../common/combo-box';
 import { EquiBox } from '../common/equibox';
+import { InProgressSpinner } from '../common/in-progress-spinner';
+import { Popup } from '../common/popup';
 import { ShadowedBox } from '../common/shadowed-box';
+import { toComboBoxOptions } from '../util';
 import { SerializeByCompound, SerializeByResidue } from '../../dnatco/angles-lengths/serialize';
+import { isOk } from '../../dnatco';
 import { Summarize } from '../../dnatco/angles-lengths/summarize';
 import { Dnatcofication } from '../../dnatco/dnatcofication';
 import { Naval } from '../../dnatco/naval';
+import { Rscc } from '../../dnatco/rscc';
 import { objKeys } from '../../util';
 import { doDownload, FileTypes } from '../../util/downloader';
 import { Net } from '../../util/net';
+import { ImageSerialization } from '../../util/image-serialization';
 import { Serialization } from '../../util/serialization';
+
+async function checkRsccRmsdAvailability(d: Dnatcofication) {
+    const availability = new Array<{ assigned: boolean, unassigned: boolean }>();
+
+    for (let mIdx = 0; mIdx < d.data.structures[0].models.length; mIdx++) {
+        // Hopefully the browser will cache the RsccList that may have
+        // to be fetched from a remote source.
+
+        const res = await Rscc.structureRscc(d, mIdx);
+        if (!isOk(res)) {
+            availability.push({ assigned: false, unassigned: false });
+        } else {
+            availability.push({ assigned: res.data.assigned.length > 0, unassigned: res.data.unassigned.length > 0})
+        }
+    }
+
+    return availability;
+}
 
 function downloadAnglesLengthsByCompound(structureName: string, fileType: keyof typeof FileTypes, d: Dnatcofication) {
     const multipleModels = Dnatcofication.Structure.numberOfModels(d) > 1;
@@ -44,6 +72,58 @@ function downloadAnglesLengthsByResidue(structureName: string, fileType: keyof t
     doDownload(`${structureName}_angles_lengths_by_residue`, text, FileTypes[fileType]);
 }
 
+async function downloadRsccPlot(kind: 'assigned' | 'unassinged', structureName: string, modelIndex: number, d: Dnatcofication) {
+    const rqKinds = RsccPlot.requestedKinds(modelIndex, d);
+
+    const struRsccReq = Rscc.structureRscc(d, modelIndex);
+    const backdropReq = kind === 'assigned' ? Rscc.backdropRscc(rqKinds.assigned) : Rscc.backdropRscc(rqKinds.unassigned);
+
+    const struRsccRes = await struRsccReq;
+    const backdropRes = await backdropReq;
+
+    if (!isOk(struRsccRes)) {
+        Popup.create(
+            <div>
+                <div className='rdo-error-text'>Cannot fetch RSCC data for the structure</div>
+                <div className='rdo-error-text'>{struRsccRes.message}</div>
+            </div>
+        );
+        return;
+    }
+    if (!isOk(backdropRes)) {
+        Popup.create(
+            <div>
+                <div className='rdo-error-text'>Cannot fetch RSCC backdrop for the structure</div>
+                <div className='rdo-error-text'>{backdropRes.message}</div>
+            </div>
+        );
+        return;
+    }
+
+    const struData = kind === 'assigned' ? struRsccRes.data.assigned : struRsccRes.data.unassigned;
+    const backdropData = backdropRes.data;
+    const plotData = RsccPlot.makeData(struData, backdropData, void 0, d);
+
+    if (RsccPlot.isPlotEmpty(plotData)) {
+        Popup.create(
+            <div className='rdo-error-text'>{`No ${kind} RSCC data is available for this structure`}</div>
+        );
+        return;
+    }
+
+    const layout = {
+        title: `${structureName} ${kind}`,
+        xaxis: { title: 'RSCC', automargin: true },
+        yaxis: { title: 'RMSD [Å]', automargin: true },
+        plot_bgcolor: 'white',
+        paper_bgcolor: 'white',
+    };
+
+    const plotlyData = RsccPlot.makePlotlyData(plotData.xy, plotData.contour, true, false) as PlotData[];
+    const img = await ImageSerialization.toImage(plotlyData, layout, 1000, 1000, 'svg');
+    doDownload(`${structureName}_rscc_rmsd_${kind}`, img, FileTypes.svgXml);
+}
+
 function DownloadBox(props: { children: JSX.Element[] | JSX.Element }) {
     return (
         <div style={{ display: 'flex', flexDirection: 'row', height: '2em' }}>
@@ -57,6 +137,54 @@ function DownloadBox(props: { children: JSX.Element[] | JSX.Element }) {
             <div style={{ flex: 1 }} />
         </div>
     );
+}
+
+function RsccRmsdDownload(props: { d: Dnatcofication, structureName: string }) {
+    const [availability, setAvailability] = React.useState<Array<{ assigned: boolean, unassigned: boolean }>>([]);
+    const [modelIndex, setModelIndex] = React.useState('0');
+    const mIdx = parseInt(modelIndex);
+
+    React.useEffect(() => {
+        checkRsccRmsdAvailability(props.d).then((avail) => {
+            setAvailability(avail);
+        });
+    });
+
+    if (availability.length === 0) {
+        return <div style={{ alignContent: 'center', display: 'flex', flexDirection: 'row', gap: 'var(--h-gap)' }}>Checking availability... <InProgressSpinner /> </div>;
+    } else {
+        return (
+            <DownloadBox>
+                <div style={{ display: 'flex', flexDirection: 'column', height: '100%', justifyContent: 'center' }}>
+                    <div className='rdo-strong'>Model</div>
+                </div>
+                <ComboBox
+                    options={toComboBoxOptions(
+                        modelOptions(props.d, true),
+                        (o) => ({ caption: o.name, value: o.index.toString() })
+                    )}
+                    value={modelIndex}
+                    onChange={(v) => setModelIndex(v)}
+            />
+            {
+                availability[mIdx].assigned
+                    ? <DownloadButton
+                        caption='Assigned NtCs'
+                        onClick={() => downloadRsccPlot('assigned', props.structureName, parseInt(modelIndex), props.d)}
+                        />
+                    : <div style={{ whiteSpace: 'nowrap' }}>(No assigned NtCs)</div>
+            }
+            {
+                availability[mIdx].unassigned
+                    ? <DownloadButton
+                        caption='Unassigned NtCs'
+                        onClick={() => downloadRsccPlot('unassinged', props.structureName, parseInt(modelIndex), props.d)}
+                    />
+                    : <div style={{ whiteSpace: 'nowrap' }}>(No unassigned NtCs)</div>
+            }
+            </DownloadBox>
+        );
+    }
 }
 
 function Title(props: { title: string }) {
@@ -80,7 +208,7 @@ export function Downloads(props: { dnatcofication: Dnatcofication }) {
                 }}>
                     Download of data computed for {structureName}
                 </div>
-                <div style={{ margin: 'auto', maxWidth: '60em' }}>
+                <div style={{ margin: 'auto', maxWidth: '60em', padding: 'var(--h-gap)' }}>
 
                     <div className='rdo-line-spacer' />
 
@@ -187,6 +315,17 @@ export function Downloads(props: { dnatcofication: Dnatcofication }) {
                                 )}
                             />
                         </DownloadBox>
+                    </div>
+
+                    <div className='rdo-download-item'>
+                        <Title title='RSCC vs. RMSD plots' />
+                        <div>
+                            RSCC vs. RMSD plots
+                        </div>
+                        <RsccRmsdDownload
+                            structureName={structureName}
+                            d={props.dnatcofication}
+                        />
                     </div>
                 </div>
             </ShadowedBox>

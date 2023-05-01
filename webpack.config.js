@@ -2,12 +2,18 @@ const path = require('path');
 const CopyPlugin = require('copy-webpack-plugin');
 const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const webpack = require('webpack');
 ////  const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
 const DistDir = 'dist';
 
 function sharedConfig(productionBuild) {
     return {
+        node: {
+            // provides the global variable named "global"
+            global: true,
+        },
+
         mode: productionBuild ? 'production' : 'development',
         module: {
             rules: [
@@ -94,6 +100,12 @@ function sharedConfig(productionBuild) {
                     },
                 ]
             }),
+            new webpack.ProvidePlugin({
+                process: 'process/browser',
+            }),
+            new webpack.ProvidePlugin({
+                Buffer: ['buffer', 'Buffer'],
+            }),
             // new BundleAnalyzerPlugin()
         ],
         resolve: {
@@ -105,6 +117,12 @@ function sharedConfig(productionBuild) {
                 'viewer-api': path.resolve(__dirname, 'lib/molstar/src/apps/rednatco/api.js'),
                 'viewer-filters': path.resolve(__dirname, 'lib/molstar/src/apps/rednatco/filters.js'),
                 'assets': path.resolve(__dirname, 'assets'),
+                'process': 'process/browser'
+            },
+            fallback: {
+                'assert': require.resolve('assert'),
+                'buffer': require.resolve('buffer'),
+                'stream': require.resolve('stream-browserify'),
             }
         },
         experiments: {

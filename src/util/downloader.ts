@@ -12,7 +12,11 @@ export type FileType = {
 }
 export const FileTypes: Record<string, FileType> = {
     csv: { suffix: 'csv', mimeType: 'text/csv' },
+    jpeg: { suffix: 'jpg', mimeType: 'image/jpeg' },
     json: { suffix: 'json', mimeType: 'application/json' },
+    png: { suffix: 'png', mimeType: 'image/png' },
+    svgXml: { suffix: 'svg', mimeType: 'image/svg+xml' },
+    webp: { suffix: 'webp', mimeType: 'image/webp' },
 };
 
 export function doDownload(fileNameStem: string, data: string|Uint8Array, fileType: FileType) {
@@ -21,7 +25,7 @@ export function doDownload(fileNameStem: string, data: string|Uint8Array, fileTy
     if (typeof data === 'string')
         Net.serveFile(fileType.mimeType, data, fileName);
     else
-        console.warn('Unimplemented');
+        Net.serveFileRaw(fileType.mimeType, data, fileName);
 }
 
 export function fullFileName(stem: string, fileType: FileType) {

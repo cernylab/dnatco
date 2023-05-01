@@ -18,7 +18,7 @@ function chainOptions(modelIndex: number, d: Dnatcofication) {
     return opts;
 }
 
-function modelOptions(d: Dnatcofication, hideAllModels = false) {
+export function modelOptions(d: Dnatcofication, hideAllModels = false) {
     if (d.data.structures[0].models.length === 1)
         return listOfModels(d.data.structures[0]);
 

@@ -13,7 +13,17 @@ export namespace Serialization {
         values: Values; // Values by column -> row
     }
 
-    export type OutputType = 'csv'|'json';
+    export type OutputType = 'csv' | 'json';
+
+    export async function toBase64(file: File) {
+        if (inWorker()) {
+            // @ts-ignore
+            const reader = new FileReaderSync();
+            return reader.readAsDataURL(file).replace(ChopUrlTag, '');
+        } else {
+            return Buffer.from(await file.arrayBuffer()).toString('base64');
+        }
+    }
 
     export function toCsv(data: Serializable) {
         const NCols = data.tags.length;
@@ -43,16 +53,6 @@ export namespace Serialization {
             obj[data.tags[col]] = data.values[col];
 
         return JSON.stringify(obj);
-    }
-
-    export async function toBase64(file: File) {
-        if (inWorker()) {
-            // @ts-ignore
-            const reader = new FileReaderSync();
-            return reader.readAsDataURL(file).replace(ChopUrlTag, '');
-        } else {
-            return Buffer.from(await file.arrayBuffer()).toString('base64');
-        }
     }
 
     export function dynamicTable(model: DynamicTable.Model, format: 'csv'|'json', sorting?: DynamicTable.Sorting) {
