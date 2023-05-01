@@ -142,17 +142,20 @@ function DownloadBox(props: { children: JSX.Element[] | JSX.Element }) {
 function RsccRmsdDownload(props: { d: Dnatcofication, structureName: string }) {
     const [availability, setAvailability] = React.useState<Array<{ assigned: boolean, unassigned: boolean }>>([]);
     const [modelIndex, setModelIndex] = React.useState('0');
-    const mIdx = parseInt(modelIndex);
 
     React.useEffect(() => {
         checkRsccRmsdAvailability(props.d).then((avail) => {
             setAvailability(avail);
         });
-    });
+    }, []);
 
     if (availability.length === 0) {
         return <div style={{ alignContent: 'center', display: 'flex', flexDirection: 'row', gap: 'var(--h-gap)' }}>Checking availability... <InProgressSpinner /> </div>;
     } else {
+        const mIdx = parseInt(modelIndex);
+        const haveAssigned = availability[mIdx].assigned;
+        const haveUnassigned = availability[mIdx].unassigned;
+
         return (
             <DownloadBox>
                 <div style={{ display: 'flex', flexDirection: 'column', height: '100%', justifyContent: 'center' }}>
@@ -167,7 +170,7 @@ function RsccRmsdDownload(props: { d: Dnatcofication, structureName: string }) {
                     onChange={(v) => setModelIndex(v)}
             />
             {
-                availability[mIdx].assigned
+                haveAssigned
                     ? <DownloadButton
                         caption='Assigned NtCs'
                         onClick={() => downloadRsccPlot('assigned', props.structureName, parseInt(modelIndex), props.d)}
@@ -175,7 +178,7 @@ function RsccRmsdDownload(props: { d: Dnatcofication, structureName: string }) {
                     : <div style={{ whiteSpace: 'nowrap' }}>(No assigned NtCs)</div>
             }
             {
-                availability[mIdx].unassigned
+                haveUnassigned
                     ? <DownloadButton
                         caption='Unassigned NtCs'
                         onClick={() => downloadRsccPlot('unassinged', props.structureName, parseInt(modelIndex), props.d)}
