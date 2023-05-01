@@ -5,13 +5,15 @@ import 'assets/imgs/things-are-happening.svg';
 
 
 export class InProgressSpinner extends React.Component<{}, { angle: number }> {
-    spinInterval = 0;
+    spinInterval: number = 0;
 
     constructor(props: {}) {
         super(props);
 
         this.state = { angle: 0 };
+    }
 
+    componentDidMount(): void {
         this.spinInterval = window.setInterval(() => {
             const angle = (this.state.angle + 90) % 360;
             this.setState({ ...this.state, angle });
@@ -19,7 +21,8 @@ export class InProgressSpinner extends React.Component<{}, { angle: number }> {
     }
 
     componentWillUnmount() {
-        window.clearInterval(this.spinInterval);
+        if (this.spinInterval !== 0)
+            window.clearInterval(this.spinInterval);
     }
 
     render() {
