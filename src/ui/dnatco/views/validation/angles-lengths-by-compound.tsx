@@ -1,7 +1,7 @@
 import { type StandardLonghandProperties } from 'csstype';
 import React from 'react';
 import { Subject, type Subscription } from 'rxjs';
-import { AnglesLengthsCommon, PGroupSummary, Prosco, ResidueName as CommonResidueName } from './angles-lengths-common';
+import { AnglesLengthsCommon, FloatingCue, PGroupSummary, Prosco, ResidueName as CommonResidueName } from './angles-lengths-common';
 import { View } from '../view';
 import { Common } from '../../common';
 import { Constants } from '../../constants';
@@ -142,6 +142,7 @@ function Base<T extends ALM.AngleStats | ALM.LengthStats>(props: {
     selection: StructureSelection,
     vi: ViewerInterop,
     dlMaker: (stats: Record<string, ALM.CompoundStats<T>>, counts: Summarize.CountsInGroup[]) => DownloadableData,
+    tainerRef: React.RefObject<HTMLDivElement>,
 }) {
     const metrics = [];
     for (const metricName of props.displayOrders[props.base]) {
@@ -163,6 +164,7 @@ function Base<T extends ALM.AngleStats | ALM.LengthStats>(props: {
                     d={props.d}
                     selection={props.selection}
                     vi={props.vi}
+                    tainerRef={props.tainerRef}
                 />
             </div>
         );
@@ -217,6 +219,7 @@ function Bases<T extends ALM.AngleStats | ALM.LengthStats>(props: {
     selection: StructureSelection,
     vi: ViewerInterop,
     dlMaker: (stats: Record<string, ALM.CompoundStats<T>>, counts: Summarize.CountsInGroup[]) => DownloadableData,
+    tainerRef: React.RefObject<HTMLDivElement>,
 }) {
     const items: JSX.Element[] = [];
 
@@ -249,11 +252,25 @@ function Bases<T extends ALM.AngleStats | ALM.LengthStats>(props: {
                 selection={props.selection}
                 vi={props.vi}
                 dlMaker={props.dlMaker}
+                tainerRef={props.tainerRef}
             />
         );
     }
 
     return <>{...items}</>;
+}
+
+function FloatingCueText(props: { base: string, metricName: React.ReactElement }) {
+    return (
+        <div>
+            <span
+                className='rdo-nice-step-base'
+                style={{ fontWeight: AnglesLengthsCommon.BarCaptionStyle.fontWeight }}>{props.base}
+            </span>
+            {'\u00A0'}
+            {props.metricName}
+        </div>
+    );
 }
 
 function Metric<T extends ALM.AngleStats | ALM.LengthStats>(props: {
@@ -268,7 +285,9 @@ function Metric<T extends ALM.AngleStats | ALM.LengthStats>(props: {
     d: Dnatcofication,
     selection: StructureSelection,
     vi: ViewerInterop,
+    tainerRef: React.RefObject<HTMLDivElement>,
 }) {
+    const collapsibleRef = React.useRef<CollapsibleVertical>(null);
 
     const rgb = hexToRgb(GlobalConfig.data().currentStepColor);
     const backgroundColorSelected = Rgba(rgb.r, rgb.g, rgb.b, 0.5);
@@ -278,6 +297,8 @@ function Metric<T extends ALM.AngleStats | ALM.LengthStats>(props: {
         : AnglesLengthsCommon.pairBondName(props.stats.identifier as Pair, pairTag(props.stats.identifier as Pair));
 
     const detailsProps = {
+        base: props.base,
+        metricName: name,
         multipleModels: props.multipleModels,
         outlierColor: props.outlierColor,
         pgrpIndices: props.pgrpIndices,
@@ -286,7 +307,9 @@ function Metric<T extends ALM.AngleStats | ALM.LengthStats>(props: {
         events: props.events,
         d: props.d,
         selection: props.selection,
-        vi: props.vi
+        vi: props.vi,
+        tainerRef: props.tainerRef,
+        collapseDetail: () => collapsibleRef?.current?.collapseExpand('collapse'),
     };
     const details = props.stats.type === 'angle'
         ? <AngleMetricDetails { ...{ ...detailsProps, stats: props.stats.individual as ALM.AngleStats } } />
@@ -314,6 +337,7 @@ function Metric<T extends ALM.AngleStats | ALM.LengthStats>(props: {
                     />
                 </div>
             )}
+            ref={collapsibleRef}
         >
             <div style={{ height: 'var(--v2-gap)' }} />
             <div style={{ display: 'flex', flexDirection: 'row' }}>
@@ -325,6 +349,8 @@ function Metric<T extends ALM.AngleStats | ALM.LengthStats>(props: {
 }
 
 function AngleMetricDetails(props: {
+    base: Residues.ElementaryResidue,
+    metricName: React.ReactElement,
     stats: ALM.AngleStats,
     multipleModels: boolean,
     outlierColor: ColorTuple,
@@ -335,6 +361,8 @@ function AngleMetricDetails(props: {
     d: Dnatcofication,
     selection: StructureSelection,
     vi: ViewerInterop,
+    tainerRef: React.RefObject<HTMLElement>,
+    collapseDetail: () => void,
 }) {
     // Do not look at this code. This code is a major workaround
     // of CSS being fucking stupid.
@@ -344,93 +372,128 @@ function AngleMetricDetails(props: {
         const cue = cueRef.current;
         if (cue && cueHeight === 0)
             setCueHeight(cue.clientHeight);
-    });
+    }, []);
+
+    const [floatingCueYOffset, setFloatingCueYOffset] = React.useState(0);
+    const selfRef = React.useRef<HTMLDivElement>(null);
+
+    React.useEffect(() => {
+        const onScroll = () => {
+            const self = selfRef.current;
+            const tainer = props.tainerRef.current;
+            if (!self || !tainer)
+                return;
+
+            const tainerBRect = tainer.getBoundingClientRect();
+            const selfBRect = self.getBoundingClientRect();
+
+            let off = tainerBRect.top - selfBRect.top;
+            off = off > selfBRect.height - 32 ? 0 : off;
+
+            setFloatingCueYOffset(off);
+        };
+
+        props.tainerRef.current?.addEventListener('scroll', onScroll);
+        return () => {
+            props.tainerRef.current?.removeEventListener('scroll', onScroll);
+        };
+    }, [selfRef]);
 
     return (
-        <table className='rdo-angles-lengths'>
-            <tbody>
-                {...props.stats.angles.map((item) => {
-                    const commonResidueName = <CommonResidueName r={item.residue} multipleModels={props.multipleModels} />;
+        <div style={{ position: 'relative', width: '100%' }} ref={selfRef}>
+            <FloatingCue
+                yOffset={floatingCueYOffset}
+                onClicked={props.collapseDetail}
+            >
+                <FloatingCueText base={props.base} metricName={props.metricName} />
+            </FloatingCue>
+            <table className='rdo-angles-lengths'>
+                <tbody>
+                    {...props.stats.angles.map((item) => {
+                        const commonResidueName = <CommonResidueName r={item.residue} multipleModels={props.multipleModels} />;
 
-                    const doHighlight = () => {
-                        const r = item.residue;
-                        const a = AnglesLengthsCommon.makeAtomSelectionPayload(r, item.angle.triplet[0]);
-                        const b = AnglesLengthsCommon.makeAtomSelectionPayload(r, item.angle.triplet[1]);
-                        const c = AnglesLengthsCommon.makeAtomSelectionPayload(r, item.angle.triplet[2]);
+                        const doHighlight = () => {
+                            const r = item.residue;
+                            const a = AnglesLengthsCommon.makeAtomSelectionPayload(r, item.angle.triplet[0]);
+                            const b = AnglesLengthsCommon.makeAtomSelectionPayload(r, item.angle.triplet[1]);
+                            const c = AnglesLengthsCommon.makeAtomSelectionPayload(r, item.angle.triplet[2]);
 
-                        if (a && b && c)
-                            props.vi.api.command(ViewerApi.Commands.Highlight([a, b, c]));
-                    };
-                    const doUnhighlight = () => props.vi.api.command(ViewerApi.Commands.Unhighlight());
+                            if (a && b && c)
+                                props.vi.api.command(ViewerApi.Commands.Highlight([a, b, c]));
+                        };
+                        const doUnhighlight = () => props.vi.api.command(ViewerApi.Commands.Unhighlight());
 
-                    const ni = AnglesLengthsCommon.getNavalAngle(props.d, item.residue, item.angle.triplet);
-                    const clr = item.pGroup ? colorToTuple(item.pGroup.color) : props.outlierColor;
-                    const pGroupDatas = props.pgrpIndices.map((idx) => DAnglesLengths.anglePGroupData(idx, item.residue.compound, item.angle.triplet)!);
+                        const ni = AnglesLengthsCommon.getNavalAngle(props.d, item.residue, item.angle.triplet);
+                        const clr = item.pGroup ? colorToTuple(item.pGroup.color) : props.outlierColor;
+                        const pGroupDatas = props.pgrpIndices.map((idx) => DAnglesLengths.anglePGroupData(idx, item.residue.compound, item.angle.triplet)!);
 
-                    return (
-                        <tr
-                            className='rdo-angles-lengths'
-                        >
-                            <td
+                        return (
+                            <tr
                                 className='rdo-angles-lengths'
-                                onMouseEnter={doHighlight}
-                                onMouseLeave={doUnhighlight}
                             >
-                                <ResidueName
-                                    name={commonResidueName}
-                                    residue={item.residue}
-                                    backgroundColorSelected={props.backgroundColorSelected}
-                                    events={props.events}
-                                    selection={props.selection}
-                                    d={props.d}
-                                    vi={props.vi}
-                                    key={AnglesLengthsCommon.residueIdentifyingName(props.structureName, item.residue)}
-                                />
-                            </td>
-                            <td
-                                style={{ backgroundColor: colorStyle(clr), width: '1em' }}
-                                ref={cueRef}
-                            >
-                                <Tooltip
-                                    tag=<div style={{ height: `${cueHeight}px`, width: '1em' }} />
-                                    delayMsec={Constants.TooltipDelayMSec}
-                                    display='block'
+                                <td
+                                    className='rdo-angles-lengths'
+                                    onMouseEnter={doHighlight}
+                                    onMouseLeave={doUnhighlight}
                                 >
-                                    <div
-                                        onMouseLeave={doUnhighlight} // We need to do it like this because componentWillUnmount() won't fire on Tooltipped components
+                                    <ResidueName
+                                        name={commonResidueName}
+                                        residue={item.residue}
+                                        backgroundColorSelected={props.backgroundColorSelected}
+                                        events={props.events}
+                                        selection={props.selection}
+                                        d={props.d}
+                                        vi={props.vi}
+                                        key={AnglesLengthsCommon.residueIdentifyingName(props.structureName, item.residue)}
+                                    />
+                                </td>
+                                <td
+                                    style={{ backgroundColor: colorStyle(clr), width: '1em' }}
+                                    ref={cueRef}
+                                >
+                                    <Tooltip
+                                        tag=<div style={{ height: `${cueHeight}px`, width: '1em' }} />
+                                        delayMsec={Constants.TooltipDelayMSec}
+                                        display='block'
                                     >
-                                        <PGroupSummary
-                                            bins={DAnglesLengths.angleAverages(item.residue.compound, item.angle.triplet)!}
-                                            caption={AnglesLengthsCommon.tripletBondName(item.angle.triplet, tripletTag(item.angle.triplet))}
-                                            pGroup={item.pGroup}
-                                            pGroupDatas={pGroupDatas}
-                                            rangeFormatter={(v) => v.toFixed(3)}
-                                            residueName={commonResidueName}
-                                            suffix={'\u00B0'}
-                                            value={item.angle.angle}
-                                            valueFormatter={(v) => v.toFixed(3)}
-                                            naval={ni}
-                                            xTitle={'Angle (\u00B0)'}
-                                            yTitle='Prob. (%)'
-                                            yTransform={(y) => y * 100}
-                                            downloadFileName={'UNIMPL'} // TODO
-                                            highlighter={doHighlight}
-                                            vi={props.vi}
-                                        />
-                                    </div>
-                                </Tooltip>
-                            </td>
-                            <td className='rdo-angles-lengths'>{M.r2d(item.angle.angle).toFixed(2)}{'\u00B0'}</td>
-                            <td className='rdo-angles-lengths'><Prosco bin={item.bin} /></td>
-                        </tr>
-                    );
-                })}
-            </tbody>
-        </table>
+                                        <div
+                                            onMouseLeave={doUnhighlight} // We need to do it like this because componentWillUnmount() won't fire on Tooltipped components
+                                        >
+                                            <PGroupSummary
+                                                bins={DAnglesLengths.angleAverages(item.residue.compound, item.angle.triplet)!}
+                                                caption={AnglesLengthsCommon.tripletBondName(item.angle.triplet, tripletTag(item.angle.triplet))}
+                                                pGroup={item.pGroup}
+                                                pGroupDatas={pGroupDatas}
+                                                rangeFormatter={(v) => v.toFixed(3)}
+                                                residueName={commonResidueName}
+                                                suffix={'\u00B0'}
+                                                value={item.angle.angle}
+                                                valueFormatter={(v) => v.toFixed(3)}
+                                                naval={ni}
+                                                xTitle={'Angle (\u00B0)'}
+                                                yTitle='Prob. (%)'
+                                                yTransform={(y) => y * 100}
+                                                downloadFileName={'UNIMPL'} // TODO
+                                                highlighter={doHighlight}
+                                                vi={props.vi}
+                                            />
+                                        </div>
+                                    </Tooltip>
+                                </td>
+                                <td className='rdo-angles-lengths'>{M.r2d(item.angle.angle).toFixed(2)}{'\u00B0'}</td>
+                                <td className='rdo-angles-lengths'><Prosco bin={item.bin} /></td>
+                            </tr>
+                        );
+                    })}
+                </tbody>
+            </table>
+        </div>
     );
 }
 
 function LengthMetricDetails(props: {
+    base: Residues.ElementaryResidue,
+    metricName: React.ReactElement,
     stats: ALM.LengthStats,
     outlierColor: ColorTuple,
     pgrpIndices: number[],
@@ -441,6 +504,8 @@ function LengthMetricDetails(props: {
     selection: StructureSelection,
     d: Dnatcofication,
     vi: ViewerInterop,
+    tainerRef: React.RefObject<HTMLElement>,
+    collapseDetail: () => void,
 }) {
     // Do not look at this code. This code is a major workaround
     // of CSS being fucking stupid.
@@ -450,87 +515,120 @@ function LengthMetricDetails(props: {
         const cue = cueRef.current;
         if (cue && cueHeight === 0)
             setCueHeight(cue.clientHeight);
-    });
+    }, []);
+
+    const [floatingCueYOffset, setFloatingCueYOffset] = React.useState(0);
+    const selfRef = React.useRef<HTMLDivElement>(null);
+
+    React.useEffect(() => {
+        const onScroll = () => {
+            const self = selfRef.current;
+            const tainer = props.tainerRef.current;
+            if (!self || !tainer)
+                return;
+
+            const tainerBRect = tainer.getBoundingClientRect();
+            const selfBRect = self.getBoundingClientRect();
+
+            let off = tainerBRect.top - selfBRect.top;
+            off = off > selfBRect.height - 32 ? 0 : off;
+
+            setFloatingCueYOffset(off);
+        };
+
+        props.tainerRef.current?.addEventListener('scroll', onScroll);
+        return () => {
+            props.tainerRef.current?.removeEventListener('scroll', onScroll);
+        };
+    }, [selfRef]);
 
     return (
-        <table className='rdo-angles-lengths'>
-            <tbody>
-                {...props.stats.lengths.map((item) => {
-                    const commonResidueName = <CommonResidueName r={item.residue} multipleModels={props.multipleModels} />;
+        <div style={{ position: 'relative', width: '100%' }} ref={selfRef}>
+            <FloatingCue
+                yOffset={floatingCueYOffset}
+                onClicked={props.collapseDetail}
+            >
+                <FloatingCueText base={props.base} metricName={props.metricName} />
+            </FloatingCue>
+            <table className='rdo-angles-lengths'>
+                <tbody>
+                    {...props.stats.lengths.map((item) => {
+                        const commonResidueName = <CommonResidueName r={item.residue} multipleModels={props.multipleModels} />;
 
-                    const doHighlight = () => {
-                        const r = item.residue;
-                        const a = AnglesLengthsCommon.makeAtomSelectionPayload(r, item.length.pair[0]);
-                        const b = AnglesLengthsCommon.makeAtomSelectionPayload(r, item.length.pair[1]);
+                        const doHighlight = () => {
+                            const r = item.residue;
+                            const a = AnglesLengthsCommon.makeAtomSelectionPayload(r, item.length.pair[0]);
+                            const b = AnglesLengthsCommon.makeAtomSelectionPayload(r, item.length.pair[1]);
 
-                        if (a && b)
-                            props.vi.api.command(ViewerApi.Commands.Highlight([a, b]));
-                    };
-                    const doUnhighlight = () => props.vi.api.command(ViewerApi.Commands.Unhighlight());
+                            if (a && b)
+                                props.vi.api.command(ViewerApi.Commands.Highlight([a, b]));
+                        };
+                        const doUnhighlight = () => props.vi.api.command(ViewerApi.Commands.Unhighlight());
 
-                    const ni = AnglesLengthsCommon.getNavalBond(props.d, item.residue, item.length.pair);
-                    const clr = item.pGroup ? colorToTuple(item.pGroup.color) : props.outlierColor;
-                    const pGroupDatas = props.pgrpIndices.map((idx) => DAnglesLengths.lengthPGroupData(idx, item.residue.compound, item.length.pair)!);
+                        const ni = AnglesLengthsCommon.getNavalBond(props.d, item.residue, item.length.pair);
+                        const clr = item.pGroup ? colorToTuple(item.pGroup.color) : props.outlierColor;
+                        const pGroupDatas = props.pgrpIndices.map((idx) => DAnglesLengths.lengthPGroupData(idx, item.residue.compound, item.length.pair)!);
 
-                    return (
-                        <tr
-                            className='rdo-angles-lengths'
-                        >
-                            <td
-                                onMouseEnter={doHighlight}
-                                onMouseLeave={doUnhighlight}
+                        return (
+                            <tr
+                                className='rdo-angles-lengths'
                             >
-                                <ResidueName
-                                    name={commonResidueName}
-                                    residue={item.residue}
-                                    backgroundColorSelected={props.backgroundColorSelected}
-                                    events={props.events}
-                                    selection={props.selection}
-                                    d={props.d}
-                                    vi={props.vi}
-                                    key={AnglesLengthsCommon.residueIdentifyingName(props.structureName, item.residue)}
-                                />
-                            </td>
-                            <td
-                                style={{ backgroundColor: colorStyle(clr), width: '1em' }}
-                                ref={cueRef}
-                            >
-                                <Tooltip
-                                    tag=<div style={{ height: `${cueHeight}px`, width: '1em' }} />
-                                    delayMsec={Constants.TooltipDelayMSec}
-                                    display='block'
+                                <td
+                                    onMouseEnter={doHighlight}
+                                    onMouseLeave={doUnhighlight}
                                 >
-                                    <div
-                                        onMouseLeave={doUnhighlight} // We need to do it like this because componentWillUnmount() won't fire on Tooltipped components
+                                    <ResidueName
+                                        name={commonResidueName}
+                                        residue={item.residue}
+                                        backgroundColorSelected={props.backgroundColorSelected}
+                                        events={props.events}
+                                        selection={props.selection}
+                                        d={props.d}
+                                        vi={props.vi}
+                                        key={AnglesLengthsCommon.residueIdentifyingName(props.structureName, item.residue)}
+                                    />
+                                </td>
+                                <td
+                                    style={{ backgroundColor: colorStyle(clr), width: '1em' }}
+                                    ref={cueRef}
+                                >
+                                    <Tooltip
+                                        tag=<div style={{ height: `${cueHeight}px`, width: '1em' }} />
+                                        delayMsec={Constants.TooltipDelayMSec}
+                                        display='block'
                                     >
-                                        <PGroupSummary
-                                            bins={DAnglesLengths.lengthAverages(item.residue.compound, item.length.pair)!}
-                                            caption={AnglesLengthsCommon.pairBondName(item.length.pair, pairTag(item.length.pair))}
-                                            pGroup={item.pGroup}
-                                            pGroupDatas={pGroupDatas}
-                                            rangeFormatter={(v) => v.toFixed(3)}
-                                            residueName={commonResidueName}
-                                            suffix={'\u00A0\u212B'}
-                                            value={item.length.length}
-                                            valueFormatter={(v) => v.toFixed(3)}
-                                            naval={ni}
-                                            xTitle={'Length\u00A0(\u212B)'}
-                                            yTitle='Prob. (%)'
-                                            yTransform={(y) => y * 100}
-                                            downloadFileName={'UNIMPL'} //TODO
-                                            highlighter={doHighlight}
-                                            vi={props.vi}
-                                        />
-                                    </div>
-                                </Tooltip>
-                            </td>
-                            <td className='rdo-angles-lengths'>{item.length.length.toFixed(3)}{'\u00A0\u212B'}</td>
-                            <td className='rdo-angles-lengths'><Prosco bin={item.bin} /></td>
-                        </tr>
-                    );
-                })}
-            </tbody>
-        </table>
+                                        <div
+                                            onMouseLeave={doUnhighlight} // We need to do it like this because componentWillUnmount() won't fire on Tooltipped components
+                                        >
+                                            <PGroupSummary
+                                                bins={DAnglesLengths.lengthAverages(item.residue.compound, item.length.pair)!}
+                                                caption={AnglesLengthsCommon.pairBondName(item.length.pair, pairTag(item.length.pair))}
+                                                pGroup={item.pGroup}
+                                                pGroupDatas={pGroupDatas}
+                                                rangeFormatter={(v) => v.toFixed(3)}
+                                                residueName={commonResidueName}
+                                                suffix={'\u00A0\u212B'}
+                                                value={item.length.length}
+                                                valueFormatter={(v) => v.toFixed(3)}
+                                                naval={ni}
+                                                xTitle={'Length\u00A0(\u212B)'}
+                                                yTitle='Prob. (%)'
+                                                yTransform={(y) => y * 100}
+                                                downloadFileName={'UNIMPL'} //TODO
+                                                highlighter={doHighlight}
+                                                vi={props.vi}
+                                            />
+                                        </div>
+                                    </Tooltip>
+                                </td>
+                                <td className='rdo-angles-lengths'>{item.length.length.toFixed(3)}{'\u00A0\u212B'}</td>
+                                <td className='rdo-angles-lengths'><Prosco bin={item.bin} /></td>
+                            </tr>
+                        );
+                    })}
+                </tbody>
+            </table>
+        </div>
     );
 }
 
@@ -592,6 +690,9 @@ export class AnglesLengthsByCompound extends View<View.Props> {
         allResiduesDeselected: this.ek.subject(),
         residueToggled: this.ek.subject(),
     };
+
+    anglesTainerRef: React.RefObject<HTMLDivElement> = React.createRef();
+    lengthsTainerRef: React.RefObject<HTMLDivElement> = React.createRef();
 
     componentDidMount() {
         this.subscribe(this.props.switching.events.modelSwitched, () => this.forceUpdate());
@@ -702,6 +803,7 @@ export class AnglesLengthsByCompound extends View<View.Props> {
                             <div
                                 className='rdo-scroll-vertically-with-scrollbar'
                                 style={AnglesLengthsCommon.BlockListStyle}
+                                ref={this.lengthsTainerRef}
                             >
                                 <Bases
                                     data={selected.lengths}
@@ -716,6 +818,7 @@ export class AnglesLengthsByCompound extends View<View.Props> {
                                     selection={this.props.structureSelection}
                                     vi={this.props.viewerInterop}
                                     dlMaker={makeLengthDownloadableData}
+                                    tainerRef={this.lengthsTainerRef}
                                 />
                             </div>
                         </div>
@@ -730,6 +833,7 @@ export class AnglesLengthsByCompound extends View<View.Props> {
                             <div
                                 className='rdo-scroll-vertically-with-scrollbar'
                                 style={AnglesLengthsCommon.BlockListStyle}
+                                ref={this.anglesTainerRef}
                             >
                                 <Bases
                                     data={selected.angles}
@@ -744,6 +848,7 @@ export class AnglesLengthsByCompound extends View<View.Props> {
                                     selection={this.props.structureSelection}
                                     vi={this.props.viewerInterop}
                                     dlMaker={makeAngleDownloadableData}
+                                    tainerRef={this.anglesTainerRef}
                                 />
                             </div>
                         </div>

@@ -492,7 +492,27 @@ export class AveragesChart extends React.Component<{
     }
 }
 
-
+export function FloatingCue(props: {
+    children: JSX.Element | JSX.Element[],
+    yOffset: number,
+    onClicked: () => void,
+}) {
+    if (props.yOffset > 0) {
+        return (
+            <div style={{
+                border: 'var(--thickness-border) solid var(--color-a)',
+                position: 'absolute',
+                padding: '0.25em',
+                top: `${props.yOffset + 16}px`,
+                right: '32px'}}
+                onClick={() => props.onClicked()}
+            >
+                {props.children}
+            </div>
+        )
+    } else
+        return <div style={{ visibility: 'hidden' }} />;
+}
 
 export type PGroupSummaryProps = {
     bins: Bins,

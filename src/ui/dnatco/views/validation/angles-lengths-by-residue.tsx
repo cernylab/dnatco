@@ -1,7 +1,7 @@
 import type { StandardLonghandProperties } from 'csstype';
 import React from 'react';
 import { Subject, Subscription } from 'rxjs';
-import { AnglesLengthsCommon, NavalItem, PGroupSummary, Prosco, ResidueName } from './angles-lengths-common';
+import { AnglesLengthsCommon, FloatingCue, NavalItem, PGroupSummary, Prosco, ResidueName } from './angles-lengths-common';
 import { View } from '../view';
 import { Constants } from '../../constants';
 import { SearchBox } from '../../search-box';
@@ -581,14 +581,14 @@ interface ResidueDetailsProps extends ResidueElemProps {
     onHideRequested: () => void,
 }
 
-class ResidueDetails extends React.Component<ResidueDetailsProps, { floaterYOffset: number }> {
+class ResidueDetails extends React.Component<ResidueDetailsProps, { floatingCueYOffset: number }> {
     private selfRef = React.createRef<HTMLDivElement>();
 
     constructor(props: ResidueDetailsProps) {
         super(props);
 
         this.state = {
-            floaterYOffset: -1,
+            floatingCueYOffset: -1,
         };
     }
 
@@ -604,7 +604,7 @@ class ResidueDetails extends React.Component<ResidueDetailsProps, { floaterYOffs
         let off = tainerBRect.top - selfBRect.top;
         off = off > selfBRect.height ? 0 : off;
 
-        this.setState({ ...this.state, floaterYOffset: off });
+        this.setState({ ...this.state, floatingCueYOffset: off });
     }
 
     componentDidMount() {
@@ -618,19 +618,12 @@ class ResidueDetails extends React.Component<ResidueDetailsProps, { floaterYOffs
     render() {
         return (
             <div style={{ position: 'relative' }} ref={this.selfRef}>
-                {this.state.floaterYOffset > 0
-                    ? <div style={{
-                        border: 'var(--thickness-border) solid var(--color-a)',
-                        position: 'absolute',
-                        padding: '0.25em',
-                        top: `${this.state.floaterYOffset + 16}px`,
-                        right: '32px'}}
-                        onClick={() => this.props.onHideRequested()}
-                    >
-                        {this.props.residueName}
-                    </div>
-                    : undefined
-                }
+                <FloatingCue
+                    yOffset={this.state.floatingCueYOffset}
+                    onClicked={this.props.onHideRequested}
+                >
+                    {this.props.residueName}
+                </FloatingCue>
 
                 <table className='rdo-angles-lengths' style={{ width: '100%' }}>
                     <tbody>
