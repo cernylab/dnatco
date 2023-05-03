@@ -1,6 +1,6 @@
 import React from 'react';
 import { Colors } from '../../colors';
-import { SelectedPieces } from '../../structure-selection';
+import { InvalidStepId, SelectedPieces } from '../../structure-selection';
 import { makeStepSelection } from '../../util';
 import { View } from '../../views/view';
 import { ComboBox } from '../../../common/combo-box';
@@ -86,7 +86,7 @@ export namespace Refinement {
         d: Dnatcofication
     ): SelectedPieces {
         return {
-            steps: [newStepId],
+            steps: newStepId === InvalidStepId ? [] : [newStepId],
             residues: [],
             atoms: [],
             reconstruct: !(steps[0] === newStepId && steps.length === 1)

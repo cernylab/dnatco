@@ -45,8 +45,8 @@ export namespace Net {
         }
     }
 
-    export function paramsFromUrl<K extends string, T extends Record<K, string>>(schema: T): Partial<T> {
-        const urlParams = new URLSearchParams(window.location.search);
+    export function paramsFromUrl<K extends string, T extends Record<K, string>>(schema: T, search: string): Partial<T> {
+        const urlParams = new URLSearchParams(search);
 
         const params: Partial<T> = {};
         for (const prop in schema) {
@@ -66,9 +66,5 @@ export namespace Net {
     export function serveFileRaw(mimeType: string, data: Uint8Array, filename: string) {
         const blob = new Blob([data], { type: mimeType });
         serveBlob(blob, filename);
-    }
-
-    export function setBaseUrl() {
-        history.pushState(null, "", "/");
     }
 }

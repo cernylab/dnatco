@@ -10,7 +10,7 @@ const SizingPolicy = {
 
 const DropdownArrowStyle = {
     'backgroundRepeat': 'no-repeat',
-    'backgroundImage': 'url("./imgs/down_arrow.svg")',
+    'backgroundImage': 'url("/imgs/down_arrow.svg")',
     'backgroundPosition': 'right',
     'backgroundSize': '1em',
 };

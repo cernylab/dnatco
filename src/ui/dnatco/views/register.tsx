@@ -18,10 +18,10 @@ import { SelectedPieces, SelectionDisplayer } from '../structure-selection';
 import { Dnatcofication } from '../../../dnatco/dnatcofication';
 
 const NullDisplayer = async () => {};
-const NullMaker = () => ({ steps: [], residues: [], atoms: [], reconstruct: true });
+const NullSelectionMaker = () => ({ steps: [], residues: [], atoms: [], reconstruct: true });
 
 export namespace Register {
-    type PropsType = {
+    export type PropsType = {
         annotation: View.Props,
         refinement: Refinement.Props,
         validation: View.Props,
@@ -36,6 +36,7 @@ export namespace Register {
             d: Dnatcofication
         ) => SelectedPieces,
         granularity: 'dont-care' | 'two-residues' | 'residue',
+        visualizer: boolean,
         unscrollableContainer?: boolean,
     };
 
@@ -46,6 +47,7 @@ export namespace Register {
             selectionMaker: AssignedNtCs.SelectionMaker,
             unscrollableContainer: AssignedNtCs.unscrollableContainer,
             granularity: 'two-residues' as View<any>['granularity'],
+            visualizer: true,
         },
         'angles-lengths': {
             render:(props: View.Props) => <AnglesLengthsUpper {...props} />,
@@ -53,6 +55,7 @@ export namespace Register {
             selectionMaker: AnglesLengthsUpper.SelectionMaker,
             unscrollableContainer: AnglesLengthsUpper.unscrollableContainer,
             granularity: 'residue' as View<any>['granularity'],
+            visualizer: true,
         },
         'change-ntcs': {
             render: (props: Refinement.Props) => <ChangeNtCs {...props} />,
@@ -60,6 +63,7 @@ export namespace Register {
             selectionMaker: ChangeNtCs.SelectionMaker,
             unscrollableContainer: ChangeNtCs.unscrollableContainer,
             granularity: 'two-residues' as View<any>['granularity'],
+            visualizer: true,
         },
         'confals-rmsds': {
             render: (props: View.Props) => <ConfalsRmsds {...props} />,
@@ -67,6 +71,7 @@ export namespace Register {
             selectionMaker: ConfalsRmsds.SelectionMaker,
             unscrollableContainer: ConfalsRmsds.unscrollableContainer,
             granularity: 'two-residues' as View<any>['granularity'],
+            visualizer: true,
         },
         'connectivity-plot': {
             render: (props: Refinement.Props) => <ConnectivityPlot {...props} />,
@@ -74,34 +79,39 @@ export namespace Register {
             selectionMaker: ConnectivityPlot.SelectionMaker,
             unscrollableContainer: false,
             granularity: 'two-residues' as View<any>['granularity'],
+            visualizer: true,
         },
         'downloads': {
             render: (props: View.Props) => <Downloads {...props} />,
             selectionDisplayer: NullDisplayer,
-            selectionMaker: NullMaker,
+            selectionMaker: NullSelectionMaker,
             unscrollableContainer: false,
             granularity: 'dont-care' as View<any>['granularity'],
+            visualizer: false,
         },
         'mmb-commands-file': {
             render: (props: Refinement.Props) => <MmbCommandsFile {...props} />,
             selectionDisplayer: NullDisplayer,
-            selectionMaker: NullMaker,
+            selectionMaker: NullSelectionMaker,
             unscrollableContainer: false,
             granularity: 'dont-care' as View<any>['granularity'],
+            visualizer: false,
         },
         'phenix-restraints': {
             render: (props: Refinement.Props) => <PhenixRestraints {...props} />,
             selectionDisplayer: NullDisplayer,
-            selectionMaker: NullMaker,
+            selectionMaker: NullSelectionMaker,
             unscrollableContainer: false,
             granularity: 'dont-care' as View<any>['granularity'],
+            visualizer: false,
         },
         'refmac-restraints': {
             render: (props: Refinement.Props) => <RefmacRestraints {...props} />,
             selectionDisplayer: NullDisplayer,
-            selectionMaker: NullMaker,
+            selectionMaker: NullSelectionMaker,
             unscrollableContainer: false,
             granularity: 'dont-care' as View<any>['granularity'],
+            visualizer: false,
         },
         'rscc-plot': {
             render: (props: View.Props) => <RsccPlot {...props} />,
@@ -109,6 +119,7 @@ export namespace Register {
             selectionMaker: RsccPlot.SelectionMaker,
             unscrollableContainer: false,
             granularity: 'two-residues' as View<any>['granularity'],
+            visualizer: true,
         },
         'step-torsions': {
             render: (props: View.Props) => <StepTorsions {...props} />,
@@ -116,6 +127,7 @@ export namespace Register {
             selectionMaker: StepTorsions.SelectionMaker,
             unscrollableContainer: false,
             granularity: 'two-residues' as View<any>['granularity'],
+            visualizer: true,
         },
         'similarity-plot': {
             render: (props: View.Props) => <SimilarityPlot {...props} />,
@@ -123,13 +135,15 @@ export namespace Register {
             selectionMaker: SimilarityPlot.SelectionMaker,
             unscrollableContainer: false,
             granularity: 'two-residues' as View<any>['granularity'],
+            visualizer: true,
         },
         'structure-info': {
             render: (props: View.Props) => <StructureInfo {...props} />,
             selectionDisplayer: NullDisplayer,
-            selectionMaker: NullMaker,
+            selectionMaker: NullSelectionMaker,
             unscrollableContainer: false,
             granularity: 'dont-care' as View<any>['granularity'],
+            visualizer: false,
         },
     };
 }

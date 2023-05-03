@@ -197,6 +197,10 @@ export class Dnatcofication {
         return Cif.File.hasTable(this.data.cifData, category);
     }
 
+    isEmpty() {
+        return this.data.cifData === null;
+    }
+
     nucleicAcidKind(modelIndex: number) {
         const eks = this.data.entityKinds[modelIndex];
 

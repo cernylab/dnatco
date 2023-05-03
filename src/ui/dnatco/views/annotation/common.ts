@@ -1,5 +1,5 @@
 import { Colors } from '../../colors';
-import { SelectedPieces } from '../../structure-selection';
+import { InvalidStepId, SelectedPieces } from '../../structure-selection';
 import { makeStepSelection } from '../../util';
 import { Dnatcofication } from '../../../../dnatco/dnatcofication';
 import { StepsMapper } from '../../../../dnatco/steps-mapper';
@@ -36,7 +36,7 @@ export namespace Annotation {
         d: Dnatcofication
     ): SelectedPieces {
         return {
-            steps: [newStepId],
+            steps: newStepId === InvalidStepId ? [] : [newStepId],
             residues: [],
             atoms: [],
             reconstruct: !(steps[0] === newStepId && steps.length === 1)

@@ -13,6 +13,6 @@ export namespace View {
         viewerInterop: ViewerInterop;
         structureSelection: StructureSelection;
         switching: StructureSelectionSwitching;
-        scrollableParent?: HTMLElement;
+        scrollableParent: React.RefObject<HTMLElement>;
     }
 }

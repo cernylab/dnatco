@@ -5,6 +5,7 @@ import { DummyIconTextButton, IconButton, IconTextButton } from './common/push-b
 import { InProgressSpinner } from './common/in-progress-spinner';
 import { Popup } from './common/popup';
 import { ShadowedBox } from './common/shadowed-box';
+import { Tooltip } from './common/tooltip';
 import { Common } from './dnatco/common';
 import { DensityMap, DensityMapKinds } from '../dnatco/density-map';
 import { BuiltInRemoteDatabases, UserRemoteDatabases } from '../remote/db/register';
@@ -13,7 +14,6 @@ import { GlobalConfig, GlobalConfigData } from '../global-config';
 import 'assets/imgs/magnifying-glass.svg';
 import 'assets/imgs/media-play.svg';
 import 'assets/imgs/x.svg';
-import {Tooltip} from './common/tooltip';
 
 const AllowedDensityMapKinds = [...DensityMapKinds, 'coefficients'] as const;
 type AllowedDensityMapKinds = typeof AllowedDensityMapKinds[number];
@@ -58,11 +58,9 @@ const NiceMapKinds: Record<AllowedDensityMapKinds, string> = {
 
 class AnalyzeButton extends React.Component<{ ready: boolean, onClick: () => void }> {
     render() {
-        const prefix = GlobalConfig.data().pathPrefix;
-
         return (
             <IconTextButton
-                src={`${prefix}/imgs/media-play.svg`}
+                src='imgs/media-play.svg'
                 caption='Analyze'
                 onClick={() => this.props.onClick()}
                 disabled={!this.props.ready}
@@ -75,7 +73,6 @@ class AnalyzeButton extends React.Component<{ ready: boolean, onClick: () => voi
 
 class Coordinates extends React.Component<Coordinates.Props> {
     render() {
-        const prefix = GlobalConfig.data().pathPrefix;
         const customFile = !this.props.database;
         const examples = listOfValidExamples(GlobalConfig.data().exampleStructures);
 
@@ -103,7 +100,7 @@ class Coordinates extends React.Component<Coordinates.Props> {
                             <div style={ CoordsItemProps }>
                                 <label htmlFor='upload-coords-file' style={{ display: 'flex', justifyContent: 'end', height: '100%' }}>
                                     <DummyIconTextButton
-                                        src={`${prefix}/imgs/magnifying-glass.svg`}
+                                        src='imgs/magnifying-glass.svg'
                                         caption='Browse'
                                     />
                                 </label>
@@ -176,7 +173,6 @@ class DensityMapFiles extends React.Component<
     }
 
     private addedFiles(fillToRows: number) {
-        const prefix = GlobalConfig.data().pathPrefix;
         const elems = new Array<JSX.Element>();
         const textCls = this.props.disabled ? 'rdo-text-disabled' : '';
 
@@ -192,7 +188,7 @@ class DensityMapFiles extends React.Component<
                         <div className={textCls} style={{ flex: 1, fontSize: 'var(--font-large)' }}>{NiceMapKinds[f.kind]}</div>
                         <div style={{ width: '2em' }}>
                             <IconButton
-                                src={`${prefix}/imgs/x.svg`}
+                                src='imgs/x.svg'
                                 onClick={() => this.props.onRemoveFile(_idx)}
                                 className='rdo-remove-icon-button'
                                 classNameDisabled='rdo-remove-icon-button-disabled'
@@ -228,7 +224,6 @@ class DensityMapFiles extends React.Component<
     }
 
     render() {
-        const prefix = GlobalConfig.data().pathPrefix;
         const opts = this.fileTypeOptions();
         const addedFiles = this.addedFiles(AllowedDensityMapKinds.length);
 
@@ -254,7 +249,7 @@ class DensityMapFiles extends React.Component<
                     {opts.length > 0
                         ? <label htmlFor='upload-density-map' style={{ display: 'flex', justifyContent: 'end', height: '100%' }}>
                             <DummyIconTextButton
-                                src={`${prefix}/imgs/magnifying-glass.svg`}
+                                src='imgs/magnifying-glass.svg'
                                 caption='Browse'
                                 disabled={this.props.disabled}
                             />
@@ -440,8 +435,6 @@ export class StartTab extends React.Component<StartTab.Props, State> {
     }
 
     render() {
-        const prefix = GlobalConfig.data().pathPrefix;
-
         return (
             <div className='rdo-section-column' style={{ height: '100%' }}>
                 <BigLogo />
@@ -492,7 +485,7 @@ export class StartTab extends React.Component<StartTab.Props, State> {
                                         }}
                                     />
                                     <IconTextButton
-                                        src={`${prefix}/imgs/reload.svg`}
+                                        src='imgs/reload.svg'
                                         caption='Reset'
                                         onClick={() => this.setState({ ...this.defaultState() })}
                                         className='rdo-pushbutton rdo-pushbutton-border rdo-start-reset-button'

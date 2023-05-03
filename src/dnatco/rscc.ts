@@ -58,7 +58,7 @@ function isBackdropRsccSane(bdrop: Rscc.BackdropRscc) {
 }
 
 function makeBackdropRsccUrl(kind: keyof BackdropRsccCache) {
-    const url = './rscc/backdrops/' +
+    const url = '/rscc/backdrops/' +
         (kind === 'dna-assigned'
             ? 'dna_assigned.json'
             : kind === 'dna-unassigned'
@@ -83,7 +83,6 @@ function findRscc(atomId: number, list: [atomId: number, rscc: number][], startI
     console.warn(`RSCC lookup slow path when looking for atomId ${atomId} from index ${startIdx}, total hits ${++slowPath}`);
 
     return idx >= 0 ? { rscc: list[idx][1], idx } : undefined;
-
 }
 
 export namespace Rscc {

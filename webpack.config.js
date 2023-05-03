@@ -49,6 +49,16 @@ function sharedConfig(productionBuild) {
                     }],
                 },
                 {
+                    test: /index.html/,
+                    use: [{
+                        loader: 'file-loader',
+                        options: {
+                            name: '[name].[ext]',
+                            sourceMap: false,
+                        }
+                    }],
+                },
+                {
                     test: /\.(svg|png|jpe?g)$/,
                     use: [{
                         loader: 'file-loader',

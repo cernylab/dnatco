@@ -57,11 +57,9 @@ export namespace WebApi {
     }
 
     export function request(endpoint: string, req: Request): Pending {
-        const url = './' + endpoint;
-
         const aborter = new AbortController();
         const running = fetch(
-            url,
+            endpoint,
             {
                 method: 'POST',
                 cache: 'no-cache',

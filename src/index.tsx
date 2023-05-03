@@ -1,5 +1,7 @@
 import React from 'react';
 import * as RDC from 'react-dom/client';
+import { useLocation, useNavigate, BrowserRouter, Navigate, Routes, Route} from 'react-router-dom';
+import { Subject } from 'rxjs';
 import { GlobalConfig } from './global-config';
 import { Globals } from './globals';
 import { isPdbId } from './util';
@@ -14,10 +16,10 @@ import { Coordinates } from './dnatco/coordinates';
 import { DensityMap } from './dnatco/density-map';
 import { Dnatcofication, DnatcoficationData } from './dnatco/dnatcofication';
 import { ListOfConformers } from './dnatco/list-of-conformers';
-import { StepsMapper } from './dnatco/steps-mapper';
 import { UserRemoteDatabases, isBuiltIn } from './remote/db/register';
 import { AboutTab } from './ui/about-tab';
-import { DnatcoViewerTab } from './ui/dnatco-viewer-tab';
+import { Downloads } from './ui/dnatco/downloads';
+import { DnatcoViewerTab, OutsideControl } from './ui/dnatco-viewer-tab';
 import { Footer } from './ui/footer';
 import { ConformersTab } from './ui/conformers-tab';
 import { NavigationBar } from './ui/navigation-bar';
@@ -26,13 +28,11 @@ import { Email } from './ui/common/email';
 import { InProgress } from './ui/common/in-progress';
 import { Popup } from './ui/common/popup';
 import { QuestionDialog } from './ui/common/question-dialog';
-import { Colors } from './ui/dnatco/colors';
-import { MainScreen } from './ui/dnatco/main-screen';
-import { WithSubscriptions } from './ui/service/with-subscriptions';
 import { formatErrorText } from './ui/util';
 import { BackgroundWorker, WorkerMessage } from './tasks/worker';
-import { ViewerApi, ViewerInterop } from './viewer/viewer-interop';
+import { ViewerInterop } from './viewer/viewer-interop';
 import { Task } from './tasks/task';
+import { objKeys } from './util';
 import 'assets/conformers.csv';
 // Image assets
 import 'assets/imgs/elixir.png';
@@ -46,9 +46,10 @@ import 'assets/imgs/loop.svg';
 import 'assets/imgs/document.svg';
 import 'assets/imgs/data-transfer-download.svg';
 // Base assets
-import 'assets/index.php';
+import 'assets/index.html';
 import 'assets/rednatco.css';
-import {Downloads} from './ui/dnatco/downloads';
+
+const IsDnatcoNavigation = new RegExp('^\/app\/dnatco\/(annotation|refinement|validation)');
 
 const Params = {
     cifcode: '',
@@ -133,51 +134,38 @@ const TabsForModes = {
     },
 };
 
-type TabKeys = ((keyof (typeof TabsForModes)['nothing']) | (keyof (typeof TabsForModes['structure'])));
-
-interface State {
-    mode: keyof typeof TabsForModes;
-    selectedTab: TabKeys;
-    dnatcofierState: 'ready' | 'initializing' | 'failed';
+function goToStep(stepName: string, outsideControl: OutsideControl) {
+    // Use an arbitrary delay to give Molstar some time to settle
+    // Not doing this may result in broken rendering
+    setTimeout(
+        () => outsideControl.selectStep.next(stepName),
+        250,
+    );
 }
-export class App extends WithSubscriptions<{}, State> {
-    private dnatcofication = new Dnatcofication();
-    private ingestionInProgress = false;
-    private viewerInterop = new ViewerInterop();
-    private initialSearchDone = false;
 
-    constructor(props: Partial<App.Props>) {
-        super(props);
+function locationToTab(appMode: keyof typeof TabsForModes, location: string) {
+    const segments = location.split('/');
+    const pri = segments[2];
 
-        this.state = {
-            mode: 'nothing',
-            selectedTab: 'start',
-            dnatcofierState: 'initializing',
-        };
+    if (pri === 'dnatco')
+        return segments[3];
+
+    if (!pri || !(objKeys(TabsForModes[appMode]) as string[]).includes(pri))
+        return 'start'; // This assumes that 'start' tab appears in all app modes
+
+    return pri;
+}
+
+class DnatcoficationHandler {
+    dnatcofication: Dnatcofication;
+    ingestionInProgress: boolean;
+
+    constructor() {
+        this.dnatcofication = new Dnatcofication();
+        this.ingestionInProgress = false;
     }
 
-    private goToStep(stepName: string) {
-        const step = StepsMapper.byName(this.dnatcofication, stepName);
-        if (step) {
-            // Use an arbitrary delay to give Molstar some time to settle
-            // Not doing this may result in broken rendering
-
-            setTimeout(
-                () => {
-                    this.viewerInterop.api.command(ViewerApi.Commands.SelectStructures([
-                        ViewerApi.Commands.StepSelection(
-                            ViewerApi.Payloads.StepSelection(stepName, { NtC: step.closestNtC, color: Colors.CurrentStep() }),
-                            void 0,
-                            void 0
-                        )
-                    ]));
-                },
-                200
-            );
-        }
-    }
-
-    private fromCustomStructure(coordsFile: File, densityMaps: { file: File, kind: DensityMap['kind'] }[], densityMapCoeffs: File|null, onSuccess: () => void) {
+    fromCustomStructure(coordsFile: File, densityMaps: { file: File, kind: DensityMap['kind'] }[], densityMapCoeffs: File|null, onSuccess: () => void) {
         const coordsType = Coordinates.guessType(coordsFile);
         if (coordsType === 'unknown') {
             Popup.create(
@@ -233,17 +221,17 @@ export class App extends WithSubscriptions<{}, State> {
             doTask(null);
     }
 
-    private fromPdbId(pdbId: string, dbId: string, onSuccess: () => void) {
+    fromPdbId(pdbId: string, dbId: string, onSuccess: () => void) {
         const task: Task<{ pdbId: string, dbId: string, clsfResData: ClassificationResources.Data, alCtx: AnglesLengthsContext, nvCtx: NavalContext }> = {
             taskFunc: 'dnatco-from-pdb-id',
             payload: { pdbId, dbId, clsfResData: ClassificationContext.data(), alCtx: AnglesLengths.context(), nvCtx: Naval.context() },
             initialStatus: ''
         };
 
-        this.loadStructure(task, onSuccess);
+        this. loadStructure(task, onSuccess);
     }
 
-    private async fromRawLink(link: string, onSuccess: () => void) {
+    fromRawLink(link: string, onSuccess: () => void) {
         const task: Task<{ link: string, clsfResData: ClassificationResources.Data, alCtx: AnglesLengthsContext, nvCtx: NavalContext }> = {
             taskFunc: 'dnatco-from-raw-link',
             payload: { link, clsfResData: ClassificationContext.data(), alCtx: AnglesLengths.context(), nvCtx: Naval.context() },
@@ -299,7 +287,7 @@ export class App extends WithSubscriptions<{}, State> {
                         <>
                             {formatErrorText('Cannot process structure')}
                             {formatErrorText(data.finished.message ?? 'Unspecified error')}
-                         </>
+                        </>
                     );
                 } else if (data.finished.state === 'succeeded') {
                     this.dnatcofication.setData(data.finished.data!);
@@ -313,93 +301,28 @@ export class App extends WithSubscriptions<{}, State> {
             }
         }
     }
+}
 
-    private renderTab() {
-        switch (this.state.selectedTab) {
-        case 'start':
-            return (
-                <StartTab
-                    onDoCustomStructure={(coordsFile, densityMaps, densityMapCoeffs) => {
-                        if (this.state.dnatcofierState !== 'ready') return;
+type Initial = {
+    pathname: string,
+    search: string,
+}
 
-                        this.fromCustomStructure(
-                            coordsFile,
-                            densityMaps,
-                            densityMapCoeffs,
-                            () => this.setState({ ...this.state, mode: 'structure', selectedTab: 'annotation' })
-                        )
-                    }}
-                    onDoPdbId={(pdbId, db) => {
-                        if (this.state.dnatcofierState !== 'ready') return;
+function App(props: { initial: Initial }) {
+    const dh = React.useMemo(() => new DnatcoficationHandler(), []);
+    const vi = React.useMemo(() => new ViewerInterop(), []);
+    const outsideControl = React.useMemo(() => ({
+        selectStep: new Subject<string>(),
+    }), []);
 
-                        this.fromPdbId(
-                            pdbId,
-                            db,
-                            () => this.setState({ ...this.state, mode: 'structure', selectedTab: 'annotation' })
-                        )
-                    }}
-                    onDoRawLink={link => {
-                        if (this.state.dnatcofierState !== 'ready') return;
+    const [dnatcofierState, setDnatcofierState] = React.useState<'initializing' | 'ready' | 'failed'>('initializing');
+    const [appMode, setAppMode] = React.useState<keyof typeof TabsForModes>('nothing');
+    const [initialHandlingDone, setInitialHandlingDone] = React.useState(false);
 
-                        this.fromRawLink(
-                            link,
-                            () => this.setState({ ...this.state, mode: 'structure', selectedTab: 'annotation' })
-                        )
-                    }}
-                    dnatcofierState={this.state.dnatcofierState}
-                />
-            );
-        case 'annotation':
-            return (
-                <DnatcoViewerTab>
-                    <MainScreen
-                        dnatcofication={this.dnatcofication}
-                        masterMode='annotation'
-                        viewerInterop={this.viewerInterop}
-                    />
-                </DnatcoViewerTab>
-            );
-        case 'validation':
-            return (
-                <DnatcoViewerTab>
-                    <MainScreen
-                        dnatcofication={this.dnatcofication}
-                        masterMode='validation'
-                        viewerInterop={this.viewerInterop}
-                    />
-                </DnatcoViewerTab>
-            );
-        case 'refinement':
-            return (
-                <DnatcoViewerTab>
-                    <MainScreen
-                        dnatcofication={this.dnatcofication}
-                        masterMode='refinement'
-                        viewerInterop={this.viewerInterop}
-                    />
-                </DnatcoViewerTab>
-            );
-        case 'downloads':
-            return <Downloads dnatcofication={this.dnatcofication} />;
-        case 'list-of-conformers':
-            return <ConformersTab />;
-        default:
-            return <AboutTab />;
-        }
-    }
+    const location = useLocation();
+    const navigate = useNavigate();
 
-    private tabSwitched(tk: TabKeys) {
-        if (this.state.mode === 'nothing' && ['annotation', 'validation', 'refinement', 'downloads'].includes(tk)) {
-            Popup.create(
-                <div>
-                    No structure is loaded. Please load a structure on the <i>Home</i> tab to activate this tab.
-                </div>
-            );
-        } else
-            this.setState({ ...this.state, selectedTab: tk });
-    }
-
-    componentDidMount() {
+    React.useEffect(() => {
         const prefix = GlobalConfig.data().pathPrefix;
         const FailMsg = <div>{GlobalConfig.data().displayedProductName} cannot function when its engine fails to initialize. Try to refresh the page...</div>
 
@@ -411,11 +334,11 @@ export class App extends WithSubscriptions<{}, State> {
         ).then(retval => {
             if (retval === undefined) {
                 Fingerprint.fingerprintFromUrls(`${prefix}/classification/golden_steps.csv`, `${prefix}/classification/order_of_steps.txt`).then(fprint => {
-                    this.dnatcofication.setParametersFingerprint(fprint, GlobalConfig.data().expectedParametersFingerprint);
+                    dh.dnatcofication.setParametersFingerprint(fprint, GlobalConfig.data().expectedParametersFingerprint);
 
                     AnglesLengths.initialize().then(res => {
                         if (isError(res)) {
-                            this.setState({ ...this.state, dnatcofierState: 'failed' });
+                            setDnatcofierState('failed');
                             Popup.create(
                                 <div className='rdo-error-text'>
                                     <div>Angles and lengths - {res.message}</div>
@@ -428,7 +351,7 @@ export class App extends WithSubscriptions<{}, State> {
                                 `${prefix}/naval/bond_restraints.csv`
                             ).then(res => {
                                 if (isError(res)) {
-                                    this.setState({ ...this.state, dnatcofierState: 'failed' });
+                                    setDnatcofierState('failed');
                                     Popup.create(
                                         <div className='rdo-error-text'>
                                             <div>Naval - {res.message}</div>
@@ -436,10 +359,10 @@ export class App extends WithSubscriptions<{}, State> {
                                         </div>
                                     );
                                 } else
-                                    this.setState({ ...this.state, dnatcofierState: 'ready' });
+                                    setDnatcofierState('ready');
                             }).catch(e => {
                                 // We should not really get here but let's catch just in case
-                                this.setState({ ...this.state, dnatcofierState: 'failed' });
+                                setDnatcofierState('failed');
                                 Popup.create(
                                     <div className='rdo-error-text'>
                                         <div>Naval - {e.toString()}</div>
@@ -450,7 +373,7 @@ export class App extends WithSubscriptions<{}, State> {
                         }
                     }).catch(e => {
                         // We should not really get here but let's catch just in case
-                        this.setState({ ...this.state, dnatcofierState: 'failed' });
+                        setDnatcofierState('failed');
                         Popup.create(
                             <div className='rdo-error-text'>
                                 <div>Angles and lengths - {e.toString()}</div>
@@ -459,7 +382,7 @@ export class App extends WithSubscriptions<{}, State> {
                         );
                     });
                 }).catch(e => {
-                    this.setState({ ...this.state, dnatcofierState: 'failed' });
+                    setDnatcofierState('failed');
                     Popup.create(
                         <div className='rdo-error-text'>
                             <div>Failed to calculate fingerprint of classification parameters: {(e as Error).message}</div>
@@ -468,7 +391,7 @@ export class App extends WithSubscriptions<{}, State> {
                     );
                 })
             } else {
-                this.setState({ ...this.state, dnatcofierState: 'failed' });
+                setDnatcofierState('failed');
                 Popup.create(
                     <div className='rdo-error-text'>
                         <div>Classification context - {retval}</div>
@@ -478,7 +401,7 @@ export class App extends WithSubscriptions<{}, State> {
             }
         }).catch(e => {
             // We should not really get here but let's catch just in case
-            this.setState({ ...this.state, dnatcofierState: 'failed' });
+            setDnatcofierState('failed');
             Popup.create(
                 <div className='rdo-error-text'>
                     <div>Classification context - {e.toString()}</div>
@@ -488,66 +411,169 @@ export class App extends WithSubscriptions<{}, State> {
         });
 
         ListOfConformers.load(`${prefix}/conformers.csv`);
-    }
+    }, []);
 
-    componentWillUnmount() {
-        this.unsubscribeAll();
-    }
+    React.useEffect(() => {
+        if (dnatcofierState !== 'ready' || initialHandlingDone)
+            return;
 
-    componentDidUpdate() {
-        if (this.state.dnatcofierState === 'ready' && !this.initialSearchDone) {
-            // Make sure that we don't do this again no matter how the search goes
-            this.initialSearchDone = true;
+        // Make sure we run this only once
+        setInitialHandlingDone(true);
 
-            const params = Net.paramsFromUrl(Params);
-            Net.setBaseUrl();
-            if (params.cifcode) {
-                if (!isPdbId(params.cifcode)) {
-                    Popup.create(<div className='rdo-error-text'>{`${params.cifcode} is not a valid PDB ID`}</div>);
-                    return;
-                }
-
-                if (params.stepName) {
-                    const name = params.stepName;
-                    const sub = this.viewerInterop.events.structureLoaded.subscribe(() => {
-                        sub.unsubscribe();
-                        this.goToStep(name);
-                    });
-                }
-
-                const db = params.db ? params.db : GlobalConfig.data().primaryDatabase;
-
-                this.fromPdbId(
-                    params.cifcode,
-                    db,
-                    () => this.setState({ ...this.state, mode: 'structure', selectedTab: 'annotation' })
-                );
+        const params = Net.paramsFromUrl(Params, props.initial.search);
+        if (params.cifcode) {
+            if (!isPdbId(params.cifcode)) {
+                Popup.create(<div className='rdo-error-text'>{`${params.cifcode} is not a valid PDB ID`}</div>);
+                return;
             }
+
+            if (params.stepName) {
+                const name = params.stepName;
+
+                // This will not fire until we switch to one of the DNATCO tabs
+                // because only those tabs can command the viewer to load a structure
+                const sub = vi.events.structureLoaded.subscribe(() => {
+                    sub.unsubscribe();
+                    goToStep(name, outsideControl);
+                });
+            }
+
+            const db = params.db ? params.db : GlobalConfig.data().primaryDatabase;
+
+            dh.fromPdbId(
+                params.cifcode,
+                db,
+                () => {
+                    setAppMode('structure');
+                    console.log(props.initial);
+                    if (props.initial.pathname.search(IsDnatcoNavigation) !== -1)
+                        navigate(props.initial.pathname);
+                    else
+                        navigate('/app/dnatco/annotation');
+                }
+            );
         }
-    }
+    }, [dnatcofierState])
 
-    render() {
-        return (
-            <div id='rdo-app'>
-                <NavigationBar
-                    onTabSwitched={tab => this.tabSwitched(tab)}
-                    tabs={TabsForModes[this.state.mode]}
-                    selectedTab={this.state.selectedTab}
-                />
-                <div className='rdo-tab-content-container' id='rdo-tab-content-container'>
-                    {this.renderTab()}
-                </div>
-                <Footer />
+    return (
+        <div id='rdo-app'>
+            <NavigationBar
+                onTabSwitched={tk => {
+                    if (tk === 'start')
+                        navigate('/app');
+                    else {
+                        if (['annotation', 'validation', 'refinement', 'downloads'].includes(tk)) {
+                            if (appMode !== 'structure') {
+                                Popup.create(
+                                    <div>
+                                        No structure is loaded. Please load a structure on the <i>Home</i> tab to activate this tab.
+                                    </div>
+                                );
+                                return;
+                            } else
+                                navigate(`/app/dnatco/${tk}`);
+                        } else
+                            navigate(`/app/${tk}`);
+                    }
+                }}
+                tabs={TabsForModes[appMode]}
+                selectedTab={locationToTab(appMode, location.pathname)}
+            />
+            <div className='rdo-tab-content-container' id='rdo-tab-content-container'>
+                <Routes>
+                    <Route
+                        path='/app'
+                    >
+                        <Route
+                            index
+                            element=<StartTab
+                                onDoCustomStructure={(coordsFile, densityMaps, densityMapCoeffs) => {
+                                    if (dnatcofierState !== 'ready') return;
+
+                                    dh.fromCustomStructure(
+                                        coordsFile,
+                                        densityMaps,
+                                        densityMapCoeffs,
+                                        () => {
+                                            setAppMode('structure');
+                                            navigate('/app/dnatco/annotation');
+                                        }
+                                    )
+                                }}
+                                onDoPdbId={(pdbId, db) => {
+                                    if (dnatcofierState !== 'ready') return;
+
+                                    dh.fromPdbId(
+                                        pdbId,
+                                        db,
+                                        () => {
+                                            setAppMode('structure');
+                                            navigate('/app/dnatco/annotation');
+                                        }
+                                    )
+                                }}
+                                onDoRawLink={link => {
+                                    if (dnatcofierState !== 'ready') return;
+
+                                    dh.fromRawLink(
+                                        link,
+                                        () => {
+                                            setAppMode('structure');
+                                            navigate('/app/dnatco/annotation');
+                                        }
+                                    )
+                                }}
+                                dnatcofierState={dnatcofierState}
+                            />
+                        />
+                        <Route
+                            path='list-of-conformers'
+                            element=<ConformersTab />
+                        />
+                        <Route
+                            path='about'
+                            element=<AboutTab />
+                        />
+                        <Route
+                            path='dnatco'
+                        >
+                            <Route
+                                path='annotation/*'
+                                element=<DnatcoViewerTab
+                                    dnatcofication={dh.dnatcofication}
+                                    viewerInterop={vi}
+                                    outsideControl={outsideControl}
+                                />
+                            />
+                            <Route
+                                path='validation/*'
+                                element=<DnatcoViewerTab
+                                    dnatcofication={dh.dnatcofication}
+                                    viewerInterop={vi}
+                                    outsideControl={outsideControl}
+                                />
+                            />
+                            <Route
+                                path='refinement/*'
+                                element=<DnatcoViewerTab
+                                    dnatcofication={dh.dnatcofication}
+                                    viewerInterop={vi}
+                                    outsideControl={outsideControl}
+                                />
+                            />
+                            <Route
+                                path='downloads'
+                                element=<Downloads dnatcofication={dh.dnatcofication} />
+                            />
+                            <Route path='*' element={<Navigate to='annotation' />} />
+                        </Route>
+                    </Route>
+                    <Route path='*' element={<Navigate to='/app' />} />
+                </Routes>
             </div>
-        );
-    }
-}
-
-export namespace App {
-    export interface Props {
-        isDevel: boolean;
-        pathPrefix: string;
-    }
+            <Footer />
+        </div>
+    );
 }
 
 function InitializationError(props: {e: Error}) {
@@ -578,7 +604,16 @@ async function bootstrap() {
         if (!(isBuiltIn(configData.primaryDatabase) || UserRemoteDatabases.exists(configData.primaryDatabase)))
             throw new Error(`Primary database ID "${configData.primaryDatabase}" is not known`);
 
-        root.render(<App {...config} />);
+        const initial = {
+            pathname: window.location.pathname,
+            search: window.location.search,
+        };
+
+        root.render(
+            <BrowserRouter>
+                <App initial={initial} />
+            </BrowserRouter>
+        );
     } catch (e) {
         root.render(<InitializationError e={e as Error} />);
     }

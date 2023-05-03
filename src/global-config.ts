@@ -43,7 +43,7 @@ export type GlobalConfigData = {
 };
 const GlobalConfigData: GlobalConfigData = {
     isDevel: false,
-    pathPrefix: '.',
+    pathPrefix: '',
     userDatabases: [],
     primaryDatabase: '',
     anglesLengths: {
@@ -92,8 +92,8 @@ function checkAndSet(data: GlobalConfigData, input: Record<string, any>) {
 }
 
 function fixups(data: GlobalConfigData) {
-    if (data.pathPrefix === '')
-        data.pathPrefix = '.';
+    if (data.pathPrefix.length > 0 && !data.pathPrefix.startsWith('/'))
+        data.pathPrefix = '/' + data.pathPrefix;
 
     data.userDatabases = data.userDatabases.filter((x) => {
         let ok = KnownCoordinateFileTypes.includes(x.coords.type);
@@ -126,7 +126,7 @@ export namespace GlobalConfig {
 
     export async function fetchConfigFile() {
         try {
-            return await (await fetch('./config.json')).json();
+            return await (await fetch('/config.json')).json();
         } catch (e) {
             return {};
         }

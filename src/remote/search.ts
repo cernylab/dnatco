@@ -108,7 +108,7 @@ export namespace Search {
     export function requestSearch(NtC: string, maxCount: number, redundant: boolean, large: boolean): WebApi.Pending {
         const req = Requests.Search(NtC, maxCount, redundant, large);
 
-        return WebApi.request('api/search', req);
+        return WebApi.request('/api/search', req);
     }
 
     export async function resolveSearch(pending: WebApi.Pending) {

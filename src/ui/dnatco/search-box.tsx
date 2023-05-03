@@ -1,7 +1,6 @@
 import React from 'react';
 import * as RDC from 'react-dom/client';
 import { IconButton, PushButton } from '../common/push-button';
-import { GlobalConfig } from '../../global-config';
 import 'assets/imgs/chevron-right.svg';
 
 function positionStyle(anchor: SearchBox.Props<any>['anchor'], x: number, y: number): React.CSSProperties {
@@ -46,7 +45,6 @@ type State<T> = {
 const ClearAction: ClearAction = { kind: 'clear' };
 
 export function SearchBox<T>(props: SearchBox.Props<T>) {
-    const prefix = GlobalConfig.data().pathPrefix;
     const [state, dispatch] = React.useReducer(reducer, { results: [], searchPrompt: '' });
 
     return (
@@ -87,7 +85,7 @@ export function SearchBox<T>(props: SearchBox.Props<T>) {
                         <div style={{ flex: 1 }}>{props.searching.onRenderResult(x, props.searching.onUseResult)}</div>
                         <IconButton
                             className='rdo-pushbutton rdo-pushbutton-border'
-                            src={`${prefix}/imgs/chevron-right.svg`}
+                            src='imgs/chevron-right.svg'
                             onClick={() => props.searching.onUseResult(x)}
                         />
                     </div>

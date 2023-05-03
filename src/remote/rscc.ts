@@ -33,12 +33,12 @@ export namespace Rscc {
 
         const req = Requests.Rscc(b64coords, coordsType, b64coeffs);
 
-        const pending = WebApi.request('api/rscc', req);
+        const pending = WebApi.request('/api/rscc', req);
         return await WebApi.resolve(pending, isList);
     }
 
     export async function fetchFromDb(pdbId: string): Promise<RsccList> {
-        const req = await fetch(`rscc/${pdbId}.rscc`);
+        const req = await fetch(`/rscc/${pdbId}.rscc`);
         if (!req.ok)
             throw new Error(req.statusText);
 
