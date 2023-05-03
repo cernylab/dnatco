@@ -20,7 +20,7 @@ export function AnglesLengthsUpper(props: View.Props) {
                     <ComboBox
                         options={[
                             { caption: 'Residue', value: 'residue' },
-                            { caption: 'Compound', value: 'compound' }
+                            { caption: 'Base', value: 'compound' }
                         ]}
                         value={groupBy}
                         onChange={(v) => setGroupBy(v)}
