@@ -232,6 +232,12 @@ function ViewWrapper<T extends keyof Register.PropsType>(props: {
     }
 }
 
+// See MainScreen below
+export class SelectedNtCSetDumbWorkaroundWrapperDataClassMemoizableItem {
+    constructor(public set: string) {
+    }
+}
+
 export function MainScreen(props: {
     dnatcofication: Dnatcofication,
     viewerInterop: ViewerInterop,
@@ -243,8 +249,6 @@ export function MainScreen(props: {
     const structureSelection = React.useMemo<StructureSelection>(() => StructureSelectionFromViewer(props.viewerInterop, props.dnatcofication), []);
 
     const changeSelection = async (pieces: SelectedPieces, displayer: SelectionDisplayer) => {
-        console.log('changing selection');
-
         await props.viewerInterop.api.command(ViewerApi.Commands.DeselectStructures());
 
         structureSelection.steps = [...pieces.steps];
@@ -328,6 +332,17 @@ export function MainScreen(props: {
     const [selectedCustomNtCSet, setSelectedCustomNtCSet] = React.useState('');
     const [dnatcoMode, setDnatcoMode] = React.useState(locationToDnatcoMode(location.pathname));
 
+    /*
+     * I would lie if I told out that I fully understand what is going on here but here is the deal.
+     * When we initially set the value of "selectedCustomNtCSet" when the component mounts, this initial
+     * value appears to get captured in the event handlers and any changes to it will not be visible.
+     * To get around this we create a permanent helper object with a property "set" which we will update
+     * every time the value of "selectedCustomNtCSet" changes. Since the handlers will capture a reference
+     * to this object and not the values in it, this allows us to haxxor around this fun issue.
+     * We also make sure that we give the helper object an appropriate name.
+     */
+    const dumb = React.useMemo(() => new SelectedNtCSetDumbWorkaroundWrapperDataClassMemoizableItem(selectedCustomNtCSet), []);
+
     React.useEffect(() => {
         const subs: Subscription[] = [];
 
@@ -339,18 +354,31 @@ export function MainScreen(props: {
 
         // There is no reasonable way how to force an update on functional components. Let's hope this hack works. Sigh...
         subs.push(props.dnatcofication.events.structureChanged.subscribe(() => navigate(location)));
-        subs.push(
-            props.dnatcofication.customNtCs.events.changed.subscribe(({ set, step }) => {
-                if (props.dnatcofication.customNtCs.empty()) {
-                    setSelectedCustomNtCSet('');
-                    return;
-                }
 
-                if (!props.dnatcofication.customNtCs.exists(set)) {
-                    // The set got deleted, switch to the first available custom set
-                    setSelectedCustomNtCSet(props.dnatcofication.customNtCs.sets()[0] ?? '' );
-                    return;
+        // Wire up changes in the custom NtC set
+        subs.push(
+            props.dnatcofication.customNtCs.events.setsCleared.subscribe(() => setSelectedCustomNtCSet(''))
+        );
+        subs.push(
+            props.dnatcofication.customNtCs.events.setDeleted.subscribe((name) => {
+                if (name === dumb.set) {
+                    if (props.dnatcofication.customNtCs.isEmpty())
+                        setSelectedCustomNtCSet('');
+                    else
+                        setSelectedCustomNtCSet(props.dnatcofication.customNtCs.sets()[0]);
                 }
+            }
+        ));
+        subs.push(
+            props.dnatcofication.customNtCs.events.setRenamed.subscribe(({ oldName, newName }) => {
+                if (dumb.set === oldName)
+                    setSelectedCustomNtCSet(newName);
+            }
+        ));
+        subs.push(
+            props.dnatcofication.customNtCs.events.setChanged.subscribe(({ set, step }) => {
+                if (set !== dumb.set)
+                    return;
 
                 const pieces = {
                     steps: structureSelection.steps,
@@ -361,7 +389,7 @@ export function MainScreen(props: {
 
                 const mode = locationToDnatcoMode(window.location.pathname); // See the BEWARE above
                 const displayer = Register.Views[mode.viewId].selectionDisplayer;
-                displayer(pieces, props.dnatcofication, props.viewerInterop, selectedCustomNtCSet);
+                displayer(pieces, props.dnatcofication, props.viewerInterop, dumb.set);
             }
         ));
 
@@ -478,6 +506,8 @@ export function MainScreen(props: {
     }, [location]);
 
     React.useEffect(() => {
+        dumb.set = selectedCustomNtCSet; // Update the helper object first
+
         if (dnatcoMode.master === 'refinement') {
             const view = Register.Views[dnatcoMode.viewId];
             const pieces = {

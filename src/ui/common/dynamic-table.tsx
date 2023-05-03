@@ -276,6 +276,9 @@ export class DynamicTable extends React.Component<DynamicTable.Props, { sorting:
     }
 
     shouldComponentUpdate(nextProps: Readonly<DynamicTable.Props>, nextState: Readonly<{ sorting: DynamicTable.Sorting }>): boolean {
+        if (this.props.modelsAlwaysCompareFalse)
+            return true;
+
         const oldModel = this.props.model;
         const newModel = nextProps.model;
 
@@ -414,5 +417,6 @@ export namespace DynamicTable {
             downloaders: Downloader[];
             fileName: string;
         };
+        modelsAlwaysCompareFalse?: boolean,
     }
 }

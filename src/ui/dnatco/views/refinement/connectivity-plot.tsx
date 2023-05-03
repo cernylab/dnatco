@@ -279,7 +279,7 @@ export class ConnectivityPlot extends View<Refinement.Props> {
         this.subscribe(this.props.switching.events.modelSwitched, () => this.forceUpdate());
         this.subscribe(this.props.switching.events.chainSwitched, () => this.forceUpdate());
         this.subscribe(this.props.switching.events.selectionChanged, () => this.forceUpdate());
-        this.subscribe(this.props.dnatcofication.customNtCs.events.changed, (update) => {
+        this.subscribe(this.props.dnatcofication.customNtCs.events.setChanged, (update) => {
             if (update.set === this.props.selectedCustomNtCSet)
                 this.forceUpdate();
         });

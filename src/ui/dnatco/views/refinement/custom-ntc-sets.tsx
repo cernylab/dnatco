@@ -17,7 +17,19 @@ export class CustomNtCSets extends WithSubscriptions<CustomNtCSets.Props, Empty>
 
     componentDidMount() {
         this.subscribe(
-            this.props.customNtCs.events.changed,
+            this.props.customNtCs.events.setAdded,
+            () => this.forceUpdate()
+        );
+        this.subscribe(
+            this.props.customNtCs.events.setDeleted,
+            () => this.forceUpdate()
+        );
+        this.subscribe(
+            this.props.customNtCs.events.setRenamed,
+            () => this.forceUpdate()
+        );
+        this.subscribe(
+            this.props.customNtCs.events.setsCleared,
             () => this.forceUpdate()
         );
     }

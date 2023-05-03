@@ -166,6 +166,7 @@ export class ChangeNtCs extends View<Refinement.Props> {
                 highlightColor={Colors.CurrentStep()}
                 scrollTainer={this.tableTainer.current ?? void 0}
                 style='wide'
+                modelsAlwaysCompareFalse
             />
         );
     }
@@ -179,7 +180,7 @@ export class ChangeNtCs extends View<Refinement.Props> {
 
     componentDidMount() {
         this.subscribe(
-            this.props.dnatcofication.customNtCs.events.changed,
+            this.props.dnatcofication.customNtCs.events.setChanged,
             (update) => {
                 if (update.set === this.props.selectedCustomNtCSet) {
                     const sel = this.props.structureSelection;
