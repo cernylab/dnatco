@@ -9,62 +9,60 @@ import 'assets/imgs/CAS_centred_logo_ENG_rgb.png';
 
 const PadderStyle = { marginLeft: 'calc(var(--h-gap) / 2)', marginRight: 'calc(var(--h-gap) / 2)' };
 
-export class Footer extends React.Component {
-    render() {
-        return (
-            <>
-                <div className='rdo-footer-gutter' />
-                <div className='rdo-footer'>
-                    <div
-                        style={{
-                            marginLeft: '2em',
-                            marginRight: '2em',
-                            display: 'grid',
-                            gridTemplateColumns: 'auto auto auto 1fr auto 5em 5em 5em',
-                            alignItems: 'center',
-                            justifyContent: 'center'
-                        }}
-                    >
-                        <div style={PadderStyle}>
-                            <div className='rdo-footer-text'>© 2022</div>
-                        </div>
-                        {Globals.PrimaryContacts.map((c, idx) => (
-                            <div style={PadderStyle} key={idx}>
-                                <div className='rdo-footer-text'>
-                                    <Email email={c.email} subject='DNATCO'><span style={{ color: 'var(--color-c)' }}>{c.name}</span></Email>
-                                </div>
-                            </div>
-                        ))}
-
-                        <div />
-
-                        <div style={PadderStyle}>
-                            <div className='rdo-footer-text'>
-                                <div style={{ color: 'var(--color-c)' }}>Supported by Institute of Biotechnology & Elixir CZ</div>
-                            </div>
-                        </div>
-
-                        <IconButton
-                            className='rdo-footer-icon-button'
-                            iconClassName='rdo-footer-icon-button-image'
-                            src='imgs/ibt.png'
-                            onClick={() => Net.openLink('https://www.ibt.cas.cz/en', true)}
-                        />
-                        <IconButton
-                            className='rdo-footer-icon-button'
-                            iconClassName='rdo-footer-icon-button-image'
-                            src='imgs/elixir.png'
-                            onClick={() => Net.openLink('https://www.elixir-czech.cz/', true)}
-                        />
-                        <IconButton
-                            className='rdo-footer-icon-button'
-                            iconClassName='rdo-footer-icon-button-image'
-                            src='imgs/CAS_centred_logo_ENG_rgb.png'
-                            onClick={() => Net.openLink('https://www.avcr.cz/en', true)}
-                        />
+export function Footer() {
+    return (
+        <>
+            <div className='rdo-footer-gutter' />
+            <div className='rdo-footer'>
+                <div
+                    style={{
+                        marginLeft: '2em',
+                        marginRight: '2em',
+                        display: 'grid',
+                        gridTemplateColumns: 'auto auto auto 1fr auto 5em 5em 5em',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                    }}
+                >
+                    <div style={PadderStyle}>
+                        <div className='rdo-footer-text'>© 2022</div>
                     </div>
+                    {Globals.PrimaryContacts.map((c, idx) => (
+                        <div style={PadderStyle} key={idx}>
+                            <div className='rdo-footer-text'>
+                                <Email email={c.email} subject='DNATCO'><span style={{ color: 'var(--color-c)' }}>{c.name}</span></Email>
+                            </div>
+                        </div>
+                    ))}
+
+                    <div />
+
+                    <div style={PadderStyle}>
+                        <div className='rdo-footer-text'>
+                            <div style={{ color: 'var(--color-c)' }}>Supported by Institute of Biotechnology & Elixir CZ</div>
+                        </div>
+                    </div>
+
+                    <IconButton
+                        className='rdo-footer-icon-button'
+                        iconClassName='rdo-footer-icon-button-image'
+                        src='imgs/ibt.png'
+                        onClick={() => Net.openLink('https://www.ibt.cas.cz/en', true)}
+                    />
+                    <IconButton
+                        className='rdo-footer-icon-button'
+                        iconClassName='rdo-footer-icon-button-image'
+                        src='imgs/elixir.png'
+                        onClick={() => Net.openLink('https://www.elixir-czech.cz/', true)}
+                    />
+                    <IconButton
+                        className='rdo-footer-icon-button'
+                        iconClassName='rdo-footer-icon-button-image'
+                        src='imgs/CAS_centred_logo_ENG_rgb.png'
+                        onClick={() => Net.openLink('https://www.avcr.cz/en', true)}
+                    />
                 </div>
-            </>
-        );
-    }
+            </div>
+        </>
+    );
 }
