@@ -333,7 +333,7 @@ export function MainScreen(props: {
     const [dnatcoMode, setDnatcoMode] = React.useState(locationToDnatcoMode(location.pathname));
 
     /*
-     * I would lie if I told out that I fully understand what is going on here but here is the deal.
+     * I would lie if I told you that I fully understand what is going on here but here is the deal.
      * When we initially set the value of "selectedCustomNtCSet" when the component mounts, this initial
      * value appears to get captured in the event handlers and any changes to it will not be visible.
      * To get around this we create a permanent helper object with a property "set" which we will update
