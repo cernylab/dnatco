@@ -420,7 +420,7 @@ export class AveragesChart extends React.Component<{
                                 }}
                                 key={idx}
                             >
-                                <Icon img={`${GlobalConfig.data().pathPrefix}/imgs/data-transfer-download.svg`} size='text' />
+                                <Icon img='imgs/data-transfer-download.svg' size='text' />
                                 {dl.caption}
                             </div>
                         );

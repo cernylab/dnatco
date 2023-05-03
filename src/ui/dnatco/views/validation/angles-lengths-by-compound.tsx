@@ -89,8 +89,6 @@ function DownloadButtons(props: {
     downloaders: StatsDownloader[],
     fileName: string,
 }) {
-    const prefix = GlobalConfig.data().pathPrefix;
-
     return (
         <div style={{ display: 'flex', flexDirection: 'column' }}>
             {props.downloaders.map((dl, idx) => (
@@ -102,7 +100,7 @@ function DownloadButtons(props: {
                         e.stopPropagation();
                         dl.download(props.fileName, props.downloadableData);
                 }}>
-                    <Icon img={`${prefix}/imgs/data-transfer-download.svg`} size='text' />
+                    <Icon img='imgs/data-transfer-download.svg' size='text' />
                     {dl.caption}
                 </div>
             ))}
@@ -584,7 +582,9 @@ export class AnglesLengthsByCompound extends View<View.Props> {
      * This needs to be a class component because it has its own event Subjects
      * that must not change throughout the entire lifetime of the component.
      * If they did, it would cause the events to be misdelivered.
-     * React sucks...
+     *
+     * We could do a useMemo() instead but who has the time to keep rewriting things just
+     * becuase they are more "correct".
      */
     static readonly unscrollableContainer = true;
     private readonly ek = new EventsKeeper();
@@ -654,7 +654,6 @@ export class AnglesLengthsByCompound extends View<View.Props> {
         const pgrpIndices = sequence(0, DAnglesLengths.pGroupCount() - 1);
         const structureName = AnglesLengthsCommon.structureIdentifyingName(this.props.dnatcofication);
 
-        const pathPrefix = GlobalConfig.data().pathPrefix;
         const mkHeader = (text: string) => {
             const Style = { display: 'flex', flexDirection: 'row', alignItems: 'center' } as StandardLonghandProperties;
 
@@ -662,13 +661,13 @@ export class AnglesLengthsByCompound extends View<View.Props> {
                 collapsed: (
                     <div className='rdo-secondary-caption rdo-active' style={Style}>
                         <div style={{ flex: 1 }}>{text}</div>
-                        <Icon img={`${pathPrefix}/imgs/triangle-up.svg`} size='text' />
+                        <Icon img='imgs/triangle-up.svg' size='text' />
                     </div>
                 ),
                 expanded: (
                     <div className='rdo-secondary-caption rdo-active' style={Style}>
                         <div style={{ flex: 1 }}>{text}</div>
-                        <Icon img={`${pathPrefix}/imgs/triangle-down.svg`} size='text' />
+                        <Icon img='imgs/triangle-down.svg' size='text' />
                     </div>
                 )
             };

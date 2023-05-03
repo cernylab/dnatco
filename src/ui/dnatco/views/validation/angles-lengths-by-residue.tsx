@@ -520,8 +520,6 @@ function DownloadButtons(props: {
     residues: Measurements.Residue[],
     stats: ALM.ResidueStats[],
 }) {
-    const prefix = GlobalConfig.data().pathPrefix;
-
     return (
         <div style={{ display: 'flex', flexDirection: 'column' }}>
             {props.downloaders.map((dl, idx) => (
@@ -533,7 +531,7 @@ function DownloadButtons(props: {
                         e.stopPropagation();
                         dl.download(props.fileName, { residues: props.residues, counts: props.counts, stats: props.stats });
                 }}>
-                    <Icon img={`${prefix}/imgs/data-transfer-download.svg`} size='text' />
+                    <Icon img='imgs/data-transfer-download.svg' size='text' />
                     {dl.caption}
                 </div>
             ))}
@@ -1191,7 +1189,6 @@ export class AnglesLengthsByResidue extends View<
             })
         ];
 
-        const pathPrefix = GlobalConfig.data().pathPrefix;
         const mkHeader = (text: string) => {
             const Style = { display: 'flex', flexDirection: 'row', alignItems: 'center' } as StandardLonghandProperties;
 
@@ -1199,13 +1196,13 @@ export class AnglesLengthsByResidue extends View<
                 collapsed: (
                     <div className='rdo-secondary-caption rdo-active' style={Style}>
                         <div style={{ flex: 1 }}>{text}</div>
-                        <Icon img={`${pathPrefix}/imgs/triangle-up.svg`} size='text' />
+                        <Icon img='imgs/triangle-up.svg' size='text' />
                     </div>
                 ),
                 expanded: (
                     <div className='rdo-secondary-caption rdo-active' style={Style}>
                         <div style={{ flex: 1 }}>{text}</div>
-                        <Icon img={`${pathPrefix}/imgs/triangle-down.svg`} size='text' />
+                        <Icon img='imgs/triangle-down.svg' size='text' />
                     </div>
                 )
             };
@@ -1284,7 +1281,7 @@ export class AnglesLengthsByResidue extends View<
                             </div>
                             <div className='rdo-floating-search-icon-tainer' style={{ bottom: 'var(--x-gap)', right: 'var(--x-gap)' }}>
                                 <IconButton
-                                    src={`${pathPrefix}/imgs/magnifying-glass.svg`}
+                                    src='imgs/magnifying-glass.svg'
                                     className='rdo-floating-search-icon rdo-pushbutton-border'
                                     onClick={() => {
                                         if (this.searchBoxOpen === true || !residuesOuterTainerRef.current)
@@ -1399,7 +1396,7 @@ export class AnglesLengthsByResidue extends View<
                                 `${this.props.dnatcofication.pdbId}_naval_bonds_report.csv`
                             )}
                         >
-                            <Icon img={`${pathPrefix}/imgs/data-transfer-download.svg`} size='text' />
+                            <Icon img='imgs/data-transfer-download.svg' size='text' />
                             Bond lengths
                         </div>
                         <div
@@ -1411,7 +1408,7 @@ export class AnglesLengthsByResidue extends View<
                                 `${this.props.dnatcofication.pdbId}_naval_angles_report.csv`
                             )}
                         >
-                            <Icon img={`${pathPrefix}/imgs/data-transfer-download.svg`} size='text' />
+                            <Icon img='imgs/data-transfer-download.svg' size='text' />
                             Bond angles
                         </div>
                         <div
@@ -1423,7 +1420,7 @@ export class AnglesLengthsByResidue extends View<
                                 `${this.props.dnatcofication.pdbId}_naval_geometry_report.csv`
                             )}
                         >
-                            <Icon img={`${pathPrefix}/imgs/data-transfer-download.svg`} size='text' />
+                            <Icon img='imgs/data-transfer-download.svg' size='text' />
                             Geometry
                         </div>
                     </div>

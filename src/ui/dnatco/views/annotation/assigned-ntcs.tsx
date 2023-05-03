@@ -19,7 +19,6 @@ import { StepsMapper } from '../../../../dnatco/steps-mapper';
 import { parseIntStrict } from '../../../../util';
 import { doDownload, FileTypes } from '../../../../util/downloader';
 import { Serialization } from '../../../../util/serialization';
-import { GlobalConfig } from '../../../../global-config';
 import 'assets/imgs/info.svg';
 import 'assets/imgs/info-inverse.svg';
 import 'assets/imgs/magnifying-glass.svg';
@@ -258,7 +257,6 @@ export class AssignedNtCs extends View<View.Props> {
 
     render() {
         const numModels = Dnatcofication.Structure.numberOfModels(this.props.dnatcofication);
-        const prefix = GlobalConfig.data().pathPrefix;
         const selfRef = React.createRef<HTMLDivElement>();
 
         return (
@@ -295,7 +293,7 @@ export class AssignedNtCs extends View<View.Props> {
 
                 <div className='rdo-floating-search-icon-tainer' style={{ bottom: 'var(--x-gap)', right: 'var(--x-gap)' }}>
                     <IconButton
-                        src={`${prefix}/imgs/magnifying-glass.svg`}
+                        src='imgs/magnifying-glass.svg'
                         className='rdo-floating-search-icon rdo-pushbutton-border'
                         onClick={() => {
                             const tainer = selfRef.current;

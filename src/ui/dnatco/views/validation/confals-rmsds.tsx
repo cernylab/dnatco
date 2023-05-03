@@ -30,7 +30,6 @@ import {
 import { Dnatcofication, StepRmsdStats as DnatcoStepRmsdStats } from '../../../../dnatco/dnatcofication';
 import { Step } from '../../../../dnatco/step';
 import { StepsMapper } from '../../../../dnatco/steps-mapper';
-import { GlobalConfig } from '../../../../global-config';
 import { parseIntStrict } from '../../../../util';
 import { doDownload, FileTypes } from '../../../../util/downloader';
 import { Serialization } from '../../../../util/serialization';
@@ -213,7 +212,6 @@ export class ConfalsRmsds extends View<View.Props> {
     }
 
     private makeTableModel(selectedModelNum: number, selectedChain?: string) {
-        const pathPrefix = GlobalConfig.data().pathPrefix;
         const steps = this.props.dnatcofication.table(NdbStructNtcStep);
         const summary = this.props.dnatcofication.table(NdbStructNtcStepSummary);
         const params = this.props.dnatcofication.table(NdbStructNtcStepParameters);
@@ -256,8 +254,8 @@ export class ConfalsRmsds extends View<View.Props> {
         };
         const torsionsColumn: DynamicTable.Column<string> = {
             name: '?', cells: new Array<DynamicTable.Cell<string>>(), alignment: 'center', notSortable: true, noData: true,
-            tooltip: <div>Hover over the <Icon img={`${pathPrefix}/imgs/info.svg`} size='text' /> to get details about torsions and distances.</div>,
-            elem: <Icon img={`${pathPrefix}/imgs/info.svg`} size='text' />
+            tooltip: <div>Hover over the <Icon img='imgs/info.svg' size='text' /> to get details about torsions and distances.</div>,
+            elem: <Icon img='imgs/info.svg' size='text' />
         };
 
         const columns = [chainColumn, stepColumn, ntcColumn, canaColumn, confalColumn, rmsdColumn, torsionsColumn];
@@ -322,7 +320,7 @@ export class ConfalsRmsds extends View<View.Props> {
                     () => (
                         <Tooltip
                             tag={
-                                <Icon img={`${pathPrefix}/imgs/info-inverse.svg`} size='text' />
+                                <Icon img='imgs/info-inverse.svg' size='text' />
                             }
                             delayMsec={300}
                         >
@@ -433,7 +431,6 @@ export class ConfalsRmsds extends View<View.Props> {
         const numModels = Dnatcofication.Structure.numberOfModels(this.props.dnatcofication);
         const modelIdx = this.props.structureSelection.modelIndex === InvalidModelIndex ? 0 : this.props.structureSelection.modelIndex;
         const confalAverage = this.props.dnatcofication.data.averageConfals[modelIdx];
-        const prefix = GlobalConfig.data().pathPrefix;
         const selfRef = React.createRef<HTMLDivElement>();
 
         return (
@@ -480,7 +477,7 @@ export class ConfalsRmsds extends View<View.Props> {
 
                 <div className='rdo-floating-search-icon-tainer' style={{ bottom: 'var(--x-gap)', right: 'var(--x-gap)' }}>
                     <IconButton
-                        src={`${prefix}/imgs/magnifying-glass.svg`}
+                        src='imgs/magnifying-glass.svg'
                         className='rdo-floating-search-icon rdo-pushbutton-border'
                         onClick={() => {
                             const tainer = selfRef.current;

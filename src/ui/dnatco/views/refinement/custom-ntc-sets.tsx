@@ -55,7 +55,7 @@ export class CustomNtCSets extends WithSubscriptions<CustomNtCSets.Props, Empty>
                     />
                     <IconTextButton
                         caption='Add'
-                        src={`imgs/plus.svg`}
+                        src='imgs/plus.svg'
                         onClick={() => {
                             InputDialog.create({
                                 caption: 'Name of the new set',
@@ -73,7 +73,7 @@ export class CustomNtCSets extends WithSubscriptions<CustomNtCSets.Props, Empty>
                     />
                     <IconTextButton
                         caption='Rename'
-                        src={`imgs/reload.svg`}
+                        src='imgs/reload.svg'
                         onClick={() => {
                             InputDialog.create({
                                 caption: `Set new name for set ${this.props.selectedSet}`,
@@ -91,7 +91,7 @@ export class CustomNtCSets extends WithSubscriptions<CustomNtCSets.Props, Empty>
                     />
                     <IconTextButton
                         caption='Delete'
-                        src={`imgs/x.svg`}
+                        src='imgs/x.svg'
                         onClick={() => {
                             if (this.props.selectedSet !== '') {
                                 this.props.customNtCs.deleteSet(this.props.selectedSet);

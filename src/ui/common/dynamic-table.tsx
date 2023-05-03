@@ -213,7 +213,6 @@ export class DynamicTable extends React.Component<DynamicTable.Props, { sorting:
         if (!this.props.download)
             return void 0;
 
-        const prefix = GlobalConfig.data().pathPrefix;
         const buttons = new Array<JSX.Element>();
         const fileName = this.props.download.fileName;
 
@@ -227,7 +226,7 @@ export class DynamicTable extends React.Component<DynamicTable.Props, { sorting:
                         dl.download(fileName, this.props.model, this.state.sorting);
                     }}
                 >
-                    <Icon img={`${prefix}/imgs/data-transfer-download.svg`} size='text' />
+                    <Icon img='imgs/data-transfer-download.svg' size='text' />
                     {dl.caption}
                 </div>
             );
