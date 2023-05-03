@@ -30,7 +30,7 @@ import { SerializeByResidue } from '../../../../dnatco/angles-lengths/serialize'
 import { Summarize } from '../../../../dnatco/angles-lengths/summarize';
 import { Naval } from '../../../../dnatco/naval';
 import { GlobalConfig } from '../../../../global-config';
-import { parseIntStrict, replaceAll, sequence } from '../../../../util';
+import { parseIntStrict, sequence } from '../../../../util';
 import { doDownload, Downloader, FileTypes } from '../../../../util/downloader';
 import { EventsKeeper } from '../../../../util/events-keeper';
 import { M } from '../../../../util/math';
@@ -80,14 +80,6 @@ function compareMaybeBins(a: ALM.MaybeBin, b: ALM.MaybeBin) {
         return 1;
     } else
         return (a as Bin).prosco - (b as Bin).prosco;
-}
-
-function fileNameFriendlyTag(tag: string) {
-    return replaceAll(
-        replaceAll(tag, '^', '_'),
-        "'",
-        'p'
-    );
 }
 
 type GatherWorst = {
@@ -251,7 +243,7 @@ function renderBondAngleDetail(
     onAtomsClicked?: (r: Measurements.Residue, triplet: Triplet) => void
 ) {
     const pgrpDatas = pgrpIndices.map(idx => DAnglesLengths.anglePGroupData(idx, residue.compound, bondAngle.triplet)!);
-    const dlName = `${AnglesLengthsCommon.residueIdentifyingName(structureName, residue)}_${fileNameFriendlyTag(tripletTag(bondAngle.triplet))}`;
+    const dlName = `${AnglesLengthsCommon.residueIdentifyingName(structureName, residue)}_${AnglesLengthsCommon.fileNameFriendlyTag(tripletTag(bondAngle.triplet))}`;
     const ni = AnglesLengthsCommon.getNavalAngle(d, residue, bondAngle.triplet);
 
     return (
@@ -285,7 +277,7 @@ function renderBondLengthDetail(
     onAtomsClicked?: (r: Measurements.Residue, pair: Pair) => void,
 ) {
     const pgrpDatas = pgrpIndices.map(idx => DAnglesLengths.lengthPGroupData(idx, residue.compound, bondLength.pair)!);
-    const dlName = `${AnglesLengthsCommon.residueIdentifyingName(structureName, residue)}${fileNameFriendlyTag(pairTag(bondLength.pair))}`;
+    const dlName = `${AnglesLengthsCommon.residueIdentifyingName(structureName, residue)}_${AnglesLengthsCommon.fileNameFriendlyTag(pairTag(bondLength.pair))}`;
     const ni = AnglesLengthsCommon.getNavalBond(d, residue, bondLength.pair);
 
     return (

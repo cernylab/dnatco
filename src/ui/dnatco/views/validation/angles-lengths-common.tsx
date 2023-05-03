@@ -30,7 +30,7 @@ import { Validation } from '../../../../dnatco/naval/validation';
 import { Summarize } from '../../../../dnatco/angles-lengths/summarize';
 import { Residues } from '../../../../dnatco/residues';
 import { GlobalConfig } from '../../../../global-config';
-import { htmlColorAsNumber, isWithin } from '../../../../util';
+import { htmlColorAsNumber, isWithin, replaceAll } from '../../../../util';
 import { doDownload, Downloader, FileTypes } from '../../../../util/downloader';
 import { M } from '../../../../util/math';
 import { Serialization } from '../../../../util/serialization';
@@ -978,6 +978,14 @@ export namespace AnglesLengthsCommon {
         amendStructureSelection(selection, residue, 'remove');
         SelectionDisplayer({ steps: [], residues: selection.residues, atoms: selection.atoms, reconstruct: true }, d, vi);
         event.next({ residue, transition: 'deselected' });
+    }
+
+    export function fileNameFriendlyTag(tag: string) {
+        return replaceAll(
+            replaceAll(tag, '^', '_'),
+            "'",
+            'p'
+        );
     }
 
     export function getNavalAngle(d: Dnatcofication, r: Measurements.Residue, triplet: Triplet) {

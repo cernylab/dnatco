@@ -426,6 +426,7 @@ function AngleMetricDetails(props: {
                         const ni = AnglesLengthsCommon.getNavalAngle(props.d, item.residue, item.angle.triplet);
                         const clr = item.pGroup ? colorToTuple(item.pGroup.color) : props.outlierColor;
                         const pGroupDatas = props.pgrpIndices.map((idx) => DAnglesLengths.anglePGroupData(idx, item.residue.compound, item.angle.triplet)!);
+                        const dlName = `${AnglesLengthsCommon.residueIdentifyingName(props.structureName, item.residue)}_${AnglesLengthsCommon.fileNameFriendlyTag(tripletTag(item.angle.triplet))}`;
 
                         return (
                             <tr
@@ -473,7 +474,7 @@ function AngleMetricDetails(props: {
                                                 xTitle={'Angle (\u00B0)'}
                                                 yTitle='Prob. (%)'
                                                 yTransform={(y) => y * 100}
-                                                downloadFileName={'UNIMPL'} // TODO
+                                                downloadFileName={dlName}
                                                 highlighter={doHighlight}
                                                 vi={props.vi}
                                             />
@@ -568,6 +569,7 @@ function LengthMetricDetails(props: {
                         const ni = AnglesLengthsCommon.getNavalBond(props.d, item.residue, item.length.pair);
                         const clr = item.pGroup ? colorToTuple(item.pGroup.color) : props.outlierColor;
                         const pGroupDatas = props.pgrpIndices.map((idx) => DAnglesLengths.lengthPGroupData(idx, item.residue.compound, item.length.pair)!);
+                        const dlName = `${AnglesLengthsCommon.residueIdentifyingName(props.structureName, item.residue)}_${AnglesLengthsCommon.fileNameFriendlyTag(pairTag(item.length.pair))}`;
 
                         return (
                             <tr
@@ -614,7 +616,7 @@ function LengthMetricDetails(props: {
                                                 xTitle={'Length\u00A0(\u212B)'}
                                                 yTitle='Prob. (%)'
                                                 yTransform={(y) => y * 100}
-                                                downloadFileName={'UNIMPL'} //TODO
+                                                downloadFileName={dlName}
                                                 highlighter={doHighlight}
                                                 vi={props.vi}
                                             />
