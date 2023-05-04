@@ -502,11 +502,13 @@ export function FloatingCue(props: {
     if (props.yOffset > 0) {
         return (
             <div style={{
+                backgroundColor: 'white',
                 border: 'var(--thickness-border) solid var(--color-a)',
                 position: 'absolute',
                 padding: '0.25em',
                 top: `${props.yOffset + 16}px`,
-                right: '32px'}}
+                right: '32px',
+                zIndex: 1}}
                 onClick={() => props.onClicked()}
             >
                 {props.children}
