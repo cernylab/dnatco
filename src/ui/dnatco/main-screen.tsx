@@ -142,7 +142,24 @@ function Inner(props: {
                         </div>
                     }
                     orientation='horizontal'
-                    onAdjustDone={() => props.viewerInterop.api.command(ViewerApi.Commands.Redraw())}
+                    onAdjustDone={() => {
+                        const tryRedraw = (attempt: number) => {
+                            const maxAttempts = 3;
+                            if (attempt === maxAttempts)
+                                return;
+
+                            if (props.viewerInterop.ready())
+                                props.viewerInterop.api.command(ViewerApi.Commands.Redraw());
+                            else {
+                                console.warn(`Viewer was not ready on attempt ${attempt + 1}`);
+                                setTimeout(() => tryRedraw(attempt + 1), 100);
+                            }
+                        };
+
+                        // The viewer may not be ready right away, allow it some time to settle
+                        // before we tell it to draw itself.
+                        tryRedraw(0);
+                    }}
                     initialSplit={0.4}
                 />
             </div>
