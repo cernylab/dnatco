@@ -14,7 +14,7 @@ import { CollapsibleVertical } from '../../../common/collapsible-vertical';
 import { Icon } from '../../../common/icon';
 import { Tooltip } from '../../../common/tooltip';
 import { colorStyle, colorToRgb, colorToTuple, hexToRgb, rgbToHex, type ColorTuple, Rgba } from '../../../util';
-import { ALM } from '../../../../dnatco/alm';
+import { ALM, ALMCompoundAngleLength } from '../../../../dnatco/alm';
 import { AnglesLengths as DAnglesLengths } from '../../../../dnatco/angles-lengths';
 import { tripletTag, Triplet } from '../../../../dnatco/angles-lengths/angles';
 import { pairTag, Pair } from '../../../../dnatco/angles-lengths/lengths';
@@ -75,6 +75,16 @@ const StatsDownloaders = [
         fileType: FileTypes.json,
     }
 ] as StatsDownloader[];
+
+function getSelection(alm: ALMCompoundAngleLength, modelNum: number, chain: string) {
+    if (alm.models.size === 0) {
+        return ALM.emptyMappingByCompoundAngleLength();
+    }
+
+    return chain === InvalidChain
+        ? alm.models.get(modelNum)!
+        : alm.chains.get(modelNum)!.get(chain)!;
+}
 
 function makeAngleDownloadableData(angles: Record<string, ALM.CompoundStats<ALM.AngleStats>>, counts: Summarize.CountsInGroup[]) {
     return DownloadableData(angles, counts, {}, []);
@@ -740,9 +750,7 @@ export class AnglesLengthsByCompound extends View<View.Props> {
 
         const alm = this.props.dnatcofication.data.almByCompound;
 
-        const selected = chain === InvalidChain
-            ? alm.models.get(modelNum)!
-            : alm.chains.get(modelNum)!.get(chain)!;
+        const selected = getSelection(alm, modelNum, chain);
 
         const overallAngles = selected.overallAngles
         const overallLengths = selected.overallLengths;

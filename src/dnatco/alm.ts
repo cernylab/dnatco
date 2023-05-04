@@ -221,6 +221,10 @@ export namespace ALM {
         summary: Summarize.Summary;
     }
 
+    export function emptyMappingByCompoundAngleLength() {
+        return ByCompound();
+    }
+
     export function mapByCompoundAngleLength(residues: Measurements.Residue[]) {
         const models = new Map<number, ByCompound>(); // Stats grouped by angles/lengths for entire models
         const chains = new Map<number, Map<string, ByCompound>>(); // Stats grouped by angles/lengths, categorized by model and then by chain ID
