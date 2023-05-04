@@ -581,7 +581,7 @@ export namespace Measure {
         // C only
         N4: MaybeLLKAAtom;
 
-        hasCommon() {
+        private hasCommon() {
             return (
                 // Backbone
                 this.O5p_2 && this.C5p_2 && this.C4p_2 && this.C3p_2 && this.O3p_2 &&
@@ -646,6 +646,9 @@ export namespace Measure {
         }
 
         isValid(b: StdBase, isDeoxyribose: boolean) {
+            if (!this.hasCommon())
+                return false;
+
             const riboseOk = !isDeoxyribose ? this.isOxyribose() : true;
 
             switch (b) {
