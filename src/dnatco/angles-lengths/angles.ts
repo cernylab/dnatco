@@ -36,6 +36,7 @@ const Adenine = [
     ["O5'", "C5'", "C4'"],
     ["OP1", "P", "OP2"],
     ["P", "O5'", "C5'"],
+    [shiftedName("C3'", -1), shiftedName("O3'", -1), "P"],
 ] as Triplet[];
 
 const Cytidine = [
@@ -66,6 +67,7 @@ const Cytidine = [
     ["O5'", "C5'", "C4'"],
     ["OP1", "P", "OP2"],
     ["P", "O5'", "C5'"],
+    [shiftedName("C3'", -1), shiftedName("O3'", -1), "P"],
 ] as Triplet[];
 
 const Guanosine = [
@@ -103,6 +105,7 @@ const Guanosine = [
     ["O6", "C6", "C5"],
     ["OP1", "P", "OP2"],
     ["P", "O5'", "C5'"],
+    [shiftedName("C3'", -1), shiftedName("O3'", -1), "P"],
 ] as Triplet[];
 
 const Uracil = [
@@ -133,6 +136,7 @@ const Uracil = [
     ["O5'", "C5'", "C4'"],
     ["OP1", "P", "OP2"],
     ["P", "O5'", "C5'"],
+    [shiftedName("C3'", -1), shiftedName("O3'", -1), "P"],
 ] as Triplet[];
 
 const Thymine = [
@@ -165,6 +169,7 @@ const Thymine = [
     ["O5'", "C5'", "C4'"],
     ["OP1", "P", "OP2"],
     ["P", "O5'", "C5'"],
+    [shiftedName("C3'", -1), shiftedName("O3'", -1), "P"],
 ] as Triplet[];
 
 export const Angles: Record<Residues.ElementaryResidue, Triplet[]> = {

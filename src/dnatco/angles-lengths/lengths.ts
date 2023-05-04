@@ -1,3 +1,4 @@
+import { shiftedName } from './atoms';
 import { Residues } from '../residues';
 
 export type Pair = [a: string, b: string];
@@ -26,6 +27,7 @@ const Adenine = [
     ["P", "O5'"],
     ["P", "OP1"],
     ["P", "OP2"],
+    [shiftedName("O3'", -1), "P"],
 ] as Pair[];
 
 const Cytidine = [
@@ -49,6 +51,7 @@ const Cytidine = [
     ["P", "O5'"],
     ["P", "OP1"],
     ["P", "OP2"],
+    [shiftedName("O3'", -1), "P"],
 ] as Pair[];
 
 const Guanosine = [
@@ -76,6 +79,7 @@ const Guanosine = [
     ["P", "O5'"],
     ["P", "OP1"],
     ["P", "OP2"],
+    [shiftedName("O3'", -1), "P"],
 ] as Pair[];
 
 const Uracil = [
@@ -99,6 +103,7 @@ const Uracil = [
     ["P", "O5'"],
     ["P", "OP1"],
     ["P", "OP2"],
+    [shiftedName("O3'", -1), "P"],
 ] as Pair[];
 
 const Thymine = [
@@ -123,6 +128,7 @@ const Thymine = [
     ["P", "O5'"],
     ["P", "OP1"],
     ["P", "OP2"],
+    [shiftedName("O3'", -1), "P"],
 ] as Pair[];
 
 export const Lengths: Record<Residues.ElementaryResidue, Pair[]> = {

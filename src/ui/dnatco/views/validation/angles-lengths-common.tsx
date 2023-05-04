@@ -40,6 +40,7 @@ const PairBondNameCache: Map<string, React.ReactElement> = new Map();
 const TripletBondNameCache: Map<string, React.ReactElement> = new Map();
 
 const BackboneAnglesOrder = [
+    tripletTag([shiftedName("C3'", -1), shiftedName("O3'", -1), "P"]),
     tripletTag([shiftedName("O3'", -1), "P", "OP1"]),
     tripletTag([shiftedName("O3'", -1), "P", "OP2"]),
     tripletTag(["OP1", "P", "OP2"]),
@@ -158,6 +159,7 @@ const UracilAnglesOrder = [
 ];
 
 const BackboneLengthsOrder = [
+    pairTag([shiftedName("O3'", -1), "P"]),
     pairTag(["P", "OP1"]),
     pairTag(["P", "OP2"]),
     pairTag(["P", "O5'"]),
