@@ -834,9 +834,17 @@ export namespace AnglesLengthsCommon {
             altId: residue.altId
         };
 
-        let cifAtomPrev: CifAtom | undefined = void 0;
+        let cifAtomPrevC3: CifAtom | undefined = void 0;
+        let cifAtomPrevO3: CifAtom | undefined = void 0;
         if (Measurements.Residue.hasPrevious(residue)) {
-            cifAtomPrev = {
+            cifAtomPrevC3 = {
+                modelNum: residue.modelNum,
+                chain: residue.chain,
+                seqId: residue.prevSeqId!,
+                altId: residue.prevAltId!,
+                atomId: "C3'",
+            };
+            cifAtomPrevO3 = {
                 modelNum: residue.modelNum,
                 chain: residue.chain,
                 seqId: residue.prevSeqId!,
@@ -849,14 +857,20 @@ export namespace AnglesLengthsCommon {
             selection.residues = selection.residues.filter((x) => x.modelNum === cifRes.modelNum);
             selection.residues.push(cifRes);
 
-            if (cifAtomPrev) {
-                selection.atoms = selection.atoms.filter((x) => x.modelNum === cifAtomPrev!.modelNum);
-                selection.atoms.push(cifAtomPrev);
+            if (cifAtomPrevC3) {
+                selection.atoms = selection.atoms.filter((x) => x.modelNum === cifAtomPrevC3!.modelNum);
+                selection.atoms.push(cifAtomPrevC3);
+            }
+            if (cifAtomPrevO3) {
+                selection.atoms = selection.atoms.filter((x) => x.modelNum === cifAtomPrevO3!.modelNum);
+                selection.atoms.push(cifAtomPrevO3);
             }
         } else if (strategy === 'remove') {
             selection.residues = selection.residues.filter((x) => !cifResidueMatches(x, cifRes));
-            if (cifAtomPrev)
-                selection.atoms = selection.atoms.filter((x) => !cifAtomMatches(x, cifAtomPrev!));
+            if (cifAtomPrevC3)
+                selection.atoms = selection.atoms.filter((x) => !cifAtomMatches(x, cifAtomPrevC3!));
+            if (cifAtomPrevO3)
+                selection.atoms = selection.atoms.filter((x) => !cifAtomMatches(x, cifAtomPrevO3!));
         }
     }
 
@@ -937,18 +951,29 @@ export namespace AnglesLengthsCommon {
         else
             newResidues = [...residues.filter((x) => x.modelNum === newResidue.modelNum), newResidue];
 
+        let newAtoms = [];
         // If the selection event came from the viewer, the viewer does not know that we want to
-        // select the residue AND the preceding O3' atom - if there is any. We need to augment the input atom
+        // select the residue AND the preceding C3' and O3' atoms - if there are any. We need to augment the input atom
         // accordingly by hand here.
         if (newAtom === InvalidAtom) {
             const alm = d.data.almByResidue;
             const chain = alm.chains.get(newResidue.modelNum)?.get(newResidue.chain);
+
+            let newC3;
+            let newO3;
             if (chain) {
                 for (const idx of chain) {
                     const r = alm.residues[idx];
                     if (r.seqId === newResidue.seqId && r.altId === newResidue.altId) {
                         if (Measurements.Residue.hasPrevious(r)) {
-                            newAtom = {
+                            newC3 = {
+                                modelNum: r.modelNum,
+                                chain: r.chain,
+                                seqId: r.prevSeqId!,
+                                altId: r.prevAltId!,
+                                atomId: "C3'",
+                            };
+                            newO3 = {
                                 modelNum: r.modelNum,
                                 chain: r.chain,
                                 seqId: r.prevSeqId!,
@@ -959,15 +984,13 @@ export namespace AnglesLengthsCommon {
                     }
                 }
             }
-        }
 
-        let newAtoms;
-        if (atoms.find((x) => StructureSelection.cifAtomsMatch(x, newAtom)))
-            newAtoms = atoms;
-        else {
+            if (newC3 && newO3) {
+                newAtoms.push(newC3, newO3);
+            }
+        } else {
             newAtoms = atoms.filter((x) => x.modelNum === newAtom.modelNum);
-            if (newAtom !== InvalidAtom)
-                newAtoms.push(newAtom);
+            newAtoms.push(newAtom);
         }
 
         return {
