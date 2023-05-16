@@ -77,7 +77,7 @@ export namespace Title {
         ]);
         root.breakLine();
 
-        let url = `${ctx.href}/app/dnatco/downloads`;
+        let url = `${ctx.href}/app/dnatco/downloads?cifcode=${ctx.dnatcofication.pdbId.toLowerCase()}`;
         root.lineText('The full report is available at:');
         root.hyperlink(url, url);
         root.breakLine();

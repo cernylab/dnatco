@@ -1,4 +1,4 @@
-import { PDFDocument, PDFImage, StandardFonts } from 'pdf-lib';
+import { PDFDocument, PDFImage } from 'pdf-lib';
 import { NTDocument, NTDocumentFonts } from './document';
 import { NTEmbeddedImage } from './embedded-image';
 import { NTPdf } from './pdf';
@@ -7,6 +7,7 @@ import { NTRender, NTTextMetricsCalculators } from './render';
 import * as NTR from './renderables';
 import { NTMetric, NTWH, NTXYWH, NTUnit } from './space';
 import { NTboundingRect, NTerror } from './util';
+import { Fonts } from '../fonts';
 
 function area(xywh: NTXYWH<number>): [x: number, y: number, w: number, h: number] {
     return [
@@ -129,8 +130,8 @@ export class NTPdfDocument extends NTDocument<Uint8Array> {
             bottom: NTMetric,
         },
         pageSize: { width: NTMetric, height: NTMetric },
-        defaultFont?: NTPrims.NTFont,
-        fonts?: Partial<NTDocumentFonts>
+        fonts: Fonts,
+        defaultFont?: NTPrims.NTFont
     ) {
         const pdfDoc = await PDFDocument.create();
 
@@ -153,18 +154,14 @@ export class NTPdfDocument extends NTDocument<Uint8Array> {
             NTerror('Container height is negative, check page size and margins.');
         }
 
-        const _fonts = {
-            serif: fonts?.serif ?? NTDocumentFontsDefault.serif(pdfDoc),
-            sans: fonts?.sans ?? NTDocumentFontsDefault.sans(pdfDoc),
-            monospace: fonts?.monospace ?? NTDocumentFontsDefault.monospace(pdfDoc),
-        };
+        const embeddedFonts = await Fonts.embedToPdfDoc(pdfDoc, fonts);
 
         return new NTPdfDocument(
             pdfDoc,
             { x: NTUnit.from(margins.left), y: NTUnit.from(margins.right), width: cw, height: ch },
             { width: NTUnit.from(pageSize.width), height: NTUnit.from(pageSize.height) },
             { family: 'serif', size: 12, style: 'normal', ...defaultFont },
-            _fonts
+            embeddedFonts
         );
     }
 
@@ -301,31 +298,4 @@ export class NTPdfDocument extends NTDocument<Uint8Array> {
 
         return await this.pdfDoc.save();
     }
-}
-
-const NTDocumentFontsDefault = {
-    serif: (pdfDoc: PDFDocument) => (
-        {
-            normal: pdfDoc.embedStandardFont(StandardFonts.TimesRoman),
-            bold: pdfDoc.embedStandardFont(StandardFonts.TimesRomanBold),
-            italic: pdfDoc.embedStandardFont(StandardFonts.TimesRomanItalic),
-            'bold-italic': pdfDoc.embedStandardFont(StandardFonts.TimesRomanBoldItalic),
-        }
-    ),
-    sans: (pdfDoc: PDFDocument) => (
-        {
-            normal: pdfDoc.embedStandardFont(StandardFonts.Helvetica),
-            bold: pdfDoc.embedStandardFont(StandardFonts.HelveticaBold),
-            italic: pdfDoc.embedStandardFont(StandardFonts.HelveticaOblique),
-            'bold-italic': pdfDoc.embedStandardFont(StandardFonts.HelveticaBoldOblique),
-        }
-    ),
-    monospace: (pdfDoc: PDFDocument) => (
-        {
-            normal: pdfDoc.embedStandardFont(StandardFonts.Courier),
-            bold: pdfDoc.embedStandardFont(StandardFonts.CourierBold),
-            italic: pdfDoc.embedStandardFont(StandardFonts.CourierOblique),
-            'bold-italic': pdfDoc.embedStandardFont(StandardFonts.CourierBoldOblique),
-        }
-    ),
 }

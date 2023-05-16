@@ -1,10 +1,11 @@
-import { PDFDocument, StandardFonts } from 'pdf-lib';
+import { PDFDocument } from 'pdf-lib';
 import { NTDocument, NTDocumentFonts } from './document';
 import { NTEmbeddedImage } from './embedded-image';
 import * as NTPrims from './primitives';
 import { NTRender, NTTextMetricsCalculators } from './render';
 import * as NTR from './renderables';
 import { NTMm, NTUnit, NTXYWH } from './space';
+import { Fonts } from '../fonts';
 
 const TextHeightMm = 5;
 const TextWidthMm = 2.5;
@@ -200,16 +201,12 @@ export class NTTextDocument extends NTDocument<string> {
         );
     }
 
-    static async create(characterWidth: number) {
+    static async create(characterWidth: number, fonts: Fonts) {
         // Super sad, we do not have sufficient abstraction for this now
         const pdfDoc = await PDFDocument.create();
-        const fonts = {
-            serif: NTDocumentFontsDefault.serif(pdfDoc),
-            sans: NTDocumentFontsDefault.sans(pdfDoc),
-            monospace: NTDocumentFontsDefault.monospace(pdfDoc),
-        }
+        const embeddedFonts = await Fonts.embedToPdfDoc(pdfDoc, fonts);
 
-        return new NTTextDocument(characterWidth, fonts);
+        return new NTTextDocument(characterWidth, embeddedFonts);
     }
 
     async render() {
@@ -295,31 +292,4 @@ export class NTTextDocument extends NTDocument<string> {
             lineHeight: NTUnit.from(NTMm(TextHeightMm)),
         };
     }
-}
-
-const NTDocumentFontsDefault = {
-    serif: (pdfDoc: PDFDocument) => (
-        {
-            normal: pdfDoc.embedStandardFont(StandardFonts.TimesRoman),
-            bold: pdfDoc.embedStandardFont(StandardFonts.TimesRomanBold),
-            italic: pdfDoc.embedStandardFont(StandardFonts.TimesRomanItalic),
-            'bold-italic': pdfDoc.embedStandardFont(StandardFonts.TimesRomanBoldItalic),
-        }
-    ),
-    sans: (pdfDoc: PDFDocument) => (
-        {
-            normal: pdfDoc.embedStandardFont(StandardFonts.Helvetica),
-            bold: pdfDoc.embedStandardFont(StandardFonts.HelveticaBold),
-            italic: pdfDoc.embedStandardFont(StandardFonts.HelveticaOblique),
-            'bold-italic': pdfDoc.embedStandardFont(StandardFonts.HelveticaBoldOblique),
-        }
-    ),
-    monospace: (pdfDoc: PDFDocument) => (
-        {
-            normal: pdfDoc.embedStandardFont(StandardFonts.Courier),
-            bold: pdfDoc.embedStandardFont(StandardFonts.CourierBold),
-            italic: pdfDoc.embedStandardFont(StandardFonts.CourierOblique),
-            'bold-italic': pdfDoc.embedStandardFont(StandardFonts.CourierBoldOblique),
-        }
-    ),
 }

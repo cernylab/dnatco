@@ -70,6 +70,17 @@ function sharedConfig(productionBuild) {
                     }],
                 },
                 {
+                    test: /\.ttf$/,
+                    use: [{
+                        loader: 'file-loader',
+                        options: {
+                            outputPath: 'fonts',
+                            name: '[name].[ext]',
+                            sourceMap: false,
+                        },
+                    }],
+                },
+                {
                     test: /\.(csv)$/,
                     use: [{
                         loader: 'file-loader',

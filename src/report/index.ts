@@ -1,3 +1,4 @@
+import { Fonts as _Fonts } from './fonts';
 import { Fonts } from './styling';
 import { BondAnglesLengths } from './content/bond-angles-lengths';
 import { Title } from './content/title';
@@ -58,7 +59,9 @@ export namespace Report {
     }
 
     export async function pdf(dnatcofication: Dnatcofication) {
-        const ntDoc = await NTPdfDocument.create(Margins, PageSize, Fonts.Default)
+        await _Fonts.load();
+
+        const ntDoc = await NTPdfDocument.create(Margins, PageSize, _Fonts.get(), Fonts.Default)
         const ctx = makeContext(dnatcofication, ntDoc, href());
         await addContent(ctx);
 
@@ -66,7 +69,9 @@ export namespace Report {
     }
 
     export async function text(dnatcofication: Dnatcofication) {
-        const ntDoc = await NTTextDocument.create(80);
+        await _Fonts.load();
+
+        const ntDoc = await NTTextDocument.create(80, _Fonts.get());
         const ctx = makeContext(dnatcofication, ntDoc, href());
 
         await addContent(ctx);
