@@ -52,6 +52,7 @@
         "crypto-js": "^4.1.1",
         "dompurify": "^2.4.0",
         "jsllka": "file:./jsllka",
+        "pdf-lib": "^1.17.1",
         "react": "^18.2.0",
         "react-dom": "^18.2.0",
         "react-plotly.js": "^2.6.0",

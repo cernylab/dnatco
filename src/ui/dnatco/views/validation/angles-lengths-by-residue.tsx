@@ -6,7 +6,6 @@ import { View } from '../view';
 import { Constants } from '../../constants';
 import { SearchBox } from '../../search-box';
 import {
-    InvalidModelIndex,
     AuthResidue,
     StructureSelection,
 } from '../../structure-selection';
@@ -23,7 +22,7 @@ import { ALM } from '../../../../dnatco/alm';
 import { Dnatcofication } from '../../../../dnatco/dnatcofication';
 import { AnglesLengths as DAnglesLengths } from '../../../../dnatco/angles-lengths';
 import { tripletTag, Triplet } from '../../../../dnatco/angles-lengths/angles';
-import { Bin } from '../../../../dnatco/angles-lengths/bin';
+import { ByResidueHelpers } from '../../../../dnatco/angles-lengths/helpers';
 import { pairTag, Pair } from '../../../../dnatco/angles-lengths/lengths';
 import { Measurements } from '../../../../dnatco/angles-lengths/measurements';
 import { SerializeByResidue } from '../../../../dnatco/angles-lengths/serialize';
@@ -66,90 +65,6 @@ const StatsDownloaders = [
         fileType: FileTypes.json,
     }
 ] as StatsDownloader[];
-
-function compareMaybeBins(a: ALM.MaybeBin, b: ALM.MaybeBin) {
-    const aOut = a === 'above' || a === 'below' || a === 'no-data';
-    const bOut = b === 'above' || b === 'below' || b === 'no-data';
-
-    if (aOut) {
-        if (bOut)
-            return 0;
-        else
-            return -1;
-    } else if (bOut) {
-        return 1;
-    } else
-        return (a as Bin).prosco - (b as Bin).prosco;
-}
-
-type GatherWorst = {
-    angles: {
-        bond: (r: Measurements.Residue) => Measurements.BondAngle[],
-        stats: (s: ALM.ResidueStats, idx: number) => ALM.ResidueStats['angles'][number],
-    },
-    lengths: {
-        bond: (r: Measurements.Residue) => Measurements.BondLength[],
-        stats: (s: ALM.ResidueStats, idx: number) => ALM.ResidueStats['lengths'][number],
-    },
-};
-const GatherWorst: GatherWorst = {
-    angles: {
-        bond: (r) => r.bondAngles,
-        stats: (s, idx) => s.angles[idx],
-    },
-    lengths: {
-        bond: (r) => r.bondLengths,
-        stats: (s, idx) => s.lengths[idx],
-    },
-
-};
-function gatherWorst<T extends keyof GatherWorst>(gather: T, residues: Measurements.Residue[], stats: ALM.ResidueStats[], threshold: number|'outlier', maxCount: number) {
-    type PT = ReturnType<GatherWorst[T]['bond']>[number];
-    const worst = new Array<{
-        bond: PT,
-        residue: Measurements.Residue,
-        maybeBin: ALM.MaybeBin,
-        pGroup: DAnglesLengths.PGroup,
-    }>();
-    const getter = GatherWorst[gather];
-
-    for (let idx = 0; idx < residues.length; idx++) {
-        const r = residues[idx];
-        const s = stats[idx];
-
-        for (let jdx = 0; jdx < r.bondLengths.length; jdx++) {
-            const x = getter.bond(r)[jdx];
-            const ls = getter.stats(s, jdx);
-            const thr: typeof threshold = ls.pGroup?.threshold ?? 'outlier';
-
-            if (thr === 'outlier' || (threshold !== 'outlier' && thr >= threshold)) {
-                let kdx = 0;
-                for (; kdx < worst.length; kdx++) {
-                    if (compareMaybeBins(ls.bin, worst[kdx].maybeBin) <= 0)
-                        break;
-                }
-
-                const tail = worst.splice(
-                    kdx,
-                    worst.length - kdx,
-                    {
-                        bond: x,
-                        residue: r,
-                        maybeBin: ls.bin,
-                        pGroup: ls.pGroup
-                    }
-                );
-                worst.push(...tail);
-            }
-        }
-    }
-
-    if (worst.length > maxCount)
-        worst.length = maxCount;
-
-    return worst;
-}
-
 
 function makeAngleDetails(props: ResidueDetailsProps) {
     const displayOrder = AnglesLengthsCommon.AnglesDisplayOrder[props.residue.compound];
@@ -295,20 +210,6 @@ function renderBondLengthDetail(
             onAtomsClicked={onAtomsClicked}
         />
     );
-}
-
-function selectionToIndices(d: Dnatcofication, modelIdx: number, chain: string) {
-    const alm = d.data.almByResidue;
-    if (modelIdx === InvalidModelIndex) {
-        return sequence(0, alm.residues.length - 1);
-    } else {
-        const modelNum = d.data.structures[0].models[modelIdx].num;
-
-        if (chain)
-            return alm.chains.get(modelNum)?.get(chain) ?? [];
-        else
-            return alm.models.get(modelNum) ?? [];
-    }
 }
 
 function BondAngleDetails(props: {
@@ -843,7 +744,7 @@ export class AnglesLengthsByResidue extends View<
             const { modelIdx, chain } = AnglesLengthsCommon.getSelection(this.props);
             const alm = this.props.dnatcofication.data.almByResidue;
 
-            const selectedIndices = selectionToIndices(this.props.dnatcofication, modelIdx, chain);
+            const selectedIndices = ByResidueHelpers.selectionToIndices(this.props.dnatcofication, modelIdx, chain);
             const selectedResidues = selectedIndices.map((x) => alm.residues[x]);
 
             const results = [];
@@ -942,7 +843,7 @@ export class AnglesLengthsByResidue extends View<
     }
 
     private renderWorstAngles(residues: Measurements.Residue[], stats: ALM.ResidueStats[], maxCount: number, threshold: number|'outlier', structureName: string, multipleModels: boolean) {
-        const worst = gatherWorst('angles', residues, stats, threshold, maxCount);
+        const worst = ByResidueHelpers.gatherWorst('angles', residues, stats, threshold, maxCount);
         const outlierColor = colorToTuple(DAnglesLengths.outlierColor());
         const pgrpIndices = sequence(0, DAnglesLengths.pGroupCount() - 1);
 
@@ -998,7 +899,7 @@ export class AnglesLengthsByResidue extends View<
     }
 
     private renderWorstLengths(residues: Measurements.Residue[], stats: ALM.ResidueStats[], maxCount: number, threshold: number|'outlier', structureName: string, multipleModels: boolean) {
-        const worst = gatherWorst('lengths', residues, stats, threshold, maxCount);
+        const worst = ByResidueHelpers.gatherWorst('lengths', residues, stats, threshold, maxCount);
         const outlierColor = colorToTuple(DAnglesLengths.outlierColor());
         const pgrpIndices = sequence(0, DAnglesLengths.pGroupCount() - 1);
 
@@ -1058,7 +959,7 @@ export class AnglesLengthsByResidue extends View<
 
         if (!block) {
             const { modelIdx, chain } = AnglesLengthsCommon.getSelection(this.props);
-            const numSelected = selectionToIndices(this.props.dnatcofication, modelIdx, chain).length;
+            const numSelected = ByResidueHelpers.selectionToIndices(this.props.dnatcofication, modelIdx, chain).length;
 
             if (this.state.shownResiduesLimit < numSelected)
                 this.increaseShownResiduesLimit(numSelected - this.state.shownResiduesLimit + 1);
@@ -1151,7 +1052,7 @@ export class AnglesLengthsByResidue extends View<
         const { modelIdx, chain } = AnglesLengthsCommon.getSelection(this.props);
         const alm = this.props.dnatcofication.data.almByResidue;
 
-        const selectedIndices = selectionToIndices(this.props.dnatcofication, modelIdx, chain);
+        const selectedIndices = ByResidueHelpers.selectionToIndices(this.props.dnatcofication, modelIdx, chain);
         const selectedResidues = selectedIndices.map((x) => alm.residues[x]);
         const selectedResidueStats = selectedIndices.map((x) => alm.stats[x]);
 

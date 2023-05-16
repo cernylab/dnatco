@@ -16,11 +16,13 @@ import { Summarize } from '../../dnatco/angles-lengths/summarize';
 import { Dnatcofication } from '../../dnatco/dnatcofication';
 import { Naval } from '../../dnatco/naval';
 import { Rscc } from '../../dnatco/rscc';
+import { Report } from '../../report';
 import { objKeys } from '../../util';
 import { doDownload, FileTypes } from '../../util/downloader';
 import { Net } from '../../util/net';
 import { ImageSerialization } from '../../util/image-serialization';
 import { Serialization } from '../../util/serialization';
+import { GlobalConfig } from '../../global-config';
 
 async function checkRsccRmsdAvailability(d: Dnatcofication) {
     const availability = new Array<{ assigned: boolean, unassigned: boolean }>();
@@ -298,7 +300,7 @@ export function Downloads(props: { dnatcofication: Dnatcofication }) {
                                 onClick={() => Net.serveFile(
                                     FileTypes.csv.mimeType,
                                     Naval.bondsAsCsv(props.dnatcofication.data.naval.bonds, ','),
-                                    `${structureName}_naval_bonds_report.csv`
+                                    `${structureName}_naval_bonds_report.${FileTypes.csv.suffix}`
                                 )}
                             />
                             <DownloadButton
@@ -306,7 +308,7 @@ export function Downloads(props: { dnatcofication: Dnatcofication }) {
                                 onClick={() => Net.serveFile(
                                     FileTypes.csv.mimeType,
                                     Naval.anglesAsCsv(props.dnatcofication.data.naval.angles, ','),
-                                    `${structureName}_naval_angles_report.csv`
+                                    `${structureName}_naval_angles_report.${FileTypes.csv.suffix}`
                                 )}
                             />
                             <DownloadButton
@@ -314,7 +316,7 @@ export function Downloads(props: { dnatcofication: Dnatcofication }) {
                                 onClick={() => Net.serveFile(
                                     FileTypes.csv.mimeType,
                                     Naval.geometryAsCsv(props.dnatcofication.data.naval.geometry, ','),
-                                    `${structureName}_naval_geometry_report.csv`
+                                    `${structureName}_naval_geometry_report.${FileTypes.csv.suffix}`
                                 )}
                             />
                         </DownloadBox>
@@ -329,6 +331,43 @@ export function Downloads(props: { dnatcofication: Dnatcofication }) {
                             structureName={structureName}
                             d={props.dnatcofication}
                         />
+                    </div>
+
+                    <div className='rdo-download-item'>
+                        <Title title={`${GlobalConfig.data().displayedProductName} structure validation report`} />
+                        <div>
+                            Comprehensive structure validation report
+                        </div>
+                        <DownloadBox>
+                            <DownloadButton
+                                caption='Download (PDF)'
+                                onClick={() => {
+                                    Report.pdf(props.dnatcofication).then((report) => {
+                                        Net.serveFileRaw(FileTypes.pdf.mimeType, report, `validation_report.${FileTypes.pdf.suffix}`);
+                                    }).catch(e => {
+                                        Popup.create(
+                                            <div className='rdo-error-text'>
+                                                Could not create validation report: {(e as Error).message}
+                                            </div>
+                                        );
+                                    })
+                                }}
+                            />
+                            <DownloadButton
+                                caption='Download (Plain text)'
+                                onClick={() => {
+                                    Report.text(props.dnatcofication).then((report) => {
+                                        Net.serveFile(FileTypes.text.mimeType, report, `validation_report.${FileTypes.text.suffix}`);
+                                    }).catch(e => {
+                                        Popup.create(
+                                            <div className='rdo-error-text'>
+                                                Could not create validation report: {(e as Error).message}
+                                            </div>
+                                        );
+                                    });
+                                }}
+                            />
+                        </DownloadBox>
                     </div>
                 </div>
             </ShadowedBox>

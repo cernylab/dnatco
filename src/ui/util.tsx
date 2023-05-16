@@ -90,6 +90,27 @@ export function luminance(clr: number) {
     return Math.sqrt(0.299 * r * r + 0.587 * g * g + 0.114 * b * b);
 }
 
+export function nclr(clr: number) {
+    return clr / 255;
+}
+
+export function nrgb(rgb: Rgb): Rgb {
+    return {
+        r: nclr(rgb.r),
+        g: nclr(rgb.g),
+        b: nclr(rgb.b),
+    };
+}
+
+export function nrgba(rgba: Rgba): Rgba {
+    return {
+        r: nclr(rgba.r),
+        g: nclr(rgba.g),
+        b: nclr(rgba.b),
+        a: rgba.a,
+    };
+}
+
 export function rgbToColor(r: number, g: number, b: number) {
     return (r << 16) | (g << 8) | b;
 }
