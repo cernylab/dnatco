@@ -725,8 +725,21 @@ export namespace NTRender {
                 NTerror(`Could not calculate width for table column ${idx}. Check table cells options.`);
         });
 
-        const totalTableWidth = NTUnit.add(NTUnit.multiply(tbl.numColumns + 1, tbl.props.border), columnWidths.reduce((p, c) => NTUnit.add(p, c), NTUnit.zero()));
-        const baseX = alignHorizontally(boundary.left, totalTableWidth, NTBoundary.width(boundary), tbl.props.hAlign);
+        const boundaryWidth = NTBoundary.width(boundary);
+        let totalTableWidth = NTUnit.add(NTUnit.multiply(tbl.numColumns + 1, tbl.props.border), columnWidths.reduce((p, c) => NTUnit.add(p, c), NTUnit.zero()));
+        let tableHAlign: NTPrims.NTHAlignment;
+        if (tbl.props.hAlign === 'fill') {
+            let e = NTUnit.subtract(boundaryWidth, totalTableWidth);
+            e = NTUnit.multiply(1 / tbl.numColumns, e);
+            for (let colIdx = 0; colIdx < columnWidths.length; colIdx++)
+                columnWidths[colIdx] = NTUnit.add(columnWidths[colIdx], e);
+
+            totalTableWidth = boundaryWidth;
+            tableHAlign = 'center';
+        } else
+            tableHAlign = tbl.props.hAlign;
+
+        const baseX = alignHorizontally(boundary.left, totalTableWidth, NTBoundary.width(boundary), tableHAlign);
         const drawBorders = NTUnit.num(tbl.props.border) > 0;
 
         let refUsed = false;

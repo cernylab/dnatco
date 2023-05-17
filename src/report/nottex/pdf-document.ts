@@ -90,6 +90,8 @@ const TextMetrics: NTTextMetricsCalculators = {
     textWidth
 }
 
+const FontHeightCorrectionFactor = 1.000;
+
 export class NTPdfDocument extends NTDocument<Uint8Array> {
     constructor(
         private readonly pdfDoc: PDFDocument,
@@ -109,9 +111,7 @@ export class NTPdfDocument extends NTDocument<Uint8Array> {
             const bRect = r.boundingRect();
             ry = NTUnit.num(NTXYWH.down(bRect)!);
         } else if (NTR.NTRenderableText.is(r)) {
-            // Font height calculations seem a bit imprecise.
-            // This correction may have to be adjusted.
-            ry = NTUnit.num(NTUnit.multiply(1.002, NTXYWH.down(r)!));
+            ry = NTUnit.num(NTUnit.multiply(FontHeightCorrectionFactor, NTXYWH.down(r)!));
         } else if (NTR.NTRenderableHyperlink.is(r)) {
             const bRect = NTR.NTRenderableHyperlink.boundingRect(r);
             ry = NTUnit.num(NTXYWH.down(bRect)!);

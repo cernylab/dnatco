@@ -53,7 +53,7 @@ export namespace StructureInfo {
 
         // --- MOLECULAR CONTENT ---
         root.lineText('Molecular content of the structure', { font: Fonts.SubsectionCaption });
-        tbl = root.table(4);
+        tbl = root.table(4, { hAlign: 'fill' });
         tbl.addRow([
             NTTable.Cell.lineText('Entity ID', tbl, { font: Tables.HeaderFont }),
             NTTable.Cell.lineText('Entity type', tbl, { font: Tables.HeaderFont }),

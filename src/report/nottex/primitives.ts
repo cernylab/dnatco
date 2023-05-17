@@ -501,13 +501,13 @@ export namespace NTTable {
     export type Options = {
         border?: NTUnit | NTMetric,
         borderColor?: NTRgba,
-        hAlign?: NTHAlignment,
+        hAlign?: Props['hAlign'],
         margin?: NTUnit | NTMetric,
     }
     export type Props = {
         border: NTUnit,
         borderColor: NTRgba,
-        hAlign: NTHAlignment,
+        hAlign: NTHAlignment | 'fill',
         margin: NTUnit,
     }
 
