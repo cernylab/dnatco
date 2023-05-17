@@ -57,7 +57,8 @@ function drawCountsBar<Output>(inset: NTInset, counts: Summarize.CountsInGroup[]
         `${tag}-${mIdx}`
     );
 
-    inset.lineText(tag, { color: NTRgba(1, 1, 1), font: { size: 14, style: 'bold' } }, `${tag}-${mIdx}`);
+    let _inset = inset.inset(NTXYWH.create(ctx.tDims.characterWidth, NTUnit.zero(), inset.xywh.width));
+    _inset.lineText(tag, { color: NTRgba(1, 1, 1), font: { size: 14, style: 'bold' } }, `${tag}-${mIdx}`);
 }
 
 function drawCountsTable<Output>(inset: NTInset | NTDocument<Output>, counts: Summarize.CountsInGroup[], ctx: Report.Context<Output>) {
