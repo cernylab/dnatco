@@ -105,14 +105,16 @@ export namespace NTFramedLineText {
         backgroundColor?: NTRgba | 'none',
         hMargin?: NTUnit | NTMetric | 'fill',
         vMargin?: NTUnit | NTMetric,
+        textHAlign?: NTHAlignment,
     } & NTLineText.Options;
 
     export type Props = {
         border: NTUnit,
         borderColor: NTRgba,
         backgroundColor: NTRgba | 'none',
-        hMargin: NTUnit | 'fill';
-        vMargin: NTUnit;
+        hMargin: NTUnit | 'fill',
+        vMargin: NTUnit,
+        textHAlign: NTHAlignment,
     } & NTLineText.Props;
 
     export function is(obj: NTAnyPrimitive): obj is NTFramedLineText {
@@ -138,6 +140,7 @@ export namespace NTFramedLineText {
                     ? 'fill'
                     : NTUnit.from(options.hMargin) : NTUnit.zero(),
             vMargin: options?.vMargin ? NTUnit.from(options.vMargin) : NTUnit.zero(),
+            textHAlign: options?.textHAlign ?? 'center',
             ...NTLineText.props(defaultFont, options),
         };
     }

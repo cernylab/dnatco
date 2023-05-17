@@ -23,7 +23,7 @@ export namespace Layout {
             {
                 backgroundColor: Colors.SectionHeaderBg,
                 font: Fonts.SectionCaption,
-                hAlign: 'center',
+                textHAlign: 'center',
                 hMargin: 'fill',
                 vMargin: ctx.tDims.lineHeight
             }

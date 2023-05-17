@@ -354,37 +354,38 @@ export namespace NTRender {
         return vPosition;
     }
 
-    function framedLineText<ImgPayload, T>(blt: NTPrims.NTFramedLineText, vPosition: NTUnit, boundary: NTBoundary, fonts: NTDocumentFonts, parent: NTRenderContext<ImgPayload, T>) {
+    function framedLineText<ImgPayload, T>(flt: NTPrims.NTFramedLineText, vPosition: NTUnit, boundary: NTBoundary, fonts: NTDocumentFonts, parent: NTRenderContext<ImgPayload, T>) {
         const tm = parent.tm;
-        const tw = tm.textWidth(blt.text, blt.font, fonts);
-        const th = tm.textHeight(blt.font, fonts);
+        const tw = tm.textWidth(flt.text, flt.font, fonts);
+        const th = tm.textHeight(flt.font, fonts);
+        const dh = tm.descenderHeight(flt.font, fonts);
 
-        const twoBorder = NTUnit.multiply(2, blt.border);
-        const twoVMargin = NTUnit.multiply(2, blt.vMargin);
+        const twoBorder = NTUnit.multiply(2, flt.border);
+        const twoVMargin = NTUnit.multiply(2, flt.vMargin);
 
-        const hMargin = blt.hMargin === 'fill'
+        const hMargin = flt.hMargin === 'fill'
             ? NTUnit.multiply(0.5, NTUnit.subtract(NTUnit.subtract(NTBoundary.width(boundary), tw), twoBorder))
-            : blt.hMargin;
+            : flt.hMargin;
         const twoHMargin = NTUnit.multiply(2, hMargin);
 
 
         const fw = NTUnit.add(NTUnit.add(tw, twoBorder), twoHMargin);
         const fh = NTUnit.add(NTUnit.add(th, twoBorder), twoVMargin);
 
-        const bShift = NTUnit.multiply(0.5, blt.border); // To account for the fact that the border is drawn from the middle out
+        const bShift = NTUnit.multiply(0.5, flt.border); // To account for the fact that the border is drawn from the middle out
 
-        const baseX = alignHorizontally(NTUnit.add(boundary.left, bShift), fw, NTUnit.subtract(NTBoundary.width(boundary), blt.border), blt.hAlign);
+        const baseX = alignHorizontally(NTUnit.add(boundary.left, bShift), fw, NTUnit.subtract(NTBoundary.width(boundary), flt.border), flt.hAlign);
 
-        const tx = alignHorizontally(baseX, tw, fw, 'center');
-        const ty = alignVertically(vPosition, th, fh, 'center');
+        const tx = alignHorizontally(baseX, tw, fw, flt.textHAlign);
+        const ty = alignVertically(NTUnit.subtract(vPosition , dh), th, fh, 'center');
 
-        const rGroup = NTR.NTRenderableGroup.mk(parent, blt.ref);
-        rGroup.addRenderable(NTR.NTRenderableRect.mk(blt.backgroundColor, blt.border, blt.borderColor, { x: baseX, y: vPosition, width: fw, height: fh }, -1));
-        rGroup.addRenderable(NTR.NTRenderableText.mk(blt.text, blt.font, blt.color, { x: tx, y: NTUnit.add(ty, bShift), width: tw, height: th }));
+        const rGroup = NTR.NTRenderableGroup.mk(parent, flt.ref);
+        rGroup.addRenderable(NTR.NTRenderableRect.mk(flt.backgroundColor, flt.border, flt.borderColor, { x: baseX, y: vPosition, width: fw, height: fh }, -1));
+        rGroup.addRenderable(NTR.NTRenderableText.mk(flt.text, flt.font, flt.color, { x: tx, y: NTUnit.add(ty, bShift), width: tw, height: th }));
 
-        parent.addRenderable(rGroup, blt.ref);
+        parent.addRenderable(rGroup, flt.ref);
 
-        return NTUnit.add(NTUnit.add(vPosition, fh), blt.border);
+        return NTUnit.add(NTUnit.add(vPosition, fh), flt.border);
     }
 
     function hyperlink<ImgPayload, T>(h: NTPrims.NTHyperlink, vPosition: NTUnit, boundary: NTBoundary, fonts: NTDocumentFonts, parent: NTRenderContext<ImgPayload, T>) {
