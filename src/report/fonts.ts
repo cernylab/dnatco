@@ -2,10 +2,16 @@ import { PDFDocument } from 'pdf-lib';
 import fontkit from '@pdf-lib/fontkit';
 import { NTDocumentFonts } from './nottex/document';
 import { GlobalConfig } from '../global-config';
-import '../../../assets/fonts/SourceSansPro-Bold.ttf';
-import '../../../assets/fonts/SourceSansPro-BoldItalic.ttf';
-import '../../../assets/fonts/SourceSansPro-Italic.ttf';
-import '../../../assets/fonts/SourceSansPro-Regular.ttf';
+import '../../../assets/fonts/ttf/pt-serif_regular.ttf';
+import '../../../assets/fonts/ttf/pt-serif_bold.ttf';
+import '../../../assets/fonts/ttf/pt-serif_bold-italic.ttf';
+import '../../../assets/fonts/ttf/pt-serif_italic.ttf';
+import '../../../assets/fonts/ttf/pt-sans_regular.ttf';
+import '../../../assets/fonts/ttf/pt-sans_bold.ttf';
+import '../../../assets/fonts/ttf/pt-sans_bold-italic.ttf';
+import '../../../assets/fonts/ttf/pt-sans_italic.ttf';
+import '../../../assets/fonts/ttf/pt-mono_regular.ttf';
+import '../../../assets/fonts/ttf/pt-mono_bold.ttf';
 
 
 let fonts = {
@@ -34,22 +40,22 @@ export type Fonts = typeof fonts;
 
 const Sources = {
     serif: {
-        normal: 'fonts/SourceSansPro-Regular.ttf',
-        bold: 'fonts/SourceSansPro-Bold.ttf',
-        italic: 'fonts/SourceSansPro-Italic.ttf',
-        'bold-italic': 'fonts/SourceSansPro-BoldItalic.ttf',
+        normal: 'fonts/ttf/pt-serif_regular.ttf',
+        bold: 'fonts/ttf/pt-serif_bold.ttf',
+        italic: 'fonts/ttf/pt-serif_italic.ttf',
+        'bold-italic': 'fonts/ttf/pt-serif_bold-italic.ttf',
     },
     sans: {
-        normal: 'fonts/SourceSansPro-Regular.ttf',
-        bold: 'fonts/SourceSansPro-Bold.ttf',
-        italic: 'fonts/SourceSansPro-Italic.ttf',
-        'bold-italic': 'fonts/SourceSansPro-BoldItalic.ttf',
+        normal: 'fonts/ttf/pt-sans_regular.ttf',
+        bold: 'fonts/ttf/pt-sans_bold.ttf',
+        italic: 'fonts/ttf/pt-sans_italic.ttf',
+        'bold-italic': 'fonts/ttf/pt-sans_bold-italic.ttf',
     },
     monospace: {
-        normal: 'fonts/SourceSansPro-Regular.ttf',
-        bold: 'fonts/SourceSansPro-Bold.ttf',
-        italic: 'fonts/SourceSansPro-Italic.ttf',
-        'bold-italic': 'fonts/SourceSansPro-BoldItalic.ttf',
+        normal: 'fonts/ttf/pt-mono_regular.ttf',
+        bold: 'fonts/ttf/pt-mono_bold.ttf',
+        italic: 'fonts/ttf/pt-mono_regular.ttf',
+        'bold-italic': 'fonts/ttf/pt-mono_bold.ttf',
     },
 };
 

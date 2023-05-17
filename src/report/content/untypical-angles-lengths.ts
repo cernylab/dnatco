@@ -15,14 +15,15 @@ import { Dnatcofication } from '../../dnatco/dnatcofication';
 import { ALM } from '../../dnatco/alm';
 import { InvalidChain } from '../../ui/dnatco/structure-selection';
 import { colorToRgb, nrgb } from '../../ui/util';
+import { AngstromSignChar } from '../../util';
 import { M } from '../../util/math';
 
 function drawAngle(angle: Measurements.BondAngle) {
-    return `${M.r2d(angle.angle).toFixed(2)} \u00B0`;
+    return `${M.r2d(angle.angle).toFixed(2)}\u00B0`;
 }
 
 function drawLength(length: Measurements.BondLength) {
-    return `${length.length.toFixed(3)} \u212B`;
+    return `${length.length.toFixed(3)} ${AngstromSignChar}`;
 }
 
 function drawProsco(bin: ALM.MaybeBin) {
@@ -53,7 +54,7 @@ function drawWorst<Output, G extends keyof ByResidueHelpers.GatherWorst>(gather:
         NTTable.Cell.lineText('Residue', tbl, { font: Tables.HeaderFont }),
         NTTable.Cell.lineText('', tbl, { font: Tables.HeaderFont }),
         NTTable.Cell.lineText('Atoms', tbl, { font: Tables.HeaderFont }),
-        NTTable.Cell.lineText(gather === 'lengths' ? 'Length [\u212B]' : 'Angle [\u00B0]', tbl, { font: Tables.HeaderFont }),
+        NTTable.Cell.lineText(gather === 'lengths' ? `Length [${AngstromSignChar}]` : 'Angle [\u00B0]', tbl, { font: Tables.HeaderFont }),
         NTTable.Cell.lineText('Probability', tbl, { font: Tables.HeaderFont }),
     ]);
 

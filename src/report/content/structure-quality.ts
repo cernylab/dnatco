@@ -2,13 +2,14 @@ import { Report } from '../';
 import { Layout } from '../layout';
 import { Tables } from '../styling';
 import { NTTable } from '../nottex/primitives';
+import { NTRgba } from '../nottex/util';
 import { NTCm, NTUnit, NTXYWH } from '../nottex/space';
 import { NdbStructNtcOverall } from '../../cif/categories/ndb-struct-ntc';
 import { Dnatcofication, StepRmsdStats } from '../../dnatco/dnatcofication';
 import { nrgb } from '../../ui/util';
 import { confalPercentile, Common } from '../../ui/dnatco/common';
 import { getCifValue, GappedSemaphore } from '../../ui/dnatco/util';
-import {NTRgba} from '../nottex/util';
+import { AngstromSignChar } from '../../util';
 
 async function averageConfalsRow(avg: number, percentile: number, tbl: NTTable, charWidth: NTUnit, charHeight: NTUnit) {
     const row = [
@@ -84,7 +85,7 @@ function rmsdStatsRow(stats: StepRmsdStats[], tbl: NTTable, mIdx: number, charWi
     );
 
     tbl.addRow([
-        NTTable.Cell.lineText('RMSD [A]', tbl, { font: Tables.EnumTableName.font }, Tables.EnumTableName.cell), // TODO: Fix the encoding
+        NTTable.Cell.lineText(`RMSD [${AngstromSignChar}]`, tbl, { font: Tables.EnumTableName.font }, Tables.EnumTableName.cell),
         ...dataRows
     ]);
 

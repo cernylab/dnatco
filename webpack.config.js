@@ -74,7 +74,7 @@ function sharedConfig(productionBuild) {
                     use: [{
                         loader: 'file-loader',
                         options: {
-                            outputPath: 'fonts',
+                            outputPath: 'fonts/ttf',
                             name: '[name].[ext]',
                             sourceMap: false,
                         },

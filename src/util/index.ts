@@ -9,6 +9,10 @@ const PdbIdRegex = new RegExp('[0-9]{1}[a-zA-Z0-9]{3}');
 const ZeroCode = '0'.charCodeAt(0);
 
 export const Utf8Decoder = new TextDecoder('utf-8');
+// NOTE: U+00C5 is not the correct Unicode code point for the Angstrom sign, that would be U+212B.
+// U+00C5 is the swedish capital A with a ring above it. Finding a font that would have the correct
+// glyph for Angstrom is difficult so let us stick with the swedish Å.
+export const AngstromSignChar = '\u00C5';
 
 export function arraysAreSame<T>(a: Array<T>, b: Array<T>) {
     if (a.length !== b.length)
