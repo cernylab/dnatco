@@ -1,4 +1,5 @@
 import { NTFont, NTTable } from './nottex/primitives';
+import { NTUnit } from './nottex/space';
 
 export namespace Fonts {
     export const Default = { family: 'sans', size: 12 } as NTFont;
@@ -9,6 +10,16 @@ export namespace Fonts {
 }
 
 export namespace Tables {
+    export function EnumTable(charWidth: NTUnit, charHeight: NTUnit): NTTable.Options {
+        return {
+            padding: {
+                top: NTUnit.zero(),
+                left: NTUnit.zero(),
+                right: charWidth,
+                bottom: NTUnit.multiply(0.5, charHeight),
+            }
+        };
+    }
     export const EnumTableName = {
         cell: { hAlign: 'left', vAlign: 'top' } as NTTable.Cell.Options,
         font: { ...Fonts.SubsectionCaption, size: 12 },

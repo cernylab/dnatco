@@ -49,7 +49,7 @@ function drawWorst<Output, G extends keyof ByResidueHelpers.GatherWorst>(gather:
 
     const rectClr = nrgb(colorToRgb(AnglesLengths.outlierColor()));
     const ntrgba = NTRgba(rectClr.r, rectClr.g, rectClr.b);
-    const tbl = root.table(5);
+    const tbl = root.table(5, Tables.EnumTable(ctx.tDims.characterWidth, ctx.tDims.characterHeight));
     tbl.addRow([
         NTTable.Cell.lineText('Residue', tbl, { font: Tables.HeaderFont }),
         NTTable.Cell.lineText('', tbl, { font: Tables.HeaderFont }),

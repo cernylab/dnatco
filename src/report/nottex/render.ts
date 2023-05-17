@@ -654,7 +654,8 @@ export namespace NTRender {
         const rowHeights = [];
         const columnWidths = (new Array<NTUnit>(tbl.numColumns)).fill(NTUnit.zero(), 0);
         const dummyTarget = new NTDummyRenderTarget<ImgPayload, T>(parent);
-        const twoMargin = NTUnit.multiply(2, tbl.props.margin);
+        const tbPaddings = NTUnit.add(tbl.props.padding.top, tbl.props.padding.bottom);
+        const lrPaddings = NTUnit.add(tbl.props.padding.left, tbl.props.padding.right);
         for (let rowIdx = 0; rowIdx < tbl.rows.length; rowIdx++) {
             const row = tbl.rows[rowIdx];
 
@@ -736,8 +737,8 @@ export namespace NTRender {
                     }
                 }
 
-                w = NTUnit.add(w, twoMargin);
-                h = NTUnit.add(h!, twoMargin);
+                w = NTUnit.add(w, lrPaddings);
+                h = NTUnit.add(h!, tbPaddings);
 
                 if (NTUnit.num(h) > NTUnit.num(rowHeight))
                     rowHeight = h;
@@ -794,7 +795,7 @@ export namespace NTRender {
             const row = tbl.rows[rowIdx];
             const cellHeight = rowHeights[rowIdx];
             const rowHeight = NTUnit.add(tbl.props.border, cellHeight);
-            const contentHeight = NTUnit.subtract(cellHeight, twoMargin);
+            const contentHeight = NTUnit.subtract(cellHeight, tbPaddings);
 
             const rGroup = NTR.NTRenderableGroup.mk(parent.ctx, !refUsed ? tbl.ref : void 0);
             refUsed = true;
@@ -805,13 +806,13 @@ export namespace NTRender {
                 const cell = row[colIdx];
 
                 // Content vertical position must be shifted down by the thickness of the border and the margin
-                const contentVPos = NTUnit.add(tbl.props.margin, NTUnit.add(vPosition, tbl.props.border));
+                const contentVPos = NTUnit.add(tbl.props.padding.top, NTUnit.add(vPosition, tbl.props.border));
                 const cellTotalWidth = columnWidths.slice(colIdx + colSpanShift, colIdx + colSpanShift + cell.colSpan).reduce((p, c) => NTUnit.add(p, c), NTUnit.zero());
                 const columnWidth = NTUnit.add(cellTotalWidth, NTUnit.multiply(cell.colSpan, tbl.props.border));
                 const xywh = {
-                    x: NTUnit.add(tbl.props.margin, NTUnit.add(x, tbl.props.border)),
+                    x: NTUnit.add(tbl.props.padding.left, NTUnit.add(x, tbl.props.border)),
                     y: contentVPos,
-                    width: NTUnit.subtract(NTUnit.subtract(columnWidth, twoMargin), tbl.props.border)
+                    width: NTUnit.subtract(NTUnit.subtract(columnWidth, lrPaddings), tbl.props.border)
                 };
                 const scopeBoundary = makeBoundary(xywh, boundary, vPosition);
                 const ct = cell.content;

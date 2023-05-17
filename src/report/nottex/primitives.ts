@@ -480,11 +480,20 @@ export class NTTable implements NTPrimitive {
     constructor(readonly numColumns: number, readonly defaultFont: NTFont, readonly defaultFontObj: PDFFont, options?: NTTable.Options, ref?: string) {
         this.ref = ref;
 
+        const defaultPadding = NTPdf.textWidth(' ', defaultFontObj, defaultFont.size);
+
         this.props = {
             border: options?.border ? NTUnit.from(options.border) : NTUnit.zero(),
             borderColor: options?.borderColor ?? NTBlackColor,
             hAlign: options?.hAlign ?? 'left',
-            margin: options?.margin ? NTUnit.from(options.margin) : NTPdf.textWidth(' ', defaultFontObj, defaultFont.size),
+            padding: options?.padding
+                ? {
+                    top: options.padding?.top !== undefined ? NTUnit.from(options.padding.top) : defaultPadding,
+                    left: options.padding?.left !== undefined ? NTUnit.from(options?.padding?.left) : defaultPadding,
+                    right: options.padding?.right !== undefined ? NTUnit.from(options?.padding?.right) : defaultPadding,
+                    bottom: options.padding?.bottom !== undefined ? NTUnit.from(options?.padding?.bottom) : defaultPadding,
+                }
+                : { top: defaultPadding, left: defaultPadding, right: defaultPadding, bottom: defaultPadding }
         }
     }
 
@@ -504,13 +513,23 @@ export namespace NTTable {
         border?: NTUnit | NTMetric,
         borderColor?: NTRgba,
         hAlign?: Props['hAlign'],
-        margin?: NTUnit | NTMetric,
+        padding?: {
+            top?: NTUnit | NTMetric,
+            left?: NTUnit | NTMetric,
+            right?: NTUnit | NTMetric,
+            bottom?: NTUnit | NTMetric,
+        },
     }
     export type Props = {
         border: NTUnit,
         borderColor: NTRgba,
         hAlign: NTHAlignment | 'fill',
-        margin: NTUnit,
+        padding: {
+            top: NTUnit,
+            left: NTUnit,
+            right: NTUnit,
+            bottom: NTUnit,
+        },
     }
 
     export function is(obj: NTAnyPrimitive): obj is NTTable {

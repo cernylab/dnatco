@@ -19,8 +19,10 @@ export namespace StructureInfo {
         // --- HEADER ---
         Layout.sectionHeader('Structure information', ctx);
 
+        const EnumTbl = Tables.EnumTable(ctx.tDims.characterWidth, ctx.tDims.characterHeight);
+
         // --- SUMMARY ---
-        let tbl = root.table(2);
+        let tbl = root.table(2, EnumTbl);
         tbl.addRow([
             NTTable.Cell.lineText('Structure ID:', tbl, { font: Tables.EnumTableName.font }, Tables.EnumTableName.cell ),
             NTTable.Cell.hyperlink(
@@ -53,7 +55,7 @@ export namespace StructureInfo {
 
         // --- MOLECULAR CONTENT ---
         root.lineText('Molecular content of the structure', { font: Fonts.SubsectionCaption });
-        tbl = root.table(4, { hAlign: 'fill' });
+        tbl = root.table(4, { ...EnumTbl, hAlign: 'fill' });
         tbl.addRow([
             NTTable.Cell.lineText('Entity ID', tbl, { font: Tables.HeaderFont }),
             NTTable.Cell.lineText('Entity type', tbl, { font: Tables.HeaderFont }),
@@ -82,7 +84,7 @@ export namespace StructureInfo {
         // --- LITERATURE ---
         const priPub = SI.primaryPublication(ctx.dnatcofication);
         root.lineText('Literature', { font: Fonts.SubsectionCaption });
-        tbl = root.table(2);
+        tbl = root.table(2, EnumTbl);
         tbl.addRow([
             NTTable.Cell.lineText('Publication title:', tbl, { font: Tables.EnumTableName.font }, Tables.EnumTableName.cell),
             NTTable.Cell.paragraphText(priPub?.title ?? Common.NA, tbl, { font: Tables.EnumTableValue.font, maxWidth: NTUnit.multiply(50, ctx.tDims.characterWidth) }, Tables.EnumTableValue.cell),
@@ -115,7 +117,7 @@ export namespace StructureInfo {
 
         // --- EXPERIMENTAL ---
         root.lineText('Experimental', { font: Fonts.SubsectionCaption });
-        tbl = root.table(2);
+        tbl = root.table(2, EnumTbl);
         tbl.addRow([
             NTTable.Cell.lineText('Method:', tbl, { font: Tables.EnumTableName.font }, Tables.EnumTableName.cell),
             NTTable.Cell.lineText(getCifValue(ctx.dnatcofication, Exptl, 'method') ?? Common.NA, tbl, { font: Tables.EnumTableValue.font }, Tables.EnumTableName.cell)
