@@ -22,15 +22,19 @@ export namespace Title {
         const root = ctx.ntDoc;
 
         // --- HEADER ---
+        const headerHeight = NTUnit.multiply(10, ctx.tDims.characterHeight);
         let inset = root.inset(
-            NTXYWH.create(NTMm(0), NTMm(0), ctx.cDims.width),
+            NTXYWH.create(NTMm(0), NTMm(0), ctx.cDims.width, headerHeight),
             {
                 backgroundColor: Colors.SectionHeaderBg
-            }
+            },
+            'headerBox'
         );
 
         // Padding of the entire inset
-        const pad = Layout.insetPadding(inset.xywh, ctx);
+        const hPad = NTUnit.multiply(2, ctx.tDims.characterWidth);
+        const vPad = NTUnit.multiply(2, ctx.tDims.characterHeight);
+        const pad = Layout.insetPadding(inset.xywh, hPad, vPad, ctx);
 
         // Left side with text
         const leftBoxArea = { ...pad };
@@ -39,10 +43,8 @@ export namespace Title {
         const leftBox = inset.inset(leftBoxArea);
         leftBox.lineText(
             GlobalConfig.data().displayedProductName,
-            { font: Fonts.ReportTitle },
-            'leftBox',
+            { font: Fonts.ReportTitle }
         );
-        leftBox.breakLine(Fonts.ReportTitle);
         leftBox.paragraphText(
             'Validation report of nucleic acid structure',
             {
@@ -53,12 +55,13 @@ export namespace Title {
 
         // Right side with image
         const rightBoxArea = {
-            x: NTUnit.subtract(NTUnit.subtract(inset.xywh.width, leftBoxArea.width), pad.x),
-            y: NTUnit.zero(),
-            width: leftBoxArea.width
+            x: NTUnit.add(hPad, NTUnit.subtract(pad.width, leftBox.xywh.width)),
+            y: vPad,
+            width: leftBoxArea.width,
+            height: leftBoxArea.height,
         };
-        const rightBox = inset.inset(rightBoxArea, {}, 'leftBox');
-        rightBox.image('png', imgBuf, { hAlign: 'right', scale: 0.3 });
+        const rightBox = inset.inset(rightBoxArea, {}, 'headerBox');
+        rightBox.image('png', imgBuf, { hAlign: 'right', vAlign: 'center', scale: 0.3 });
 
         root.breakLine();
 

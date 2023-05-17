@@ -178,6 +178,7 @@ export namespace NTImage {
     export type Props = {
         scale: number,
         hAlign: NTHAlignment,
+        vAlign: NTVAlignment,
         caption: string,
         captionPosition: 'above' | 'below',
         captionFontSize: number,
@@ -201,6 +202,7 @@ export namespace NTImage {
     export function props(defaultFont: NTFont, options?: Options): Props {
         return {
             hAlign: options?.hAlign ?? 'left',
+            vAlign: options?.vAlign ?? 'top',
             scale: options?.scale ?? 1.0,
             caption: options?.caption ?? '',
             captionPosition: options?.captionPosition ?? 'above',

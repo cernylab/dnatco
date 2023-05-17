@@ -81,6 +81,15 @@ export namespace NTMetric {
     }
 }
 
+
+export type NTXY<T extends number = NTUnit> = {
+    x: T,
+    y: T,
+}
+export function NTXY<T extends number = NTUnit>(x: T, y: T): NTXY<T> {
+    return { x, y };
+}
+
 export type NTWH<T extends number = NTUnit> = {
     width: T,
     height: T,

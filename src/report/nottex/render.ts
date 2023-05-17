@@ -3,7 +3,7 @@ import { NTDocument, NTDocumentFonts } from './document';
 import * as NTPrims from './primitives';
 import { NTPdf } from './pdf';
 import * as NTR from './renderables';
-import { NTUnit, NTXYWH } from './space';
+import { NTUnit, NTXY, NTXYWH } from './space';
 import { NTcantorEncode, NTerror, NTwarning, NTBlackColor, NTRgba, NTboundingRect } from './util';
 import { replaceAll } from '../../util';
 
@@ -13,6 +13,12 @@ type NTBoundary = {
     bottom?: NTUnit,
 }
 namespace NTBoundary {
+    export function height(b: NTBoundary, top: NTUnit) {
+        if (b.bottom === undefined)
+            return void 0;
+        return NTUnit.subtract(b.bottom, top);
+    }
+
     export function width(b: NTBoundary) {
         return NTUnit.subtract(b.right, b.left);
     }
@@ -20,17 +26,22 @@ namespace NTBoundary {
 
 // Trivial dummy-ish render target to use inside the NTBox rendering loop
 class NTDummyRenderTarget<ImgPayload, T> {
-    references = new Map<string, NTR.NTRenderables<ImgPayload, T>>();
+    references = new Map<string, NTReference>();
     renderables: NTR.NTRenderables<ImgPayload, T>[] = [];
 
     constructor(private readonly _ctx: NTRenderContext<ImgPayload, T>, readonly ref?: string) {
     }
 
+    addReference(rf: NTReference, name: string) {
+        if (!this.references.has(name))
+            this.references.set(name, rf);
+    }
+
     addRenderable(r: NTR.NTRenderables<ImgPayload, T>, ref?: string) {
         this.renderables.push(r);
         if (ref) {
-            if (!this.references.has(ref))
-                this.references.set(ref, r);
+            const rf = NTReference.fromRenderable(r);
+            this.addReference(rf, ref);
         }
     }
 
@@ -49,6 +60,29 @@ class NTDummyRenderTarget<ImgPayload, T> {
 
     get tm() {
         return this._ctx.tm;
+    }
+}
+
+type NTReference = {
+} & NTXY;
+namespace NTReference {
+    export function fromXY(xy: NTXY): NTReference {
+        return { ...xy };
+    }
+
+    export function fromRenderable<ImgPayload, T>(r: NTR.NTRenderables<ImgPayload, T>): NTReference {
+        let xy;
+        if (NTR.NTRenderableGroup.is(r)) {
+            const bRect = r.boundingRect();
+            xy = { x: bRect.x, y: bRect.y };
+        } else if (NTR.NTRenderableHyperlink.is(r)) {
+            const bRect = NTR.NTRenderableHyperlink.boundingRect(r);
+            xy = { x: bRect.x, y: bRect.y };
+        } else
+            xy = { x: r.x, y: r.y };
+
+        return xy;
+
     }
 }
 
@@ -263,7 +297,7 @@ export type NTTextMetricsCalculators = {
 
 export class NTRenderContext<ImgPayload, T> {
     renderables: NTR.NTRenderables<ImgPayload, T>[] = [];
-    references = new Map<string, NTR.NTRenderables<ImgPayload, T>>();
+    references = new Map<string, NTReference>();
 
     constructor(
         readonly ntDoc: NTDocument<T>,
@@ -272,11 +306,16 @@ export class NTRenderContext<ImgPayload, T> {
     ) {
     }
 
+    addReference(rf: NTReference, name: string) {
+        if (!this.references.has(name))
+            this.references.set(name, rf);
+    }
+
     addRenderable(r: NTR.NTRenderables<ImgPayload, T>, ref?: string) {
         this.renderables.push(r);
         if (ref) {
-            if (!this.references.has(ref))
-                this.references.set(ref, r);
+            const rf = NTReference.fromRenderable(r);
+            this.addReference(rf, ref);
         }
     }
 
@@ -326,7 +365,7 @@ export namespace NTRender {
             let floating = false;
             if (p.ref && target.references.has(p.ref)) {
                 const refObj = target.references.get(p.ref)!;
-                vPos = NTR.NTRenderable.xy(refObj).y;
+                vPos = refObj.y;
                 floating = true;
 
                 console.log(`Floating with reference ${p.ref}`);
@@ -420,6 +459,8 @@ export namespace NTRender {
         const height = NTUnit.multiply(im.scale, img.height);
 
         const x = alignHorizontally(boundary.left, width, NTBoundary.width(boundary), im.hAlign);
+        if (boundary.bottom !== undefined)
+            vPosition = alignVertically(vPosition, height, NTBoundary.height(boundary, vPosition)!, im.vAlign);
 
         const rGroup = NTR.NTRenderableGroup.mk(parent.ctx);
 
@@ -473,16 +514,20 @@ export namespace NTRender {
     }
 
     function inset<ImgPayload, T>(ins: NTPrims.NTInset, vPosition: NTUnit, boundary: NTBoundary, ctx: NTRenderContext<ImgPayload, T>) {
-        const scopeBoundary = makeBoundary(ins.xywh, boundary, vPosition);
+        // Add the reference to ourselves first, primitives in the inset might reference us.
+        if (ins.ref)
+            ctx.addReference(NTReference.fromXY({ x: ins.xywh.x, y: vPosition }), ins.ref);
 
         vPosition = NTUnit.add(vPosition, ins.xywh.y);
+
+        const scopeBoundary = makeBoundary(ins.xywh, boundary, vPosition);
         const initialVPos = vPosition;
 
         for (const p of ins.prims)
             vPosition = primitive(p, vPosition, scopeBoundary, ctx);
 
         if (ins.props.backgroundColor !== 'none' || NTUnit.num(ins.props.border) !== 0) {
-            const height = NTUnit.subtract(vPosition, initialVPos);
+            const height = ins.xywh.height ? ins.xywh.height : NTUnit.subtract(vPosition, initialVPos);
             const rects = spanningRectangles(
                 ins.props,
                 { x: ins.xywh.x, y: initialVPos, width: ins.xywh.width, height: height },
@@ -531,7 +576,7 @@ export namespace NTRender {
         let floating = false;
         if (p.ref && ctx.hasRef(p.ref)) {
             const refObj = ctx.getRef(p.ref);
-            vPos = NTR.NTRenderable.xy(refObj).y;
+            vPos = refObj.y;
             floating = true;
         }
 

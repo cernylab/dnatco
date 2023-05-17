@@ -4,15 +4,15 @@ import { Fonts } from './styling'
 import { NTUnit, NTXYWH } from './nottex/space';
 
 export namespace Layout {
-    export function insetPadding<Output>(xywh: NTXYWH, ctx: Report.Context<Output>) {
+    export function insetPadding<Output>(xywh: NTXYWH, hPad: NTUnit, vPad: NTUnit, ctx: Report.Context<Output>) {
         const height = xywh.height
-            ? NTUnit.subtract(xywh.height, NTUnit.multiply(6, ctx.tDims.characterHeight))
+            ? NTUnit.subtract(xywh.height, NTUnit.multiply(2, vPad))
             : void 0;
 
         return NTXYWH.create(
-            NTUnit.multiply(3, ctx.tDims.characterWidth),
-            NTUnit.multiply(3, ctx.tDims.characterHeight),
-            NTUnit.subtract(NTUnit.from(ctx.cDims.width), NTUnit.multiply(6, ctx.tDims.characterWidth)),
+            hPad,
+            vPad,
+            NTUnit.subtract(NTUnit.from(ctx.cDims.width), NTUnit.multiply(2, hPad)),
             height
         );
     }
