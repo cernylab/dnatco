@@ -10,6 +10,7 @@ import { Refine } from '../../cif/categories/refine';
 import { Common } from '../../ui/dnatco/common';
 import { getCifValue, niceCifDate } from '../../ui/dnatco/util';
 import * as SI from '../../ui/structure-info-util';
+import { doiLink, pubmedLink, rcsbLink } from '../../util/resources';
 
 export namespace StructureInfo {
     export function add<Output>(ctx: Report.Context<Output>) {
@@ -21,8 +22,14 @@ export namespace StructureInfo {
         // --- SUMMARY ---
         let tbl = root.table(2);
         tbl.addRow([
-            NTTable.Cell.lineText('Structure ID:', tbl, { font: Tables.EnumTableName.font }, Tables.EnumTableName.cell),
-            NTTable.Cell.lineText(ctx.dnatcofication.pdbId, tbl, { font: Tables.EnumTableValue.font }, Tables.EnumTableValue.cell )
+            NTTable.Cell.lineText('Structure ID:', tbl, { font: Tables.EnumTableName.font }, Tables.EnumTableName.cell ),
+            NTTable.Cell.hyperlink(
+                ctx.dnatcofication.pdbId,
+                rcsbLink(ctx.dnatcofication.pdbId),
+                NTUnit.multiply(50, ctx.tDims.characterWidth),
+                tbl,
+                Tables.EnumTableName.cell
+            ),
         ]);
         tbl.addRow([
             NTTable.Cell.lineText('Structure title:', tbl, { font: Tables.EnumTableName.font }, Tables.EnumTableName.cell),
@@ -73,7 +80,6 @@ export namespace StructureInfo {
         root.breakLine();
 
         // --- LITERATURE ---
-        // TODO: Some of the content could/should be hyperlink. NotTeX currently does not support hyperlinks in tables.
         const priPub = SI.primaryPublication(ctx.dnatcofication);
         root.lineText('Literature', { font: Fonts.SubsectionCaption });
         tbl = root.table(2);
@@ -87,11 +93,23 @@ export namespace StructureInfo {
         ]);
         tbl.addRow([
             NTTable.Cell.lineText('PubMed:', tbl, { font: Tables.EnumTableName.font }, Tables.EnumTableName.cell),
-            NTTable.Cell.lineText(priPub?.pdbx_database_id_PubMed?.toString() ?? Common.NA, tbl, { font: Tables.EnumTableValue.font }, Tables.EnumTableValue.cell)
+            NTTable.Cell.hyperlink(
+                priPub?.pdbx_database_id_PubMed?.toString() ?? Common.NA,
+                pubmedLink(priPub?.pdbx_database_id_PubMed ?? 0),
+                NTUnit.multiply(40, ctx.tDims.characterWidth),
+                tbl,
+                Tables.EnumTableValue.cell
+            )
         ]);
         tbl.addRow([
             NTTable.Cell.lineText('DOI:', tbl, { font: Tables.EnumTableName.font }, Tables.EnumTableName.cell),
-            NTTable.Cell.lineText(priPub?.pdbx_database_id_DOI ?? Common.NA, tbl, { font: Tables.EnumTableValue.font }, Tables.EnumTableValue.cell)
+            NTTable.Cell.hyperlink(
+                priPub?.pdbx_database_id_DOI ?? Common.NA,
+                doiLink(priPub?.pdbx_database_id_DOI ?? ''),
+                NTUnit.multiply(40, ctx.tDims.characterWidth),
+                tbl,
+                Tables.EnumTableValue.cell
+            )
         ]);
         root.breakLine();
 

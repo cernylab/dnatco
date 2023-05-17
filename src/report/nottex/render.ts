@@ -4,7 +4,7 @@ import * as NTPrims from './primitives';
 import { NTPdf } from './pdf';
 import * as NTR from './renderables';
 import { NTUnit, NTXYWH } from './space';
-import { NTcantorEncode, NTerror, NTwarning, NTBlackColor, NTRgba } from './util';
+import { NTcantorEncode, NTerror, NTwarning, NTBlackColor, NTRgba, NTboundingRect } from './util';
 import { replaceAll } from '../../util';
 
 type NTBoundary = {
@@ -47,7 +47,36 @@ class NTBoxRenderTarget<ImgPayload, T> {
     }
 }
 
-type NTTrivialRenderTarget<ImgPayload, T> = NTRenderContext<ImgPayload, T> | NTR.NTRenderableGroup<ImgPayload, T> | NTBoxRenderTarget<ImgPayload, T>;
+type NTTrivialRenderTarget<ImgPayload, Output> = NTRenderContext<ImgPayload, Output> | NTR.NTRenderableGroup<ImgPayload, Output> | NTBoxRenderTarget<ImgPayload, Output>;
+
+function adjustTextRenderablesPosition(
+    rends: NTR.NTRenderableRect | NTR.NTRenderableText[],
+    xywh: NTXYWH,
+    vPos: NTUnit,
+    contentHeight: NTUnit,
+    vAlign: NTPrims.NTVAlignment,
+    lineSpacing: number,
+    font: NTPrims.NTFont,
+    fonts: NTDocumentFonts,
+    tm: NTTextMetricsCalculators,
+) {
+    const dh = tm.descenderHeight(font, fonts);
+    const th = NTPdf.textHeight(fonts[font.family][font.style], font.size);
+
+    if (Array.isArray(rends)) {
+        for (const r of rends) {
+            r.x = xywh.x;
+            r.y = alignVertically(NTUnit.subtract(vPos, dh), th, contentHeight, vAlign);
+
+            vPos = NTUnit.add(vPos, tm.lineHeight(th, lineSpacing));
+        }
+    } else {
+        rends.x = xywh.x;
+        rends.y = alignVertically(NTUnit.subtract(vPos, dh), th, contentHeight, vAlign);
+
+        vPos = NTUnit.add(vPos, tm.lineHeight(th, lineSpacing));
+    }
+}
 
 function alignHorizontally(offset: NTUnit, contentWidth: NTUnit, boundaryWidth: NTUnit, alignment: NTPrims.NTHAlignment): NTUnit {
     const cw = NTUnit.num(contentWidth);
@@ -563,6 +592,7 @@ export namespace NTRender {
 
         // Calculate dimensions
         const paragraphCells = new Map<number, NTR.NTRenderableText[]>;
+        const hyperlinkCells = new Map<number, NTR.NTRenderableHyperlink>;
         const rowHeights = [];
         const columnWidths = (new Array<NTUnit>(tbl.numColumns)).fill(NTUnit.zero(), 0);
         const twoMargin = NTUnit.multiply(2, tbl.props.margin);
@@ -608,14 +638,8 @@ export namespace NTRender {
                         const scopeBoundary = { ...boundary };
                         scopeBoundary.right = NTUnit.add(boundary.left, ct.maxWidth);
                         const ret = tokensToLines(toks, ct.prim.breakWords ? '' : ' ', ct.prim, ct.prim.lineSpacing, NTUnit.zero(), scopeBoundary, fonts, tm);
-                        let _w = 0;
-                        for (const r of ret.renderables) {
-                            const _rw = NTUnit.num(r.width);
-                            if (_rw > _w)
-                                _w = _rw;
-                        }
-                        w = _w as NTUnit;
-
+                        const bRect = NTboundingRect(ret.renderables);
+                        w = bRect.width;
                         h = ret.vPosition; // We are passing zero as the initial vPosition, therefore the returned vPosition is the height
 
                         const cantorTag = NTcantorEncode(rowIdx, colIdx);
@@ -624,9 +648,27 @@ export namespace NTRender {
                 } else if (ct.type === 'rect') {
                     w = ct.prim.width;
                     h = ct.prim.height ?? NTUnit.zero(); // The null case should not happen
-                } else {
+                } else if (ct.type === 'box') {
                     w = ct.prim.xywh.width;
                     h = ct.prim.xywh.height!;
+                } else {
+                    const toks = stringToChars(normalizeWhitespaces(ct.prim.text));
+
+                    if (toks.length < 1) {
+                        w = tm.textWidth(' ', tbl.defaultFont, fonts);
+                        h = tm.textHeight(tbl.defaultFont, fonts);
+                    } else {
+                        const scopeBoundary = { ...boundary };
+                        scopeBoundary.right = NTUnit.add(boundary.left, NTUnit.from(ct.maxWidth));
+                        const ret = tokensToLines(toks, '', ct.prim, 1, NTUnit.zero(), scopeBoundary, fonts, tm);
+                        const hyperlink = NTR.NTRenderableHyperlink.mk(ret.renderables, ct.prim.url)
+                        const bRect = NTR.NTRenderableHyperlink.boundingRect(hyperlink);
+                        w = bRect.width;
+                        h = ret.vPosition; // We are passing zero as the initial vPosition, therefore the returned vPosition is the height
+
+                        const cantorTag = NTcantorEncode(rowIdx, colIdx);
+                        hyperlinkCells.set(cantorTag, hyperlink);
+                    }
                 }
 
                 w = NTUnit.add(w, twoMargin);
@@ -717,6 +759,7 @@ export namespace NTRender {
                     const dh = tm.descenderHeight(ct.prim.font, fonts);
                     const th = NTPdf.textHeight(fonts[ct.prim.font.family][ct.prim.font.style], ct.prim.font.size);
                     const vPos = alignVertically(NTUnit.subtract(contentVPos, dh), th, contentHeight, cell.vAlign);
+
                     lineText(ct.prim, vPos, scopeBoundary, fonts, rGroup);
                 } else if (ct.type === 'image') {
                     const im = { ...ct.prim };
@@ -727,17 +770,9 @@ export namespace NTRender {
                     const cantorTag = NTcantorEncode(rowIdx, colIdx);
                     const rends = paragraphCells.get(cantorTag)!;
 
-                    const dh = tm.descenderHeight(ct.prim.font, fonts);
-                    const th = NTPdf.textHeight(fonts[ct.prim.font.family][ct.prim.font.style], ct.prim.font.size);
-                    let vPos = contentVPos;
-                    for (const r of rends) {
-                        // We need to augment the position of the renderables a bit here
-                        r.x = xywh.x;
-                        r.y = alignVertically(NTUnit.subtract(vPos, dh), th, contentHeight, cell.vAlign);
+                    adjustTextRenderablesPosition(rends, xywh, contentVPos, contentHeight, cell.vAlign, ct.prim.lineSpacing, ct.prim.font, fonts, tm);
+                    for (const r of rends)
                         rGroup.addRenderable(r);
-
-                        vPos = NTUnit.add(vPos, tm.lineHeight(th, ct.prim.lineSpacing));
-                    }
                 } else if (ct.type === 'rect') {
                     const rc = { ...ct.prim };
                     rc.x = NTUnit.add(rc.x, xywh.x);
@@ -746,6 +781,12 @@ export namespace NTRender {
                     const bx = ct.prim;
                     bx.xywh.x = NTUnit.add(xywh.x, bx.xywh.x);
                     box(bx, contentVPos, scopeBoundary, rGroup);
+                } else if (ct.type === 'hyperlink') {
+                    const cantorTag = NTcantorEncode(rowIdx, colIdx);
+                    const hyperlink = hyperlinkCells.get(cantorTag)!;
+
+                    adjustTextRenderablesPosition(hyperlink.lines, xywh, contentVPos, contentHeight, cell.vAlign, 1, ct.prim.font, fonts, tm);
+                    rGroup.addRenderable(hyperlink);
                 }
 
                 if (drawBorders) {

@@ -1,7 +1,7 @@
 import { PDFFont } from 'pdf-lib';
 import { NTPdf } from './pdf';
 import { NTMetric, NTMm, NTUnit, NTXYWH } from './space';
-import { NTerror, NTBlackColor, NTWhiteColor, NTRgba } from './util';
+import { NTerror, NTBlackColor, NTWhiteColor, NTRgba, NTHyperlinkColor } from './util';
 
 export type NTHAlignment = 'left' | 'center' | 'right';
 export type NTVAlignment = 'top' | 'center' | 'bottom';
@@ -524,6 +524,11 @@ export namespace NTTable {
             type: 'box',
             prim: NTBox,
         };
+        export type HyperlinkContent = {
+            type: 'hyperlink',
+            prim: NTHyperlink,
+            maxWidth: NTUnit | NTMetric
+        };
         export type LineTextContent = {
             type: 'linetext',
             prim: NTLineText,
@@ -542,7 +547,7 @@ export namespace NTTable {
             prim: NTRect,
         };
 
-        export type Content = BoxContent | LineTextContent | ImageContent | ParagraphTextContent | RectContent;
+        export type Content = BoxContent | HyperlinkContent | LineTextContent | ImageContent | ParagraphTextContent | RectContent;
 
         export type Options = Partial<Props>;
         export type Props = {
@@ -561,6 +566,17 @@ export namespace NTTable {
                     prim: theBox,
                 },
                 ...props(cellOptions),
+            };
+        }
+
+        export function hyperlink(text: string, url: string, maxWidth: NTMetric | NTUnit, table: NTTable, cellOptions?: Options): Cell {
+            return {
+                content: {
+                    type: 'hyperlink',
+                    prim: NTHyperlink.mk(text, url, { color: NTHyperlinkColor, font: table.defaultFont, hAlign: 'left' }),
+                    maxWidth,
+                },
+                ...props(cellOptions)
             };
         }
 
