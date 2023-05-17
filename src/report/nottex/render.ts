@@ -702,7 +702,7 @@ export namespace NTRender {
                     let blockTotalWidth = columnWidths[actualColIdx];
                     let tailWidth = NTUnit.zero();
                     for (let _idx = actualColIdx + 1; _idx < columnWidths.length && _idx < actualColIdx + cell.colSpan; _idx++) {
-                        tailWidth = NTUnit.add(tailWidth, columnWidths[actualColIdx]);
+                        tailWidth = NTUnit.add(tailWidth, columnWidths[_idx]);
                     }
                     tailWidth = NTUnit.add(
                         NTUnit.multiply(cell.colSpan - 1, tbl.props.border),
