@@ -19,7 +19,7 @@ namespace NTBoundary {
 }
 
 // Trivial dummy-ish render target to use inside the NTBox rendering loop
-class NTBoxRenderTarget<ImgPayload, T> {
+class NTDummyRenderTarget<ImgPayload, T> {
     references = new Map<string, NTR.NTRenderables<ImgPayload, T>>();
     renderables: NTR.NTRenderables<ImgPayload, T>[] = [];
 
@@ -32,6 +32,11 @@ class NTBoxRenderTarget<ImgPayload, T> {
             if (!this.references.has(ref))
                 this.references.set(ref, r);
         }
+    }
+
+    reset() {
+        this.references.clear();
+        this.renderables = [];
     }
 
     get ctx() {
@@ -47,7 +52,7 @@ class NTBoxRenderTarget<ImgPayload, T> {
     }
 }
 
-type NTTrivialRenderTarget<ImgPayload, Output> = NTRenderContext<ImgPayload, Output> | NTR.NTRenderableGroup<ImgPayload, Output> | NTBoxRenderTarget<ImgPayload, Output>;
+type NTTrivialRenderTarget<ImgPayload, Output> = NTRenderContext<ImgPayload, Output> | NTR.NTRenderableGroup<ImgPayload, Output> | NTDummyRenderTarget<ImgPayload, Output>;
 
 function adjustTextRenderablesPosition(
     rends: NTR.NTRenderableRect | NTR.NTRenderableText[],
@@ -114,6 +119,13 @@ function lineOfText(text: string, props: NTPrims.NTText, lineSpacing: number, vP
     return { renderable: r, vPosition: NTUnit.add(vPosition, tm.lineHeight(height, lineSpacing)) };
 }
 
+function lineSpacingHeight(spacing: number, font: NTPrims.NTFont, fonts: NTDocumentFonts, tm: NTTextMetricsCalculators) {
+    const th = tm.textHeight(font, fonts);
+    const lh = tm.lineHeight(th, spacing);
+
+    return NTUnit.subtract(lh, th);
+}
+
 function makeBoundary(box: NTXYWH, boundary: NTBoundary, top: NTUnit): NTBoundary {
     const left = NTUnit.add(box.x, boundary.left);
 
@@ -146,7 +158,7 @@ function positionText(text: string, props: NTPrims.NTText, boundary: NTBoundary,
     const right = NTUnit.add(boundary.left, width);
 
     if (NTUnit.num(right) > NTUnit.num(boundary.right))
-        NTwarning(`Text width ${width} spills over boundary`);
+        NTwarning(`Text width ${width} spills over boundary that is ${NTBoundary.width(boundary)} units wide`);
 
     return { left, right, width, height };
 }
@@ -307,7 +319,7 @@ export namespace NTRender {
         vPosition = NTUnit.add(vPosition, bx.xywh.y);
 
         // In a NTBox all references are local to the box
-        const target = new NTBoxRenderTarget<ImgPayload, T>(parent.ctx);
+        const target = new NTDummyRenderTarget<ImgPayload, T>(parent.ctx);
 
         for (const p of bx.prims) {
             let vPos = vPosition;
@@ -596,6 +608,7 @@ export namespace NTRender {
         const hyperlinkCells = new Map<number, NTR.NTRenderableHyperlink>;
         const rowHeights = [];
         const columnWidths = (new Array<NTUnit>(tbl.numColumns)).fill(NTUnit.zero(), 0);
+        const dummyTarget = new NTDummyRenderTarget<ImgPayload, T>(parent);
         const twoMargin = NTUnit.multiply(2, tbl.props.margin);
         for (let rowIdx = 0; rowIdx < tbl.rows.length; rowIdx++) {
             const row = tbl.rows[rowIdx];
@@ -617,8 +630,12 @@ export namespace NTRender {
 
                 const ct = cell.content;
                 if (ct.type === 'linetext') {
-                    w = tm.textWidth(ct.prim.text, ct.prim.font, fonts);
-                    h = tm.textHeight(ct.prim.font, fonts);
+                    lineText(ct.prim, NTUnit.zero(), boundary, fonts, dummyTarget);
+                    const bRect = NTboundingRect((dummyTarget.renderables as NTR.NTRenderableText[]));
+                    w = bRect.width;
+                    h = bRect.height;
+
+                    dummyTarget.reset();
                 } else if (ct.type === 'image') {
                     if (ct.prim.caption !== '')
                         NTwarning('Captions for images contained in tables are currently unsupported.');
@@ -640,8 +657,9 @@ export namespace NTRender {
                         scopeBoundary.right = NTUnit.add(boundary.left, ct.maxWidth);
                         const ret = tokensToLines(toks, ct.prim.breakWords ? '' : ' ', ct.prim, ct.prim.lineSpacing, NTUnit.zero(), scopeBoundary, fonts, tm);
                         const bRect = NTboundingRect(ret.renderables);
+                        const lh = lineSpacingHeight(ct.prim.lineSpacing, ct.prim.font, fonts, tm);
                         w = bRect.width;
-                        h = ret.vPosition; // We are passing zero as the initial vPosition, therefore the returned vPosition is the height
+                        h = NTUnit.subtract(ret.vPosition, lh); // Paragraph text include the height of the linespacing. We do not want it here.
 
                         const cantorTag = NTcantorEncode(rowIdx, colIdx);
                         paragraphCells.set(cantorTag, ret.renderables);
@@ -664,8 +682,9 @@ export namespace NTRender {
                         const ret = tokensToLines(toks, '', ct.prim, 1, NTUnit.zero(), scopeBoundary, fonts, tm);
                         const hyperlink = NTR.NTRenderableHyperlink.mk(ret.renderables, ct.prim.url)
                         const bRect = NTR.NTRenderableHyperlink.boundingRect(hyperlink);
+                        const lh = lineSpacingHeight(1, ct.prim.font, fonts, tm);
                         w = bRect.width;
-                        h = ret.vPosition; // We are passing zero as the initial vPosition, therefore the returned vPosition is the height
+                        h = NTUnit.subtract(ret.vPosition, lh); // Paragraph text include the height of the linespacing. We do not want it here.
 
                         const cantorTag = NTcantorEncode(rowIdx, colIdx);
                         hyperlinkCells.set(cantorTag, hyperlink);
