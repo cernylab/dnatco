@@ -40,7 +40,7 @@ async function averageConfalsRow(avg: number, percentile: number, tbl: NTTable, 
     ctx.fillRect(0, 0, NW, NH);
     ctx.stroke();
 
-    const MW = NW / 25;
+    const MW = NW / 55;
     ctx.fillStyle = 'rgb(0, 0, 0)';
     ctx.fillRect(NW * percentile / 100 - MW, 0, MW, NH);
 
