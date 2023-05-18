@@ -73,7 +73,7 @@ function drawCountsTable<Output>(inset: NTInset | NTDocument<Output>, counts: Su
         {
             ...Tables.EnumTable(ctx.tDims.characterWidth, ctx.tDims.characterHeight, ctx.mode),
             hAlign: ctx.mode === 'textual' ? 'left' : 'center',
-            useDescenderHeightCorrection: false
+            useDescenderHeightCorrection: false,
         }
     );
 

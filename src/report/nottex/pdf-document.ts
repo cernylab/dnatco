@@ -1,4 +1,4 @@
-import { PDFDocument, PDFImage } from 'pdf-lib';
+import { LineCapStyle, PDFDocument, PDFImage } from 'pdf-lib';
 import { NTDocument, NTDocumentFonts } from './document';
 import { NTEmbeddedImage } from './embedded-image';
 import { NTPdf } from './pdf';
@@ -252,6 +252,7 @@ export class NTPdfDocument extends NTDocument<Uint8Array> {
                             start: { x, y },
                             end: { x: x + w, y: y + h },
                             thickness: NTPdf.ntUnitToPdm(r.thickness),
+                            lineCap: LineCapStyle.Butt,
                         });
                     } else if (NTR.NTRenderableRect.is(r)) {
                         const borderWidth = NTPdf.ntUnitToPdm(r.border);
