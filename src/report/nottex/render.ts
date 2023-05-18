@@ -98,8 +98,9 @@ function adjustTextRenderablesPosition(
     font: NTPrims.NTFont,
     fonts: NTDocumentFonts,
     tm: NTTextMetricsCalculators,
+    useDescenderHeightCorrection: boolean
 ) {
-    const dh = tm.descenderHeight(font, fonts);
+    const dh = correctDescenderHeight(font, fonts, tm, useDescenderHeightCorrection);
     const th = NTPdf.textHeight(fonts[font.family][font.style], font.size);
 
     if (Array.isArray(rends)) {
@@ -142,6 +143,15 @@ function alignVertically(offset: NTUnit, contentHeight: NTUnit, boundaryHeight: 
         return NTUnit.add(offset, diff);
     }
 }
+
+function correctDescenderHeight(font: NTPrims.NTFont, fonts: NTDocumentFonts, tm: NTTextMetricsCalculators, use: boolean) {
+    // The descender height can lead to odd cases of text misalignment.
+    // It is not clear whether correcting for it is a good idea though.
+    // This function adds an indirection for the correction calculation to make it easily togglable.
+
+    return use ? tm.descenderHeight(font, fonts) : NTUnit.zero();
+}
+
 
 function lineOfText(text: string, props: NTPrims.NTText, lineSpacing: number, vPosition: NTUnit, boundary: NTBoundary, fonts: NTDocumentFonts, tm: NTTextMetricsCalculators) {
     if (boundary.bottom !== undefined && NTUnit.num(vPosition) > NTUnit.num(boundary.bottom))
@@ -302,7 +312,8 @@ export class NTRenderContext<ImgPayload, T> {
     constructor(
         readonly ntDoc: NTDocument<T>,
         private readonly textMetrics: NTTextMetricsCalculators,
-        readonly images: NTEmbeddedImage<ImgPayload>[] = []
+        readonly images: NTEmbeddedImage<ImgPayload>[] = [],
+        readonly pageBreakSkip: NTUnit = NTUnit.zero(),
     ) {
     }
 
@@ -353,9 +364,11 @@ export class NTRenderContext<ImgPayload, T> {
 
 export namespace NTRender {
     function box<ImgPayload, T>(bx: NTPrims.NTBox, vPosition: NTUnit, boundary: NTBoundary, parent: NTRenderContext<ImgPayload, T> | NTR.NTRenderableGroup<ImgPayload, T>) {
-        const scopeBoundary = makeBoundary(bx.xywh, boundary, vPosition);
+        if (!bx.xywh.height)
+            NTerror('Box must have a height');
 
         vPosition = NTUnit.add(vPosition, bx.xywh.y);
+        const initialVPos = vPosition;
 
         // In a NTBox all references are local to the box
         const target = new NTDummyRenderTarget<ImgPayload, T>(parent.ctx);
@@ -367,14 +380,12 @@ export namespace NTRender {
                 const refObj = target.references.get(p.ref)!;
                 vPos = refObj.y;
                 floating = true;
-
-                console.log(`Floating with reference ${p.ref}`);
             }
 
             if (NTPrims.NTLineText.is(p)) {
-                vPos = lineText(p, vPos, scopeBoundary, parent.fonts, target);
+                vPos = lineText(p, vPos, boundary, parent.fonts, target);
             } else if (NTPrims.NTParagraphText.is(p)) {
-                vPos = paragraphText(p, vPos, scopeBoundary, parent.fonts, target);
+                vPos = paragraphText(p, vPos, boundary, parent.fonts, target);
             } else if (NTPrims.NTVSpace.is(p)) {
                 if (floating)
                     NTwarning('Cannot add vertical space in floating context');
@@ -384,11 +395,10 @@ export namespace NTRender {
                 if (floating) {
                     // This should never happen but let us be sure
                     NTwarning('Line breaks are not allowed in floating context.');
-                    return vPosition;
+                } else {
+                    const lh = parent.tm.lineHeight(parent.tm.textHeight(p.font, parent.fonts), 1);
+                    vPosition = NTUnit.add(vPos, lh);
                 }
-
-                const lh = parent.tm.lineHeight(parent.tm.textHeight(p.font, parent.fonts), 1);
-                return NTUnit.add(vPos, lh);
             } else if (NTPrims.NTRect.is(p)) {
                 const rc = { ...p };
                 rc.x = NTUnit.add(rc.x, bx.xywh.x);
@@ -402,7 +412,7 @@ export namespace NTRender {
         for (const r of target.renderables)
             parent.addRenderable(r);
 
-        return vPosition;
+        return NTUnit.add(initialVPos, bx.xywh.height!);
     }
 
     function framedLineText<ImgPayload, T>(flt: NTPrims.NTFramedLineText, vPosition: NTUnit, boundary: NTBoundary, fonts: NTDocumentFonts, parent: NTRenderContext<ImgPayload, T>) {
@@ -446,7 +456,7 @@ export namespace NTRender {
 
         const ret = tokensToLines(chars, '', h, 1, vPosition, boundary, fonts, parent.tm);
 
-        parent.addRenderable(NTR.NTRenderableHyperlink.mk(ret.renderables, h.url));
+        parent.addRenderable(NTR.NTRenderableHyperlink.mk(ret.renderables, h.url), h.ref);
 
         return ret.vPosition;
     }
@@ -508,7 +518,7 @@ export namespace NTRender {
             finalVPosition = NTUnit.add(vPosition, height);
         }
 
-        parent.addRenderable(rGroup);
+        parent.addRenderable(rGroup, im.ref);
 
         return finalVPosition;
     }
@@ -608,7 +618,7 @@ export namespace NTRender {
                 return vPosition;
             }
             if (NTUnit.isZero(ctx.containerHeight))
-                return vPosition; // No page breaks on infinite containers
+                return NTUnit.add(vPosition, ctx.pageBreakSkip);
 
             const ch = NTUnit.num(ctx.containerHeight);
             const vp = NTUnit.num(vPos);
@@ -636,9 +646,9 @@ export namespace NTRender {
     function rect<ImgPayload, T>(rect: NTPrims.NTRect, vPosition: NTUnit, parent: NTTrivialRenderTarget<ImgPayload, T>) {
         const xywh = { x: rect.x, y: NTUnit.add(rect.y, vPosition), width: rect.width, height: rect.height };
         const r = NTR.NTRenderableRect.mk(rect.color, rect.border, rect.borderColor, xywh);
-        parent.addRenderable(r);
+        parent.addRenderable(r, rect.ref);
 
-        return NTUnit.add(vPosition, rect.y);
+        return NTUnit.add(vPosition, rect.height!);
     }
 
     function table<ImgPayload, T>(tbl: NTPrims.NTTable, vPosition: NTUnit, boundary: NTBoundary, parent: NTRenderContext<ImgPayload, T>) {
@@ -669,7 +679,7 @@ export namespace NTRender {
                 const cell = row[colIdx];
 
                 if (actualColIdx >= columnWidths.length)
-                    NTerror(`Cells span beyond the number of columns in table. Check if 'colSpan' options make sense.'`);
+                    NTerror(`Cells span beyond the number of columns in table. Check if 'colSpan' option of cell ${colIdx} make sense.`);
 
                 let w;
                 let h;
@@ -742,10 +752,10 @@ export namespace NTRender {
 
                 if (NTUnit.num(h) > NTUnit.num(rowHeight))
                     rowHeight = h;
+
                 if (cell.colSpan === 1 && NTUnit.num(w) > NTUnit.num(columnWidths[actualColIdx])) {
                     columnWidths[actualColIdx] = w;
                 } else if (cell.colSpan > 1) {
-                    let blockTotalWidth = columnWidths[actualColIdx];
                     let tailWidth = NTUnit.zero();
                     for (let _idx = actualColIdx + 1; _idx < columnWidths.length && _idx < actualColIdx + cell.colSpan; _idx++) {
                         tailWidth = NTUnit.add(tailWidth, columnWidths[_idx]);
@@ -754,7 +764,7 @@ export namespace NTRender {
                         NTUnit.multiply(cell.colSpan - 1, tbl.props.border),
                         tailWidth
                     );
-                    blockTotalWidth = NTUnit.add(blockTotalWidth, tailWidth);
+                    const blockTotalWidth = NTUnit.add(columnWidths[actualColIdx], tailWidth);
 
                     if (NTUnit.num(w) > NTUnit.num(blockTotalWidth)) {
                         columnWidths[actualColIdx] = NTUnit.subtract(w, tailWidth);
@@ -835,7 +845,7 @@ export namespace NTRender {
                 }
 
                 if (ct.type === 'linetext') {
-                    const dh = tm.descenderHeight(ct.prim.font, fonts);
+                    const dh = correctDescenderHeight(ct.prim.font, fonts, tm, tbl.props.useDescenderHeightCorrection);
                     const th = NTPdf.textHeight(fonts[ct.prim.font.family][ct.prim.font.style], ct.prim.font.size);
                     const vPos = alignVertically(NTUnit.subtract(contentVPos, dh), th, contentHeight, cell.vAlign);
 
@@ -849,7 +859,7 @@ export namespace NTRender {
                     const cantorTag = NTcantorEncode(rowIdx, colIdx);
                     const rends = paragraphCells.get(cantorTag)!;
 
-                    adjustTextRenderablesPosition(rends, xywh, contentVPos, contentHeight, cell.vAlign, ct.prim.lineSpacing, ct.prim.font, fonts, tm);
+                    adjustTextRenderablesPosition(rends, xywh, contentVPos, contentHeight, cell.vAlign, ct.prim.lineSpacing, ct.prim.font, fonts, tm, tbl.props.useDescenderHeightCorrection);
                     for (const r of rends)
                         rGroup.addRenderable(r);
                 } else if (ct.type === 'rect') {
@@ -857,14 +867,14 @@ export namespace NTRender {
                     rc.x = NTUnit.add(rc.x, xywh.x);
                     rect(rc, contentVPos, rGroup);
                 } else if (ct.type === 'box') {
-                    const bx = ct.prim;
+                    const bx = ct.prim.clone();
                     bx.xywh.x = NTUnit.add(xywh.x, bx.xywh.x);
                     box(bx, contentVPos, scopeBoundary, rGroup);
                 } else if (ct.type === 'hyperlink') {
                     const cantorTag = NTcantorEncode(rowIdx, colIdx);
                     const hyperlink = hyperlinkCells.get(cantorTag)!;
 
-                    adjustTextRenderablesPosition(hyperlink.lines, xywh, contentVPos, contentHeight, cell.vAlign, 1, ct.prim.font, fonts, tm);
+                    adjustTextRenderablesPosition(hyperlink.lines, xywh, contentVPos, contentHeight, cell.vAlign, 1, ct.prim.font, fonts, tm, tbl.props.useDescenderHeightCorrection);
                     rGroup.addRenderable(hyperlink);
                 }
 
@@ -922,10 +932,11 @@ export namespace NTRender {
     export function render<ImgPayload, T>(
         textMetrics: NTTextMetricsCalculators,
         images: NTEmbeddedImage<ImgPayload>[],
+        pageBreakSkip: NTUnit,
         root: NTPrims.NTInset,
         doc: NTDocument<T>
     ) {
-        const ctx = new NTRenderContext(doc, textMetrics, images);
+        const ctx = new NTRenderContext(doc, textMetrics, images, pageBreakSkip);
         const boundary: NTBoundary = {
             left: 0 as NTUnit,
             right: root.xywh.width,

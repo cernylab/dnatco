@@ -2,7 +2,8 @@ import { rgb as pdfRgb, PDFDocument, PDFFont, PDFName, PDFPage, PDFString } from
 import { NTCm, NTMm, NTUnit } from './space';
 import { NTRgba } from './util';
 
-const PDFUnitToMmRatio = 1.0 / 2.834645669291339; // Internal PDF unit to millimeter ratio
+export const PDFUnit = 2.834645669291339;
+const PDFUnitToMmRatio = 1.0 / PDFUnit; // Internal PDF unit to millimeter ratio
 
 const HyperlinksNode = PDFName.of('Annots');
 

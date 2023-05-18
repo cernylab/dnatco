@@ -1,6 +1,6 @@
 import { Report } from '../';
 import { Layout } from '../layout';
-import { Fonts, Tables } from '../styling';
+import { Colors, Fonts, Tables } from '../styling';
 import { NTDocument } from '../nottex/document';
 import { NTFont, NTHAlignment, NTInset, NTTable } from '../nottex/primitives';
 import { NTRgba } from '../nottex/util';
@@ -41,7 +41,7 @@ function drawCountsBar<Output>(inset: NTInset, counts: Summarize.CountsInGroup[]
             totalWidth,
             H,
             AnglesLengths.pGroupColor(idx),
-            `lengths-${mIdx}`
+            `${tag}-${mIdx}`
         );
 
         x += w;
@@ -57,27 +57,49 @@ function drawCountsBar<Output>(inset: NTInset, counts: Summarize.CountsInGroup[]
         `${tag}-${mIdx}`
     );
 
-    let _inset = inset.inset(NTXYWH.create(ctx.tDims.characterWidth, NTUnit.zero(), inset.xywh.width));
+    let _inset = inset.inset(
+        NTXYWH.create(
+            ctx.tDims.characterWidth,
+            ctx.mode === 'textual' ? ctx.tDims.characterHeight : NTUnit.multiply(0, ctx.tDims.characterHeight), // Keep the zero there, might need adjustment if the font changes (yuck...)
+            inset.xywh.width
+        )
+    );
     _inset.lineText(tag, { color: NTRgba(1, 1, 1), font: { size: 14, style: 'bold' } }, `${tag}-${mIdx}`);
 }
 
-function drawCountsTable<Output>(inset: NTInset | NTDocument<Output>, counts: Summarize.CountsInGroup[], ctx: Report.Context<Output>) {
-    const tbl = inset.table(4, { hAlign: 'center' });
+function drawCountsTable<Output>(inset: NTInset | NTDocument<Output>, counts: Summarize.CountsInGroup[], tag: string, ctx: Report.Context<Output>) {
+    const tbl = inset.table(
+        3,
+        {
+            ...Tables.EnumTable(ctx.tDims.characterWidth, ctx.tDims.characterHeight, ctx.mode),
+            hAlign: ctx.mode === 'textual' ? 'left' : 'center',
+            useDescenderHeightCorrection: false
+        }
+    );
 
     tbl.addRow([
-        NTTable.Cell.lineText('Percentile', tbl, { font: Tables.HeaderFont }, { colSpan: 2 }),
+        NTTable.Cell.lineText('Percentile', tbl, { font: Tables.HeaderFont }),
         NTTable.Cell.lineText('Exclusive', tbl, { font: Tables.HeaderFont }),
         NTTable.Cell.lineText('Cumulative', tbl, { font: Tables.HeaderFont }),
     ]);
 
-    const xywh = NTXYWH.create(NTUnit.zero(), NTUnit.zero(), NTUnit.multiply(1, ctx.tDims.characterWidth), ctx.tDims.characterHeight);
+    const boxXywh = NTXYWH.create(NTUnit.zero(), NTUnit.zero(), NTUnit.multiply(6, ctx.tDims.characterWidth), ctx.tDims.characterHeight);
+    const clrXywh = NTXYWH.create(NTUnit.zero(), NTUnit.zero(), NTUnit.multiply(1, ctx.tDims.characterWidth), ctx.tDims.characterHeight);
     const outlierC = counts[counts.length - 1];
     for (let idx = 0; idx < AnglesLengths.pGroupCount(); idx++) {
         const c = counts[idx];
-        const rectClr = nrgb(colorToRgb(AnglesLengths.pGroupColor(idx)));
+        const rectClr = colorToRgb(AnglesLengths.pGroupColor(idx));
+        const rectNClr = nrgb(rectClr);
+        const box = tbl.getBox(boxXywh);
+        const ref = `${tag}-${idx}`;
+        if (ctx.mode === 'textual')
+            box.lineText(Colors.colorToGlyph(rectClr), {}, ref);
+        else
+            box.rect(clrXywh, { color: NTRgba(rectNClr.r, rectNClr.g, rectNClr.b) }, ref);
+        box.lineText(c.threshold.toFixed(1), CountCellText, ref);
+
         tbl.addRow([
-            NTTable.Cell.rect(xywh, { color: NTRgba(rectClr.r, rectClr.g, rectClr.b) }),
-            NTTable.Cell.lineText(c.threshold.toFixed(1), tbl, CountCellText),
+            NTTable.Cell.box(box),
             NTTable.Cell.lineText(c.exclusive.toString(), tbl, CountCellText),
             NTTable.Cell.lineText(
                 `${c.cumulative} (${(100 * c.cumulative / outlierC.cumulative).toFixed(2).padStart(6, ' ')} %)`,
@@ -86,10 +108,18 @@ function drawCountsTable<Output>(inset: NTInset | NTDocument<Output>, counts: Su
             ),
         ]);
     }
-    const rectClr = nrgb(colorToRgb(AnglesLengths.outlierColor()));
+    const rectClr = colorToRgb(AnglesLengths.outlierColor());
+    const rectNClr = nrgb(rectClr);
+    const box = tbl.getBox(boxXywh);
+    const ref = `${tag}-outlier`;
+    if (ctx.mode === 'textual')
+        box.lineText(Colors.colorToGlyph(rectClr), {}, ref);
+    else
+        box.rect(clrXywh, { color: NTRgba(rectNClr.r, rectClr.g, rectClr.b) }, ref);
+    box.lineText(outlierC.threshold.toFixed(1), CountCellText, ref);
+
     tbl.addRow([
-        NTTable.Cell.rect(xywh, { color: NTRgba(rectClr.r, rectClr.g, rectClr.b) }),
-        NTTable.Cell.lineText(outlierC.threshold.toFixed(1), tbl, CountCellText),
+        NTTable.Cell.box(box),
         NTTable.Cell.lineText(outlierC.exclusive.toString(), tbl, CountCellText),
         NTTable.Cell.lineText(
             `${outlierC.cumulative} (100.00 %)`,
@@ -123,7 +153,7 @@ export namespace BondAnglesLengths {
             if (numModels > 1) {
                 root.lineText(
                     `Model ${ctx.dnatcofication.data.structures[0].models[mIdx].num}`,
-                    { font: Fonts.SubsectionCaption, hAlign: 'center' }
+                    { font: Fonts.SubsectionCaption, hAlign: ctx.mode === 'textual' ? 'left' : 'center' }
                 );
                 root.breakLine();
             }
@@ -136,7 +166,7 @@ export namespace BondAnglesLengths {
             );
             drawCountsBar(inset, countsLenghts, mIdx, 'Lengths', ctx);
             root.breakLine();
-            drawCountsTable(root, countsLenghts, ctx);
+            drawCountsTable(root, countsLenghts, `lengths-tbl-${mIdx}`, ctx);
 
             root.breakLine();
 
@@ -150,7 +180,7 @@ export namespace BondAnglesLengths {
             );
             drawCountsBar(inset, countsAngles, mIdx, 'Angles', ctx);
             root.breakLine();
-            drawCountsTable(root, countsAngles, ctx);
+            drawCountsTable(root, countsAngles, `angles-tbl-${mIdx}`, ctx);
 
             root.breakLine();
         }

@@ -1,6 +1,5 @@
 import { Report } from './index';
-import { Colors } from './colors';
-import { Fonts } from './styling'
+import { Colors, Fonts } from './styling'
 import { NTUnit, NTXYWH } from './nottex/space';
 
 export namespace Layout {

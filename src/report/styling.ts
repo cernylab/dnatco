@@ -1,5 +1,22 @@
 import { NTFont, NTTable } from './nottex/primitives';
 import { NTUnit } from './nottex/space';
+import { NTRgba } from './nottex/util';
+import { luminance, nclr, Rgb, rgbToColor } from '../ui/util';
+
+const LuminanceToChar = [' ', '░', '▒', '▓', '█' ];
+
+export type OutputMode = 'graphical' | 'textual';
+
+export namespace Colors {
+    export const SectionHeaderBg = NTRgba(nclr(187), nclr(187), nclr(187));
+    export const SectionHeaderFg = NTRgba(nclr(67), nclr(67), nclr(67));
+
+    export function colorToGlyph(clr: Rgb) {
+        const lum = luminance(rgbToColor(clr.r, clr.g, clr.b));
+        const idx = Math.round(lum * (LuminanceToChar.length - 1));
+        return LuminanceToChar[idx];
+    }
+}
 
 export namespace Fonts {
     export const Default = { family: 'sans', size: 12 } as NTFont;
@@ -10,13 +27,13 @@ export namespace Fonts {
 }
 
 export namespace Tables {
-    export function EnumTable(charWidth: NTUnit, charHeight: NTUnit): NTTable.Options {
+    export function EnumTable(charWidth: NTUnit, charHeight: NTUnit, mode: OutputMode): NTTable.Options {
         return {
             padding: {
                 top: NTUnit.zero(),
                 left: NTUnit.zero(),
                 right: charWidth,
-                bottom: NTUnit.multiply(0.5, charHeight),
+                bottom: mode === 'textual' ? NTUnit.zero() : NTUnit.multiply(0.5, charHeight),
             }
         };
     }

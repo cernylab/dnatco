@@ -1,5 +1,5 @@
 import { Fonts as _Fonts } from './fonts';
-import { Fonts } from './styling';
+import { Fonts, OutputMode } from './styling';
 import { BondAnglesLengths } from './content/bond-angles-lengths';
 import { Title } from './content/title';
 import { StructureInfo } from './content/structure-info';
@@ -27,7 +27,7 @@ function href() {
     return `${window.location.protocol}//${window.location.host}`;
 }
 
-function makeContext<Output>(dnatcofication: Dnatcofication, ntDoc: NTDocument<Output>, href: string): Report.Context<Output> {
+function makeContext<Output>(dnatcofication: Dnatcofication, ntDoc: NTDocument<Output>, href: string, mode: OutputMode): Report.Context<Output> {
     return {
         dnatcofication,
         ntDoc,
@@ -36,6 +36,7 @@ function makeContext<Output>(dnatcofication: Dnatcofication, ntDoc: NTDocument<O
             width: NTMm(PageSize.width.value - Margins.left.value - Margins.right.value),
         },
         href,
+        mode,
     };
 }
 
@@ -56,13 +57,14 @@ export namespace Report {
             width: NTMm,
         },
         href: string,
+        mode: OutputMode,
     }
 
     export async function pdf(dnatcofication: Dnatcofication) {
         await _Fonts.load();
 
         const ntDoc = await NTPdfDocument.create(Margins, PageSize, _Fonts.get(), Fonts.Default)
-        const ctx = makeContext(dnatcofication, ntDoc, href());
+        const ctx = makeContext(dnatcofication, ntDoc, href(), 'graphical');
         await addContent(ctx);
 
         return await ntDoc.render();
@@ -71,8 +73,8 @@ export namespace Report {
     export async function text(dnatcofication: Dnatcofication) {
         await _Fonts.load();
 
-        const ntDoc = await NTTextDocument.create(80, _Fonts.get());
-        const ctx = makeContext(dnatcofication, ntDoc, href());
+        const ntDoc = await NTTextDocument.create(80, 5, _Fonts.get());
+        const ctx = makeContext(dnatcofication, ntDoc, href(), 'textual');
 
         await addContent(ctx);
 

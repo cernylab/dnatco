@@ -8,7 +8,7 @@ import { NTMm, NTUnit, NTXYWH } from './space';
 import { Fonts } from '../fonts';
 
 const TextHeightMm = 5;
-const TextWidthMm = 2.5;
+const TextWidthMm = 3;
 
 // Writers
 
@@ -149,14 +149,14 @@ function flattenRenderables(renderables: NTR.NTRenderables<string, string>[]) {
 }
 
 function numberOfNeededLines(renderables: (NTR.NTRenderableObjects<string> | NTR.NTRenderableHyperlink)[]) {
-        let bottomMost = NTUnit.zero();
-        for (const r of renderables) {
-            const b = bottomMostLine(r);
-            if (b > bottomMost)
-                bottomMost = b;
-        }
+    let bottomMost = NTUnit.zero();
+    for (const r of renderables) {
+        const b = bottomMostLine(r);
+        if (b > bottomMost)
+            bottomMost = b;
+    }
 
-        return Math.ceil(NTUnit.asMm(bottomMost) / TextHeightMm);
+    return Math.ceil(NTUnit.asMm(bottomMost) / TextHeightMm);
 }
 
 // Typesetting dimensions providers
@@ -187,6 +187,7 @@ const TextMetrics: NTTextMetricsCalculators = {
 export class NTTextDocument extends NTDocument<string> {
     constructor(
         private readonly characterWidth: number,
+        private readonly pageBreakSkip: number,
         fonts: NTDocumentFonts
     ) {
         super(
@@ -201,18 +202,26 @@ export class NTTextDocument extends NTDocument<string> {
         );
     }
 
-    static async create(characterWidth: number, fonts: Fonts) {
+    static async create(characterWidth: number, pageBreakSkip: number, fonts: Fonts) {
         // Super sad, we do not have sufficient abstraction for this now
         const pdfDoc = await PDFDocument.create();
         const embeddedFonts = await Fonts.embedToPdfDoc(pdfDoc, fonts);
 
-        return new NTTextDocument(characterWidth, embeddedFonts);
+        return new NTTextDocument(characterWidth, pageBreakSkip, embeddedFonts);
     }
 
     async render() {
         const images = embedAllImages(this.root.prims);
 
-        const renderables = flattenRenderables(NTRender.render(TextMetrics, images, this.root, this));
+        const renderables = flattenRenderables(
+            NTRender.render(
+                TextMetrics,
+                images,
+                NTUnit.multiply(this.pageBreakSkip, NTUnit.from(NTMm(TextHeightMm))),
+                this.root,
+                this
+            )
+        );
         renderables.sort((a, b) => {
             if (a.zIndex === b.zIndex) {
                 const aY = NTR.NTRenderable.y(a);

@@ -1,6 +1,6 @@
 import { Report } from '../';
 import { Layout } from '../layout';
-import { Fonts, Tables } from '../styling';
+import { Colors, Fonts, Tables } from '../styling';
 import { NTDocument } from '../nottex/document';
 import { NTTable } from '../nottex/primitives';
 import { NTUnit, NTXYWH } from '../nottex/space';
@@ -47,9 +47,11 @@ function fmtDecimal(n: number, decimals: number) {
 function drawWorst<Output, G extends keyof ByResidueHelpers.GatherWorst>(gather: G, residues: Measurements.Residue[], stats: ALM.ResidueStats[], threshold: number|'outlier', root: NTDocument<Output>, ctx: Report.Context<Output>) {
     const worst = ByResidueHelpers.gatherWorst(gather, residues, stats, threshold, 'all');
 
-    const rectClr = nrgb(colorToRgb(AnglesLengths.outlierColor()));
-    const ntrgba = NTRgba(rectClr.r, rectClr.g, rectClr.b);
-    const tbl = root.table(5, Tables.EnumTable(ctx.tDims.characterWidth, ctx.tDims.characterHeight));
+    const rectClr = colorToRgb(AnglesLengths.outlierColor());
+    const rectNClr = nrgb(rectClr);
+    const ntrgba = NTRgba(rectNClr.r, rectNClr.g, rectNClr.b);
+    const tbl = root.table(5, Tables.EnumTable(ctx.tDims.characterWidth, ctx.tDims.characterHeight, ctx.mode));
+
     tbl.addRow([
         NTTable.Cell.lineText('Residue', tbl, { font: Tables.HeaderFont }),
         NTTable.Cell.lineText('', tbl, { font: Tables.HeaderFont }),
@@ -60,9 +62,12 @@ function drawWorst<Output, G extends keyof ByResidueHelpers.GatherWorst>(gather:
 
     const xywh = NTXYWH.create(NTUnit.zero(), NTUnit.zero(), NTUnit.multiply(1, ctx.tDims.characterWidth), ctx.tDims.characterHeight);
     for (const w of worst) {
+        const clrCell = ctx.mode === 'textual'
+            ? NTTable.Cell.lineText(Colors.colorToGlyph(rectClr), tbl)
+            : NTTable.Cell.rect(xywh, { color: ntrgba });
         tbl.addRow([
             NTTable.Cell.lineText(residueName(w.residue), tbl),
-            NTTable.Cell.rect(xywh, { color: ntrgba }),
+            clrCell,
             NTTable.Cell.lineText(makeBondName(gather === 'lengths' ? (w.bond as Measurements.BondLength).pair : (w.bond as Measurements.BondAngle).triplet), tbl),
             NTTable.Cell.lineText(gather === 'lengths' ? drawLength(w.bond as Measurements.BondLength) : drawAngle(w.bond as Measurements.BondAngle), tbl, { font: Fonts.Monospace, hAlign: 'right' }),
             NTTable.Cell.lineText(drawProsco(w.maybeBin), tbl, { font: Fonts.Monospace, hAlign: 'right' }),
@@ -86,7 +91,7 @@ export namespace UntypicalAnglesLengths {
         const root = ctx.ntDoc;
 
         Layout.sectionHeader('Most untypical bond Lengths & Angles', ctx);
-        root.paragraphText('List of bond lengths and angles within the outlier probability category', { hAlign: 'center' });
+        root.paragraphText('List of bond lengths and angles within the outlier probability category', { hAlign: ctx.mode === 'textual' ? 'left' : 'center' });
 
         const numModels = Dnatcofication.Structure.numberOfModels(ctx.dnatcofication);
         const alm = ctx.dnatcofication.data.almByResidue;
@@ -97,7 +102,7 @@ export namespace UntypicalAnglesLengths {
             const residueStats = indices.map((x) => alm.stats[x]);
 
             if (numModels > 1)
-                root.lineText(`Model ${ctx.dnatcofication.data.structures[0].models[mIdx].num}`, { font: Fonts.SubsectionCaption, hAlign: 'center' });
+                root.lineText(`Model ${ctx.dnatcofication.data.structures[0].models[mIdx].num}`, { font: Fonts.SubsectionCaption, hAlign: ctx.mode === 'textual' ? 'left' : 'center' });
 
             // --- LENGTHS ---
             root.lineText('Lengths', { font: { style: 'bold' } });

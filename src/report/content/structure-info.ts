@@ -19,7 +19,7 @@ export namespace StructureInfo {
         // --- HEADER ---
         Layout.sectionHeader('Structure information', ctx);
 
-        const EnumTbl = Tables.EnumTable(ctx.tDims.characterWidth, ctx.tDims.characterHeight);
+        const EnumTbl = Tables.EnumTable(ctx.tDims.characterWidth, ctx.tDims.characterHeight, ctx.mode);
 
         // --- SUMMARY ---
         let tbl = root.table(2, EnumTbl);

@@ -170,7 +170,7 @@ export class NTPdfDocument extends NTDocument<Uint8Array> {
         // We need to embed all images beforehand to avoid the async/await disaster in the rendering loop
         const images = await embedAllImages(this.root.prims, this.pdfDoc);
 
-        const renderables = NTRender.render(TextMetrics, images, this.root, this);
+        const renderables = NTRender.render(TextMetrics, images, NTUnit.zero(), this.root, this);
 
         const pw = NTPdf.ntUnitToPdm(this.pageSize.width);
         const ph = NTPdf.ntUnitToPdm(this.pageSize.height);

@@ -29,20 +29,29 @@ export type NTText = {
 
 export class NTBox implements NTPrimitive {
     readonly type = 'ntbox';
+    readonly xywh: NTXYWH;
     ref?: string;
     prims: NTTrivialPrimitives[] = [];
 
     constructor(
-        readonly xywh: NTXYWH,
+        xywh: NTXYWH,
         private readonly defaultFont: NTFont,
         ref?: string
     ) {
         this.ref = ref;
+        this.xywh = { ...xywh };
     }
 
     breakLine(font?: NTFont) {
         const bl = NTBreakLine.mk({ ...this.defaultFont, ...font });
         this.prims.push(bl);
+    }
+
+    clone() {
+        const box = new NTBox(this.xywh, this.defaultFont, this.ref);
+        box.prims = [...this.prims];
+
+        return box;
     }
 
     lineText(text: string, options?: NTLineText.Options, ref?: string) {
@@ -493,7 +502,8 @@ export class NTTable implements NTPrimitive {
                     right: options.padding?.right !== undefined ? NTUnit.from(options?.padding?.right) : defaultPadding,
                     bottom: options.padding?.bottom !== undefined ? NTUnit.from(options?.padding?.bottom) : defaultPadding,
                 }
-                : { top: defaultPadding, left: defaultPadding, right: defaultPadding, bottom: defaultPadding }
+                : { top: defaultPadding, left: defaultPadding, right: defaultPadding, bottom: defaultPadding },
+            useDescenderHeightCorrection: options?.useDescenderHeightCorrection ?? true,
         }
     }
 
@@ -519,6 +529,7 @@ export namespace NTTable {
             right?: NTUnit | NTMetric,
             bottom?: NTUnit | NTMetric,
         },
+        useDescenderHeightCorrection?: boolean,
     }
     export type Props = {
         border: NTUnit,
@@ -530,6 +541,7 @@ export namespace NTTable {
             right: NTUnit,
             bottom: NTUnit,
         },
+        useDescenderHeightCorrection: boolean,
     }
 
     export function is(obj: NTAnyPrimitive): obj is NTTable {
