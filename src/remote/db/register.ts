@@ -1,4 +1,4 @@
-import { RedoPdbDb } from './redo-pdb';
+import { PdbRedoDb } from './pdb-redo';
 import { RcsbDb } from './rcsb-db';
 import { StaticDb } from './static-db';
 import { objKeys } from '../../util';
@@ -47,7 +47,7 @@ export namespace UserRemoteDatabases {
 
 export const BuiltInRemoteDatabases = {
     'rcsb': RcsbDb(),
-    'redo-pdb': RedoPdbDb,
+    'pdb-redo': PdbRedoDb,
 };
 
 export function isBuiltIn(id: string) {
