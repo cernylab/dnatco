@@ -25,6 +25,8 @@ import { ImageSerialization } from '../../util/image-serialization';
 import { Serialization } from '../../util/serialization';
 import { GlobalConfig } from '../../global-config';
 
+const DownloadItemDescription = { marginBottom: 'var(--v-gap)' };
+
 async function checkRsccRmsdAvailability(d: Dnatcofication) {
     const availability = new Array<{ assigned: boolean, unassigned: boolean }>();
 
@@ -224,7 +226,7 @@ export function Downloads(props: { dnatcofication: Dnatcofication }) {
 
                         <div className='rdo-download-item'>
                             <Title title='Extended mmCIF file' />
-                            <div>
+                            <div style={ DownloadItemDescription }>
                                 mmCIF file extended with additional DNATCO categories.
                             </div>
                             <DownloadBox>
@@ -237,7 +239,7 @@ export function Downloads(props: { dnatcofication: Dnatcofication }) {
 
                         <div className='rdo-download-item'>
                             <Title title='Table of assigned NtCs' />
-                            <div>
+                            <div style={ DownloadItemDescription }>
                                 Table of assigned NtCs.
                             </div>
                             <DownloadBox>
@@ -262,7 +264,7 @@ export function Downloads(props: { dnatcofication: Dnatcofication }) {
 
                         <div className='rdo-download-item'>
                             <Title title='List of bond lengths and angles (grouped by residues)' />
-                            <div>
+                            <div style={ DownloadItemDescription }>
                                 A list of measured bond lengths and bond angles measured for nucleic acid backbone and base atoms. Grouped by residue. Only residues with standard bases are measured.
                             </div>
                             <DownloadBox>
@@ -279,7 +281,7 @@ export function Downloads(props: { dnatcofication: Dnatcofication }) {
 
                         <div className='rdo-download-item'>
                             <Title title='List of bond lengths and angles (grouped by bases)' />
-                            <div>
+                            <div style={ DownloadItemDescription }>
                                 A list of measured bond lengths and bond angles measured for nucleic acid backbone and base atoms. Grouped by bases. Only residues with standard bases are measured.
                             </div>
                             <DownloadBox>
@@ -296,7 +298,7 @@ export function Downloads(props: { dnatcofication: Dnatcofication }) {
 
                         <div className='rdo-download-item'>
                             <Title title='Naval validation reports' />
-                            <div>
+                            <div style={ DownloadItemDescription }>
                                 Naval validation reports of nucleic acid structure quality
                             </div>
                             <DownloadBox>
@@ -329,7 +331,7 @@ export function Downloads(props: { dnatcofication: Dnatcofication }) {
 
                         <div className='rdo-download-item'>
                             <Title title='RSCC vs. RMSD plots' />
-                            <div>
+                            <div style={ DownloadItemDescription }>
                                 RSCC vs. RMSD plots
                             </div>
                             <RsccRmsdDownload
@@ -340,7 +342,7 @@ export function Downloads(props: { dnatcofication: Dnatcofication }) {
 
                         <div className='rdo-download-item'>
                             <Title title={`${GlobalConfig.data().displayedProductName} structure validation report`} />
-                            <div>
+                            <div style={ DownloadItemDescription }>
                                 Comprehensive structure validation report
                             </div>
                             <DownloadBox>
