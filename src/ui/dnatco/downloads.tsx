@@ -1,6 +1,6 @@
 import { type PlotData } from 'plotly.js';
 import React from 'react';
-import { DownloadButton } from './common';
+import { Common, DownloadButton } from './common';
 import { Downloads as _Downloads } from './downloads-common';
 import { RsccPlot } from './rscc-plot';
 import { modelOptions } from './views/structure-selectors';
@@ -206,168 +206,170 @@ export function Downloads(props: { dnatcofication: Dnatcofication }) {
     return (
         <div className='rdo-offset'>
             <ShadowedBox>
-                <div style={{
-                    fontSize: 'var(--font-xxlarge)',
-                    fontWeight: 'bold',
-                    textAlign: 'center',
-                }}>
-                    Download of data computed for {structureName}
-                </div>
-                <div style={{ margin: 'auto', maxWidth: '60em', padding: 'var(--h-gap)' }}>
-
-                    <div className='rdo-line-spacer' />
-
-                    <div className='rdo-download-item'>
-                        <Title title='Extended mmCIF file' />
-                        <div>
-                            mmCIF file extended with additional DNATCO categories.
-                        </div>
-                        <DownloadBox>
-                            <DownloadButton
-                                caption='Download'
-                                onClick={() => _Downloads.serveMmCif(props.dnatcofication)}
-                            />
-                        </DownloadBox>
+                <div style={ Common.VScrollJail }>
+                    <div style={{
+                        fontSize: 'var(--font-xxlarge)',
+                        fontWeight: 'bold',
+                        textAlign: 'center',
+                    }}>
+                        Download of data computed for {structureName}
                     </div>
+                    <div className='rdo-scroll-vertically' style={{ margin: 'auto', maxWidth: '60em', padding: 'var(--h-gap)' }}>
 
-                    <div className='rdo-download-item'>
-                        <Title title='Table of assigned NtCs' />
-                        <div>
-                            Table of assigned NtCs.
-                        </div>
-                        <DownloadBox>
-                            <DownloadButton
-                                caption='CSV'
-                                onClick={() => {
-                                    const t = _Downloads.assignmentTable(props.dnatcofication);
-                                    const text = Serialization.table(t, 'csv');
-                                    Net.serveFile(FileTypes.csv.mimeType, text, `${props.dnatcofication.identifyingName}_assigned_ntcs.${FileTypes.csv.suffix}`);
-                                }}
-                            />
-                            <DownloadButton
-                                caption='JSON'
-                                onClick={() => {
-                                    const t = _Downloads.assignmentTable(props.dnatcofication);
-                                    const text = Serialization.table(t, 'json');
-                                    Net.serveFile(FileTypes.json.mimeType, text, `${props.dnatcofication.identifyingName}_assigned_ntcs.${FileTypes.json.suffix}`);
-                                }}
-                            />
-                        </DownloadBox>
-                    </div>
+                        <div className='rdo-line-spacer' />
 
-                    <div className='rdo-download-item'>
-                        <Title title='List of bond lengths and angles (grouped by residues)' />
-                        <div>
-                            A list of measured bond lengths and bond angles measured for nucleic acid backbone and base atoms. Grouped by residue. Only residues with standard bases are measured.
+                        <div className='rdo-download-item'>
+                            <Title title='Extended mmCIF file' />
+                            <div>
+                                mmCIF file extended with additional DNATCO categories.
+                            </div>
+                            <DownloadBox>
+                                <DownloadButton
+                                    caption='Download'
+                                    onClick={() => _Downloads.serveMmCif(props.dnatcofication)}
+                                />
+                            </DownloadBox>
                         </div>
-                        <DownloadBox>
-                            <DownloadButton
-                                caption='CSV'
-                                onClick={() => downloadAnglesLengthsByResidue(structureName, 'csv', props.dnatcofication)}
-                            />
-                            <DownloadButton
-                                caption='JSON'
-                                onClick={() => downloadAnglesLengthsByResidue(structureName, 'json', props.dnatcofication)}
-                            />
-                        </DownloadBox>
-                    </div>
 
-                    <div className='rdo-download-item'>
-                        <Title title='List of bond lengths and angles (grouped by bases)' />
-                        <div>
-                            A list of measured bond lengths and bond angles measured for nucleic acid backbone and base atoms. Grouped by bases. Only residues with standard bases are measured.
+                        <div className='rdo-download-item'>
+                            <Title title='Table of assigned NtCs' />
+                            <div>
+                                Table of assigned NtCs.
+                            </div>
+                            <DownloadBox>
+                                <DownloadButton
+                                    caption='CSV'
+                                    onClick={() => {
+                                        const t = _Downloads.assignmentTable(props.dnatcofication);
+                                        const text = Serialization.table(t, 'csv');
+                                        Net.serveFile(FileTypes.csv.mimeType, text, `${props.dnatcofication.identifyingName}_assigned_ntcs.${FileTypes.csv.suffix}`);
+                                    }}
+                                />
+                                <DownloadButton
+                                    caption='JSON'
+                                    onClick={() => {
+                                        const t = _Downloads.assignmentTable(props.dnatcofication);
+                                        const text = Serialization.table(t, 'json');
+                                        Net.serveFile(FileTypes.json.mimeType, text, `${props.dnatcofication.identifyingName}_assigned_ntcs.${FileTypes.json.suffix}`);
+                                    }}
+                                />
+                            </DownloadBox>
                         </div>
-                        <DownloadBox>
-                            <DownloadButton
-                                caption='CSV'
-                                onClick={() => downloadAnglesLengthsByCompound(structureName, 'csv', props.dnatcofication)}
-                            />
-                            <DownloadButton
-                                caption='JSON'
-                                onClick={() => downloadAnglesLengthsByCompound(structureName, 'json', props.dnatcofication)}
-                            />
-                        </DownloadBox>
-                    </div>
 
-                    <div className='rdo-download-item'>
-                        <Title title='Naval validation reports' />
-                        <div>
-                            Naval validation reports of nucleic acid structure quality
+                        <div className='rdo-download-item'>
+                            <Title title='List of bond lengths and angles (grouped by residues)' />
+                            <div>
+                                A list of measured bond lengths and bond angles measured for nucleic acid backbone and base atoms. Grouped by residue. Only residues with standard bases are measured.
+                            </div>
+                            <DownloadBox>
+                                <DownloadButton
+                                    caption='CSV'
+                                    onClick={() => downloadAnglesLengthsByResidue(structureName, 'csv', props.dnatcofication)}
+                                />
+                                <DownloadButton
+                                    caption='JSON'
+                                    onClick={() => downloadAnglesLengthsByResidue(structureName, 'json', props.dnatcofication)}
+                                />
+                            </DownloadBox>
                         </div>
-                        <DownloadBox>
-                            <DownloadButton
-                                caption='Bond lengths'
-                                onClick={() => Net.serveFile(
-                                    FileTypes.csv.mimeType,
-                                    Naval.bondsAsCsv(props.dnatcofication.data.naval.bonds, ','),
-                                    `${structureName}_naval_bonds_report.${FileTypes.csv.suffix}`
-                                )}
-                            />
-                            <DownloadButton
-                                caption='Bond angles'
-                                onClick={() => Net.serveFile(
-                                    FileTypes.csv.mimeType,
-                                    Naval.anglesAsCsv(props.dnatcofication.data.naval.angles, ','),
-                                    `${structureName}_naval_angles_report.${FileTypes.csv.suffix}`
-                                )}
-                            />
-                            <DownloadButton
-                                caption='Geometry'
-                                onClick={() => Net.serveFile(
-                                    FileTypes.csv.mimeType,
-                                    Naval.geometryAsCsv(props.dnatcofication.data.naval.geometry, ','),
-                                    `${structureName}_naval_geometry_report.${FileTypes.csv.suffix}`
-                                )}
-                            />
-                        </DownloadBox>
-                    </div>
 
-                    <div className='rdo-download-item'>
-                        <Title title='RSCC vs. RMSD plots' />
-                        <div>
-                            RSCC vs. RMSD plots
+                        <div className='rdo-download-item'>
+                            <Title title='List of bond lengths and angles (grouped by bases)' />
+                            <div>
+                                A list of measured bond lengths and bond angles measured for nucleic acid backbone and base atoms. Grouped by bases. Only residues with standard bases are measured.
+                            </div>
+                            <DownloadBox>
+                                <DownloadButton
+                                    caption='CSV'
+                                    onClick={() => downloadAnglesLengthsByCompound(structureName, 'csv', props.dnatcofication)}
+                                />
+                                <DownloadButton
+                                    caption='JSON'
+                                    onClick={() => downloadAnglesLengthsByCompound(structureName, 'json', props.dnatcofication)}
+                                />
+                            </DownloadBox>
                         </div>
-                        <RsccRmsdDownload
-                            structureName={structureName}
-                            d={props.dnatcofication}
-                        />
-                    </div>
 
-                    <div className='rdo-download-item'>
-                        <Title title={`${GlobalConfig.data().displayedProductName} structure validation report`} />
-                        <div>
-                            Comprehensive structure validation report
+                        <div className='rdo-download-item'>
+                            <Title title='Naval validation reports' />
+                            <div>
+                                Naval validation reports of nucleic acid structure quality
+                            </div>
+                            <DownloadBox>
+                                <DownloadButton
+                                    caption='Bond lengths'
+                                    onClick={() => Net.serveFile(
+                                        FileTypes.csv.mimeType,
+                                        Naval.bondsAsCsv(props.dnatcofication.data.naval.bonds, ','),
+                                        `${structureName}_naval_bonds_report.${FileTypes.csv.suffix}`
+                                    )}
+                                />
+                                <DownloadButton
+                                    caption='Bond angles'
+                                    onClick={() => Net.serveFile(
+                                        FileTypes.csv.mimeType,
+                                        Naval.anglesAsCsv(props.dnatcofication.data.naval.angles, ','),
+                                        `${structureName}_naval_angles_report.${FileTypes.csv.suffix}`
+                                    )}
+                                />
+                                <DownloadButton
+                                    caption='Geometry'
+                                    onClick={() => Net.serveFile(
+                                        FileTypes.csv.mimeType,
+                                        Naval.geometryAsCsv(props.dnatcofication.data.naval.geometry, ','),
+                                        `${structureName}_naval_geometry_report.${FileTypes.csv.suffix}`
+                                    )}
+                                />
+                            </DownloadBox>
                         </div>
-                        <DownloadBox>
-                            <DownloadButton
-                                caption='Download (PDF)'
-                                onClick={() => {
-                                    Report.pdf(props.dnatcofication).then((report) => {
-                                        Net.serveFileRaw(FileTypes.pdf.mimeType, report, `validation_report.${FileTypes.pdf.suffix}`);
-                                    }).catch(e => {
-                                        Popup.create(
-                                            <div className='rdo-error-text'>
-                                                Could not create validation report: {(e as Error).message}
-                                            </div>
-                                        );
-                                    })
-                                }}
+
+                        <div className='rdo-download-item'>
+                            <Title title='RSCC vs. RMSD plots' />
+                            <div>
+                                RSCC vs. RMSD plots
+                            </div>
+                            <RsccRmsdDownload
+                                structureName={structureName}
+                                d={props.dnatcofication}
                             />
-                            <DownloadButton
-                                caption='Download (Plain text)'
-                                onClick={() => {
-                                    Report.text(props.dnatcofication).then((report) => {
-                                        Net.serveFile(FileTypes.text.mimeType, report, `validation_report.${FileTypes.text.suffix}`);
-                                    }).catch(e => {
-                                        Popup.create(
-                                            <div className='rdo-error-text'>
-                                                Could not create validation report: {(e as Error).message}
-                                            </div>
-                                        );
-                                    });
-                                }}
-                            />
-                        </DownloadBox>
+                        </div>
+
+                        <div className='rdo-download-item'>
+                            <Title title={`${GlobalConfig.data().displayedProductName} structure validation report`} />
+                            <div>
+                                Comprehensive structure validation report
+                            </div>
+                            <DownloadBox>
+                                <DownloadButton
+                                    caption='Download (PDF)'
+                                    onClick={() => {
+                                        Report.pdf(props.dnatcofication).then((report) => {
+                                            Net.serveFileRaw(FileTypes.pdf.mimeType, report, `validation_report.${FileTypes.pdf.suffix}`);
+                                        }).catch(e => {
+                                            Popup.create(
+                                                <div className='rdo-error-text'>
+                                                    Could not create validation report: {(e as Error).message}
+                                                </div>
+                                            );
+                                        })
+                                    }}
+                                />
+                                <DownloadButton
+                                    caption='Download (Plain text)'
+                                    onClick={() => {
+                                        Report.text(props.dnatcofication).then((report) => {
+                                            Net.serveFile(FileTypes.text.mimeType, report, `validation_report.${FileTypes.text.suffix}`);
+                                        }).catch(e => {
+                                            Popup.create(
+                                                <div className='rdo-error-text'>
+                                                    Could not create validation report: {(e as Error).message}
+                                                </div>
+                                            );
+                                        });
+                                    }}
+                                />
+                            </DownloadBox>
+                        </div>
                     </div>
                 </div>
             </ShadowedBox>
