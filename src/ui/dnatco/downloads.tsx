@@ -347,7 +347,7 @@ export function Downloads(props: { dnatcofication: Dnatcofication }) {
                             </div>
                             <DownloadBox>
                                 <DownloadButton
-                                    caption='Download (PDF)'
+                                    caption='PDF'
                                     onClick={() => {
                                         Report.pdf(props.dnatcofication).then((report) => {
                                             Net.serveFileRaw(FileTypes.pdf.mimeType, report, `validation_report.${FileTypes.pdf.suffix}`);
@@ -361,7 +361,7 @@ export function Downloads(props: { dnatcofication: Dnatcofication }) {
                                     }}
                                 />
                                 <DownloadButton
-                                    caption='Download (Plain text)'
+                                    caption='Plain text'
                                     onClick={() => {
                                         Report.text(props.dnatcofication).then((report) => {
                                             Net.serveFile(FileTypes.text.mimeType, report, `validation_report.${FileTypes.text.suffix}`);
