@@ -49,7 +49,7 @@ import 'assets/imgs/data-transfer-download.svg';
 import 'assets/index.html';
 import 'assets/rednatco.css';
 
-const IsDnatcoNavigation = new RegExp('^\/app\/dnatco\/(annotation|refinement|validation)');
+const IsDnatcoNavigation = new RegExp('^\/app\/dnatco\/(annotation|refinement|validation|downloads)');
 
 const Params = {
     cifcode: '',
@@ -466,7 +466,7 @@ function App(props: { initial: Initial }) {
                             if (appMode !== 'structure') {
                                 Popup.create(
                                     <div>
-                                        No structure is loaded. Please load a structure on the <i>Home</i> tab to activate this tab.
+                                        No structure is loaded. Please load a structure on the <span className='rdo-emphasize'>Home</span> tab to activate this tab.
                                     </div>
                                 );
                                 return;

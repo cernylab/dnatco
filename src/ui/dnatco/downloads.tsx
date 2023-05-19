@@ -1,5 +1,6 @@
 import { type PlotData } from 'plotly.js';
 import React from 'react';
+import { Navigate } from 'react-router';
 import { Common, DownloadButton } from './common';
 import { Downloads as _Downloads } from './downloads-common';
 import { RsccPlot } from './rscc-plot';
@@ -201,6 +202,9 @@ function Title(props: { title: string }) {
 }
 
 export function Downloads(props: { dnatcofication: Dnatcofication }) {
+    if (props.dnatcofication.isEmpty())
+        return <Navigate to='/app' />;
+
     const structureName = props.dnatcofication.identifyingName ?? props.dnatcofication.pdbId;
 
     return (
