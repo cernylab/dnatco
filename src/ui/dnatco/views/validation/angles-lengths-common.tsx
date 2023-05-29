@@ -774,7 +774,7 @@ export function SubstructureSummary(props: { countsInGroups: Summarize.CountsInG
                         <div style={{ backgroundColor: colorStyle(colorToTuple(clr)) }} />
                         <div className='rdo-monospace rdo-talgn-right'>{thr}</div>
                         <div className='rdo-monospace rdo-talgn-right' style={{ textAlign: 'right' }}>{x.exclusive}</div>
-                        <div className='rdo-monospace rdo-talgn-right' style={{ textAlign: 'right' }}>{`${x.cumulative}\u00A0(${perc.toFixed(2)}\u00A0%)`}</div>
+                        <div className='rdo-monospace rdo-talgn-right' style={{ textAlign: 'right' }}>{`${x.cumulative}\u00A0(${perc.toFixed(2).padStart(6)}\u00A0%)`}</div>
                     </React.Fragment>
                 );
             })}
