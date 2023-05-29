@@ -50,11 +50,38 @@ function Header(props: {
     title: string | JSX.Element,
     onClosed: () => void,
     onCollapsedExpanded: (expanded: boolean) => void,
-    onDragged: (x: number, y: number) => void,
+    onDragged: (dx: number, dy: number) => void,
 }) {
     const pfx = GlobalConfig.data().pathPrefix;
 
     const [isExpanded, setIsExpanded] = React.useState(true);
+    const hdrRef = React.createRef<HTMLDivElement>();
+
+    React.useEffect(() => {
+        const onDown = (evt: MouseEvent) => {
+            evt.preventDefault();
+
+            const onMove = (ev: MouseEvent) => {
+                const wX = (window.outerWidth - window.innerWidth);
+                const wY = (window.outerHeight - window.innerHeight);
+                const dx = ev.screenX < wX || ev.screenX >= window.innerWidth + wX ? 0 : ev.movementX;
+                const dy = ev.screenY < wY || ev.screenY >= window.innerHeight + wY ? 0 : ev.movementY;
+                props.onDragged(dx, dy);
+            };
+            const onUp = () => {
+                window.removeEventListener('mouseup', onUp);
+                window.removeEventListener('mousemove', onMove);
+            };
+            window.addEventListener('mouseup', onUp);
+            window.addEventListener('mousemove', onMove);
+        };
+
+        hdrRef.current!.addEventListener('mousedown', onDown);
+
+        return () => {
+            hdrRef.current?.removeEventListener('mousedown', onDown);
+        }
+    }, []);
 
     return (
         <div
@@ -68,25 +95,8 @@ function Header(props: {
             }}
         >
             <div
+                ref={hdrRef}
                 style={{ flex: 1, cursor: 'move', whiteSpace: 'nowrap' }}
-                onMouseDown={(evt) => {
-                    evt.preventDefault();
-
-                    const sX = evt.nativeEvent.offsetX;
-                    const sY = evt.nativeEvent.offsetY;
-
-                    const onMove = (ev: MouseEvent) => {
-                        const x = ev.pageX;
-                        const y = ev.pageY;
-                        props.onDragged(x - sX, y - sY);
-                    };
-                    const onUp = () => {
-                        window.removeEventListener('mouseup', onUp);
-                        window.removeEventListener('mousemove', onMove);
-                    };
-                    window.addEventListener('mouseup', onUp);
-                    window.addEventListener('mousemove', onMove);
-                }}
             >
                 {props.title}
                 <div style={{ width: '1em' }} />
@@ -134,6 +144,10 @@ function TheWindow(props: {
         });
     }, []);
 
+    const reposition = (dx: number, dy: number) => {
+        setPosition(pos => ({ x: pos.x + dx, y: pos.y + dy }));
+    };
+
     return (
         <div
             className='rdo-window'
@@ -145,7 +159,7 @@ function TheWindow(props: {
                     title={props.title}
                     onClosed={() => props.onClosed()}
                     onCollapsedExpanded={(expanded) => setIsExpanded(expanded)}
-                    onDragged={(x, y) => setPosition({ x, y })}
+                    onDragged={(dx, dy) => reposition(dx, dy)}
                 />
             </div>
             <div style={{ flex: 1 }}>
