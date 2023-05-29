@@ -1,10 +1,9 @@
 import { type StandardLonghandProperties } from 'csstype';
 import React from 'react';
 import { Subject, type Subscription } from 'rxjs';
-import { AnglesLengthsCommon, FloatingCue, PGroupSummary, Prosco, ResidueName as CommonResidueName } from './angles-lengths-common';
+import { AnglesLengthsCommon, FloatingCue, PGroupSummary, Prosco, ResidueName as CommonResidueName, WindowsTracker } from './angles-lengths-common';
 import { View } from '../view';
 import { Common } from '../../common';
-import { Constants } from '../../constants';
 import {
     InvalidChain, InvalidModelIndex,
     AuthResidue,
@@ -12,7 +11,7 @@ import {
 } from '../../structure-selection';
 import { CollapsibleVertical } from '../../../common/collapsible-vertical';
 import { Icon } from '../../../common/icon';
-import { Tooltip } from '../../../common/tooltip';
+import { Window } from '../../../common/window';
 import { colorStyle, colorToRgb, colorToTuple, hexToRgb, rgbToHex, type ColorTuple, Rgba } from '../../../util';
 import { ALM, ALMCompoundAngleLength } from '../../../../dnatco/alm';
 import { AnglesLengths as DAnglesLengths } from '../../../../dnatco/angles-lengths';
@@ -153,6 +152,7 @@ function Base<T extends ALM.AngleStats | ALM.LengthStats>(props: {
     vi: ViewerInterop,
     dlMaker: (stats: Record<string, ALM.CompoundStats<T>>, counts: Summarize.CountsInGroup[]) => DownloadableData,
     tainerRef: React.RefObject<HTMLDivElement>,
+    winTracker: WindowsTracker,
 }) {
     const metrics = [];
     for (const metricName of props.displayOrders[props.base]) {
@@ -175,6 +175,7 @@ function Base<T extends ALM.AngleStats | ALM.LengthStats>(props: {
                     selection={props.selection}
                     vi={props.vi}
                     tainerRef={props.tainerRef}
+                    winTracker={props.winTracker}
                 />
             </div>
         );
@@ -230,6 +231,7 @@ function Bases<T extends ALM.AngleStats | ALM.LengthStats>(props: {
     vi: ViewerInterop,
     dlMaker: (stats: Record<string, ALM.CompoundStats<T>>, counts: Summarize.CountsInGroup[]) => DownloadableData,
     tainerRef: React.RefObject<HTMLDivElement>,
+    winTracker: WindowsTracker,
 }) {
     const items: JSX.Element[] = [];
 
@@ -263,6 +265,7 @@ function Bases<T extends ALM.AngleStats | ALM.LengthStats>(props: {
                 vi={props.vi}
                 dlMaker={props.dlMaker}
                 tainerRef={props.tainerRef}
+                winTracker={props.winTracker}
             />
         );
     }
@@ -296,6 +299,7 @@ function Metric<T extends ALM.AngleStats | ALM.LengthStats>(props: {
     selection: StructureSelection,
     vi: ViewerInterop,
     tainerRef: React.RefObject<HTMLDivElement>,
+    winTracker: WindowsTracker,
 }) {
     const collapsibleRef = React.useRef<CollapsibleVertical>(null);
 
@@ -320,6 +324,7 @@ function Metric<T extends ALM.AngleStats | ALM.LengthStats>(props: {
         vi: props.vi,
         tainerRef: props.tainerRef,
         collapseDetail: () => collapsibleRef?.current?.collapseExpand('collapse'),
+        winTracker: props.winTracker,
     };
     const details = props.stats.type === 'angle'
         ? <AngleMetricDetails { ...{ ...detailsProps, stats: props.stats.individual as ALM.AngleStats } } />
@@ -373,6 +378,7 @@ function AngleMetricDetails(props: {
     vi: ViewerInterop,
     tainerRef: React.RefObject<HTMLElement>,
     collapseDetail: () => void,
+    winTracker: WindowsTracker,
 }) {
     // Do not look at this code. This code is a major workaround
     // of CSS being fucking stupid.
@@ -461,18 +467,10 @@ function AngleMetricDetails(props: {
                                 <td
                                     style={{ backgroundColor: colorStyle(clr), width: '1em' }}
                                     ref={cueRef}
-                                >
-                                    <Tooltip
-                                        tag=<div style={{ height: `${cueHeight}px`, width: '1em' }} />
-                                        delayMsec={Constants.TooltipDelayMSec}
-                                        display='block'
-                                    >
-                                        <div
-                                            onMouseLeave={doUnhighlight} // We need to do it like this because componentWillUnmount() won't fire on Tooltipped components
-                                        >
+                                    onClick={(evt) => {
+                                        const hwnd = Window.create(
                                             <PGroupSummary
                                                 bins={DAnglesLengths.angleAverages(item.residue.compound, item.angle.triplet)!}
-                                                caption={AnglesLengthsCommon.tripletBondName(item.angle.triplet, tripletTag(item.angle.triplet))}
                                                 pGroup={item.pGroup}
                                                 pGroupDatas={pGroupDatas}
                                                 rangeFormatter={(v) => v.toFixed(3)}
@@ -487,9 +485,15 @@ function AngleMetricDetails(props: {
                                                 downloadFileName={dlName}
                                                 highlighter={doHighlight}
                                                 vi={props.vi}
-                                            />
-                                        </div>
-                                    </Tooltip>
+                                            />,
+                                            AnglesLengthsCommon.pGroupWindowTitle(commonResidueName, AnglesLengthsCommon.tripletBondName(item.angle.triplet, tripletTag(item.angle.triplet))),
+                                            { x: evt.pageX, y: evt.pageY },
+                                            () => props.winTracker.remove(hwnd)
+                                        );
+
+                                        props.winTracker.add(hwnd);
+                                    }}
+                                >
                                 </td>
                                 <td className='rdo-angles-lengths'>{M.r2d(item.angle.angle).toFixed(2)}{'\u00B0'}</td>
                                 <td className='rdo-angles-lengths'><Prosco bin={item.bin} /></td>
@@ -517,6 +521,7 @@ function LengthMetricDetails(props: {
     vi: ViewerInterop,
     tainerRef: React.RefObject<HTMLElement>,
     collapseDetail: () => void,
+    winTracker: WindowsTracker,
 }) {
     // Do not look at this code. This code is a major workaround
     // of CSS being fucking stupid.
@@ -603,18 +608,10 @@ function LengthMetricDetails(props: {
                                 <td
                                     style={{ backgroundColor: colorStyle(clr), width: '1em' }}
                                     ref={cueRef}
-                                >
-                                    <Tooltip
-                                        tag=<div style={{ height: `${cueHeight}px`, width: '1em' }} />
-                                        delayMsec={Constants.TooltipDelayMSec}
-                                        display='block'
-                                    >
-                                        <div
-                                            onMouseLeave={doUnhighlight} // We need to do it like this because componentWillUnmount() won't fire on Tooltipped components
-                                        >
+                                    onClick={(evt) => {
+                                        const hwnd = Window.create(
                                             <PGroupSummary
                                                 bins={DAnglesLengths.lengthAverages(item.residue.compound, item.length.pair)!}
-                                                caption={AnglesLengthsCommon.pairBondName(item.length.pair, pairTag(item.length.pair))}
                                                 pGroup={item.pGroup}
                                                 pGroupDatas={pGroupDatas}
                                                 rangeFormatter={(v) => v.toFixed(3)}
@@ -629,9 +626,15 @@ function LengthMetricDetails(props: {
                                                 downloadFileName={dlName}
                                                 highlighter={doHighlight}
                                                 vi={props.vi}
-                                            />
-                                        </div>
-                                    </Tooltip>
+                                            />,
+                                            AnglesLengthsCommon.pGroupWindowTitle(commonResidueName, AnglesLengthsCommon.pairBondName(item.length.pair, pairTag(item.length.pair))),
+                                            { x: evt.pageX, y: evt.pageY },
+                                            () => props.winTracker.remove(hwnd)
+                                        );
+
+                                        props.winTracker.add(hwnd);
+                                    }}
+                                >
                                 </td>
                                 <td className='rdo-angles-lengths'>{item.length.length.toFixed(3)}{'\u00A0\u212B'}</td>
                                 <td className='rdo-angles-lengths'><Prosco bin={item.bin} /></td>
@@ -702,6 +705,7 @@ export class AnglesLengthsByCompound extends View<View.Props> {
         allResiduesDeselected: this.ek.subject(),
         residueToggled: this.ek.subject(),
     };
+    private winTracker = new WindowsTracker();
 
     anglesTainerRef: React.RefObject<HTMLDivElement> = React.createRef();
     lengthsTainerRef: React.RefObject<HTMLDivElement> = React.createRef();
@@ -735,6 +739,7 @@ export class AnglesLengthsByCompound extends View<View.Props> {
     }
 
     componentWillUnmount() {
+        this.winTracker.closeAll();
         this.unsubscribeAll();
     }
 
@@ -829,6 +834,7 @@ export class AnglesLengthsByCompound extends View<View.Props> {
                                     vi={this.props.viewerInterop}
                                     dlMaker={makeLengthDownloadableData}
                                     tainerRef={this.lengthsTainerRef}
+                                    winTracker={this.winTracker}
                                 />
                             </div>
                         </div>
@@ -859,6 +865,7 @@ export class AnglesLengthsByCompound extends View<View.Props> {
                                     vi={this.props.viewerInterop}
                                     dlMaker={makeAngleDownloadableData}
                                     tainerRef={this.anglesTainerRef}
+                                    winTracker={this.winTracker}
                                 />
                             </div>
                         </div>

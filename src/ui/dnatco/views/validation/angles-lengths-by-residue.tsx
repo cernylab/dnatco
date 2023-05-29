@@ -1,9 +1,8 @@
 import type { StandardLonghandProperties } from 'csstype';
 import React from 'react';
 import { Subject, Subscription } from 'rxjs';
-import { AnglesLengthsCommon, FloatingCue, NavalItem, PGroupSummary, Prosco, ResidueName } from './angles-lengths-common';
+import { AnglesLengthsCommon, FloatingCue, NavalItem, PGroupSummary, Prosco, ResidueName, WindowsTracker } from './angles-lengths-common';
 import { View } from '../view';
-import { Constants } from '../../constants';
 import { SearchBox } from '../../search-box';
 import {
     AuthResidue,
@@ -17,7 +16,7 @@ import { NamedList, NamedListItem } from '../../../common/named-list';
 import { Icon } from '../../../common/icon';
 import { IconButton } from '../../../common/push-button';
 import { SpinBox } from '../../../common/spin-box';
-import { Tooltip } from '../../../common/tooltip';
+import { Window } from '../../../common/window';
 import { ALM } from '../../../../dnatco/alm';
 import { Dnatcofication } from '../../../../dnatco/dnatcofication';
 import { AnglesLengths as DAnglesLengths } from '../../../../dnatco/angles-lengths';
@@ -95,7 +94,8 @@ function makeAngleDetails(props: ResidueDetailsProps) {
                     props.structureName,
                     props.outlierColor,
                     props.pgrpIndices,
-                    props.vi
+                    props.vi,
+                    props.winTracker
                 )}
                 <td style={{ width: '100%' }} />
             </tr>
@@ -134,7 +134,8 @@ function makeLengthDetails(props: ResidueDetailsProps) {
                     props.structureName,
                     props.outlierColor,
                     props.pgrpIndices,
-                    props.vi
+                    props.vi,
+                    props.winTracker
                 )}
                 <td style={{ width: '100%' }} />
             </tr>
@@ -155,6 +156,7 @@ function renderBondAngleDetail(
     outlierColor: [r: number, g: number, b: number],
     pgrpIndices: number[],
     vi: ViewerInterop,
+    winTracker: WindowsTracker,
     onAtomsClicked?: (r: Measurements.Residue, triplet: Triplet) => void
 ) {
     const pgrpDatas = pgrpIndices.map(idx => DAnglesLengths.anglePGroupData(idx, residue.compound, bondAngle.triplet)!);
@@ -173,6 +175,7 @@ function renderBondAngleDetail(
             residue={residue}
             residueName={residueName}
             vi={vi}
+            winTracker={winTracker}
             onAtomsClicked={onAtomsClicked}
         />
     );
@@ -189,6 +192,7 @@ function renderBondLengthDetail(
     outlierColor: [r: number, g: number, b: number],
     pgrpIndices: number[],
     vi: ViewerInterop,
+    winTracker: WindowsTracker,
     onAtomsClicked?: (r: Measurements.Residue, pair: Pair) => void,
 ) {
     const pgrpDatas = pgrpIndices.map(idx => DAnglesLengths.lengthPGroupData(idx, residue.compound, bondLength.pair)!);
@@ -207,6 +211,7 @@ function renderBondLengthDetail(
             residue={residue}
             residueName={residueName}
             vi={vi}
+            winTracker={winTracker}
             onAtomsClicked={onAtomsClicked}
         />
     );
@@ -223,6 +228,8 @@ function BondAngleDetails(props: {
     residue: Measurements.Residue,
     residueName: JSX.Element,
     vi: ViewerInterop,
+    winTracker: WindowsTracker,
+
     onAtomsClicked?: (r: Measurements.Residue, triplet: Triplet) => void,
 }) {
     const ba = props.bondAngle;
@@ -252,20 +259,11 @@ function BondAngleDetails(props: {
     return (
         <>
             <td
-                style={{ backgroundColor: colorStyle(clr), width: '1em' }}
-                ref={cueRef}
-            >
-                <Tooltip
-                    tag=<div style={{ height: `${cueHeight}px`, width: '1em' }} />
-                    delayMsec={Constants.TooltipDelayMSec}
-                    display='block'
-                >
-                    <span
-                        onMouseLeave={doUnhighlight} // We need to do it like this because componentWillUnmount() won't fire on Tooltipped components
-                    >
+                style={{ backgroundColor: colorStyle(clr) }}
+                onClick={(evt) => {
+                    const hwnd = Window.create(
                         <PGroupSummary
                             bins={DAnglesLengths.angleAverages(props.residue.compound, ba.triplet)!}
-                            caption={AnglesLengthsCommon.tripletBondName(ba.triplet, ba.tag)}
                             pGroup={props.pGroup}
                             pGroupDatas={props.pGroupDatas}
                             rangeFormatter={(v) => M.r2d(v).toFixed(2)}
@@ -281,9 +279,16 @@ function BondAngleDetails(props: {
                             downloadFileName={props.downloadName}
                             highlighter={doHighlight}
                             vi={props.vi}
-                        />
-                    </span>
-                </Tooltip>
+                        />,
+                        AnglesLengthsCommon.pGroupWindowTitle(props.residueName, AnglesLengthsCommon.tripletBondName(ba.triplet, ba.tag)),
+                        { x: evt.pageX, y: evt.pageY },
+                        () => props.winTracker.remove(hwnd)
+                    );
+
+                    props.winTracker.add(hwnd);
+                }}
+            >
+                <div style={{ width: '1em' }} />
             </td>
             <td
                 className='rdo-angles-lengths'
@@ -321,6 +326,8 @@ function BondLengthDetails(props: {
     residue: Measurements.Residue,
     residueName: JSX.Element,
     vi: ViewerInterop,
+    winTracker: WindowsTracker,
+
     onAtomsClicked?: (r: Measurements.Residue, pair: Pair) => void,
 }) {
     const bl = props.bondLength;
@@ -349,20 +356,12 @@ function BondLengthDetails(props: {
     return (
         <>
             <td
-                style={{ backgroundColor: colorStyle(clr), width: '1em' }}
+                style={{ backgroundColor: colorStyle(clr) }}
                 ref={cueRef}
-            >
-                <Tooltip
-                    tag=<div style={{ height: `${cueHeight}px`, width: '1em' }} />
-                    delayMsec={Constants.TooltipDelayMSec}
-                    display='block'
-                >
-                    <div
-                        onMouseLeave={doUnhighlight} // We need to do it like this because componentWillUnmount() won't fire on Tooltipped components
-                    >
+                onClick={(evt) => {
+                    const hwnd = Window.create(
                         <PGroupSummary
                             bins={DAnglesLengths.lengthAverages(props.residue.compound, bl.pair)!}
-                            caption={AnglesLengthsCommon.pairBondName(bl.pair, bl.tag)}
                             pGroup={props.pGroup}
                             pGroupDatas={props.pGroupDatas}
                             rangeFormatter={(v) => v.toFixed(3)}
@@ -377,9 +376,16 @@ function BondLengthDetails(props: {
                             downloadFileName={props.downloadName}
                             highlighter={doHighlight}
                             vi={props.vi}
-                        />
-                    </div>
-                </Tooltip>
+                        />,
+                        AnglesLengthsCommon.pGroupWindowTitle(props.residueName, AnglesLengthsCommon.pairBondName(props.bondLength.pair, props.bondLength.tag)),
+                        { x: evt.pageX, y: evt.pageY },
+                        () => props.winTracker.remove(hwnd)
+                    );
+
+                    props.winTracker.add(hwnd);
+                }}
+            >
+                <div style={{ width: '1em' }} />
             </td>
             <td
                 className='rdo-angles-lengths'
@@ -469,6 +475,7 @@ interface ResidueElemProps {
     stats: ALM.ResidueStats,
     structureName: string,
     vi: ViewerInterop,
+    winTracker: WindowsTracker,
 }
 interface ResidueDetailsProps extends ResidueElemProps {
     onHideRequested: () => void,
@@ -600,6 +607,7 @@ class Residue extends React.Component<ResidueElemProps & {
     viewerInterop: ViewerInterop,
     scrollMyselfIntoView: () => void,
     events: Events,
+    winTracker: WindowsTracker
 }> {
     private collapserRef = React.createRef<CollapsibleVertical>();
 
@@ -725,6 +733,9 @@ export class AnglesLengthsByResidue extends View<
     // that was not rendered when the jump was requested and gotoResidue needs
     // access to the current mapping of rendered Residues.
     private residueBlocksMapping = new Map<string, React.RefObject<Residue>>();
+    // Needed to keep track of any open PGroupSummary windows because we need to close them
+    // if we get unmounted
+    private winTracker = new WindowsTracker();
 
     private readonly ek = new EventsKeeper();
     readonly events: Events = {
@@ -789,7 +800,8 @@ export class AnglesLengthsByResidue extends View<
         pgrpIndices: number[],
         colorsForStatsBar: string[],
         maxResidues: number,
-        loadNext: () => void
+        loadNext: () => void,
+        winTracker: WindowsTracker
     ): { elems: JSX.Element[], mapping: Map<string, React.RefObject<Residue>> } {
         const r = this.props.dnatcofication.data.almByResidue.residues;
         const s = this.props.dnatcofication.data.almByResidue.stats;
@@ -828,6 +840,7 @@ export class AnglesLengthsByResidue extends View<
                 viewerInterop={this.props.viewerInterop}
                 scrollMyselfIntoView={() => this.gotoResidue(identResName, ref)}
                 vi={this.props.viewerInterop}
+                winTracker={winTracker}
                 events={this.events}
                 key={idx}
             />;
@@ -842,7 +855,7 @@ export class AnglesLengthsByResidue extends View<
         return { elems, mapping };
     }
 
-    private renderWorstAngles(residues: Measurements.Residue[], stats: ALM.ResidueStats[], maxCount: number, threshold: number|'outlier', structureName: string, multipleModels: boolean) {
+    private renderWorstAngles(residues: Measurements.Residue[], stats: ALM.ResidueStats[], maxCount: number, threshold: number|'outlier', structureName: string, multipleModels: boolean, winTracker: WindowsTracker) {
         const worst = ByResidueHelpers.gatherWorst('angles', residues, stats, threshold, maxCount);
         const outlierColor = colorToTuple(DAnglesLengths.outlierColor());
         const pgrpIndices = sequence(0, DAnglesLengths.pGroupCount() - 1);
@@ -888,6 +901,7 @@ export class AnglesLengthsByResidue extends View<
                                 outlierColor,
                                 pgrpIndices,
                                 this.props.viewerInterop,
+                                winTracker,
                                 onAtomsClicked
                             )}
                         </tr>
@@ -898,7 +912,7 @@ export class AnglesLengthsByResidue extends View<
         );
     }
 
-    private renderWorstLengths(residues: Measurements.Residue[], stats: ALM.ResidueStats[], maxCount: number, threshold: number|'outlier', structureName: string, multipleModels: boolean) {
+    private renderWorstLengths(residues: Measurements.Residue[], stats: ALM.ResidueStats[], maxCount: number, threshold: number|'outlier', structureName: string, multipleModels: boolean, winTracker: WindowsTracker) {
         const worst = ByResidueHelpers.gatherWorst('lengths', residues, stats, threshold, maxCount);
         const outlierColor = colorToTuple(DAnglesLengths.outlierColor());
         const pgrpIndices = sequence(0, DAnglesLengths.pGroupCount() - 1);
@@ -944,6 +958,7 @@ export class AnglesLengthsByResidue extends View<
                                 outlierColor,
                                 pgrpIndices,
                                 this.props.viewerInterop,
+                                winTracker,
                                 onAtomsClicked
                             )}
                         </tr>
@@ -1044,6 +1059,7 @@ export class AnglesLengthsByResidue extends View<
     }
 
     componentWillUnmount() {
+        this.winTracker.closeAll();
         this.unsubscribeAll();
     }
 
@@ -1102,7 +1118,8 @@ export class AnglesLengthsByResidue extends View<
             pgrpIndices,
             htmlColorsForStatsBar,
             this.state.shownResiduesLimit,
-            this.increaseShownResiduesLimit
+            this.increaseShownResiduesLimit,
+            this.winTracker
         );
         this.residueBlocksMapping = residueBlocks.mapping;
 
@@ -1223,7 +1240,8 @@ export class AnglesLengthsByResidue extends View<
                                     this.state.maxWorstLengths,
                                     this.state.worstLengthsThreshold ? parseFloat(this.state.worstLengthsThreshold) : 'outlier',
                                     AnglesLengthsCommon.structureIdentifyingName(this.props.dnatcofication),
-                                    multipleModels
+                                    multipleModels,
+                                    this.winTracker
                                 )}
                             </div>
                         </div>
@@ -1261,7 +1279,8 @@ export class AnglesLengthsByResidue extends View<
                                     this.state.maxWorstAngles,
                                     this.state.worstAnglesThreshold ? parseFloat(this.state.worstAnglesThreshold) : 'outlier',
                                     AnglesLengthsCommon.structureIdentifyingName(this.props.dnatcofication),
-                                    multipleModels
+                                    multipleModels,
+                                    this.winTracker
                                 )}
                             </div>
                         </div>

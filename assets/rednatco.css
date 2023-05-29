@@ -1185,6 +1185,29 @@ th.rdo-data-table-small {
     max-width: 100em;
 }
 
+.rdo-window {
+    box-shadow: 0 0 5px 2px var(--color-b);
+    background-color: var(--color-c);
+    border: 2px solid var(--color-b);
+    padding: 0.2em;
+    position: absolute;
+    transition: opacity var(--anim-speed);
+}
+
+.rdo-window-button {
+    width: 1em;
+    height: 1em;
+}
+.rdo-window-button:hover {
+    filter: drop-shadow(0 0 2px black)
+}
+
+.rdo-window-tainer {
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
 /*
  * Styles intended to be used by HTML text assets.
  *

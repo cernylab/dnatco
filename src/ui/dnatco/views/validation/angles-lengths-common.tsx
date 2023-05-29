@@ -15,6 +15,7 @@ import { Constants } from '../../constants';
 import { Icon } from '../../../common/icon';
 import { ToggleButton } from '../../../common/push-button';
 import { Tooltip } from '../../../common/tooltip';
+import { Window } from '../../../common/window';
 import { colorStyle, colorToTuple } from '../../../util';
 import { ALM } from '../../../../dnatco/alm';
 import { Dnatcofication } from '../../../../dnatco/dnatcofication';
@@ -520,7 +521,6 @@ export function FloatingCue(props: {
 
 export type PGroupSummaryProps = {
     bins: Bins,
-    caption: string | JSX.Element,
     pGroup: DAnglesLengths.PGroup,
     pGroupDatas: DAnglesLengths.PGroupData[],
     rangeFormatter: (v: number) => string,
@@ -573,20 +573,6 @@ export class PGroupSummary extends React.Component<PGroupSummaryProps, { mode: '
             yTransform={this.props.yTransform}
             downloadFileName={this.props.downloadFileName}
         />;
-    }
-
-    private renderHeader() {
-        return (
-            <div className='rdo-strong' style={{ display: 'flex', flexDirection: 'row', gap: '0.25em', alignItems: 'center' }}>
-                {this.props.residueName}
-                <div>|</div>
-                {this.props.caption}
-                <div style={{ flex: 1 }} />
-                <div className='rdo-monospace rdo-text-large'>
-                    {this.props.valueFormatter(this.props.value)}{this.props.suffix}
-                </div>
-            </div>
-        );
     }
 
     private renderNaval() {
@@ -660,7 +646,6 @@ export class PGroupSummary extends React.Component<PGroupSummaryProps, { mode: '
     render() {
         return (
             <div>
-                {this.renderHeader()}
                 <div style={{ height: 'calc(var(--h-gap) / 2)' }} />
 
                 <div style={{ display: 'flex' }}>
@@ -673,6 +658,9 @@ export class PGroupSummary extends React.Component<PGroupSummaryProps, { mode: '
                         </div>
                     </div>
                     <div style={{ flex: 1 }} />
+                    <div className='rdo-monospace rdo-text-large'>
+                        {this.props.valueFormatter(this.props.value)}{this.props.suffix}
+                    </div>
                 </div>
 
                 <div style={{ height: 'calc(var(--h-gap) / 2)' }} />
@@ -780,6 +768,31 @@ export function SubstructureSummary(props: { countsInGroups: Summarize.CountsInG
             })}
         </div>
     );
+}
+
+export class WindowsTracker {
+    private windows: Window.Handle[] = [];
+
+    add(hwnd: Window.Handle) {
+        this.windows.push(hwnd);
+    }
+
+    close(hwnd: Window.Handle) {
+        hwnd.close();
+        this.remove(hwnd);
+    }
+
+    closeAll() {
+        this.windows.forEach(hwnd => hwnd.close());
+        this.windows = [];
+    }
+
+    remove(hwnd: Window.Handle) {
+        const idx = this.windows.findIndex((h) => h === hwnd);
+
+        if (idx !== -1)
+            this.windows.splice(idx, 1);
+    }
 }
 
 export namespace AnglesLengthsCommon {
@@ -912,6 +925,14 @@ export namespace AnglesLengthsCommon {
         }
 
         return <span>{...toks}</span>;
+    }
+
+    export function pGroupWindowTitle(residueName: JSX.Element, metricName: JSX.Element) {
+        return (
+            <div className='rdo-strong' style={{ display: 'flex', flexDirection: 'row', gap: '0.25em', alignItems: 'center' }}>
+                {residueName}<div>|</div>{metricName}
+            </div>
+        );
     }
 
     export async function SelectionDisplayer(pieces: SelectedPieces, d: Dnatcofication, vi: ViewerInterop) {
