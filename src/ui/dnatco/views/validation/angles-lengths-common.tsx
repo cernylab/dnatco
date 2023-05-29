@@ -371,7 +371,7 @@ export class AveragesChart extends React.Component<{
         ];
 
         return (
-            <div>
+            <div style={{ width: '100%', height: '100%' }}>
                 <div className='rdo-dynamic-table-download-bar'>
                     {AveragesChartDownloaders.map((dl, idx) => {
                         return (
@@ -482,12 +482,12 @@ export class AveragesChart extends React.Component<{
                     }}
                     config={{
                         displayModeBar: false,
+                        responsive: true,
                         scrollZoom: true,
                     }}
                     style={{
-                        width: '30em',
-                        height: '30em',
-                        margin: 0
+                        margin: 0,
+                        height: '450px',
                     }}
                 />
             </div>

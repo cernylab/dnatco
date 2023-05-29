@@ -489,7 +489,8 @@ function AngleMetricDetails(props: {
                                             />,
                                             AnglesLengthsCommon.pGroupWindowTitle(commonResidueName, AnglesLengthsCommon.tripletBondName(item.angle.triplet, tripletTag(item.angle.triplet))),
                                             { x: evt.pageX, y: evt.pageY },
-                                            () => props.winTracker.remove(hwnd)
+                                            () => props.winTracker.remove(hwnd),
+                                            { initialWidth: 450, resizeableWidth: true, forceResize: true }
                                         );
 
                                         props.winTracker.add(hwnd);
@@ -630,7 +631,8 @@ function LengthMetricDetails(props: {
                                             />,
                                             AnglesLengthsCommon.pGroupWindowTitle(commonResidueName, AnglesLengthsCommon.pairBondName(item.length.pair, pairTag(item.length.pair))),
                                             { x: evt.pageX, y: evt.pageY },
-                                            () => props.winTracker.remove(hwnd)
+                                            () => props.winTracker.remove(hwnd),
+                                            { initialWidth: 450, resizeableWidth: true, forceResize: true }
                                         );
 
                                         props.winTracker.add(hwnd);

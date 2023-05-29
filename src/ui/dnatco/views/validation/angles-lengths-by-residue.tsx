@@ -281,7 +281,8 @@ function BondAngleDetails(props: {
                         />,
                         AnglesLengthsCommon.pGroupWindowTitle(props.residueName, AnglesLengthsCommon.tripletBondName(ba.triplet, ba.tag)),
                         { x: evt.pageX, y: evt.pageY },
-                        () => props.winTracker.remove(hwnd)
+                        () => props.winTracker.remove(hwnd),
+                        { initialWidth: 450, resizeableWidth: true, forceResize: true }
                     );
 
                     props.winTracker.add(hwnd);
@@ -378,7 +379,8 @@ function BondLengthDetails(props: {
                         />,
                         AnglesLengthsCommon.pGroupWindowTitle(props.residueName, AnglesLengthsCommon.pairBondName(props.bondLength.pair, props.bondLength.tag)),
                         { x: evt.pageX, y: evt.pageY },
-                        () => props.winTracker.remove(hwnd)
+                        () => props.winTracker.remove(hwnd),
+                        { initialWidth: 450, resizeableWidth: true, forceResize: true }
                     );
 
                     props.winTracker.add(hwnd);

@@ -62,6 +62,8 @@ function Header(props: {
             evt.preventDefault();
 
             const onMove = (ev: MouseEvent) => {
+                ev.preventDefault();
+
                 const wX = (window.outerWidth - window.innerWidth);
                 const wY = (window.outerHeight - window.innerHeight);
                 const dx = ev.screenX < wX || ev.screenX >= window.innerWidth + wX ? 0 : ev.movementX;
@@ -127,21 +129,29 @@ function TheWindow(props: {
     content: JSX.Element,
     onClosed: () => void,
     initialPosition?: { x: number, y: number },
+    resizeOptions?: Window.ResizeOptions
 }) {
     const [isExpanded, setIsExpanded] = React.useState(true);
     const [position, setPosition] = React.useState(props.initialPosition ?? { x: 0, y: 0 });
+    const [size, setSize] = React.useState({
+        width: props.resizeOptions?.initialWidth ? props.resizeOptions.initialWidth : -1,
+        height: props.resizeOptions?.initialHeight ? props.resizeOptions.initialHeight : -1,
+    });
     const tRef = React.useRef<HTMLDivElement>(null);
 
-    React.useLayoutEffect(() => {
+    const resW = !!props.resizeOptions?.resizeableWidth;
+    const resH = !!props.resizeOptions?.resizeableHeight;
+
+    React.useEffect(() => {
         const self = tRef.current!;
 
         const bRect = self.getBoundingClientRect();
         const overflowX = bRect.right - document.body.clientWidth;
         const overflowY = bRect.bottom - document.body.clientHeight;
-        setPosition({
-            x: overflowX > 0 ? position.x - overflowX : position.x,
-            y: overflowY > 0 ? position.y - overflowY : position.y,
-        });
+        setPosition(pos => ({
+            x: overflowX > 0 ? pos.x - overflowX : pos.x,
+            y: overflowY > 0 ? pos.y - overflowY : pos.y,
+        }));
     }, []);
 
     const reposition = (dx: number, dy: number) => {
@@ -152,7 +162,15 @@ function TheWindow(props: {
         <div
             className='rdo-window'
             ref={tRef}
-            style={{ display: 'flex', flexDirection: 'column', left: `${position.x}px`, top: `${position.y}px` }}
+            style={{
+                display: 'flex',
+                flexDirection: 'column',
+                left: `${position.x}px`,
+                top: `${position.y}px`,
+                width: size.width > 0 ? `${size.width}px` : void 0,
+                height: size.height > 0 ? `${size.height}px` : void 0,
+                overflow: 'clip',
+            }}
         >
             <div>
                 <Header
@@ -162,9 +180,55 @@ function TheWindow(props: {
                     onDragged={(dx, dy) => reposition(dx, dy)}
                 />
             </div>
-            <div style={{ flex: 1 }}>
+            <div style={{ flexBasis: isExpanded ? '100%' : '0%' }}>
                 {isExpanded ? props.content : null}
             </div>
+            {isExpanded && (resW || resH)
+                ? <div
+                    style={{
+                        position: 'absolute',
+                        right: 0,
+                        bottom: 0,
+                        width: '1.0em',
+                        height: '1.0em',
+                        cursor: resW
+                            ? resH
+                                ? 'nwse-resize'
+                                : 'ew-resize'
+                            : resH
+                                ? 'ns-resize'
+                                : 'not-allowed',
+                        backgroundColor: 'var(--color-a)',
+                    }}
+                    onMouseDown={(evt) => {
+                        evt.preventDefault(); evt.stopPropagation();
+
+                        const onMove = (ev: MouseEvent) => {
+                            ev.preventDefault();
+
+                            const dx = resW ? ev.movementX : 0;
+                            const dy = resH ? ev.movementY : 0;
+
+                            setSize(sz => {
+                                const w = (sz.width < 0 && resW) ? tRef.current!.clientWidth : sz.width;
+                                const h = (sz.height < 0 && resH) ? tRef.current!.clientHeight : sz.height;
+
+                                return { width: w + dx, height: h + dy };
+                            });
+                            if (props.resizeOptions?.forceResize)
+                                window.dispatchEvent(new Event('resize'));
+                        };
+                        const onUp = () => {
+                            window.removeEventListener('mousemove', onMove);
+                            window.removeEventListener('mouseup', onUp);
+                        };
+
+                        window.addEventListener('mousemove', onMove);
+                        window.addEventListener('mouseup', onUp);
+                    }}
+                />
+                : null
+            }
         </div>
     );
 }
@@ -173,12 +237,20 @@ export namespace Window {
     export type Handle = {
         close: () => void,
     }
+    export type ResizeOptions = {
+        resizeableWidth?: boolean,
+        initialWidth?: number,
+        resizeableHeight?: boolean,
+        initialHeight?: number,
+        forceResize?: boolean
+    }
 
     export function create(
         content: JSX.Element,
         title: string | JSX.Element,
         initialPosition?: { x: number, y: number },
-        onClosed?: (hwnd: Window.Handle) => void
+        onClosed?: (hwnd: Window.Handle) => void,
+        resizeOptions?: ResizeOptions
     ): Window.Handle {
         const tainer = document.createElement('div');
         tainer.classList.add('rdo-window-tainer');
@@ -192,7 +264,6 @@ export namespace Window {
             tainer.removeEventListener('mousedown', mouseDown);
             windowStack.remove(tainer);
             document.body.removeChild(tainer);
-
         };
         tainer.addEventListener('mousedown', mouseDown);
         windowStack.push(tainer);
@@ -207,6 +278,7 @@ export namespace Window {
                 content={content}
                 title={title}
                 initialPosition={initialPosition}
+                resizeOptions={resizeOptions}
                 onClosed={() => {
                     dismisser();
                     onClosed?.(hwnd);

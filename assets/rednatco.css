@@ -1200,7 +1200,6 @@ th.rdo-data-table-small {
     border: 2px solid var(--color-b);
     padding: 0.2em;
     position: absolute;
-    transition: opacity var(--anim-speed);
 }
 
 .rdo-window-button {
