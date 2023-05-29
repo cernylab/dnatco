@@ -1,5 +1,10 @@
 /* vim: set sw=4 tw=4 sts=4 expandtab : */
 
+/* HACK: Remove unwanted camera control from Molstar viewer display */
+.msp-hover-box-body {
+    display: none;
+}
+
 :root {
     --anim-speed: 200ms;
 
