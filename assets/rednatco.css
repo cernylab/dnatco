@@ -343,6 +343,10 @@ th.rdo-data-table-small {
     width: 100%;
 }
 
+.rdo-dont-wrap {
+    white-space: nowrap;
+}
+
 .rdo-dynamic-table-download-bar {
     background-color: var(--color-a);
     display: flex;

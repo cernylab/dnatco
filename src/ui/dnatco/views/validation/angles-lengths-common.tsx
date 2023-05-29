@@ -577,8 +577,8 @@ export class PGroupSummary extends React.Component<PGroupSummaryProps, { mode: '
 
     private renderNaval() {
         return <>
-            <div className='rdo-strong' style={{ gridColumnStart: 'span 2' }} >Naval quality</div>
-            <div>{this.props.naval.quality === 'none' ? 'N/A' : Naval.QualityName[this.props.naval.quality]}</div>
+            <div className='rdo-strong rdo-dont-wrap' style={{ gridColumnStart: 'span 2', whiteSpace: 'nowrap' }} >Naval quality</div>
+            <div className='rdo-dont-wrap'>{this.props.naval.quality === 'none' ? 'N/A' : Naval.QualityName[this.props.naval.quality]}</div>
         </>
     }
 
@@ -595,7 +595,7 @@ export class PGroupSummary extends React.Component<PGroupSummaryProps, { mode: '
 
         return (
             <div style={{ display: 'grid', gridTemplateColumns: 'auto auto auto', columnGap: 'var(--h-gap)' }}>
-                <div className='rdo-strong'>From</div><div className='rdo-strong'>To</div><div className='rdo-strong'>Probability (%)</div>
+                <div className='rdo-strong'>From</div><div className='rdo-strong'>To</div><div className='rdo-strong rdo-dont-wrap'>Probability (%)</div>
                 {this.props.pGroup.groupedBins.map((x, idx) => {
                     const strg = isWithin(this.props.value, x) ? 'rdo-strong' : '';
                     const from = this.props.rangeFormatter(x.from);
