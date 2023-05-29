@@ -80,7 +80,7 @@ function Header(props: {
 
         return () => {
             hdrRef.current?.removeEventListener('mousedown', onDown);
-        }
+        };
     }, []);
 
     return (

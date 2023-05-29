@@ -28,6 +28,7 @@ import { doDownload, Downloader, FileTypes } from '../../../../util/downloader';
 import { EventsKeeper } from '../../../../util/events-keeper';
 import { M } from '../../../../util/math';
 import { ViewerApi, ViewerInterop } from '../../../../viewer/viewer-interop';
+import 'assets/imgs/triangle-down.svg';
 
 const BarCaptionStyle = {
     ...AnglesLengthsCommon.BarCaptionStyle,
@@ -771,19 +772,26 @@ export class AnglesLengthsByCompound extends View<View.Props> {
         const structureName = AnglesLengthsCommon.structureIdentifyingName(this.props.dnatcofication);
 
         const mkHeader = (text: string) => {
-            const Style = { display: 'flex', flexDirection: 'row', alignItems: 'center' } as StandardLonghandProperties;
+            const Style = { display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center' } as StandardLonghandProperties;
+            const pfx = GlobalConfig.data().pathPrefix;
 
             return {
                 collapsed: (
                     <div className='rdo-secondary-caption rdo-active' style={Style}>
                         <div style={{ flex: 1 }}>{text}</div>
-                        <Icon img='imgs/triangle-up.svg' size='text' />
+                        <img
+                            src={`${pfx}/imgs/triangle-down.svg`}
+                            style={{ transition: 'rotate var(--anim-speed)', rotate: '180deg' }}
+                        />
                     </div>
                 ),
                 expanded: (
                     <div className='rdo-secondary-caption rdo-active' style={Style}>
                         <div style={{ flex: 1 }}>{text}</div>
-                        <Icon img='imgs/triangle-down.svg' size='text' />
+                        <img
+                            src={`${pfx}/imgs/triangle-down.svg`}
+                            style={{ transition: 'rotate var(--anim-speed)', rotate: '0deg' }}
+                        />
                     </div>
                 )
             };

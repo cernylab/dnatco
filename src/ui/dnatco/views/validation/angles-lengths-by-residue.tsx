@@ -36,7 +36,6 @@ import { Net } from '../../../../util/net';
 import { ViewerInterop, ViewerApi } from '../../../../viewer/viewer-interop';
 import 'assets/imgs/data-transfer-download.svg';
 import 'assets/imgs/triangle-down.svg';
-import 'assets/imgs/triangle-up.svg';
 
 type StatsDownloader = Downloader<{
     residues: Measurements.Residue[],
@@ -1092,19 +1091,26 @@ export class AnglesLengthsByResidue extends View<
         ];
 
         const mkHeader = (text: string) => {
-            const Style = { display: 'flex', flexDirection: 'row', alignItems: 'center' } as StandardLonghandProperties;
+            const Style = { display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center' } as StandardLonghandProperties;
+            const pfx = GlobalConfig.data().pathPrefix;
 
             return {
                 collapsed: (
                     <div className='rdo-secondary-caption rdo-active' style={Style}>
                         <div style={{ flex: 1 }}>{text}</div>
-                        <Icon img='imgs/triangle-up.svg' size='text' />
+                        <img
+                            src={`${pfx}/imgs/triangle-down.svg`}
+                            style={{ transition: 'rotate var(--anim-speed)', rotate: '180deg' }}
+                        />
                     </div>
                 ),
                 expanded: (
                     <div className='rdo-secondary-caption rdo-active' style={Style}>
                         <div style={{ flex: 1 }}>{text}</div>
-                        <Icon img='imgs/triangle-down.svg' size='text' />
+                        <img
+                            src={`${pfx}/imgs/triangle-down.svg`}
+                            style={{ transition: 'rotate var(--anim-speed)', rotate: '0deg' }}
+                        />
                     </div>
                 )
             };
