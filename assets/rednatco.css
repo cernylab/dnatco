@@ -30,8 +30,56 @@
     --thickness-border: 2px;
 }
 
+/* PT Sans files */
+@font-face {
+    font-family: "pt-sans";
+    src: url("fonts/woff2/pt-sans_regular.woff2") format("woff2");
+}
+@font-face {
+    font-family: "pt-sans";
+    src: url("fonts/woff2/pt-sans_italic.woff2") format("woff2");
+    font-style: italic;
+}
+@font-face {
+    font-family: "pt-sans";
+    src: url("fonts/woff2/pt-sans_bold.woff2") format("woff2");
+    font-weight: bold;
+}
+@font-face {
+    font-family: "pt-sans";
+    src: url("fonts/woff2/pt-sans_italic.woff2") format("woff2");
+    font-style: italic;
+    font-weight: bold;
+}
+/* PT Serif files */
+@font-face {
+    font-family: "pt-serif";
+    src: url("fonts/woff2/pt-serif_regular.woff2") format("woff2");
+}
+@font-face {
+    font-family: "pt-serif";
+    src: url("fonts/woff2/pt-serif_italic.woff2") format("woff2");
+    font-style: italic;
+}
+@font-face {
+    font-family: "pt-serif";
+    src: url("fonts/woff2/pt-serif_bold.woff2") format("woff2");
+    font-weight: bold;
+}
+@font-face {
+    font-family: "pt-serif";
+    src: url("fonts/woff2/pt-serif_italic.woff2") format("woff2");
+    font-style: italic;
+    font-weight: bold;
+}
+/* PT Mono */
+@font-face {
+    font-family: "pt-mono";
+    src: url("fonts/woff2/pt-mono_regular.woff2") format("woff2");
+}
+
 html {
-    font-family: Verdana, sans-serif;
+    font-family: pt-sans;
     font-size: 12pt;
     line-height: 1.5;
 }
@@ -59,6 +107,7 @@ input {
     -webkit-appearance: none;
     border-radius: 0;
     box-sizing: border-box;
+    font-family: pt-sans;
 }
 
 input.rdo-input-checkbox {
@@ -127,6 +176,7 @@ select {
     appearance: none;
     background: none;
     box-sizing: border-box;
+    font-family: pt-sans;
     padding-left: 0.25em;
 }
 
@@ -262,14 +312,14 @@ td.rdo-data-table-selected {
 
 td.rdo-numeric-table {
     border: var(--thickness-border) solid var(--color-a);
-    font-family: monospace, monospace;
+    font-family: pt-mono;
     padding: 0.2em;
     text-align: right;
 }
 
 td.rdo-numeric-table-small {
     border: var(--thickness-border) solid var(--color-a);
-    font-family: monospace, monospace;
+    font-family: pt-mono;
     padding: 0.1em;
     text-align: right;
 }
@@ -334,7 +384,7 @@ th.rdo-data-table-small {
 }
 
 .rdo-emphasize {
-    font-style: oblique;
+    font-style: italic;
 }
 
 .rdo-error-text {
@@ -510,7 +560,7 @@ th.rdo-data-table-small {
 }
 
 .rdo-monospace {
-    font-family: monospace, monospace;
+    font-family: pt-mono;
 }
 
 .rdo-named-list {
@@ -559,16 +609,16 @@ th.rdo-data-table-small {
 
 .rdo-navigation-bar-hamburger-icon-active {
     filter: invert();
-};
+}
 
 .rdo-nice-step-altpos {
-    font-size: var(--font-tiny);
-    font-style: oblique;
+    font-size: var(--font-small);
+    font-style: italic;
 }
 
 .rdo-nice-step-base {
     font-weight: normal;
-    font-size: 11pt;
+    font-size: 10pt;
 }
 
 .rdo-nice-step-brsep {
@@ -581,8 +631,8 @@ th.rdo-data-table-small {
 }
 
 .rdo-nice-step-model {
-    font-size: 11pt;
-    font-style: oblique;
+    font-size: 10pt;
+    font-style: italic;
 }
 
 .rdo-nice-step-msep {
@@ -687,14 +737,14 @@ th.rdo-data-table-small {
 
 .rdo-pushbutton-text {
     font-weight: bold;
-    font-family: sans-serif;
+    font-family: pt-sans;
     margin: 0.15em;
 }
 
 .rdo-pushbutton-text-disabled {
     color: var(--color-a);
     font-weight: bold;
-    font-family: sans-serif;
+    font-family: pt-sans;
 }
 
 .rdo-primary-caption {
@@ -1168,7 +1218,7 @@ th.rdo-data-table-small {
 
 .rdo-txa-subsection-caption {
     margin-bottom: var(--v-gap);
-    font-style: oblique;
+    font-style: italic;
 }
 
 .rdo-txa-sup {

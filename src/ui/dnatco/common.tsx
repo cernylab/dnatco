@@ -47,14 +47,14 @@ export function niceStepName(step: Step, showModelNum = false) {
             <span className='rdo-nice-step-base'>{step.base1}</span>
             <span className='rdo-nice-step-brsep'>{'\u00A0'}</span>
             <span className='rdo-nice-step-residue'>{step.resNo1Auth}{step.insCode1}</span>
-            {step.altPos1 !== '' ? <span className='rdo-nice-step-altpos'>(alt {step.altPos1})</span> : void 0}
+            {step.altPos1 !== '' ? <span className='rdo-nice-step-altpos'>(alt. {step.altPos1})</span> : void 0}
 
             <div className='rdo-nice-step-fssep'>{'\u00A0'}</div>
 
             <span className='rdo-nice-step-base'>{step.base2}</span>
             <span className='rdo-nice-step-brsep'>{'\u00A0'}</span>
             <span className='rdo-nice-step-residue'>{step.resNo2Auth}{step.insCode2}</span>
-            {step.altPos2 !== '' ? <span className='rdo-nice-step-altpos'>(alt {step.altPos2})</span> : void 0}
+            {step.altPos2 !== '' ? <span className='rdo-nice-step-altpos'>(alt. {step.altPos2})</span> : void 0}
         </span>
     );
 }
