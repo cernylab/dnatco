@@ -187,10 +187,11 @@ function TheWindow(props: {
                 ? <div
                     style={{
                         position: 'absolute',
-                        right: 0,
-                        bottom: 0,
-                        width: '1.0em',
-                        height: '1.0em',
+                        width: '1em',
+                        height: '1em',
+                        right: '-0.5em',
+                        bottom: '-0.5em',
+                        transform: 'rotate(45deg)',
                         cursor: resW
                             ? resH
                                 ? 'nwse-resize'
