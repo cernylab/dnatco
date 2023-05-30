@@ -180,8 +180,8 @@ function TheWindow(props: {
                     onDragged={(dx, dy) => reposition(dx, dy)}
                 />
             </div>
-            <div style={{ flexBasis: isExpanded ? '100%' : '0%' }}>
-                {isExpanded ? props.content : null}
+            <div style={{ flexBasis: isExpanded ? '100%' : '0%', display: isExpanded ? 'block' : 'none' }}>
+                {props.content}
             </div>
             {isExpanded && (resW || resH)
                 ? <div
