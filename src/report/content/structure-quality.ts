@@ -141,7 +141,9 @@ export namespace StructureQuality {
 
         // --- HEADER ---
         Layout.sectionHeader('Overall structure quality', ctx);
-        root.paragraphText('Assignment conformer category (NtC) to dinucleotide category and the quality of fit', { hAlign: 'center' });
+        root.paragraphText(
+            'Assignment of conformer class (NtC) to dinucleotide steps and the quality of fit between each dinucleotide and the NtC reference structure, measured by RMSD and confal score.'
+        );
         root.breakLine();
 
         const numModels = Dnatcofication.Structure.numberOfModels(ctx.dnatcofication);
@@ -173,7 +175,8 @@ export namespace StructureQuality {
 
         const url = `${ctx.href}/app/dnatco/validation/confals-rmsds?cifcode=${ctx.dnatcofication.pdbId.toLowerCase()}`;
         root.paragraphText(
-            'Detailed table assigned NtC classes of each dinucleotide step and their individual of RMSD and Confal scores can be found at:',
+            'Complete table of NtC and CANA classes assignment, confal score and RMSD from the closest ' +
+            'NtC representative can be found here:',
             { dontSeparate: true }
         );
         root.hyperlink(url, url);

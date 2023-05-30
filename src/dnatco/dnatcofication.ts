@@ -131,6 +131,11 @@ export class Dnatcofication {
     constructor() {
     }
 
+    get closeEnoughRmsd() {
+        // TODO: This cannot be hardcoded like this!!!
+        return 0.5;
+    }
+
     get customNtCs() {
         return this._customNtCs;
     }

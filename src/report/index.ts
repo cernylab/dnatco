@@ -1,6 +1,7 @@
 import { Fonts as _Fonts } from './fonts';
 import { Fonts, OutputMode } from './styling';
 import { BondAnglesLengths } from './content/bond-angles-lengths';
+import { DinucleotideOutliers } from './content/dinucleotide-outliers';
 import { Title } from './content/title';
 import { StructureInfo } from './content/structure-info';
 import { StructureQuality } from './content/structure-quality';
@@ -45,6 +46,7 @@ export namespace Report {
         await Title.add(ctx);
         StructureInfo.add(ctx);
         await StructureQuality.add(ctx);
+        DinucleotideOutliers.add(ctx);
         BondAnglesLengths.add(ctx);
         UntypicalAnglesLengths.add(ctx);
     }
