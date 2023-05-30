@@ -32,8 +32,14 @@ export class MmbCommandsFile extends View<Refinement.Props, State> {
 
                     <div className='rdo-line-spacer' />
 
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 'var(--h-gap)' }}>
-                        NtC set:
+                    <div style={{
+                        alignItems: 'center',
+                        display: 'grid',
+                        gap: 'var(--h-gap)',
+                        gridTemplateColumns:' auto auto auto auto',
+                        justifyContent: 'center',
+                    }}>
+                        <div>NtC set:</div>
                         <ComboBox
                             options={Refinement.ntcSetsOptions(this.props.dnatcofication.customNtCs)}
                             value={this.props.selectedCustomNtCSet}

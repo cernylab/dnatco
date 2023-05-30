@@ -51,14 +51,20 @@ export class PhenixRestraints extends View<Refinement.Props, State> {
             <div style={{ overflow: 'hidden', height: '100%', display: 'flex', flexDirection: 'column' }}>
                 <div>
                     <div className='rdo-secondary-caption'>Restraints for NtC-aware Phenix</div>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 'var(--h-gap)' }}>
-                        NtC set:
+                    <div style={{
+                        alignItems: 'center',
+                        display: 'grid',
+                        gap: 'var(--h-gap)',
+                        gridTemplateColumns: 'auto auto auto auto auto',
+                        justifyContent: 'center',
+                    }}>
+                        <div>NtC set:</div>
                         <ComboBox
                             options={Refinement.ntcSetsOptions(this.props.dnatcofication.customNtCs)}
                             value={this.props.selectedCustomNtCSet}
                             onChange={(v) => this.props.onCustomNtCSetChanged(v)}
                         />
-                        Maximum allowed RMSD:
+                        <div>Maximum allowed RMSD:</div>
                         <SpinBox
                             value={this.state.maxRmsd}
                             min={0.1}
