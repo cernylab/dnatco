@@ -1264,7 +1264,18 @@ th.rdo-data-table-small {
 }
 
 .rdo-txa-bold {
-    font-weight: bold ;
+    font-weight: bold;
+}
+
+a.rdo-txa-imglink {
+    color: black;
+    transition: filter var(--anim-speed);
+}
+a.rdo-txa-imglink:hover {
+    filter: drop-shadow(0 0 5px var(--color-a));
+}
+a.rdo-txa-imglink:visited {
+    color: #777
 }
 
 /* This should be probably kept in sync with rdo-link */
