@@ -323,7 +323,7 @@ export class ConnectivityPlot extends View<Refinement.Props> {
         const nextConnMaxHints = axesMaximumHints(nextConnPlotData.x, nextConnPlotData.y, MinNumberOfPointsInPlot, Constants.DefaultConnectivityXRange[1], Constants.DefaultConnectivityYRange[1]);
 
         return (
-            <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+            <div style={{ height: '100%' }}>
                 <NamedList sizing='min-content' rowSpacing='half'>
                 {
                     numModels > 1
