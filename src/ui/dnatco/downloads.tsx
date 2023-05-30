@@ -162,7 +162,7 @@ function RsccRmsdDownload(props: { d: Dnatcofication, structureName: string }) {
                         caption='Assigned NtCs'
                         onClick={() => downloadRsccPlot('assigned', props.structureName, parseInt(modelIndex), props.d)}
                         />
-                    : <div style={{ whiteSpace: 'nowrap' }}>(No assigned NtCs)</div>
+                    : <div className='rdo-vflexalign' style={{ whiteSpace: 'nowrap' }}>(No assigned NtCs)</div>
             }
             {
                 haveUnassigned
