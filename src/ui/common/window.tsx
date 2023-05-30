@@ -141,13 +141,18 @@ function TheWindow(props: {
 
     const resW = !!props.resizeOptions?.resizeableWidth;
     const resH = !!props.resizeOptions?.resizeableHeight;
+    // These would be better calculated dynamically from the Header geometry but it is too much of a pain in the ass
+    // to do that. Maybe later...
+    const MinimumHeight = 32;
+    const MininumWidth = 64;
 
-    React.useEffect(() => {
+    React.useLayoutEffect(() => {
         const self = tRef.current!;
 
         const bRect = self.getBoundingClientRect();
         const overflowX = bRect.right - document.body.clientWidth;
         const overflowY = bRect.bottom - document.body.clientHeight;
+
         setPosition(pos => ({
             x: overflowX > 0 ? pos.x - overflowX : pos.x,
             y: overflowY > 0 ? pos.y - overflowY : pos.y,
@@ -172,14 +177,12 @@ function TheWindow(props: {
                 overflow: 'clip',
             }}
         >
-            <div>
-                <Header
-                    title={props.title}
-                    onClosed={() => props.onClosed()}
-                    onCollapsedExpanded={(expanded) => setIsExpanded(expanded)}
-                    onDragged={(dx, dy) => reposition(dx, dy)}
-                />
-            </div>
+            <Header
+                title={props.title}
+                onClosed={() => props.onClosed()}
+                onCollapsedExpanded={(expanded) => setIsExpanded(expanded)}
+                onDragged={(dx, dy) => reposition(dx, dy)}
+            />
             <div style={{ flexBasis: isExpanded ? '100%' : '0%', display: isExpanded ? 'block' : 'none' }}>
                 {props.content}
             </div>
@@ -207,14 +210,20 @@ function TheWindow(props: {
                         const onMove = (ev: MouseEvent) => {
                             ev.preventDefault();
 
-                            const dx = resW ? ev.movementX : 0;
-                            const dy = resH ? ev.movementY : 0;
+                            const wX = (window.outerWidth - window.innerWidth);
+                            const wY = (window.outerHeight - window.innerHeight);
+
+                            const dx = resW && ev.screenX >= wX && ev.screenX < window.innerWidth + wX ? ev.movementX : 0;
+                            const dy = resH && ev.screenY >= wY && ev.screenY < window.innerHeight + wY ? ev.movementY : 0;
 
                             setSize(sz => {
-                                const w = (sz.width < 0 && resW) ? tRef.current!.clientWidth : sz.width;
-                                const h = (sz.height < 0 && resH) ? tRef.current!.clientHeight : sz.height;
+                                const newWidth = ((sz.width < 0 && resW) ? tRef.current!.clientWidth : sz.width) + dx;
+                                const newHeight = ((sz.height < 0 && resH) ? tRef.current!.clientHeight : sz.height) + dy;
 
-                                return { width: w + dx, height: h + dy };
+                                return {
+                                    width: (newWidth > MininumWidth || !resW) ? newWidth : MininumWidth,
+                                    height: (newHeight > MinimumHeight || !resH) ? newHeight : MinimumHeight,
+                                };
                             });
                             if (props.resizeOptions?.forceResize)
                                 window.dispatchEvent(new Event('resize'));
