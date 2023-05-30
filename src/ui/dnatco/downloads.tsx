@@ -163,7 +163,7 @@ function RsccRmsdDownload(props: { d: Dnatcofication, structureName: string }) {
 
         return (
             <DownloadBox>
-                <div style={{ display: 'flex', flexDirection: 'column', height: '100%', justifyContent: 'center' }}>
+                <div className='rdo-vflexalign'>
                     <div className='rdo-strong'>Model</div>
                 </div>
                 <ComboBox
@@ -188,7 +188,7 @@ function RsccRmsdDownload(props: { d: Dnatcofication, structureName: string }) {
                         caption='Unassigned NtCs'
                         onClick={() => downloadRsccPlot('unassinged', props.structureName, parseInt(modelIndex), props.d)}
                     />
-                    : <div style={{ whiteSpace: 'nowrap' }}>(No unassigned NtCs)</div>
+                    : <div className='rdo-vflexalign' style={{ whiteSpace: 'nowrap' }}>(No unassigned NtCs)</div>
             }
             </DownloadBox>
         );

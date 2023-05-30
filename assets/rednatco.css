@@ -1157,6 +1157,12 @@ th.rdo-data-table-small {
     color: red;
 }
 
+.rdo-vflexalign {
+    align-items: center;
+    display: flex;
+    height: 100%;
+}
+
 .rdo-vertical-text {
     writing-mode: vertical-rl;
     transform: rotate(180deg);
