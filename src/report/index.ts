@@ -3,6 +3,7 @@ import { Fonts, OutputMode } from './styling';
 import { BondAnglesLengths } from './content/bond-angles-lengths';
 import { DinucleotideOutliers } from './content/dinucleotide-outliers';
 import { Title } from './content/title';
+import { RsccRmsd } from './content/rscc-rmsd';
 import { StructureInfo } from './content/structure-info';
 import { StructureQuality } from './content/structure-quality';
 import { UntypicalAnglesLengths } from './content/untypical-angles-lengths';
@@ -47,6 +48,7 @@ export namespace Report {
         StructureInfo.add(ctx);
         await StructureQuality.add(ctx);
         DinucleotideOutliers.add(ctx);
+        await RsccRmsd.add(ctx);
         BondAnglesLengths.add(ctx);
         UntypicalAnglesLengths.add(ctx);
     }
