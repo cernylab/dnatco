@@ -110,7 +110,7 @@ class Stats extends React.Component<{
                     <div style={this.Value}>{`Unassigned:\u00A0${this.props.unassigned}`}</div>
                 </div>
 
-                <div className='rdo-strong'>RMSD [{'\u212B'}]</div>
+                <div className='rdo-strong'>RMSD [{'\u00C5'}]</div>
                 <div style={this.ValuesCell}>
                     {this.props.rmsdStats.slice(0, this.props.rmsdStats.length - 1).map((s, idx, stats) => {
                         const green = stats[0].rmsdThreshold; // First

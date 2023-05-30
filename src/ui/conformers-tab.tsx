@@ -61,7 +61,7 @@ class BrowseConformers extends React.Component {
         const NtCs: DynamicTable.Column<string> = { name: 'NtC', cells: new Array<DynamicTable.Cell<string>>() };
         const confals: DynamicTable.Column<number> = { name: 'Confal', cells: new Array<DynamicTable.Cell<number>>() };
         const rmsds: DynamicTable.Column<number> = { name: 'RMSD', cells: new Array<DynamicTable.Cell<number>>() };
-        const resolutions: DynamicTable.Column<number> = { name: 'Resolution [\u212B]', cells: new Array<DynamicTable.Cell<number>>() };
+        const resolutions: DynamicTable.Column<number> = { name: 'Resolution [\u00C5]', cells: new Array<DynamicTable.Cell<number>>() };
         const haveMaps: DynamicTable.Column<string> = { name: 'Map', cells: new Array<DynamicTable.Cell<string>>() };
 
         for (const step of this.search.results) {

@@ -366,11 +366,11 @@ function BondLengthDetails(props: {
                             pGroupDatas={props.pGroupDatas}
                             rangeFormatter={(v) => v.toFixed(3)}
                             residueName={props.residueName}
-                            suffix={'\u00A0\u212B'}
+                            suffix={'\u00A0\u00C5'}
                             value={bl.length}
                             valueFormatter={(v) => v.toFixed(3)}
                             naval={props.navalItem}
-                            xTitle={'Length (\u212B)'}
+                            xTitle={'Length (\u00C5)'}
                             yTitle='Prob. (%)'
                             yTransform={(y) => y * 100}
                             downloadFileName={props.downloadName}
@@ -404,7 +404,7 @@ function BondLengthDetails(props: {
                 onMouseEnter={doHighlight}
                 onMouseLeave={doUnhighlight}
             >
-                {bl.length.toFixed(3)}{'\u00A0\u212B'}
+                {bl.length.toFixed(3)}{'\u00A0\u00C5'}
             </td>
             <td className='rdo-angles-lengths'>
                 <Prosco bin={props.maybeBin} />

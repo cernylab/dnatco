@@ -118,11 +118,11 @@ export class ContourPlots extends WithSubscriptions<{}, State> {
                 <div className='rdo-section-caption' style={{ fontWeight: 'bold' }} >RSCC vs. Torsion space</div>
                 <div className='rdo-section-caption' style={{ fontWeight: 'bold' }}>RSCC vs. Cartesian rmsd</div>
 
-                <div className='rdo-vertical-text rdo-section-caption' style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>{'At least 1.8\u212B resolution'}</div>
+                <div className='rdo-vertical-text rdo-section-caption' style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>{'At least 1.8\u00C5 resolution'}</div>
                 {PlotCompomentCache.get(plotTag(this.state.ntc, 'le18', 'euclid'))?.() ?? Placeholder}
                 {PlotCompomentCache.get(plotTag(this.state.ntc, 'le18', 'rmsd'))?.() ?? Placeholder}
 
-                <div className='rdo-vertical-text rdo-section-caption' style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>{'Worse than 2.5\u212B resolution'}</div>
+                <div className='rdo-vertical-text rdo-section-caption' style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>{'Worse than 2.5\u00C5 resolution'}</div>
                 {PlotCompomentCache.get(plotTag(this.state.ntc, 'gt25', 'euclid'))?.() ?? Placeholder}
                 {PlotCompomentCache.get(plotTag(this.state.ntc, 'gt25', 'rmsd'))?.() ?? Placeholder}
             </div>

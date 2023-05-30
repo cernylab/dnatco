@@ -618,11 +618,11 @@ function LengthMetricDetails(props: {
                                                 pGroupDatas={pGroupDatas}
                                                 rangeFormatter={(v) => v.toFixed(3)}
                                                 residueName={commonResidueName}
-                                                suffix={'\u00A0\u212B'}
+                                                suffix={'\u00A0\u00C5'}
                                                 value={item.length.length}
                                                 valueFormatter={(v) => v.toFixed(3)}
                                                 naval={ni}
-                                                xTitle={'Length\u00A0(\u212B)'}
+                                                xTitle={'Length\u00A0(\u00C5)'}
                                                 yTitle='Prob. (%)'
                                                 yTransform={(y) => y * 100}
                                                 downloadFileName={dlName}
@@ -639,7 +639,7 @@ function LengthMetricDetails(props: {
                                     }}
                                 >
                                 </td>
-                                <td className='rdo-angles-lengths'>{item.length.length.toFixed(3)}{'\u00A0\u212B'}</td>
+                                <td className='rdo-angles-lengths'>{item.length.length.toFixed(3)}{'\u00A0\u00C5'}</td>
                                 <td className='rdo-angles-lengths'><Prosco bin={item.bin} /></td>
                             </tr>
                         );
