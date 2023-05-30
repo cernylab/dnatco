@@ -6,7 +6,6 @@ import { Downloads as _Downloads } from './downloads-common';
 import { RsccPlot } from './rscc-plot';
 import { modelOptions } from './views/structure-selectors';
 import { ComboBox } from '../common/combo-box';
-import { EquiBox } from '../common/equibox';
 import { InProgressSpinner } from '../common/in-progress-spinner';
 import { Popup } from '../common/popup';
 import { ShadowedBox } from '../common/shadowed-box';
@@ -24,8 +23,6 @@ import { Net } from '../../util/net';
 import { ImageSerialization } from '../../util/image-serialization';
 import { Serialization } from '../../util/serialization';
 import { GlobalConfig } from '../../global-config';
-
-const DownloadItemDescription = { marginBottom: 'var(--v-gap)' };
 
 async function checkRsccRmsdAvailability(d: Dnatcofication) {
     const availability = new Array<{ assigned: boolean, unassigned: boolean }>();
@@ -129,21 +126,6 @@ async function downloadRsccPlot(kind: 'assigned' | 'unassinged', structureName: 
     doDownload(`${structureName}_rscc_rmsd_${kind}`, img, FileTypes.svgXml);
 }
 
-function DownloadBox(props: { children: JSX.Element[] | JSX.Element }) {
-    return (
-        <div style={{ display: 'flex', flexDirection: 'row', height: '2em' }}>
-            <EquiBox
-                padding={0}
-                orientation='row'
-                gap='var(--h2-gap)'
-            >
-                {props.children}
-            </EquiBox>
-            <div style={{ flex: 1 }} />
-        </div>
-    );
-}
-
 function RsccRmsdDownload(props: { d: Dnatcofication, structureName: string }) {
     const [availability, setAvailability] = React.useState<Array<{ assigned: boolean, unassigned: boolean }>>([]);
     const [modelIndex, setModelIndex] = React.useState('0');
@@ -162,7 +144,7 @@ function RsccRmsdDownload(props: { d: Dnatcofication, structureName: string }) {
         const haveUnassigned = availability[mIdx].unassigned;
 
         return (
-            <DownloadBox>
+            <_Downloads.DownloadBox>
                 <div className='rdo-vflexalign'>
                     <div className='rdo-strong'>Model</div>
                 </div>
@@ -190,17 +172,9 @@ function RsccRmsdDownload(props: { d: Dnatcofication, structureName: string }) {
                     />
                     : <div className='rdo-vflexalign' style={{ whiteSpace: 'nowrap' }}>(No unassigned NtCs)</div>
             }
-            </DownloadBox>
+            </_Downloads.DownloadBox>
         );
     }
-}
-
-function Title(props: { title: string }) {
-    return (
-        <div style={{ display: 'flex', flexDirection: 'row', gap: 'var(--h-gap)' }}>
-            <div className='rdo-download-item-caption'>{props.title}</div>
-        </div>
-    );
 }
 
 export function Downloads(props: { dnatcofication: Dnatcofication }) {
@@ -225,24 +199,24 @@ export function Downloads(props: { dnatcofication: Dnatcofication }) {
                         <div className='rdo-line-spacer' />
 
                         <div className='rdo-download-item'>
-                            <Title title='Extended mmCIF file' />
-                            <div style={ DownloadItemDescription }>
+                            <_Downloads.Title title='Extended mmCIF file' />
+                            <div style={ _Downloads.DownloadItemDescription }>
                                 mmCIF file extended with additional DNATCO categories.
                             </div>
-                            <DownloadBox>
+                            <_Downloads.DownloadBox>
                                 <DownloadButton
                                     caption='Download'
                                     onClick={() => _Downloads.serveMmCif(props.dnatcofication)}
                                 />
-                            </DownloadBox>
+                            </_Downloads.DownloadBox>
                         </div>
 
                         <div className='rdo-download-item'>
-                            <Title title='Table of assigned NtCs' />
-                            <div style={ DownloadItemDescription }>
+                            <_Downloads.Title title='Table of assigned NtCs' />
+                            <div style={ _Downloads.DownloadItemDescription }>
                                 Table of assigned NtCs.
                             </div>
-                            <DownloadBox>
+                            <_Downloads.DownloadBox>
                                 <DownloadButton
                                     caption='CSV'
                                     onClick={() => {
@@ -259,15 +233,15 @@ export function Downloads(props: { dnatcofication: Dnatcofication }) {
                                         Net.serveFile(FileTypes.json.mimeType, text, `${props.dnatcofication.identifyingName}_assigned_ntcs.${FileTypes.json.suffix}`);
                                     }}
                                 />
-                            </DownloadBox>
+                            </_Downloads.DownloadBox>
                         </div>
 
                         <div className='rdo-download-item'>
-                            <Title title='List of bond lengths and angles (grouped by residues)' />
-                            <div style={ DownloadItemDescription }>
+                            <_Downloads.Title title='List of bond lengths and angles (grouped by residues)' />
+                            <div style={ _Downloads.DownloadItemDescription }>
                                 A list of measured bond lengths and bond angles measured for nucleic acid backbone and base atoms. Grouped by residue. Only residues with standard bases are measured.
                             </div>
-                            <DownloadBox>
+                            <_Downloads.DownloadBox>
                                 <DownloadButton
                                     caption='CSV'
                                     onClick={() => downloadAnglesLengthsByResidue(structureName, 'csv', props.dnatcofication)}
@@ -276,15 +250,15 @@ export function Downloads(props: { dnatcofication: Dnatcofication }) {
                                     caption='JSON'
                                     onClick={() => downloadAnglesLengthsByResidue(structureName, 'json', props.dnatcofication)}
                                 />
-                            </DownloadBox>
+                            </_Downloads.DownloadBox>
                         </div>
 
                         <div className='rdo-download-item'>
-                            <Title title='List of bond lengths and angles (grouped by bases)' />
-                            <div style={ DownloadItemDescription }>
+                            <_Downloads.Title title='List of bond lengths and angles (grouped by bases)' />
+                            <div style={ _Downloads.DownloadItemDescription }>
                                 A list of measured bond lengths and bond angles measured for nucleic acid backbone and base atoms. Grouped by bases. Only residues with standard bases are measured.
                             </div>
-                            <DownloadBox>
+                            <_Downloads.DownloadBox>
                                 <DownloadButton
                                     caption='CSV'
                                     onClick={() => downloadAnglesLengthsByCompound(structureName, 'csv', props.dnatcofication)}
@@ -293,15 +267,15 @@ export function Downloads(props: { dnatcofication: Dnatcofication }) {
                                     caption='JSON'
                                     onClick={() => downloadAnglesLengthsByCompound(structureName, 'json', props.dnatcofication)}
                                 />
-                            </DownloadBox>
+                            </_Downloads.DownloadBox>
                         </div>
 
                         <div className='rdo-download-item'>
-                            <Title title='Naval validation reports' />
-                            <div style={ DownloadItemDescription }>
-                                Naval validation reports of nucleic acid structure quality
+                            <_Downloads.Title title='Naval validation reports' />
+                            <div style={ _Downloads.DownloadItemDescription }>
+                                Naval validation reports of nucleic acid structure quality.
                             </div>
-                            <DownloadBox>
+                            <_Downloads.DownloadBox>
                                 <DownloadButton
                                     caption='Bond lengths'
                                     onClick={() => Net.serveFile(
@@ -326,13 +300,13 @@ export function Downloads(props: { dnatcofication: Dnatcofication }) {
                                         `${structureName}_naval_geometry_report.${FileTypes.csv.suffix}`
                                     )}
                                 />
-                            </DownloadBox>
+                            </_Downloads.DownloadBox>
                         </div>
 
                         <div className='rdo-download-item'>
-                            <Title title='RSCC vs. RMSD plots' />
-                            <div style={ DownloadItemDescription }>
-                                RSCC vs. RMSD plots
+                            <_Downloads.Title title='RSCC vs. RMSD plots' />
+                            <div style={ _Downloads.DownloadItemDescription }>
+                                RSCC vs. RMSD plots.
                             </div>
                             <RsccRmsdDownload
                                 structureName={structureName}
@@ -341,11 +315,11 @@ export function Downloads(props: { dnatcofication: Dnatcofication }) {
                         </div>
 
                         <div className='rdo-download-item'>
-                            <Title title={`${GlobalConfig.data().displayedProductName} structure validation report`} />
-                            <div style={ DownloadItemDescription }>
-                                Comprehensive structure validation report
+                            <_Downloads.Title title={`${GlobalConfig.data().displayedProductName} structure validation report`} />
+                            <div style={ _Downloads.DownloadItemDescription }>
+                                Comprehensive structure validation report.
                             </div>
-                            <DownloadBox>
+                            <_Downloads.DownloadBox>
                                 <DownloadButton
                                     caption='PDF'
                                     onClick={() => {
@@ -374,7 +348,7 @@ export function Downloads(props: { dnatcofication: Dnatcofication }) {
                                         });
                                     }}
                                 />
-                            </DownloadBox>
+                            </_Downloads.DownloadBox>
                         </div>
                     </div>
                 </div>

@@ -1,3 +1,5 @@
+import React from 'react';
+import { EquiBox } from '../common/equibox';
 import { Cif } from '../../cif';
 import { Struct } from '../../cif/categories/struct';
 import { NdbStructNtcStep, NdbStructNtcStepSummary } from '../../cif/categories/ndb-struct-ntc';
@@ -11,6 +13,31 @@ export namespace Downloads {
         const col = d.table(Struct).entry_id;
         const entryId = Cif.Column.value(col, 0);
         return `${entryId}.cif`;
+    }
+
+    export const DownloadItemDescription = { marginBottom: 'var(--v-gap)' };
+
+    export function DownloadBox(props: { children: JSX.Element[] | JSX.Element }) {
+        return (
+            <div style={{ display: 'flex', flexDirection: 'row', height: '2em' }}>
+                <EquiBox
+                    padding={0}
+                    orientation='row'
+                    gap='var(--h2-gap)'
+                >
+                    {props.children}
+                </EquiBox>
+                <div style={{ flex: 1 }} />
+            </div>
+        );
+    }
+
+    export function Title(props: { title: string }) {
+        return (
+            <div style={{ display: 'flex', flexDirection: 'row', gap: 'var(--h-gap)' }}>
+                <div className='rdo-download-item-caption'>{props.title}</div>
+            </div>
+        );
     }
 
     export function assignmentTable(d: Dnatcofication) {
