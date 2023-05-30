@@ -1,11 +1,8 @@
 import * as React from 'react';
-import { NamedList, NamedListItem } from './common/named-list';
 import { ShadowedBox } from './common/shadowed-box';
 import { SideSwitchingPanel } from './common/side-switching-panel';
 import { TextContainer } from './common/text-container';
-import { Tooltip } from './common/tooltip';
 import { GlobalConfig } from '../global-config';
-import { WasmSupport } from 'jsllka';
 import 'assets/html/contact.html';
 import 'assets/html/downloads.html';
 import 'assets/html/help.html';
@@ -21,7 +18,6 @@ const Tabs = [
     ['version-history', { caption: 'Version history' }],
     ['downloads', { caption: 'Downloads' }],
     ['contact', { caption: 'Contact' }],
-    ['technical', { caption: 'Technical' }], // This will probably get removed in the release version
 ] as const;
 
 function Contact() {
@@ -38,31 +34,6 @@ function Help() {
 
 function HowToCite() {
     return <TextContainer assetUrl={`${GlobalConfig.data().pathPrefix}/html/how-to-cite.html`} />;
-}
-
-function Technical() {
-    return (
-        <div className='rdo-section-caption'>
-            Supported browser features
-            <div className='rdo-offset'>
-                <NamedList horizontalPosition='center'>
-                    <NamedListItem name='WebAssembly SIMD'>
-                        <span>
-                            {WasmSupport.simd ? 'Yes' : <span className='rdo-error-text'>No</span>}
-                            <Tooltip
-                                tag='[?]'
-                            >
-                                <div style={{ maxWidth: '25em' }}>
-                                    WebAssembly SIMD support allows the browser to use a variant of the DNATCO library that makes use of SIMD (Single Instruction, Multiple Data) instructions. SIMD instructions
-                                    can speed up some mathematical operations that manipulate with large sets of numbers.
-                                </div>
-                            </Tooltip>
-                        </span>
-                    </NamedListItem>
-                </NamedList>
-            </div>
-        </div>
-    );
 }
 
 function VersionHistory() {
@@ -88,7 +59,6 @@ export class AboutTab extends React.Component<{}, State> {
         case 'help': return <Help />;
         case 'how-to-cite': return <HowToCite />;
         case 'version-history': return <VersionHistory />;
-        case 'technical': return <Technical />;
         }
     }
 
