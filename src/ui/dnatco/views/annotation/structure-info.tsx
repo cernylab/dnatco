@@ -23,7 +23,7 @@ export function structureId(d: Dnatcofication) {
         <div>
             {id.toUpperCase()}
             {'\u00A0'}
-            <Link url={rcsbLink(id)} newTab={true}>(RSCB)</Link>
+            <Link url={rcsbLink(id)} newTab={true}>(RCSB)</Link>
         </div>
     );
 }
