@@ -34,7 +34,6 @@ import { parseIntStrict } from '../../../../util';
 import { doDownload, FileTypes } from '../../../../util/downloader';
 import { Serialization } from '../../../../util/serialization';
 import 'assets/imgs/info.svg';
-import 'assets/imgs/info-inverse.svg';
 import 'assets/imgs/magnifying-glass.svg';
 
 const CellBgAlpha = 0.5;
@@ -255,7 +254,9 @@ export class ConfalsRmsds extends View<View.Props> {
         const torsionsColumn: DynamicTable.Column<string> = {
             name: '?', cells: new Array<DynamicTable.Cell<string>>(), alignment: 'center', notSortable: true, noData: true,
             tooltip: <div>Hover over the <Icon img='imgs/info.svg' size='text' /> to get details about torsions and distances.</div>,
-            elem: <Icon img='imgs/info.svg' size='text' />
+            elem: <Icon img='imgs/info.svg' size='0.75em' />,
+            cellStyle: () => ({ padding: '0' }),
+            headerStyle: { padding: '0' }
         };
 
         const columns = [chainColumn, stepColumn, ntcColumn, canaColumn, confalColumn, rmsdColumn, torsionsColumn];
@@ -320,7 +321,7 @@ export class ConfalsRmsds extends View<View.Props> {
                     () => (
                         <Tooltip
                             tag={
-                                <Icon img='imgs/info-inverse.svg' size='text' />
+                                <Icon img='imgs/info.svg' size='0.75em' />
                             }
                             delayMsec={300}
                         >

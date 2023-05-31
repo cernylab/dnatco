@@ -255,6 +255,7 @@ export class DynamicTable extends React.Component<DynamicTable.Props, { sorting:
             headers.push(
                 <th
                     className='rdo-data-table'
+                    style={col.headerStyle}
                     key={idx}
                 >
                     {this.renderColumnCaption(col)}
@@ -326,6 +327,7 @@ export namespace DynamicTable {
         alignment?: 'left'|'center'|'right';
         comparator?: (a: T, b: T) => number;
         cellStyle?: (v: T) => React.CSSProperties;
+        headerStyle?: React.CSSProperties;
         notSortable?: boolean;                 // Do not allow to sort by this column
         noData?: boolean;                      // This is only a utility column with no actual data
         tooltip?: React.ReactNode;             // Optional tooltip to display when a column header is hovered
