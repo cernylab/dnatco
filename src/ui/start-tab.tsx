@@ -440,10 +440,10 @@ export class StartTab extends React.Component<StartTab.Props, State> {
                 <BigLogo />
                 <div style={ Common.VScrollJail }>
                     <div className='rdo-offset' style={{ flex: 1 }}>
-                    <ShadowedBox>
+                        <ShadowedBox>
                             <div className='rdo-start-container rdo-scroll-vertically'>
-                                <div className='rdo-hflex' style={{ gap: 'var(--h-gap)' }}>
-                                    <div style={{ flex: 1 }}>
+                                <div className='rdo-hflex' style={{ justifyContent: 'center', gap: 'var(--h-gap)' }}>
+                                    <div style={{ flex: 1, maxWidth: '50%' }}>
                                         <Coordinates
                                             coordsFile={this.state.coordsFile}
                                             database={this.state.database}
@@ -457,22 +457,25 @@ export class StartTab extends React.Component<StartTab.Props, State> {
                                         />
                                     </div>
 
-                                    <div style={{ flex: 1 }}>
-                                        <DensityMapFiles
-                                            disabled={this.state.database !== ''}
-                                            files={this.state.densityMaps}
-                                            onAddFile={file => {
-                                                this.state.densityMaps.push(file);
-                                                this.setState({ ...this.state });
-                                            }}
-                                            onRemoveFile={idx => {
-                                                this.state.densityMaps.splice(idx, 1);
-                                                this.setState({ ...this.state });
-                                            }}
-                                        />
-                                    </div>
+                                    {this.state.database === ''
+                                        ?
+                                            <div style={{ flex: 1 }}>
+                                                <DensityMapFiles
+                                                    disabled={this.state.database !== ''}
+                                                    files={this.state.densityMaps}
+                                                    onAddFile={file => {
+                                                        this.state.densityMaps.push(file);
+                                                        this.setState({ ...this.state });
+                                                    }}
+                                                    onRemoveFile={idx => {
+                                                        this.state.densityMaps.splice(idx, 1);
+                                                        this.setState({ ...this.state });
+                                                    }}
+                                                />
+                                            </div>
+                                        : undefined
+                                    }
                                 </div>
-
                                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 128px 128px 1fr', gap: 'var(--h-gap)' }}>
                                     <div />
                                     <AnalyzeButton
