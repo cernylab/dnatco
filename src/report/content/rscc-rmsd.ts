@@ -25,6 +25,7 @@ async function drawImage<Output>(data: RsccPlot.RsccPlotData, title: string, roo
         {
             caption: title,
             captionPosition: 'above',
+            captionHAlign: 'center',
             hAlign: 'center',
             scale: 0.33
         }
@@ -63,7 +64,7 @@ export namespace RsccRmsd {
                 root.lineText(`No assigned dinucleotides are available for model ${mNum} of structure ${ctx.dnatcofication.pdbId}.`);
             }
 
-            if (assigned.length > 0) {
+            if (unassigned.length > 0) {
                 const plotData = RsccPlot.makeData(unassigned, backdropUnasRes.data, void 0, ctx.dnatcofication);
                 await drawImage(plotData, `Unassigned dinucleotides for model ${mNum} of structure ${ctx.dnatcofication.pdbId}`, root);
             } else {

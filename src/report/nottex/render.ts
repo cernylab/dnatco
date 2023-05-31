@@ -483,7 +483,7 @@ export namespace NTRender {
                     size: im.captionFontSize
                 },
                 color: NTBlackColor,
-                hAlign: 'left',
+                hAlign: im.captionHAlign,
             };
 
             const lineSkipHeight = tm.lineHeight(tm.textHeight(ImageFontStyle.font, parent.fonts), 1);

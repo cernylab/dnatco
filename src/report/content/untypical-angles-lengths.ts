@@ -50,7 +50,7 @@ function drawWorst<Output, G extends keyof ByResidueHelpers.GatherWorst>(gather:
     const rectClr = colorToRgb(AnglesLengths.outlierColor());
     const rectNClr = nrgb(rectClr);
     const ntrgba = NTRgba(rectNClr.r, rectNClr.g, rectNClr.b);
-    const tbl = root.table(5, Tables.EnumTable(ctx.tDims.characterWidth, ctx.tDims.characterHeight, ctx.mode));
+    const tbl = root.table(5, { ...Tables.EnumTable(ctx.tDims.characterWidth, ctx.tDims.characterHeight, ctx.mode), hAlign: ctx.mode === 'textual' ? 'left' : 'center' });
 
     tbl.addRow([
         NTTable.Cell.lineText('Residue', tbl, { font: Tables.HeaderFont }),
@@ -105,11 +105,11 @@ export namespace UntypicalAnglesLengths {
                 root.lineText(`Model ${ctx.dnatcofication.data.structures[0].models[mIdx].num}`, { font: Fonts.SubsectionCaption, hAlign: ctx.mode === 'textual' ? 'left' : 'center' });
 
             // --- LENGTHS ---
-            root.lineText('Lengths', { font: { style: 'bold' } });
+            root.lineText('Lengths', { font: { style: 'bold' }, hAlign: ctx.mode === 'textual' ? 'left' : 'center' });
             drawWorst('lengths', residues, residueStats, 'outlier', ctx.ntDoc, ctx);
 
             // --- ANGLES ---
-            root.lineText('Angles', { font: { style: 'bold' } });
+            root.lineText('Angles', { font: { style: 'bold' }, hAlign: ctx.mode === 'textual' ? 'left' : 'center' });
             drawWorst('angles', residues, residueStats, 'outlier', ctx.ntDoc, ctx);
         }
 

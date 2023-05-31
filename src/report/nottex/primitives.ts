@@ -191,6 +191,7 @@ export namespace NTImage {
         caption: string,
         captionPosition: 'above' | 'below',
         captionFontSize: number,
+        captionHAlign: NTHAlignment,
     };
 
     export function is(obj: NTAnyPrimitive): obj is NTImage {
@@ -216,6 +217,7 @@ export namespace NTImage {
             caption: options?.caption ?? '',
             captionPosition: options?.captionPosition ?? 'above',
             captionFontSize: options?.captionFontSize ?? defaultFont.size,
+            captionHAlign: options?.captionHAlign ?? 'left',
         };
     }
 }
