@@ -35,6 +35,7 @@ import { M } from '../../../../util/math';
 import { Net } from '../../../../util/net';
 import { ViewerInterop, ViewerApi } from '../../../../viewer/viewer-interop';
 import 'assets/imgs/data-transfer-download.svg';
+import 'assets/imgs/info-inverse.svg';
 import 'assets/imgs/triangle-down.svg';
 
 type StatsDownloader = Downloader<{
@@ -572,11 +573,12 @@ class ResidueHeader extends React.Component<{
                 ref={this.tainerRef}
                 id={this.props.residueIdentifyingName}
             >
-                <div style={{
+                <div
+                    style={{
                         ...AnglesLengthsCommon.StayAboveStyle,
                         top: 0,
-                        left: 'calc(var(--h-gap) / 2)',
-                        ...AnglesLengthsCommon.BarCaptionStyle
+                        left: 'var(--h2-gap)',
+                        ...AnglesLengthsCommon.BarCaptionStyle,
                     }}
                 >
                     {this.props.caption}
@@ -591,10 +593,19 @@ class ResidueHeader extends React.Component<{
                 >
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
                         <div style={{ flex: 1, display: 'flex' }}>
-                            {AnglesLengthsCommon.renderSubstructureStats(<div style={AnglesLengthsCommon.StatsBarCaptionStyle}>L</div>, this.props.summary.lengths, this.props.countsLengths, this.props.colorsForStatsBar)}
+                            {AnglesLengthsCommon.renderSubstructureStats(
+                                <div style={{ position: 'absolute', right: 'var(--h2-gap)' }}>{AnglesLengthsCommon.substructureBarCaption('L')}</div>,
+                                this.props.summary.lengths,
+                                this.props.countsLengths, this.props.colorsForStatsBar
+                            )}
                         </div>
                         <div style={{ flex: 1, display: 'flex' }}>
-                            {AnglesLengthsCommon.renderSubstructureStats(<div style={AnglesLengthsCommon.StatsBarCaptionStyle}>A</div>, this.props.summary.angles, this.props.countsAngles, this.props.colorsForStatsBar)}
+                            {AnglesLengthsCommon.renderSubstructureStats(
+                                <div style={{ position: 'absolute', right: 'var(--h2-gap)' }}>{AnglesLengthsCommon.substructureBarCaption('A')}</div>,
+                                this.props.summary.angles,
+                                this.props.countsAngles,
+                                this.props.colorsForStatsBar
+                            )}
                         </div>
                     </div>
                 </OverallStatsBar>
@@ -1144,10 +1155,20 @@ export class AnglesLengthsByResidue extends View<
                 >
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
                         <div style={{ flex: 1, display: 'flex' }}>
-                            {AnglesLengthsCommon.renderSubstructureStats(<div style={{ ...AnglesLengthsCommon.BarCaptionStyle, left: 'calc(var(--h-gap) / 2)' }}>Lengths</div>, summary.lengths, countsLenghts, htmlColorsForStatsBar)}
+                            {AnglesLengthsCommon.renderSubstructureStats(
+                                AnglesLengthsCommon.substructureBarCaption('Lengths'),
+                                summary.lengths,
+                                countsLenghts,
+                                htmlColorsForStatsBar
+                            )}
                         </div>
                         <div style={{ flex: 1, display: 'flex' }}>
-                            {AnglesLengthsCommon.renderSubstructureStats(<div style={{ ...AnglesLengthsCommon.BarCaptionStyle, left: 'calc(var(--h-gap) / 2)' }}>Angles</div>, summary.angles, countsAngles, htmlColorsForStatsBar)}
+                            {AnglesLengthsCommon.renderSubstructureStats(
+                                AnglesLengthsCommon.substructureBarCaption('Angles'),
+                                summary.angles,
+                                countsAngles,
+                                htmlColorsForStatsBar
+                            )}
                         </div>
                     </div>
                 </OverallStatsBar>

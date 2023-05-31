@@ -826,7 +826,6 @@ export namespace AnglesLengthsCommon {
         color: 'white',
         fontWeight: 'bold',
         textShadow: '0px 0px 3px #000',
-        ...StayAboveStyle,
     };
     export const StatsBarCaptionStyle = {
         height: '100%',
@@ -1164,5 +1163,14 @@ export namespace AnglesLengthsCommon {
 
     export function structureIdentifyingName(d: Dnatcofication) {
         return d.identifyingName ?? d.pdbId;
+    }
+
+    export function substructureBarCaption(text: string | JSX.Element) {
+        return (
+            <div className='rdo-vflexalign' style={{ gap: 'var(--h2-gap)', paddingLeft: 'var(--h2-gap)' }}>
+                <div style={ AnglesLengthsCommon.BarCaptionStyle }>{text}</div>
+                <img className='rdo-info-icon-white' style={{ filter: 'invert() drop-shadow(0 0 3px black)' }} src={`${GlobalConfig.data().pathPrefix}/imgs/info-inverse.svg`} />
+            </div>
+        );
     }
 }

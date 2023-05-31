@@ -190,7 +190,7 @@ function Base<T extends ALM.AngleStats | ALM.LengthStats>(props: {
             header={AnglesLengthsCommon.makeCollapsibleHeader(
                 <div style={{ display: 'flex', flexDirection: 'row', gap: 'var(--h4-gap)' }}>
                     {AnglesLengthsCommon.renderSubstructureStats(
-                        <div style={BarCaptionStyle}>{props.base}</div>,
+                        AnglesLengthsCommon.substructureBarCaption(props.base),
                         props.stats.overall,
                         Summarize.countsInGroups(props.stats.overall),
                         props.colorsForCounts
@@ -341,7 +341,7 @@ function Metric<T extends ALM.AngleStats | ALM.LengthStats>(props: {
             header={AnglesLengthsCommon.makeCollapsibleHeader(
                 <div style={{ display: 'flex', flexDirection: 'row', gap: 'var(--h4-gap)' }}>
                     {AnglesLengthsCommon.renderSubstructureStats(
-                        <div style={BarCaptionStyle}>{name}</div>,
+                        AnglesLengthsCommon.substructureBarCaption(name),
                         props.stats.overall,
                         Summarize.countsInGroups(props.stats.overall),
                         props.colorsForCounts
@@ -811,10 +811,10 @@ export class AnglesLengthsByCompound extends View<View.Props> {
                 >
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
                         <div style={{ flex: 1, display: 'flex' }}>
-                            {AnglesLengthsCommon.renderSubstructureStats(<div style={{ ...AnglesLengthsCommon.BarCaptionStyle, left: 'var(--h2-gap)' }}>Lengths</div>, overallLengths, countsLengths, htmlColorsForStatsBar)}
+                            {AnglesLengthsCommon.renderSubstructureStats(AnglesLengthsCommon.substructureBarCaption('Lengths'), overallLengths, countsLengths, htmlColorsForStatsBar)}
                         </div>
                         <div style={{ flex: 1, display: 'flex' }}>
-                            {AnglesLengthsCommon.renderSubstructureStats(<div style={{ ...AnglesLengthsCommon.BarCaptionStyle, left: 'var(--h2-gap)' }}>Angles</div>, overallAngles, countsAngles, htmlColorsForStatsBar)}
+                            {AnglesLengthsCommon.renderSubstructureStats(AnglesLengthsCommon.substructureBarCaption('Angles'), overallAngles, countsAngles, htmlColorsForStatsBar)}
                         </div>
                     </div>
                 </OverallStatsBar>

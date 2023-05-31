@@ -524,6 +524,12 @@ th.rdo-data-table-small {
     object-fit: contain;
 }
 
+.rdo-info-icon-white {
+    filter: invert();
+    height: 0.75em;
+    width: 0.75em;
+}
+
 .rdo-init-error-container {
     align-items: center;
     display: flex;
