@@ -479,6 +479,10 @@ th.rdo-data-table-small {
     gap: var(--h-gap);
 }
 
+.rdo-h2gap {
+    gap: var(--h2-gap);
+}
+
 .rdo-hflex {
     display: flex;
     flex-direction: row;
@@ -1110,6 +1114,11 @@ th.rdo-data-table-small {
 
 .rdo-talgn-right {
     text-align: right;
+}
+
+.rdo-taller {
+    padding-top: 0.25em;
+    padding-bottom: 0.25em;
 }
 
 .rdo-text-disabled {

@@ -12,7 +12,34 @@ import { PdbxDatabaseStatus } from '../../../../cif/categories/pdbx-database-sta
 import { Refine } from '../../../../cif/categories/refine';
 import { Struct } from '../../../../cif/categories/struct';
 import { Dnatcofication } from '../../../../dnatco/dnatcofication';
+import { GlobalConfig } from '../../../../global-config';
 import { doiLink, pubmedLink, rcsbLink } from '../../../../util/resources';
+import 'assets/imgs/triangle-down.svg';
+
+function mkHeader(text: string) {
+    const prefix = GlobalConfig.data().pathPrefix;
+
+    return {
+        collapsed: (
+            <div className='rdo-hflex rdo-h2gap rdo-taller rdo-active'>
+                <img
+                    src={`${prefix}/imgs/triangle-down.svg`}
+                    style={{ transition: 'rotate var(--anim-speed)', rotate: '0deg' }}
+                />
+                <div className='rdo-strong' style={{ flex: 1 }}>{text}</div>
+            </div>
+        ),
+        expanded: (
+            <div className='rdo-hflex rdo-h2gap rdo-taller rdo-active'>
+                <img
+                    src={`${prefix}/imgs/triangle-down.svg`}
+                    style={{ transition: 'rotate var(--anim-speed)', rotate: '180deg' }}
+                />
+                <div className='rdo-strong' style={{ flex: 1 }}>{text}</div>
+            </div>
+        )
+    };
+}
 
 export function structureId(d: Dnatcofication) {
     const id = getCifValue(d, Struct, 'entry_id');
@@ -43,14 +70,14 @@ export class StructureInfo extends View {
                 </NamedList>
                 <div className='rdo-line-spacer' />
                 <CollapsibleVertical
-                    header='Entities and Molecules'
+                    header={mkHeader('Entities and Molecules')}
                 >
                     <div className='rdo-offset'>
                         <EntitiesAndMolecules d={this.props.dnatcofication} />
                     </div>
                 </CollapsibleVertical>
                 <CollapsibleVertical
-                    header='Literature'
+                    header={mkHeader('Literature')}
                 >
                     <div className='rdo-offset'>
                         <NamedList>
@@ -62,7 +89,7 @@ export class StructureInfo extends View {
                     </div>
                 </CollapsibleVertical>
                 <CollapsibleVertical
-                    header='Experimental'
+                    header={mkHeader('Experimental')}
                 >
                     <div className='rdo-offset'>
                         <NamedList>

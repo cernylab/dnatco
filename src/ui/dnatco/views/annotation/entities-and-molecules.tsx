@@ -4,6 +4,33 @@ import { CollapsibleVertical } from '../../../common/collapsible-vertical';
 import { NamedList, NamedListItem } from '../../../common/named-list';
 import { Entity, EntityPoly } from '../../../../cif/categories/entity';
 import { Dnatcofication } from '../../../../dnatco/dnatcofication';
+import { GlobalConfig } from '../../../../global-config';
+import 'assets/imgs/triangle-down.svg';
+
+function mkHeader(text: string) {
+    const prefix = GlobalConfig.data().pathPrefix;
+
+    return {
+        collapsed: (
+            <div className='rdo-hflex rdo-h2gap rdo-active'>
+                <img
+                    src={`${prefix}/imgs/triangle-down.svg`}
+                    style={{ transition: 'rotate var(--anim-speed)', rotate: '0deg' }}
+                />
+                <div className='rdo-strong' style={{ flex: 1 }}>{text}</div>
+            </div>
+        ),
+        expanded: (
+            <div className='rdo-hflex rdo-h2gap rdo-active'>
+                <img
+                    src={`${prefix}/imgs/triangle-down.svg`}
+                    style={{ transition: 'rotate var(--anim-speed)', rotate: '180deg' }}
+                />
+                <div className='rdo-strong' style={{ flex: 1 }}>{text}</div>
+            </div>
+        )
+    };
+}
 
 function moleculesInEntity(entityId: string, entityType: string, nMolecules: number, d: Dnatcofication) {
     if (entityType !== 'polymer')
@@ -17,7 +44,7 @@ function moleculesInEntity(entityId: string, entityType: string, nMolecules: num
     return (
         <div>
             <CollapsibleVertical
-                header='Molecules'
+                header={mkHeader('Molecules')}
             >
                 <NamedList>
                     <NamedListItem name='Type'>{type.values?.at(row) ?? Common.NA}</NamedListItem>
