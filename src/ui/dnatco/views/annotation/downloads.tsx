@@ -32,7 +32,7 @@ export function Downloads(props: View.Props) {
                         <DownloadButton
                             caption='CSV'
                             onClick={() => {
-                                const t = _Downloads.assignmentTable(props.dnatcofication);
+                                const t = _Downloads.assignmentTable(props.dnatcofication, false);
                                 const text = Serialization.table(t, 'csv');
                                 Net.serveFile(FileTypes.csv.mimeType, text, `${props.dnatcofication.identifyingName}_assigned_ntcs.${FileTypes.csv.suffix}`);
                             }}
@@ -40,7 +40,7 @@ export function Downloads(props: View.Props) {
                         <DownloadButton
                             caption='JSON'
                             onClick={() => {
-                                const t = _Downloads.assignmentTable(props.dnatcofication);
+                                const t = _Downloads.assignmentTable(props.dnatcofication, false);
                                 const text = Serialization.table(t, 'json');
                                 Net.serveFile(FileTypes.json.mimeType, text, `${props.dnatcofication.identifyingName}_assigned_ntcs.${FileTypes.json.suffix}`);
                             }}
