@@ -795,7 +795,7 @@ export class AnglesLengthsByCompound extends View<View.Props> {
 
         return (
             <div style={{ ...Common.VScrollGridJail, gridTemplateRows: 'auto auto auto auto 1fr' }}>
-                <div className='rdo-secondary-caption'>Structure/Selection</div>
+                <div className='rdo-secondary-caption'>{AnglesLengthsCommon.displayedSelectionName(modelIdx, chain, multipleModels, this.props.dnatcofication)}</div>
                 <OverallStatsBar
                     counts={{ angles: countsAngles, lengths: countsLengths }}
                     downloadableData={DownloadableData(selected.angles, countsAngles, selected.lengths, countsLengths)}

@@ -1027,6 +1027,23 @@ export namespace AnglesLengthsCommon {
         event.next({ residue, transition: 'deselected' });
     }
 
+    export function displayedSelectionName(modelIdx: number, chain: string, hasMultipleModels: boolean, dnatcofication: Dnatcofication) {
+        if (modelIdx === InvalidModelIndex)
+            return 'Entire structure';
+
+        if (hasMultipleModels) {
+            const m = dnatcofication.data.structures[0].models[modelIdx];
+            const modelNum = dnatcofication.data.structures[0].models[modelIdx].num;
+            const ch = chain === InvalidChain ? null : m.chains.find(x => x.name === chain)!;
+
+            return `Model ${modelNum}, ${ch === null ? 'all chains' : `chain ${ch.authName} (Cif ${ch.name})`}`;
+        } else {
+            const m = dnatcofication.data.structures[0].models[0];
+            const ch = chain === InvalidChain ? null : m.chains.find(x => x.name === chain)!;
+            return `${ch === null ? 'Entire structure' : `Chain ${ch.authName} (Cif ${ch.name})`}`;
+        }
+    }
+
     export function fileNameFriendlyTag(tag: string) {
         return replaceAll(
             replaceAll(tag, '^', '_'),
