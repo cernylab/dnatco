@@ -583,7 +583,7 @@ th.rdo-data-table-small {
 }
 
 .rdo-named-list {
-    align-items: baseline;
+    align-items: top;
     display: grid;
     grid-template-columns: auto 1fr;
     grid-column-gap: var(--h-gap);

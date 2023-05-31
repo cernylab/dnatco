@@ -17,7 +17,7 @@ function mkHeader(text: string) {
                     src={`${prefix}/imgs/triangle-down.svg`}
                     style={{ transition: 'rotate var(--anim-speed)', rotate: '0deg' }}
                 />
-                <div className='rdo-strong' style={{ flex: 1 }}>{text}</div>
+                <div style={{ flex: 1 }}>{text}</div>
             </div>
         ),
         expanded: (
@@ -26,7 +26,7 @@ function mkHeader(text: string) {
                     src={`${prefix}/imgs/triangle-down.svg`}
                     style={{ transition: 'rotate var(--anim-speed)', rotate: '180deg' }}
                 />
-                <div className='rdo-strong' style={{ flex: 1 }}>{text}</div>
+                <div style={{ flex: 1 }}>{text}</div>
             </div>
         )
     };
@@ -42,18 +42,11 @@ function moleculesInEntity(entityId: string, entityType: string, nMolecules: num
         return <div>Information about molecules is not available</div>;
 
     return (
-        <div>
-            <CollapsibleVertical
-                header={mkHeader('Molecules')}
-            >
-                <NamedList>
-                    <NamedListItem name='Type'>{type.values?.at(row) ?? Common.NA}</NamedListItem>
-                    <NamedListItem name='Strand IDs'>{pdbx_strand_id.values?.at(row) ?? Common.NA}</NamedListItem>
-                    <NamedListItem name='Count'>{nMolecules ? nMolecules : Common.NA}</NamedListItem>
-                </NamedList>
-            </CollapsibleVertical>
-            <div className='rdo-line-spacer' />
-        </div>
+        <NamedList>
+            <NamedListItem name='Type'>{type.values?.at(row) ?? Common.NA}</NamedListItem>
+            <NamedListItem name='Strand IDs'>{pdbx_strand_id.values?.at(row) ?? Common.NA}</NamedListItem>
+            <NamedListItem name='Count'>{nMolecules ? nMolecules : Common.NA}</NamedListItem>
+        </NamedList>
     );
 }
 
@@ -74,8 +67,9 @@ function entities(d: Dnatcofication) {
             <NamedListItem
                 name={_id}
             >
-                <div>{desc}</div>
-                {moleculesInEntity(_id, _type, nMolecules, d)}
+                <CollapsibleVertical header={mkHeader(desc)} >
+                    {moleculesInEntity(_id, _type, nMolecules, d)}
+                </CollapsibleVertical>
             </NamedListItem>
         );
     }
@@ -85,10 +79,8 @@ function entities(d: Dnatcofication) {
 
 export function EntitiesAndMolecules(props: { d: Dnatcofication }) {
     return (
-        <div>
-            <NamedList>
-                {...entities(props.d)}
-            </NamedList>
-        </div>
+        <NamedList verticalPosition='top'>
+            {...entities(props.d)}
+        </NamedList>
     );
 }
