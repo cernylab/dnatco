@@ -129,15 +129,14 @@ class Coordinates extends React.Component<Coordinates.Props> {
                         </>
                     }
 
-                    <div />
                     {examples.length > 0
-                        ? <div className='rdo-example-structures-list'>
+                            ? <div className='rdo-example-structures-list' style={{ gridColumn: '1 / span 2' }}>
                             <div className='rdo-strong'>Examples:</div>
                             <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', columnGap: '1ex' }}>
                                 {examples.map(x => makeExample(x.db, x.pdbId, this.props.onRunExample))}
                             </div>
                         </div>
-                        : <div />
+                        : <div className='rdo-example-structures-list' style={{ gridColumn: '1 / span 2' }} />
                     }
                 </div>
             </div>
