@@ -220,7 +220,7 @@ export function Downloads(props: { dnatcofication: Dnatcofication }) {
                                 <DownloadButton
                                     caption='CSV'
                                     onClick={() => {
-                                        const t = _Downloads.assignmentTable(props.dnatcofication);
+                                        const t = _Downloads.assignmentTable(props.dnatcofication, false);
                                         const text = Serialization.table(t, 'csv');
                                         Net.serveFile(FileTypes.csv.mimeType, text, `${props.dnatcofication.identifyingName}_assigned_ntcs.${FileTypes.csv.suffix}`);
                                     }}
@@ -228,9 +228,25 @@ export function Downloads(props: { dnatcofication: Dnatcofication }) {
                                 <DownloadButton
                                     caption='JSON'
                                     onClick={() => {
-                                        const t = _Downloads.assignmentTable(props.dnatcofication);
+                                        const t = _Downloads.assignmentTable(props.dnatcofication, false);
                                         const text = Serialization.table(t, 'json');
                                         Net.serveFile(FileTypes.json.mimeType, text, `${props.dnatcofication.identifyingName}_assigned_ntcs.${FileTypes.json.suffix}`);
+                                    }}
+                                />
+                                <DownloadButton
+                                    caption='CSV (with CS & RMSD)'
+                                    onClick={() => {
+                                        const t = _Downloads.assignmentTable(props.dnatcofication, true);
+                                        const text = Serialization.table(t, 'csv');
+                                        Net.serveFile(FileTypes.csv.mimeType, text, `${props.dnatcofication.identifyingName}_assigned_ntcs_cs_rmsd.${FileTypes.csv.suffix}`);
+                                    }}
+                                />
+                                <DownloadButton
+                                    caption='JSON (with CS & RMSD)'
+                                    onClick={() => {
+                                        const t = _Downloads.assignmentTable(props.dnatcofication, true);
+                                        const text = Serialization.table(t, 'json');
+                                        Net.serveFile(FileTypes.json.mimeType, text, `${props.dnatcofication.identifyingName}_assigned_ntcs_cs_rmsd.${FileTypes.json.suffix}`);
                                     }}
                                 />
                             </_Downloads.DownloadBox>

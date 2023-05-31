@@ -40,11 +40,11 @@ export namespace Downloads {
         );
     }
 
-    export function assignmentTable(d: Dnatcofication) {
+    export function assignmentTable(d: Dnatcofication, includeConfalsAndRmsds: boolean) {
         const steps = d.table(NdbStructNtcStep);
         const summary = d.table(NdbStructNtcStepSummary);
         const { label_asym_id_1, name } = steps;
-        const { assigned_NtC, closest_NtC, assigned_CANA, closest_CANA } = summary;
+        const { assigned_NtC, closest_NtC, assigned_CANA, closest_CANA, confal_score, cartesian_rmsd_closest_NtC_representative } = summary;
 
         const chainColumn = {
             name: 'Chain',
@@ -70,10 +70,22 @@ export namespace Downloads {
             name: 'Closest CANA',
             values: closest_CANA.values!.map(x => x),
         };
+        const confalScoreColumn = {
+            name: 'CS',
+            values: confal_score.values!.map(x => x.toString()),
+        };
+        const rmsdColumn = {
+            name: 'RMSD',
+            values: cartesian_rmsd_closest_NtC_representative.values!.map(x => x.toString()),
+        };
 
-        return [
+        const columns = [
             chainColumn, stepColumn, assignedNtCColumn, closestNtCColumn, assignedCanaColumn, closestCanaColumn
         ];
+        if (includeConfalsAndRmsds)
+            columns.push(confalScoreColumn, rmsdColumn);
+
+        return columns;
     }
 
     export function serveMmCif(d: Dnatcofication) {
