@@ -142,7 +142,7 @@ class Stats extends React.Component<{
                     <StatsBar counts={rmsdCounts} colors={rmsdColors} />
                 </div>
 
-                <div className='rdo-strong'>Confal score</div>
+                <div className='rdo-strong'>Overall CS</div>
                 <div style={this.ValuesCell}>
                     <div style={this.Value}>{`Average value:\u00A0${this.props.confalAverage.toFixed(0)}`}</div>
                     <div style={this.Value}>{`Percentile:\u00A0${this.props.confalPercentile.toFixed(0)}`}</div>
