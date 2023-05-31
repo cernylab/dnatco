@@ -107,12 +107,14 @@ export class ContourPlots extends WithSubscriptions<{}, State> {
                 justifyContent: 'center',
             }}>
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                    <span>Conformer</span>
+                    <span className='rdo-strong' style={{ fontSize: 'var(--font-large)' }}>NtC conformer</span>
                     <ComboBox
                         options={toComboBoxOptions(NtCClassesWithNANT, cls => ({ caption: cls, value: cls}))}
                         value={this.state.ntc}
                         onChange={v => this.setState({ ...this.state, ntc: v })}
                         disabled={PlotCompomentCache.size === 0}
+                        sizing='maximum-available'
+                        innerStyle={{ fontSize: 'var(--font-large)' }}
                     />
                 </div>
                 <div className='rdo-section-caption' style={{ fontWeight: 'bold' }} >RSCC vs. Torsion space</div>
