@@ -987,13 +987,13 @@ th.rdo-data-table-small {
 }
 
 .rdo-start-analyze-button {
-    background-color: #7fff7f;
+    background-color: var(--color-d);
     font-size: var(--font-large);
     width: 100%;
 }
 
 .rdo-start-analyze-button:hover {
-    background-color: #dfffdf;
+    background-color: #62e166;
 }
 
 .rdo-start-analyze-button-disabled {
@@ -1056,7 +1056,6 @@ th.rdo-data-table-small {
 .rdo-tab-button {
     align-items: center;
     display: flex;
-    flex: 1;
     gap: var(--h-gap);
     justify-content: center;
     padding: 0.5em;
