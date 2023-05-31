@@ -1240,7 +1240,7 @@ export class AnglesLengthsByResidue extends View<
 
                 <div style={ Common.VScrollElement }>
                     <CollapsibleVertical
-                        header={mkHeader('Worst lengths')}
+                        header={mkHeader('Most untypical lengths')}
                         style={ Common.VScrollJail }
                     >
                         <NamedList sizing='min-content' rowSpacing='half'>
@@ -1279,7 +1279,7 @@ export class AnglesLengthsByResidue extends View<
 
                 <div style={ Common.VScrollElement }>
                     <CollapsibleVertical
-                        header={mkHeader('Worst angles')}
+                        header={mkHeader('Most untypical angles')}
                         style={ Common.VScrollJail }
                     >
                         <NamedList sizing='min-content' rowSpacing='half'>
