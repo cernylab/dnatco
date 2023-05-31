@@ -470,6 +470,7 @@ export class ConfalsRmsds extends View<View.Props> {
                 </NamedList>
 
                 <div className='rdo-line-spacer' />
+                <div className='rdo-secondary-caption'>Table of assigned dinucleotide NtC conformers</div>
                 <div style={ Common.VScrollElement } ref={this.tableTainer}>
                     <div className='rdo-scroll-vertically-with-scrollbar'>
                         {this.renderStepsTable()}
