@@ -340,7 +340,7 @@ export function Downloads(props: { dnatcofication: Dnatcofication }) {
                                     caption='PDF'
                                     onClick={() => {
                                         Report.pdf(props.dnatcofication).then((report) => {
-                                            Net.serveFileRaw(FileTypes.pdf.mimeType, report, `validation_report.${FileTypes.pdf.suffix}`);
+                                            Net.serveFileRaw(FileTypes.pdf.mimeType, report, `${props.dnatcofication.pdbId}_${GlobalConfig.data().displayedProductName.toLowerCase()}_validation_report.${FileTypes.pdf.suffix}`);
                                         }).catch(e => {
                                             Popup.create(
                                                 <div className='rdo-error-text'>
@@ -354,7 +354,7 @@ export function Downloads(props: { dnatcofication: Dnatcofication }) {
                                     caption='Plain text'
                                     onClick={() => {
                                         Report.text(props.dnatcofication).then((report) => {
-                                            Net.serveFile(FileTypes.text.mimeType, report, `validation_report.${FileTypes.text.suffix}`);
+                                            Net.serveFile(FileTypes.text.mimeType, report, `${props.dnatcofication.pdbId}_${GlobalConfig.data().displayedProductName.toLowerCase()}_validation_report.${FileTypes.text.suffix}`);
                                         }).catch(e => {
                                             Popup.create(
                                                 <div className='rdo-error-text'>
