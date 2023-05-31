@@ -783,7 +783,7 @@ export class AnglesLengthsByCompound extends View<View.Props> {
                         <div style={{ flex: 1 }}>{text}</div>
                         <img
                             src={`${pfx}/imgs/triangle-down.svg`}
-                            style={{ transition: 'rotate var(--anim-speed)', rotate: '180deg' }}
+                            style={{ transition: 'rotate var(--anim-speed)', rotate: '0deg' }}
                         />
                     </div>
                 ),
@@ -792,7 +792,7 @@ export class AnglesLengthsByCompound extends View<View.Props> {
                         <div style={{ flex: 1 }}>{text}</div>
                         <img
                             src={`${pfx}/imgs/triangle-down.svg`}
-                            style={{ transition: 'rotate var(--anim-speed)', rotate: '0deg' }}
+                            style={{ transition: 'rotate var(--anim-speed)', rotate: '180deg' }}
                         />
                     </div>
                 )

@@ -111,7 +111,7 @@ function Header(props: {
                 <img
                     className='rdo-window-button'
                     src={`${pfx}/imgs/triangle-down.svg`}
-                    style={{ transition: 'rotate var(--anim-speed)', rotate: isExpanded ? '0deg' : '180deg' }}
+                    style={{ transition: 'rotate var(--anim-speed)', rotate: isExpanded ? '180deg' : '0deg' }}
                 />
             </div>
             <div onClick={() => props.onClosed()}>
