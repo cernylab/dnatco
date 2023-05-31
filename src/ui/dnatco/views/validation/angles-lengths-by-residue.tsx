@@ -1110,20 +1110,20 @@ export class AnglesLengthsByResidue extends View<
             return {
                 collapsed: (
                     <div className='rdo-secondary-caption rdo-active' style={Style}>
-                        <div style={{ flex: 1 }}>{text}</div>
                         <img
                             src={`${pfx}/imgs/triangle-down.svg`}
                             style={{ transition: 'rotate var(--anim-speed)', rotate: '0deg' }}
                         />
+                        <div style={{ flex: 1 }}>{text}</div>
                     </div>
                 ),
                 expanded: (
                     <div className='rdo-secondary-caption rdo-active' style={Style}>
-                        <div style={{ flex: 1 }}>{text}</div>
                         <img
                             src={`${pfx}/imgs/triangle-down.svg`}
                             style={{ transition: 'rotate var(--anim-speed)', rotate: '180deg' }}
                         />
+                        <div style={{ flex: 1 }}>{text}</div>
                     </div>
                 )
             };
