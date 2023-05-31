@@ -159,7 +159,8 @@ const StepInfo = {
     p2: 0,
     tau2: 0,
     pn2: C.NA,
-    details: ''
+    details: null as (string|null),
+    empty: true,
 };
 
 type TorsionInfo = {
@@ -220,7 +221,7 @@ function mkViolationDetailsToolip(details: string|null) {
             elems.push(<div key={keyIdx++}>Pseudorotation of the second ribose ring exceeded tolerance</div>);
     }
 
-    return elems;
+    return elems.length;
 }
 
 function numOrNA(n: number, decimals = 2, padding = 7) {
@@ -318,7 +319,6 @@ class ViolinPlot extends React.Component<{
 
                 y = (yLength - v * yScaleTor) + yOffset;
 
-                console.log(x, y, v);
                 this.drawTick(ctx, x, y, tickSize, tickThickness, clrA, clrB);
 
                 x += xScale;
@@ -406,7 +406,7 @@ export class StepTorsions extends View<View.Props> {
         return info;
     }
 
-    private stepInfo(stepId: number|undefined) {
+    private stepInfo(stepId: number|undefined): typeof StepInfo {
         if (stepId === undefined)
             return StepInfo;
 
@@ -429,7 +429,7 @@ export class StepTorsions extends View<View.Props> {
             return StepInfo;
 
         return {
-            cartesianRmsd: Cif.Column.value(cartesian_rmsd_closest_NtC_representative, index),
+            cartesianRmsd: Cif.Column.value(cartesian_rmsd_closest_NtC_representative, index) ?? 0,
             NtC: Cif.Column.value(assigned_NtC, index)!,
             confal: Cif.Column.value(confal_score, index)!,
             p1: Cif.Column.value(P_1, index)!,
@@ -438,7 +438,8 @@ export class StepTorsions extends View<View.Props> {
             p2: Cif.Column.value(P_2, index)!,
             tau2: Cif.Column.value(tau_2, index)!,
             pn2: Cif.Column.value(Pn_2, index)!,
-            details: Cif.Column.value(details, index)!,
+            details: Cif.Column.value(details, index),
+            empty: false,
         };
     }
 
@@ -533,13 +534,13 @@ export class StepTorsions extends View<View.Props> {
 
                 <div className='rdo-line-spacer' />
                 <NamedList>
-                    <NamedListItem name='Step NtC'>{stepInfo.NtC}</NamedListItem>
-                    <NamedListItem name='Step confal'>{stepInfo.confal}</NamedListItem>
-                    <NamedListItem name='Cartesian RMSD'>{`${stepInfo.cartesianRmsd!.toFixed(2)} Å`}</NamedListItem>
-                    <NamedListItem name='Pseudorotation'>{`${stepInfo.p1}, ${stepInfo.tau1}, ${stepInfo.pn1} / ${stepInfo.p2}, ${stepInfo.tau2}, ${stepInfo.pn2}`}</NamedListItem>
+                    <NamedListItem name='Step NtC'>{stepInfo.empty ? '-' : stepInfo.NtC}</NamedListItem>
+                    <NamedListItem name='Step confal'>{stepInfo.empty ? '-' : stepInfo.confal}</NamedListItem>
+                    <NamedListItem name='Cartesian RMSD'>{stepInfo.empty ? '-' : `${stepInfo.cartesianRmsd!.toFixed(2)} \u00C5`}</NamedListItem>
+                    <NamedListItem name='Pseudorotation'>{stepInfo.empty ? '-' : `${stepInfo.p1}, ${stepInfo.tau1}, ${stepInfo.pn1} / ${stepInfo.p2}, ${stepInfo.tau2}, ${stepInfo.pn2}`}</NamedListItem>
                     <NamedListItem name='Details'>
                         <Tooltip
-                            tag={stepInfo.details}
+                            tag={stepInfo.empty ? '-' : !stepInfo.details ? <span className='rdo-emphasize'>(None)</span> : stepInfo.details}
                         >
                             {mkViolationDetailsToolip(stepInfo.details)}
                         </Tooltip>
