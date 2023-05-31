@@ -30,12 +30,6 @@ import { M } from '../../../../util/math';
 import { ViewerApi, ViewerInterop } from '../../../../viewer/viewer-interop';
 import 'assets/imgs/triangle-down.svg';
 
-const BarCaptionStyle = {
-    ...AnglesLengthsCommon.BarCaptionStyle,
-    top: '50%',
-    left: 'var(--h2-gap)',
-};
-
 type DownloadableData = {
     angles: ALM.AngleStats[],
     countsAngles: Summarize.CountsInGroup[],
