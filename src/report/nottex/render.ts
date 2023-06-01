@@ -880,18 +880,11 @@ export namespace NTRender {
 
                 if (drawBorders) {
                     const borderWidth = columnWidth;
-                    const hBorderWidth = NTUnit.add(columnWidth, tbl.props.border);
                     const vPosBorder = NTUnit.add(vPosition, NTUnit.multiply(0.5, tbl.props.border));
                     const xBorder = NTUnit.add(x, NTUnit.multiply(0.5, tbl.props.border));
-                    const xhBorder = x;
 
-                    // Top
-                    rGroup.addRenderable(
-                        NTR.NTRenderableLine.mk(
-                            tbl.props.border,
-                            { x: xhBorder, y: vPosBorder, width: hBorderWidth, height: NTUnit.zero() }
-                        )
-                    );
+                    // We draw only the vertical borders here. Horizontal lines can be drawn across the entire row
+                    // when we are one with all the cells in the row.
 
                     // Left
                     rGroup.addRenderable(
@@ -901,25 +894,41 @@ export namespace NTRender {
                         )
                     );
 
-                    // Bottom
-                    rGroup.addRenderable(
-                        NTR.NTRenderableLine.mk(
-                            tbl.props.border,
-                            { x: xhBorder, y: NTUnit.add(vPosBorder, rowHeight), width: hBorderWidth, height: NTUnit.zero() }
-                        )
-                    );
-
                     // Right
-                    rGroup.addRenderable(
-                        NTR.NTRenderableLine.mk(
-                            tbl.props.border,
-                            { x: NTUnit.add(xBorder, borderWidth), y: vPosBorder, width: NTUnit.zero(), height: rowHeight }
-                        )
-                    );
+                    if (colIdx === row.length - 1) {
+                        rGroup.addRenderable(
+                            NTR.NTRenderableLine.mk(
+                                tbl.props.border,
+                                { x: NTUnit.add(xBorder, borderWidth), y: vPosBorder, width: NTUnit.zero(), height: rowHeight }
+                            )
+                        );
+                    }
                 }
 
                 colSpanShift += (cell.colSpan - 1);
                 x = NTUnit.add(x, columnWidth);
+            }
+
+            if (drawBorders) {
+                const vPosBorder = NTUnit.add(vPosition, NTUnit.multiply(0.5, tbl.props.border));
+                const width = NTUnit.add(NTUnit.subtract(x, baseX), tbl.props.border);
+
+                // Top
+                rGroup.addRenderable(
+                    NTR.NTRenderableLine.mk(
+                        tbl.props.border,
+                        { x: baseX, y: vPosBorder, width, height: NTUnit.zero() }
+                    )
+                );
+
+                // Bottom
+                rGroup.addRenderable(
+                    NTR.NTRenderableLine.mk(
+                        tbl.props.border,
+                        { x: baseX, y: NTUnit.add(vPosBorder, rowHeight), width, height: NTUnit.zero() }
+                    )
+                );
+
             }
 
             parent.addRenderable(rGroup);
