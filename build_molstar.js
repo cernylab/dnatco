@@ -50,15 +50,17 @@ function runProcess(cmd, args, cwd) {
         throw new Error(`Command '${cmd} ${args.join(' ')}' failed with exit code ${proc.status}\n${proc.stdout}`);
 }
 
-function build_molstar() {
+function build_molstar(args) {
     const baseDir = __dirname;
 
     if (isDir(path.join(baseDir, 'node_modules'))) {
         console.warn(
             '"node_modules" is present in the ReDNATCO directory. This may cause Molstar build to fail. Consider deleting the directory before you try to build the Molstar plugin.\n' +
-            'You can run "npm install" to get the Node modules back once the Molstar plugin is built.'
+            'You can run "npm install" to get the Node modules back once the Molstar plugin is built.\n\n' +
+            'To override this check, run the script with argument --ignore-node-modules'
         );
-        process.exit(1);
+        if (args[0] !== '--ignore-node-modules')
+            process.exit(1);
     }
 
     const molstarDir = path.join(baseDir, MOLSTAR_DIR);
@@ -70,4 +72,4 @@ function build_molstar() {
     copyDist(molstarDir, baseDir);
 }
 
-build_molstar();
+build_molstar(process.argv.slice(2));
