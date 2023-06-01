@@ -1146,11 +1146,11 @@ export namespace AnglesLengthsCommon {
         return name;
     }
 
-    export function renderSubstructureStats(caption: string | JSX.Element, summaryCounts: Summarize.Counts, countsInGroups: Summarize.CountsInGroup[], colorsForCounts: string[]) {
+    export function renderSubstructureStats(caption: string | JSX.Element, summaryCounts: Summarize.Counts, countsInGroups: Summarize.CountsInGroup[], colorsForCounts: string[], captionStyle?: React.CSSProperties) {
         return (
             <AnglesLengthsBar
                 caption={
-                    <div style={{ ...StayAboveStyle, top: 0, width: '100%' }}>
+                    <div style={{ ...StayAboveStyle, top: 0, ...captionStyle }}>
                         <Tooltip
                             tag={caption}
                             delayMsec={Constants.TooltipDelayMSec}

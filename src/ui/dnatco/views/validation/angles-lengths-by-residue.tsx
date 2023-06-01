@@ -594,17 +594,20 @@ class ResidueHeader extends React.Component<{
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
                         <div style={{ flex: 1, display: 'flex' }}>
                             {AnglesLengthsCommon.renderSubstructureStats(
-                                <div style={{ position: 'absolute', right: 'var(--h2-gap)' }}>{AnglesLengthsCommon.substructureBarCaption('L')}</div>,
+                                AnglesLengthsCommon.substructureBarCaption('L'),
                                 this.props.summary.lengths,
-                                this.props.countsLengths, this.props.colorsForStatsBar
+                                this.props.countsLengths,
+                                this.props.colorsForStatsBar,
+                                { right: 'var(--h2-gap)' }
                             )}
                         </div>
                         <div style={{ flex: 1, display: 'flex' }}>
                             {AnglesLengthsCommon.renderSubstructureStats(
-                                <div style={{ position: 'absolute', right: 'var(--h2-gap)' }}>{AnglesLengthsCommon.substructureBarCaption('A')}</div>,
+                                AnglesLengthsCommon.substructureBarCaption('A'),
                                 this.props.summary.angles,
                                 this.props.countsAngles,
-                                this.props.colorsForStatsBar
+                                this.props.colorsForStatsBar,
+                                { right: 'var(--h2-gap)' }
                             )}
                         </div>
                     </div>
