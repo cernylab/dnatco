@@ -181,6 +181,10 @@ export function Downloads(props: { dnatcofication: Dnatcofication }) {
     if (props.dnatcofication.isEmpty())
         return <Navigate to='/app' />;
 
+    // We need this shinanegan because unhiding a scrollbar with default appearance
+    // in Chrome is a topic for the Ph.D. theses.
+    const [mouseInDlList, setMouseInDlList] = React.useState(false);
+
     const structureName = props.dnatcofication.identifyingName ?? props.dnatcofication.pdbId;
 
     return (
@@ -194,7 +198,11 @@ export function Downloads(props: { dnatcofication: Dnatcofication }) {
                     }}>
                         Download of data computed for {structureName}
                     </div>
-                    <div className='rdo-scroll-vertically' style={{ margin: 'auto', maxWidth: '60em', padding: 'var(--h-gap)' }}>
+                    <div
+                        className={mouseInDlList ? 'rdo-scroll-vertically-with-scrollbar' : 'rdo-scroll-vertically'}
+                        style={{ margin: 'auto', maxWidth: '60em', padding: 'var(--h-gap)' }}
+                        onMouseEnter={() => setMouseInDlList(true)} onMouseLeave={() => setMouseInDlList(false)}
+                    >
 
                         <div className='rdo-line-spacer' />
 

@@ -812,7 +812,7 @@ th.rdo-data-table-small {
 
 /* Hide scrollbar for Chrome, Safari and Opera */
 .rdo-scroll-vertically::-webkit-scrollbar {
-    display: none;
+    visibility: hidden;
 }
 
 .rdo-scroll-vertically-with-scrollbar {
