@@ -29,18 +29,18 @@ export namespace Dnatcofier {
         const attemptedSteps = res.success();
         res.delete();
 
-        ctx.status = 'Adding DNATCO categories to CIF';
+        ctx.status = 'Adding DNATCO categories to mmCIF';
         const cifDataDNATCO = jsLLKA.addDNATCOCategoriesToCif(imported.cifData, attemptedSteps, steps, imported.id);
         attemptedSteps.delete();
         clsfCtx.delete();
 
-        ctx.status = 'Writing out extended CIF file';
+        ctx.status = 'Writing out extended mmCIF file';
         const res2 = jsLLKA.cifDataToString(cifDataDNATCO, true);
         if (!res2.isSuccess()) {
             const fail = res2.failure();
             res2.delete();
 
-            throw new Error(`Failed to write out extended CIF: ${jsLLKA.LLKA.errorToString(fail)}`);
+            throw new Error(`Failed to write out extended mmCIF: ${jsLLKA.LLKA.errorToString(fail)}`);
         }
 
         const extendedCif = res2.success();
@@ -50,7 +50,7 @@ export namespace Dnatcofier {
     }
 
     export function importStructure(cif: string, ctx: DnatcoficationTaskContext) {
-        ctx.status = 'Reading CIF data';
+        ctx.status = 'Reading mmCIF data';
         const res = jsLLKA.cifToStructure(cif, jsLLKA.MINICIF_GET_CIFDATA);
         if (!res.isSuccess()) {
             const fail = res.failure();

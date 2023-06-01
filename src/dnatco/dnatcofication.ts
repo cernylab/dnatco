@@ -316,7 +316,7 @@ export namespace Dnatcofication {
             const cifCoordinates = coordinates.type === 'cif'
                 ? coordinates.data : pdbToCif(coordinates.data);
 
-            ctx.status = 'Reading CIF file';
+            ctx.status = 'Reading mmCIF file';
 
             // This is "our" CIF representation
             let cifData = Cif.read(cifCoordinates);

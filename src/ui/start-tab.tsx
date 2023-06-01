@@ -116,7 +116,7 @@ class Coordinates extends React.Component<Coordinates.Props> {
                                 </div>
                                 {this.props.coordsFile
                                     ? <LongFileName name={this.props.coordsFile.name} disabled={false} />
-                                    : <div style={{ fontSize: 'var(--font-large)', width: '100%', overflow: 'hidden', whiteSpace: 'nowrap' }}>(Select mmCif/PDB file)</div>
+                                    : <div style={{ fontSize: 'var(--font-large)', width: '100%', overflow: 'hidden', whiteSpace: 'nowrap' }}>(Select mmCIF/PDB file)</div>
                                 }
                             </>
                             : <>
