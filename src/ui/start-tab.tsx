@@ -427,7 +427,7 @@ export class StartTab extends React.Component<StartTab.Props, State> {
     private defaultState(): State {
         return {
             coordsFile: null,
-            database: this.DatabaseOptions[0].value,
+            database: this.DatabaseOptions.find(x => x.value === GlobalConfig.data().primaryDatabase)?.value ?? this.DatabaseOptions[0].value,
             densityMaps: [],
             pdbId: '',
         }
