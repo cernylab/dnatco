@@ -477,11 +477,7 @@ export namespace NTRender {
         let finalVPosition = vPosition;
         if (im.caption.length > 0) {
             const ImageFontStyle: NTPrims.NTText = {
-                font: {
-                    family: 'serif',
-                    style: 'normal',
-                    size: im.captionFontSize
-                },
+                font: im.captionFont,
                 color: NTBlackColor,
                 hAlign: im.captionHAlign,
             };

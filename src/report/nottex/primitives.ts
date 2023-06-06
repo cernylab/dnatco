@@ -190,7 +190,7 @@ export namespace NTImage {
         vAlign: NTVAlignment,
         caption: string,
         captionPosition: 'above' | 'below',
-        captionFontSize: number,
+        captionFont: NTFont,
         captionHAlign: NTHAlignment,
     };
 
@@ -216,7 +216,7 @@ export namespace NTImage {
             scale: options?.scale ?? 1.0,
             caption: options?.caption ?? '',
             captionPosition: options?.captionPosition ?? 'above',
-            captionFontSize: options?.captionFontSize ?? defaultFont.size,
+            captionFont: options?.captionFont ?? defaultFont,
             captionHAlign: options?.captionHAlign ?? 'left',
         };
     }
