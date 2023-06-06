@@ -1017,7 +1017,6 @@ th.rdo-data-table-small {
     align-items: center;
     display: grid;
     gap: var(--x-gap);
-    justify-items: 'end';
 }
 
 .rdo-start-reset-button {
