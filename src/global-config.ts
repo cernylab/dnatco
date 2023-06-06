@@ -1,7 +1,7 @@
 import { Globals } from './globals';
 import { KnownCoordinateFileTypes, KnownDensityMapKinds, KnownDensityMapTypes } from './remote/db';
 import { BuiltInRemoteDatabases } from './remote/db/register';
-import { StaticDb } from './remote/db/static-db';
+import { IdTransformations, StaticDb } from './remote/db/static-db';
 import { deepCopy, objKeys } from './util';
 import { fromTemplate } from './util/json';
 
@@ -60,7 +60,7 @@ const GlobalConfigData: GlobalConfigData = {
     },
     violinPlotMarkerColorA: '#fff70c',
     violinPlotMarkerColorB: '#000',
-    exampleStructures: [{db: '', pdbId: ''}],
+    exampleStructures: [],
     displayedProductName: Globals.DefaultProductName,
     currentStepColor: '#ffff00',
     previousStepColor: '#0000ff',
@@ -99,8 +99,10 @@ function fixups(data: GlobalConfigData) {
 
     data.userDatabases = data.userDatabases.filter((x) => {
         let ok = KnownCoordinateFileTypes.includes(x.coords.type);
+        ok = ok && (!x.coords.idTransformation || IdTransformations.includes(x.coords.idTransformation));
+
         for (const dm of x.densityMaps ?? []) {
-            ok = ok && KnownDensityMapTypes.includes(dm.type) && KnownDensityMapKinds.includes(dm.kind);
+            ok = ok && KnownDensityMapTypes.includes(dm.type) && KnownDensityMapKinds.includes(dm.kind) && (!dm.idTransformation || IdTransformations.includes(dm.idTransformation));
         }
 
         return ok;

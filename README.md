@@ -140,7 +140,13 @@ ReDNATCO can be configured through a JSON configuration file. The file must be n
                 "type": "cif",
 
                 // Whether the coordinates file is GZipped
-                "gzipped": false
+                "gzipped": false,
+
+                // Transformation to apply on the "pdbId" string passed as argument to the
+                // function that constructs the URL to the coordinates file.
+                // Only "lower-case" and "upper-case" are currently supported.
+                // If not set, no transformation will be applied.
+                "idTransformation": "lower-case"
             },
 
             // How to get density maps
@@ -155,7 +161,13 @@ ReDNATCO can be configured through a JSON configuration file. The file must be n
                     "type": "dsn6",
 
                     // Kind of the density map provided in the structure. Must be one of "fo-fc", "2fo-fc" or "em"
-                    "kind": "2fo-fc"
+                    "kind": "2fo-fc",
+
+                    // Transformation to apply on the "id" string passed as argument to the
+                    // function that constructs the URL to the density map file.
+                    // Only "lower-case" and "upper-case" are currently supported.
+                    // If not set, no transformation will be applied.
+                    "idTransformation": "lower-case"
                 },
                 {
                     "link": "/db/density_maps/fofc/${id}_fofc.dsn6",

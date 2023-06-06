@@ -5,22 +5,34 @@ import { DensityMap } from '../../dnatco/density-map';
 import { replaceAll, Utf8Decoder } from '../../util';
 import { ungzip } from '../../zip/unzip';
 
+function transformId(id: string, transformation?: IdTransformations) {
+    if (transformation === 'lower-case')
+        return id.toLowerCase();
+    else if (transformation === 'upper-case')
+        return id.toUpperCase();
+    return id;
+}
+
+export const IdTransformations = ['lower-case', 'upper-case'] as const;
+export type IdTransformations = typeof IdTransformations[number];
+
 export type StaticDb = {
     id: string;
     name: string,
-    coords: { link: string, type: Coordinates['type'], gzipped: boolean },
-    densityMaps?: { link: string, type: DensityMap['type'], kind: DensityMap['kind'] }[],
+    coords: { link: string, type: Coordinates['type'], gzipped: boolean, idTransformation?: IdTransformations },
+    densityMaps?: { link: string, type: DensityMap['type'], kind: DensityMap['kind'], idTransformation?: IdTransformations }[],
 }
 
 export function StaticDb(
     name: string,
-    coords: { link: string, type: Coordinates['type'], gzipped: boolean },
-    densityMaps?: { link: string, type: DensityMap['type'], kind: DensityMap['kind'] }[]
+    coords: StaticDb['coords'],
+    densityMaps?: StaticDb['densityMaps'],
 ): RemoteDatabase {
     return {
         name,
         coordinates: async (pdbId) => {
-            const req = await fetch(replaceAll(coords.link, '${pdbId}', pdbId));
+            const id = transformId(pdbId, coords.idTransformation);
+            const req = await fetch(replaceAll(coords.link, '${pdbId}', id));
             if (!req.ok)
                 return ErrorResult(`Invalid database response: ${req.statusText}`);
 
@@ -40,9 +52,9 @@ export function StaticDb(
                 return ErrorResult('Database does not provide density maps');
 
             const maps = new Array<DensityMap>();
-
             for (const dm of densityMaps) {
-                const req = await fetch(replaceAll(dm.link, '${id}', id));
+                const _id = transformId(id, dm.idTransformation)
+                const req = await fetch(replaceAll(dm.link, '${id}', _id));
                 if (!req.ok)
                     console.warn(`Failed to download density map: ${req.statusText}`);
                 else {
