@@ -71,7 +71,7 @@ ReDNATCO can be configured through a JSON configuration file. The file must be n
     // Color of structures highlighted in the Viewer
     "highlightColor": "#ee0011",
 
-    // Inner olor of the violin plot marker
+    // Inner color of the violin plot marker
     "violinPlotMarkerColorA": "#fffb7b",
     // Outline color of the violin plot marker
     "violinPlotMarkerColorB": "#000",
