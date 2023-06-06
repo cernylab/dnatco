@@ -59,7 +59,7 @@ export namespace StructureInfo {
         tbl.addRow([
             NTTable.Cell.lineText('Entity ID', tbl, { font: Tables.HeaderFont }),
             NTTable.Cell.lineText('Entity type', tbl, { font: Tables.HeaderFont }),
-            NTTable.Cell.lineText('Molecule name', tbl, { font: Tables.HeaderFont }),
+            NTTable.Cell.lineText('Entity name', tbl, { font: Tables.HeaderFont }),
             NTTable.Cell.lineText('Count', tbl, { font: Tables.HeaderFont, hAlign: 'right' }),
         ]);
         const { id, pdbx_description, pdbx_number_of_molecules, type, _rowCount } = ctx.dnatcofication.table(Entity);
