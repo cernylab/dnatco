@@ -11,12 +11,7 @@ Some additional functionality requires support from the [ReDNATCO server]() tool
 
 Build instructions
 ---
-As the very first step, clone this repository by running
-```
-git clone https://gitlab.cesnet.cz/madcatxster/rednatco
-```
-
-Once done, `cd` into the directory.
+As the very first step, use `git clone` to clone this repository. Once done, `cd` into the project's directory. Unless you told `git` otherwise, the project will be cloned into directory `rednatco`.
 
 
 Then make sure that you have also pulled all the submodules. Run
