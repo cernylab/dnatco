@@ -31,6 +31,7 @@ export type GlobalConfigData = {
     exampleStructures: {
         db: string,
         pdbId: string,
+        name?: string,
     }[],
     displayedProductName: string,
     currentStepColor: string,

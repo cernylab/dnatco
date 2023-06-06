@@ -43,10 +43,10 @@ function listOfValidExamples(examples: GlobalConfigData['exampleStructures']) {
     return valid;
 }
 
-function makeExample(db: string, pdbId: string, handler: (db: string, pdbId: string) => void) {
+function makeExample(db: string, pdbId: string, name: string | undefined, handler: (db: string, pdbId: string) => void) {
     const _db = copyString(db);
     const _pdbId = copyString(pdbId);
-    return <div key={`${_db}${_pdbId}`} className='rdo-example-structure' onClick={() => handler(_db, _pdbId)}>{_pdbId}</div>
+    return <div key={`${_db}${_pdbId}`} className='rdo-example-structure' onClick={() => handler(_db, _pdbId)}>{name ?? _pdbId}</div>
 }
 
 const NiceMapKinds: Record<AllowedDensityMapKinds, string> = {
@@ -133,7 +133,7 @@ class Coordinates extends React.Component<Coordinates.Props> {
                             ? <div className='rdo-example-structures-list' style={{ gridColumn: '1 / span 2' }}>
                             <div className='rdo-strong'>Examples:</div>
                             <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', columnGap: '1ex' }}>
-                                {examples.map(x => makeExample(x.db, x.pdbId, this.props.onRunExample))}
+                                {examples.map(x => makeExample(x.db, x.pdbId, x.name, this.props.onRunExample))}
                             </div>
                         </div>
                         : <div className='rdo-example-structures-list' style={{ gridColumn: '1 / span 2' }} />
