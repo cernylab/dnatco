@@ -190,3 +190,5 @@ ReDNATCO can be configured through a JSON configuration file. The file must be n
     "useHashRouter": true
 }
 ```
+Mind that the JSON format does not support comments and the annotated example above is not a valid JSON file. Unless specifically overridden in the configuration file,
+ReDNATCO will use sensible defaults for all configuration options. It is not necessary to list every single option in your configuration file, override only the options that you need.
