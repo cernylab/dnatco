@@ -105,6 +105,9 @@ function fixups(data: GlobalConfigData) {
             ok = ok && KnownDensityMapTypes.includes(dm.type) && KnownDensityMapKinds.includes(dm.kind) && (!dm.idTransformation || IdTransformations.includes(dm.idTransformation));
         }
 
+        if (!ok)
+            console.warn(`Disregarding user database "${x.id}" because its configuration is invalid. Check your config file.`);
+
         return ok;
     });
 
