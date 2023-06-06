@@ -173,6 +173,20 @@ ReDNATCO can be configured through a JSON configuration file. The file must be n
     "expectedParametersFingerprint": "466a5115d59a4b1cd691d7e8f4f7b0aa8a39879fb048f2368692c54935ab2912",
 
     // Set to true only for development builds of ReDNATCO
-    "isDevel": true
+    "isDevel": true,
+
+    // Set to true if you do not intend to serve ReDNATCO with rednatco-server
+    // This will replace default application routing
+    //
+    //   somewhere.net/app/something
+    //
+    //   with
+    //
+    //   somewhere.net/#/app/something
+    //
+    // Use of hash routing avoid issues when the browser tries to use the actual URL in the address bar,
+    // i. e. when the user refreshes the page. Unless the server knows how to deal with the /app
+    // endpoint correctly, this would result in 404s.
+    "useHashRouter": true
 }
 ```
