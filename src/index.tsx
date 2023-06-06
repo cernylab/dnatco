@@ -1,6 +1,6 @@
 import React from 'react';
 import * as RDC from 'react-dom/client';
-import { useLocation, useNavigate, BrowserRouter, Navigate, Routes, Route} from 'react-router-dom';
+import { useLocation, useNavigate, BrowserRouter, HashRouter, Navigate, Routes, Route} from 'react-router-dom';
 import { Subject } from 'rxjs';
 import { GlobalConfig } from './global-config';
 import { Globals } from './globals';
@@ -486,6 +486,7 @@ function App(props: { initial: Initial }) {
                     >
                         <Route
                             index
+                            path=''
                             element=<StartTab
                                 onDoCustomStructure={(coordsFile, densityMaps, densityMapCoeffs) => {
                                     if (dnatcofierState !== 'ready') return;
@@ -609,11 +610,11 @@ async function bootstrap() {
             search: window.location.search,
         };
 
-        root.render(
-            <BrowserRouter>
-                <App initial={initial} />
-            </BrowserRouter>
-        );
+        const app = configData.useHashRouter
+            ? <HashRouter><App initial={initial} /></HashRouter>
+            : <BrowserRouter><App initial={initial} /></BrowserRouter>;
+
+        root.render(app);
     } catch (e) {
         root.render(<InitializationError e={e as Error} />);
     }

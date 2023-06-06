@@ -40,6 +40,7 @@ export type GlobalConfigData = {
     highlightColor: string,
     highlightThickness: number,
     expectedParametersFingerprint: string,
+    useHashRouter: boolean,
 };
 const GlobalConfigData: GlobalConfigData = {
     isDevel: false,
@@ -68,6 +69,7 @@ const GlobalConfigData: GlobalConfigData = {
     highlightColor: '#49ff92',
     highlightThickness: 2.0,
     expectedParametersFingerprint: '',
+    useHashRouter: false,
 };
 const AllowedPartials: Partial<{[k in keyof GlobalConfigData]: object}> = {
     anglesLengths: {}
