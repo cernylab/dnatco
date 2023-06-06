@@ -80,8 +80,9 @@ ReDNATCO can be configured through a JSON configuration file. The file must be n
     "exampleStructures": [
         // "db" - Internal ID of the database the structure will be fetched from
         // "pdbId" - PDB ID of the structure
+        // "name" - (Optional) Text to display instead of the examples's PDB ID
         { "db": "test-local", "pdbId": "1bna" },
-        { "db": "rcsb", "pdbId": "1ehz" }
+        { "db": "rcsb", "pdbId": "4qvi", "name": "Quadruplex" }
     ],
 
     // If set to true, ReDNATCO will calculate connectivities and similarities for the entire structure
