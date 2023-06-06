@@ -34,7 +34,11 @@ function mkHeader(text: string) {
 
 function moleculesInEntity(entityId: string, entityType: string, nMolecules: number, d: Dnatcofication) {
     if (entityType !== 'polymer')
-        return <div>Molecules: {nMolecules > 0 ? nMolecules : Common.NA}</div>;
+        return (
+            <NamedList>
+                <NamedListItem name='Count'>{nMolecules > 0 ? nMolecules : Common.NA}</NamedListItem>
+            </NamedList>
+        );
 
     const { entity_id, type, pdbx_strand_id } = d.table(EntityPoly);
     const row = entity_id.values?.findIndex((id) => id === entityId) ?? -1;
