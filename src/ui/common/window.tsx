@@ -161,7 +161,21 @@ function TheWindow(props: {
     }, []);
 
     const reposition = (dx: number, dy: number) => {
-        setPosition(pos => ({ x: pos.x + dx, y: pos.y + dy }));
+        setPosition(pos => {
+            let newX = pos.x + dx;
+            newX = newX < 0
+                ? 0
+                : newX > window.innerWidth - (tRef.current?.clientWidth ?? 0)
+                    ? window.innerWidth - (tRef.current?.clientWidth ?? 0)
+                    : newX;
+            let newY = pos.y + dy;
+            newY = newY < 0
+                ? 0
+                : newY > window.innerHeight - (tRef.current?.clientHeight ?? 0)
+                ? window.innerHeight - (tRef.current?.clientHeight ?? 0)
+                    : newY;
+            return { x: newX, y: newY };
+        });
     };
 
     return (
