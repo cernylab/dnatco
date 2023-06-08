@@ -11,7 +11,6 @@ import {
 } from '../../structure-selection';
 import { Colors } from '../../colors';
 import { StatsBar } from '../../stats-bar';
-import { Constants } from '../../constants';
 import { Icon } from '../../../common/icon';
 import { ToggleButton } from '../../../common/push-button';
 import { Tooltip } from '../../../common/tooltip';
@@ -1146,18 +1145,24 @@ export namespace AnglesLengthsCommon {
         return name;
     }
 
-    export function renderSubstructureStats(caption: string | JSX.Element, summaryCounts: Summarize.Counts, countsInGroups: Summarize.CountsInGroup[], colorsForCounts: string[], captionStyle?: React.CSSProperties) {
+    export function renderSubstructureStats(winTracker: WindowsTracker, winCaption: string | JSX.Element, caption: string | JSX.Element, summaryCounts: Summarize.Counts, countsInGroups: Summarize.CountsInGroup[], colorsForCounts: string[], captionStyle?: React.CSSProperties) {
         return (
             <AnglesLengthsBar
                 caption={
                     <div style={{ ...StayAboveStyle, top: 0, ...captionStyle }}>
-                        <Tooltip
-                            tag={caption}
-                            delayMsec={Constants.TooltipDelayMSec}
-                            display='block'
-                        >
-                            <SubstructureSummary countsInGroups={countsInGroups} />
-                        </Tooltip>
+                        <div
+                            onClick={(ev) => {
+                                ev.preventDefault(); ev.stopPropagation();
+                                const hwnd = Window.create(
+                                    <SubstructureSummary countsInGroups={countsInGroups} />,
+                                    winCaption,
+                                    { x: ev.pageX, y: ev.pageY },
+                                    (hwnd) => winTracker.remove(hwnd)
+                                );
+                                winTracker.add(hwnd);
+                            }}>
+                                    {caption}
+                            </div>
                     </div>
                 }
                 counts={summaryCounts}

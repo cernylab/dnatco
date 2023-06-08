@@ -551,7 +551,7 @@ class ResidueDetails extends React.Component<ResidueDetailsProps, { floatingCueY
     }
 }
 
-class ResidueHeader extends React.Component<{
+function ResidueHeader(props: {
     caption: string | JSX.Element,
     residue: Measurements.Residue,
     residueIdentifyingName: string,
@@ -561,60 +561,62 @@ class ResidueHeader extends React.Component<{
     countsAngles: Summarize.CountsInGroup[],
     countsLengths: Summarize.CountsInGroup[],
     colorsForStatsBar: string[],
-}> {
-    private tainerRef = React.createRef<HTMLDivElement>();
+    winTracker: WindowsTracker,
+}) {
+    const tainerRef = React.useRef<HTMLDivElement>(null);
+    const r = props.residue;
 
-    render() {
-        const r = this.props.residue;
-
-        return (
+    return (
+        <div
+            style={{ position: 'relative', width: '100%', height: '100%' }}
+            ref={tainerRef}
+            id={props.residueIdentifyingName}
+        >
             <div
-                style={{ position: 'relative', width: '100%', height: '100%' }}
-                ref={this.tainerRef}
-                id={this.props.residueIdentifyingName}
+                style={{
+                    ...AnglesLengthsCommon.StayAboveStyle,
+                    top: 0,
+                    left: 'var(--h2-gap)',
+                    ...AnglesLengthsCommon.BarCaptionStyle,
+                }}
             >
-                <div
-                    style={{
-                        ...AnglesLengthsCommon.StayAboveStyle,
-                        top: 0,
-                        left: 'var(--h2-gap)',
-                        ...AnglesLengthsCommon.BarCaptionStyle,
-                    }}
-                >
-                    {this.props.caption}
-                </div>
-
-                <OverallStatsBar
-                    counts={{ angles: this.props.countsAngles, lengths: this.props.countsLengths }}
-                    downloaders={StatsDownloaders}
-                    name={AnglesLengthsCommon.residueIdentifyingName(this.props.structureName, r)}
-                    residues={[this.props.residue]}
-                    stats={[this.props.stats]}
-                >
-                    <div style={{ display: 'flex', flexDirection: 'column' }}>
-                        <div style={{ flex: 1, display: 'flex' }}>
-                            {AnglesLengthsCommon.renderSubstructureStats(
-                                AnglesLengthsCommon.substructureBarCaption('L'),
-                                this.props.summary.lengths,
-                                this.props.countsLengths,
-                                this.props.colorsForStatsBar,
-                                { right: 'var(--h2-gap)' }
-                            )}
-                        </div>
-                        <div style={{ flex: 1, display: 'flex' }}>
-                            {AnglesLengthsCommon.renderSubstructureStats(
-                                AnglesLengthsCommon.substructureBarCaption('A'),
-                                this.props.summary.angles,
-                                this.props.countsAngles,
-                                this.props.colorsForStatsBar,
-                                { right: 'var(--h2-gap)' }
-                            )}
-                        </div>
-                    </div>
-                </OverallStatsBar>
+                {props.caption}
             </div>
-        );
-    }
+
+            <OverallStatsBar
+                counts={{ angles: props.countsAngles, lengths: props.countsLengths }}
+                downloaders={StatsDownloaders}
+                name={AnglesLengthsCommon.residueIdentifyingName(props.structureName, r)}
+                residues={[props.residue]}
+                stats={[props.stats]}
+            >
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    <div style={{ flex: 1, display: 'flex' }}>
+                        {AnglesLengthsCommon.renderSubstructureStats(
+                            props.winTracker,
+                            props.caption,
+                            AnglesLengthsCommon.substructureBarCaption('L'),
+                            props.summary.lengths,
+                            props.countsLengths,
+                            props.colorsForStatsBar,
+                            { right: 'var(--h2-gap)' }
+                        )}
+                    </div>
+                    <div style={{ flex: 1, display: 'flex' }}>
+                        {AnglesLengthsCommon.renderSubstructureStats(
+                            props.winTracker,
+                            props.caption,
+                            AnglesLengthsCommon.substructureBarCaption('A'),
+                            props.summary.angles,
+                            props.countsAngles,
+                            props.colorsForStatsBar,
+                            { right: 'var(--h2-gap)' }
+                        )}
+                    </div>
+                </div>
+            </OverallStatsBar>
+        </div>
+    );
 }
 
 class Residue extends React.Component<ResidueElemProps & {
@@ -645,6 +647,7 @@ class Residue extends React.Component<ResidueElemProps & {
                         countsAngles={this.props.countsAngles}
                         countsLengths={this.props.countsLenghts}
                         colorsForStatsBar={this.props.colorsForStatsBar}
+                        winTracker={this.props.winTracker}
                     />
                 )}
                 onCollapsedExpanded={(change) => {
@@ -1159,6 +1162,8 @@ export class AnglesLengthsByResidue extends View<
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
                         <div style={{ flex: 1, display: 'flex' }}>
                             {AnglesLengthsCommon.renderSubstructureStats(
+                                this.winTracker,
+                                'Lengths',
                                 AnglesLengthsCommon.substructureBarCaption('Lengths'),
                                 summary.lengths,
                                 countsLenghts,
@@ -1167,6 +1172,8 @@ export class AnglesLengthsByResidue extends View<
                         </div>
                         <div style={{ flex: 1, display: 'flex' }}>
                             {AnglesLengthsCommon.renderSubstructureStats(
+                                this.winTracker,
+                                'Angles',
                                 AnglesLengthsCommon.substructureBarCaption('Angles'),
                                 summary.angles,
                                 countsAngles,

@@ -184,6 +184,8 @@ function Base<T extends ALM.AngleStats | ALM.LengthStats>(props: {
             header={AnglesLengthsCommon.makeCollapsibleHeader(
                 <div style={{ display: 'flex', flexDirection: 'row', gap: 'var(--h4-gap)' }}>
                     {AnglesLengthsCommon.renderSubstructureStats(
+                        props.winTracker,
+                        props.base,
                         AnglesLengthsCommon.substructureBarCaption(props.base),
                         props.stats.overall,
                         Summarize.countsInGroups(props.stats.overall),
@@ -335,6 +337,8 @@ function Metric<T extends ALM.AngleStats | ALM.LengthStats>(props: {
             header={AnglesLengthsCommon.makeCollapsibleHeader(
                 <div style={{ display: 'flex', flexDirection: 'row', gap: 'var(--h4-gap)' }}>
                     {AnglesLengthsCommon.renderSubstructureStats(
+                        props.winTracker,
+                        <div className='rdo-strong'>{props.base} {name}</div>,
                         AnglesLengthsCommon.substructureBarCaption(name),
                         props.stats.overall,
                         Summarize.countsInGroups(props.stats.overall),
@@ -805,10 +809,10 @@ export class AnglesLengthsByCompound extends View<View.Props> {
                 >
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
                         <div style={{ flex: 1, display: 'flex' }}>
-                            {AnglesLengthsCommon.renderSubstructureStats(AnglesLengthsCommon.substructureBarCaption('Lengths'), overallLengths, countsLengths, htmlColorsForStatsBar)}
+                            {AnglesLengthsCommon.renderSubstructureStats(this.winTracker, 'Lengths', AnglesLengthsCommon.substructureBarCaption('Lengths'), overallLengths, countsLengths, htmlColorsForStatsBar)}
                         </div>
                         <div style={{ flex: 1, display: 'flex' }}>
-                            {AnglesLengthsCommon.renderSubstructureStats(AnglesLengthsCommon.substructureBarCaption('Angles'), overallAngles, countsAngles, htmlColorsForStatsBar)}
+                            {AnglesLengthsCommon.renderSubstructureStats(this.winTracker, 'Angles', AnglesLengthsCommon.substructureBarCaption('Angles'), overallAngles, countsAngles, htmlColorsForStatsBar)}
                         </div>
                     </div>
                 </OverallStatsBar>

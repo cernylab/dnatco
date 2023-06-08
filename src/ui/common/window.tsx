@@ -56,6 +56,7 @@ function Header(props: {
 
     const [isExpanded, setIsExpanded] = React.useState(true);
     const hdrRef = React.createRef<HTMLDivElement>();
+    const title = typeof props.title === 'string' ? <div className='rdo-strong'>{props.title}</div> : props.title;
 
     React.useEffect(() => {
         const onDown = (evt: MouseEvent) => {
@@ -100,7 +101,7 @@ function Header(props: {
                 ref={hdrRef}
                 style={{ flex: 1, cursor: 'move', whiteSpace: 'nowrap' }}
             >
-                {props.title}
+                {title}
                 <div style={{ width: '1em' }} />
             </div>
             <div onClick={() => {
