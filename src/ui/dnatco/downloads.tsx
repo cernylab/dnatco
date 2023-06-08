@@ -5,6 +5,7 @@ import { Common, DownloadButton } from './common';
 import { Downloads as _Downloads } from './downloads-common';
 import { RsccPlot } from './rscc-plot';
 import { modelOptions } from './views/structure-selectors';
+import { CheckBox } from '../common/check-box';
 import { ComboBox } from '../common/combo-box';
 import { InProgressSpinner } from '../common/in-progress-spinner';
 import { Popup } from '../common/popup';
@@ -184,6 +185,7 @@ export function Downloads(props: { dnatcofication: Dnatcofication }) {
     // We need this shinanegan because unhiding a scrollbar with default appearance
     // in Chrome is a topic for the Ph.D. theses.
     const [mouseInDlList, setMouseInDlList] = React.useState(false);
+    const [listAllDinus, setListAllDinus] = React.useState(false);
 
     const structureName = props.dnatcofication.identifyingName ?? props.dnatcofication.pdbId;
 
@@ -347,7 +349,7 @@ export function Downloads(props: { dnatcofication: Dnatcofication }) {
                                 <DownloadButton
                                     caption='PDF'
                                     onClick={() => {
-                                        Report.pdf(props.dnatcofication).then((report) => {
+                                        Report.pdf(props.dnatcofication, { completeStepsTable: listAllDinus }).then((report) => {
                                             Net.serveFileRaw(FileTypes.pdf.mimeType, report, `${props.dnatcofication.pdbId}_${GlobalConfig.data().displayedProductName.toLowerCase()}_validation_report.${FileTypes.pdf.suffix}`);
                                         }).catch(e => {
                                             Popup.create(
@@ -361,7 +363,7 @@ export function Downloads(props: { dnatcofication: Dnatcofication }) {
                                 <DownloadButton
                                     caption='Plain text'
                                     onClick={() => {
-                                        Report.text(props.dnatcofication).then((report) => {
+                                        Report.text(props.dnatcofication, { completeStepsTable: listAllDinus }).then((report) => {
                                             Net.serveFile(FileTypes.text.mimeType, report, `${props.dnatcofication.pdbId}_${GlobalConfig.data().displayedProductName.toLowerCase()}_validation_report.${FileTypes.text.suffix}`);
                                         }).catch(e => {
                                             Popup.create(
@@ -372,6 +374,13 @@ export function Downloads(props: { dnatcofication: Dnatcofication }) {
                                         });
                                     }}
                                 />
+                                <div className='rdo-vflexalign'>
+                                    <CheckBox
+                                        caption='List all dinucleotides in the report'
+                                        checked={listAllDinus}
+                                        onChanged={(checked) => setListAllDinus(checked)}
+                                    />
+                                </div>
                             </_Downloads.DownloadBox>
                         </div>
                     </div>

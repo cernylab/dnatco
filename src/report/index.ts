@@ -1,6 +1,7 @@
 import { Fonts as _Fonts } from './fonts';
 import { Fonts, OutputMode } from './styling';
 import { BondAnglesLengths } from './content/bond-angles-lengths';
+import { CompleteStepsTable } from './content/complete-steps-table';
 import { DinucleotideOutliers } from './content/dinucleotide-outliers';
 import { Title } from './content/title';
 import { RsccRmsd } from './content/rscc-rmsd';
@@ -43,10 +44,12 @@ function makeContext<Output>(dnatcofication: Dnatcofication, ntDoc: NTDocument<O
 }
 
 export namespace Report {
-    async function addContent<Output>(ctx: Context<Output>) {
+    async function addContent<Output>(ctx: Context<Output>, completeStepsTable: boolean) {
         await Title.add(ctx);
         StructureInfo.add(ctx);
         await StructureQuality.add(ctx);
+        if (completeStepsTable)
+            CompleteStepsTable.add(ctx);
         DinucleotideOutliers.add(ctx);
         await RsccRmsd.add(ctx);
         BondAnglesLengths.add(ctx);
@@ -64,23 +67,27 @@ export namespace Report {
         mode: OutputMode,
     }
 
-    export async function pdf(dnatcofication: Dnatcofication) {
+    export type Options = {
+        completeStepsTable: boolean,
+    }
+
+    export async function pdf(dnatcofication: Dnatcofication, options: Partial<Options> = {}) {
         await _Fonts.load();
 
         const ntDoc = await NTPdfDocument.create(Margins, PageSize, _Fonts.get(), Fonts.Default)
         const ctx = makeContext(dnatcofication, ntDoc, href(), 'graphical');
-        await addContent(ctx);
+        await addContent(ctx, !!options?.completeStepsTable);
 
         return await ntDoc.render();
     }
 
-    export async function text(dnatcofication: Dnatcofication) {
+    export async function text(dnatcofication: Dnatcofication, options: Partial<Options> = {}) {
         await _Fonts.load();
 
         const ntDoc = await NTTextDocument.create(80, 5, _Fonts.get());
         const ctx = makeContext(dnatcofication, ntDoc, href(), 'textual');
 
-        await addContent(ctx);
+        await addContent(ctx, !!options?.completeStepsTable);
 
         return await ntDoc.render();
     }
