@@ -112,7 +112,11 @@ export function makeStepSelection(dnatcofication: Dnatcofication, stepId: number
 export function niceCifDate(date: Schema.CifDate) {
     if (!date)
         return 'N/A';
-    return `${date.year}-${date.month.toString().padStart(2, '0')}-${date.day.toString().padStart(2, '0')}`;
+    return niceDate(date.year, date.month, date.day);
+}
+
+export function niceDate(year: number, month: number, day: number) {
+    return `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
 }
 
 export function setDynamicTableModelColumns(oldModel: DynamicTable.Model, rowIdx: number, columns: DynamicTable.Column<any>[], tags: (string | undefined)[], newValues: (number | string)[], newElems: ((() => JSX.Element) | undefined)[]) {

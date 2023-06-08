@@ -4,6 +4,7 @@ import { Layout } from '../layout';
 import { NTTable } from '../nottex/primitives';
 import { NTMm, NTUnit, NTXYWH } from '../nottex/space';
 import { GlobalConfig } from '../../global-config';
+import { niceDate } from '../../ui/dnatco/util';
 import { Version } from '../../version';
 import '../../../../assets/imgs/definition_new_trans2.png';
 
@@ -73,7 +74,7 @@ export namespace Title {
         const tbl = root.table(2, Tables.EnumTable(ctx.tDims.characterWidth, ctx.tDims.characterHeight, ctx.mode));
         tbl.addRow([
             NTTable.Cell.lineText('Date:', tbl, { font: Tables.EnumTableName.font }, Tables.EnumTableName.cell),
-            NTTable.Cell.lineText(`${now.getUTCFullYear()}-${now.getUTCMonth().toString().padStart(2, '0')}-${now.getUTCDate()}`, tbl, { font: Tables.EnumTableValue.font }, Tables.EnumTableValue.cell)
+            NTTable.Cell.lineText(niceDate(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()), tbl, { font: Tables.EnumTableValue.font }, Tables.EnumTableValue.cell)
         ]);
         tbl.addRow([
             NTTable.Cell.lineText('Structure ID:', tbl, { font: Tables.EnumTableName.font }, Tables.EnumTableName.cell),
