@@ -65,10 +65,8 @@ function Header(props: {
             const onMove = (ev: MouseEvent) => {
                 ev.preventDefault();
 
-                const wX = (window.outerWidth - window.innerWidth);
-                const wY = (window.outerHeight - window.innerHeight);
-                const dx = ev.screenX < wX || ev.screenX >= window.innerWidth + wX ? 0 : ev.movementX;
-                const dy = ev.screenY < wY || ev.screenY >= window.innerHeight + wY ? 0 : ev.movementY;
+                const dx = ev.clientX < 0 || ev.clientX >= window.innerWidth  ? 0 : ev.movementX;
+                const dy = ev.clientY < 0 || ev.clientY >= window.innerHeight ? 0 : ev.movementY;
                 props.onDragged(dx, dy);
             };
             const onUp = () => {
@@ -223,13 +221,10 @@ function TheWindow(props: {
                         evt.preventDefault(); evt.stopPropagation();
 
                         const onMove = (ev: MouseEvent) => {
-                            ev.preventDefault();
+                            ev.preventDefault(); ev.stopPropagation();
 
-                            const wX = (window.outerWidth - window.innerWidth);
-                            const wY = (window.outerHeight - window.innerHeight);
-
-                            const dx = resW && ev.screenX >= wX && ev.screenX < window.innerWidth + wX ? ev.movementX : 0;
-                            const dy = resH && ev.screenY >= wY && ev.screenY < window.innerHeight + wY ? ev.movementY : 0;
+                            const dx = resW && ev.clientX >= 0 && ev.clientX < window.innerWidth  ? ev.movementX : 0;
+                            const dy = resH && ev.clientY >= 0 && ev.clientY < window.innerHeight ? ev.movementY : 0;
 
                             setSize(sz => {
                                 const newWidth = ((sz.width < 0 && resW) ? tRef.current!.clientWidth : sz.width) + dx;
