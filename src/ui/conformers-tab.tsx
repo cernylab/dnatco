@@ -1,5 +1,6 @@
 import React from 'react';
 import { ContourPlots } from './contour-plots';
+import { Help } from './help';
 import { SearchConformers } from './search-conformers';
 import { DynamicTable } from './common/dynamic-table';
 import { InProgress } from './common/in-progress';
@@ -7,7 +8,6 @@ import { NamedList, NamedListItem } from './common/named-list';
 import { Popup } from './common/popup';
 import { ShadowedBox } from './common/shadowed-box';
 import { SideSwitchingPanel } from './common/side-switching-panel';
-import { TextContainer } from './common/text-container';
 import { Common, DownloadButton } from './dnatco/common';
 import { ListOfConformers } from '../dnatco/list-of-conformers';
 import { Step } from '../dnatco/step';
@@ -16,7 +16,6 @@ import { doDownload, FileTypes } from '../util/downloader';
 import { Net } from '../util/net';
 import { Serialization } from '../util/serialization';
 import { GlobalConfig } from '../global-config';
-import 'assets/html/about-ntcs.html';
 
 const Tabs = [
     ['about-ntcs', { caption: 'About NtCs', title: 'About NtCs' }],
@@ -46,10 +45,55 @@ function fmtFlt(f: number, n = 1) {
     return f.toFixed(n);
 }
 
-class AboutNtCs extends React.Component {
-    render() {
-        return <TextContainer assetUrl={`${GlobalConfig.data().pathPrefix}/html/about-ntcs.html`} />;
-    }
+function AboutNtCs() {
+    const prefix = React.useMemo(() => GlobalConfig.data().pathPrefix, []);
+
+    return (
+        <Help.Container>
+            <div className='rdo-page'>
+                <div className='rdo-paragraph-caption'>NtC alphabet</div>
+                <div className='rdo-paragraph'>
+                    The NtC structural alphabet describes DNA/RNA backbone conformations using
+                    96 distinct dinucleotide conformers. These dinucleotide conformers are
+                    assigned based on the values of 12 backbone torsion and distance parameters
+                    (Figure 1).
+                </div>
+
+                <div className='rdo-image-tainer'>
+                    <img className='rdo-image' src={`${prefix}/imgs/definition_new_trans2.png`} />
+                    <div>
+                        Figure 1. Dinucleotide step with the 12 parameters <br /> (backbone torsions shown in gray, distances in blue) <br /> that define the NtC conformational class.
+                    </div>
+                </div>
+
+                <div className='rdo-paragraph-caption'>NtC naming</div>
+                <div className='rdo-paragraph'>
+                    <ul className='rdo-list'>
+                        <li>
+                            The names of the NtC conformer classes consist of four characters (e.g. BB00 or ZZ1S).
+                        </li>
+                        <li>
+                            Names containing "A", "B", "Z" as the first and/or second character imply
+                            a dinucleotide with stacked bases <br /> and with first/second nucleotide in an A-, B-, or Z-like conformation.
+                        </li>
+                        <li>
+                            Names starting with "IC" correspond to steps with InterCalated bases.
+                        </li>
+                        <li>
+                            Names starting with "OP" correspond to steps with OPen bases.
+                        </li>
+                        <li>
+                            Names containing "S" at 3rd or 4th position imply that the 1st or 2nd base, respectively, is in syn orientation.
+                        </li>
+                        <li>
+                            Conformationally extreme conformers are not assigned to any of the above;
+                            these steps formally represent the 97th conformer named NANT.
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </Help.Container>
+    );
 }
 
 class BrowseConformers extends React.Component {

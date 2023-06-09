@@ -529,6 +529,25 @@ th.rdo-data-table-small {
     object-fit: contain;
 }
 
+.rdo-image-tainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: var(--x-gap);
+}
+
+a.rdo-imglink {
+    color: black;
+    transition: filter var(--anim-speed);
+}
+a.rdo-imglink:hover {
+    filter: drop-shadow(0 0 5px var(--color-a));
+}
+a.rdo-imglink:visited {
+    color: #777
+}
+
 .rdo-info-icon-white {
     filter: invert();
     height: 0.75em;
@@ -668,6 +687,23 @@ th.rdo-data-table-small {
     height: calc(100% - 2*var(--x-gap));
     margin: var(--x-gap);
     width: calc(100% - 2*var(--x-gap));
+}
+
+.rdo-page {
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 80em;
+}
+
+.rdo-paragraph {
+    margin-bottom: var(--v-gap);
+}
+
+.rdo-paragraph-caption {
+    font-size: var(--font-large);
+    margin-bottom: var(--v-gap);
+    text-align: left;
+    font-weight: bold;
 }
 
 .rdo-plot-container {
@@ -1063,6 +1099,11 @@ th.rdo-data-table-small {
     text-align: left;
 }
 
+.rdo-subsection-caption {
+    margin-bottom: var(--v-gap);
+    font-style: italic;
+}
+
 .rdo-tab-button {
     align-items: center;
     display: flex;
@@ -1236,70 +1277,10 @@ th.rdo-data-table-small {
     left: 0;
 }
 
-/*
- * Styles intended to be used by HTML text assets.
- *
- * It is safe to modify these styles without the risk of breaking
- * the layout of the rest of the application.
- *
- * All styles intended for use with HTML text assets should be prefixed with "rdo-txa-"
- *
- */
-
-.rdo-txa-page {
-    margin-left: auto;
-    margin-right: auto;
-    max-width: 80em;
-}
-
-.rdo-txa-image-tainer {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: var(--x-gap);
-}
 
 .rdo-txa-section-caption {
     font-size: var(--font-large);
     font-weight:bold;
     margin-bottom: var(--v-gap);
     text-align: left;
-}
-
-.rdo-txa-subsection-caption {
-    margin-bottom: var(--v-gap);
-    font-style: italic;
-}
-
-.rdo-txa-sup {
-    vertical-align: super;
-    font-size: var(--font-small)
-}
-
-.rdo-txa-bold {
-    font-weight: bold;
-}
-
-a.rdo-txa-imglink {
-    color: black;
-    transition: filter var(--anim-speed);
-}
-a.rdo-txa-imglink:hover {
-    filter: drop-shadow(0 0 5px var(--color-a));
-}
-a.rdo-txa-imglink:visited {
-    color: #777
-}
-
-/* This should be probably kept in sync with rdo-link */
-a.rdo-txa-link {
-    color: black;
-}
-a.rdo-txa-link:visited {
-    color: #777
-}
-
-ul.rdo-txa-list {
-    list-style-type: square;
 }
