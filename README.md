@@ -71,6 +71,9 @@ ReDNATCO can be configured through a JSON configuration file. The file must be n
     // Outline color of the violin plot marker
     "violinPlotMarkerColorB": "#000",
 
+    // Whether to show hydrogens in overlaid reference dinucleoties
+    showHydrogensInReferences: false,
+
     // Structures to list as examples on the home page
     "exampleStructures": [
         // "db" - Internal ID of the database the structure will be fetched from

@@ -19,7 +19,7 @@ import { Exptl } from '../../cif/categories/experimental';
 import { Refine } from '../../cif/categories/refine';
 import { Dnatcofication } from '../../dnatco/dnatcofication';
 import { StepsMapper } from '../../dnatco/steps-mapper';
-import { objKeys } from '../../util';
+import { navPath, objKeys } from '../../util';
 import { GlobalConfig } from '../../global-config';
 import { Filters } from 'viewer-filters';
 import 'assets/molstar.js';
@@ -80,6 +80,7 @@ const ExcludeModelIndexAndChain = ['modelIndex', 'chain'] as (keyof StructureSel
 
 function locationToDnatcoMode(location: string): DnatcoMode {
     const segments = location.split('/');
+
     if (segments[1] !== 'app' && segments[2] !== 'dnatco')
         throw new Error(`Invalid route ${segments[1]}/${segments[2]}`);
 
@@ -366,6 +367,8 @@ export function MainScreen(props: {
         /*
          * BEWARE: We need to use the raw location from window.location and not the location from react-router hook.
          * Hook value gets stuck at its initial value in the event handlers.
+         * We also need to use the "navPath()" helper to get the correct path because react-router abstracts away
+         * the difference between "pathname" and "hash".
          * Sigh...
          */
 
@@ -404,7 +407,7 @@ export function MainScreen(props: {
                     reconstruct: false,
                 };
 
-                const mode = locationToDnatcoMode(window.location.pathname); // See the BEWARE above
+                const mode = locationToDnatcoMode(navPath(window.location)); // See the BEWARE above
                 const displayer = Register.Views[mode.viewId].selectionDisplayer;
                 displayer(pieces, props.dnatcofication, props.viewerInterop, dumb.set);
             }
@@ -412,7 +415,7 @@ export function MainScreen(props: {
 
         subs.push(
             props.outsideControl.selectStep.subscribe((stepName) => {
-                const mode = locationToDnatcoMode(window.location.pathname); // See the BEWARE above
+                const mode = locationToDnatcoMode(navPath(window.location)); // See the BEWARE above
                 const view = Register.Views[mode.viewId];
 
                 const stepId = StepsMapper.byName(props.dnatcofication, stepName)?.id;
@@ -429,10 +432,14 @@ export function MainScreen(props: {
 
         props.viewerInterop.bind(
             'rdo-id-molstar-container',
-            { highlightColor: GlobalConfig.data().highlightColor, highlightThickness: GlobalConfig.data().highlightThickness }
+            {
+                highlightColor: GlobalConfig.data().highlightColor,
+                highlightThickness: GlobalConfig.data().highlightThickness,
+                hydogensInReferences: GlobalConfig.data().showHydrogensInReferences,
+            }
         ).then(() => {
             subs.push(props.viewerInterop.events.residueRequested.subscribe((residue) => {
-                const mode = locationToDnatcoMode(window.location.pathname); // See the BEWARE above
+                const mode = locationToDnatcoMode(navPath(window.location)); // See the BEWARE above
                 const view = Register.Views[mode.viewId];
                 if (view.granularity !== 'residue')
                     return;
@@ -449,7 +456,7 @@ export function MainScreen(props: {
             }));
 
             subs.push(props.viewerInterop.events.stepRequested.subscribe((name) => {
-                const mode = locationToDnatcoMode(window.location.pathname); // See the BEWARE above
+                const mode = locationToDnatcoMode(navPath(window.location)); // See the BEWARE above
                 const view = Register.Views[mode.viewId];
                 if (view.granularity !== 'two-residues')
                     return;
@@ -470,7 +477,7 @@ export function MainScreen(props: {
                 structureSelection.residues.splice(0, structureSelection.residues.length);
                 structureSelection.atoms.splice(0, structureSelection.atoms.length);
 
-                const mode = locationToDnatcoMode(window.location.pathname); // See the BEWARE above
+                const mode = locationToDnatcoMode(navPath(window.location)); // See the BEWARE above
                 const view = Register.Views[mode.viewId];
 
                 changeSelection(EmptySelectionPieces, view.selectionDisplayer);

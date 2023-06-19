@@ -8,6 +8,8 @@
         "watch": "concurrently -c \"green,blue\" --names \"tsc\" --kill-others \"npm:watch-tsc\" \"npm:watch-webpack\"",
         "watch-tsc": "tsc --watch --incremental",
         "watch-webpack": "webpack -w --mode development --stats minimal --config ./webpack.config.js",
+        "start-server": "webpack serve --mode development --stats minimal --config ./webpack.config.js",
+        "serve-dev": "concurrently -c \"green,blue\" --names \"tsc\" --kill-others \"npm:watch-tsc\" \"npm:start-server\"",
         "build-tsc": "tsc --build tsconfig.json",
         "build-tsc-dev": "tsc --build tsconfig.development.json",
         "build-webpack": "webpack --mode production --config ./webpack.config.js",
@@ -64,6 +66,7 @@
         "tscif": "file:./tscif",
         "tslib": "^2.5.0",
         "tspdb": "file:./tspdb",
-        "uuid": "^8.3.2"
+        "uuid": "^8.3.2",
+        "webpack-dev-server": "^4.15.1"
     }
 }

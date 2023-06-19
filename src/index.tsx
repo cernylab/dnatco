@@ -1,6 +1,6 @@
 import React from 'react';
 import * as RDC from 'react-dom/client';
-import { useLocation, useNavigate, BrowserRouter, HashRouter, Navigate, Routes, Route} from 'react-router-dom';
+import { useLocation, useNavigate, BrowserRouter, HashRouter, Navigate, Routes, Route } from 'react-router-dom';
 import { Subject } from 'rxjs';
 import { GlobalConfig } from './global-config';
 import { Globals } from './globals';
@@ -606,6 +606,7 @@ async function bootstrap() {
             throw new Error(`Primary database ID "${configData.primaryDatabase}" is not known`);
 
         const initial = {
+            hash: window.location.hash,
             pathname: window.location.pathname,
             search: window.location.search,
         };

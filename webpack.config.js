@@ -9,6 +9,23 @@ const DistDir = 'dist';
 
 function sharedConfig(productionBuild) {
     return {
+        devServer: {
+            client: {
+                logging: 'warn',
+                overlay: {
+                    errors: true,
+                    warnings: true,
+                    runtimeErrors: true,
+                },
+                progress: true,
+            },
+            static: {
+                directory: path.join(__dirname, DistDir),
+            },
+            compress: false,
+            port: 8118,
+        },
+
         node: {
             // provides the global variable named "global"
             global: true,

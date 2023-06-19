@@ -1,4 +1,5 @@
 import { clone as _justClone } from './just-clone';
+import { GlobalConfig } from '../global-config';
 
 const ZeroChar = '0'.charCodeAt(0);
 const NineChar = '9'.charCodeAt(0);
@@ -143,6 +144,16 @@ export function iterate<T extends object>(obj: T) {
     }
 
     return list;
+}
+
+export function navPath(location: { hash: string, pathname: string }) {
+    if (GlobalConfig.data().useHashRouter) {
+        const path = location.hash;
+        const idx = path.indexOf('#');
+        return path.substring(idx + 1);
+    }
+
+    return location.pathname;
 }
 
 export function parseIntStrict(obj: unknown, allowNegative = true) {
