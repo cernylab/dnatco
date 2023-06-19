@@ -19,7 +19,7 @@ Then make sure that you have also pulled all the submodules. Run
 git submodule update --init --recursive
 ```
 
-ReDNATCO relies on [Molstar](https://molstar.org/) Viewer of visualisation. To avoid any potential issues during the build process, it is highly recommended that you build the Molstar viewer first.
+ReDNATCO relies on [Molstar](https://molstar.org/) Viewer for visualisation. To avoid any potential issues during the build process, it is highly recommended that you build the Molstar viewer first.
 To do so, run
 ```
 node build_molstar.js
@@ -37,14 +37,31 @@ Alternatively, you can run
 npm run build-dev
 ```
 
-this will produce an unoptimized build of ReDNATCO. Unoptimized build has a considerably larger size but the generated code is more readable and it takes less time to build. It is highly recommended to use `build-dev` for development purposes.
+#### Continuous incremental builds
+
+This will produce an unoptimized build of ReDNATCO. Unoptimized build has a considerably larger size but the generated code is more readable and it takes less time to build. It is highly recommended to use `build-dev` for development purposes.
 
 If the code build successfully, you may also run
 ```
 npm run watch
 ```
 
-This will start a watcher that will rebuild ReDNATCO incrementally whenver a project file gets changed. Note that some more invasive changes or changes to the Webpack configuration may require a full rebuild.
+This will start a watcher that will rebuild ReDNATCO incrementally whenever a project file gets changed. Note that some more invasive changes or changes to the Webpack configuration may require a full rebuild.
+
+#### Development with internal web server
+
+As a last option, you may use the `webpack-dev-server` plugin for local development. Webpack will start its own web server that will serve ReDNATCO and incrementally rebuild ReDNATCO in the same fashion as `npm run watch`.
+To use function, run
+```
+npm run serve-dev
+```
+
+and navigate to [http://localhost:8118](http://localhost:8118) in your browser.
+
+
+*NOTE:* Make sure that you have `useHashRouter` set to `true` in ReDNATCO configuration if you use this option. Otherwise the navigation will not work correctly.
+
+*NOTE 2:* Webpack server does not provide the full functionality of ReDNATCO server. It is intended for development purposes only.
 
 Configuration
 ---
@@ -62,6 +79,9 @@ ReDNATCO can be configured through a JSON configuration file. The file must be n
 
     // Color of the reference structure of the next step. Used in the Viewer, plots and tables.
     "nextStepColor": "#a0a",
+
+    // Color of the reference structure of the previous step. Used in the Viewer, plots and tables.
+    previousStepColor: '#0000ff',
 
     // Color of structures highlighted in the Viewer
     "highlightColor": "#ee0011",
