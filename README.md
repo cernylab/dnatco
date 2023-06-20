@@ -37,6 +37,8 @@ Alternatively, you can run
 npm run build-dev
 ```
 
+By default, ReDNATCO will be built into the `dist` subdirectory.
+
 #### Continuous incremental builds
 
 This will produce an unoptimized build of ReDNATCO. Unoptimized build has a considerably larger size but the generated code is more readable and it takes less time to build. It is highly recommended to use `build-dev` for development purposes.
@@ -51,7 +53,7 @@ This will start a watcher that will rebuild ReDNATCO incrementally whenever a pr
 #### Development with internal web server
 
 As a last option, you may use the `webpack-dev-server` plugin for local development. Webpack will start its own web server that will serve ReDNATCO and incrementally rebuild ReDNATCO in the same fashion as `npm run watch`.
-To use function, run
+To use Webpack internal server, run
 ```
 npm run serve-dev
 ```
@@ -59,13 +61,13 @@ npm run serve-dev
 and navigate to [http://localhost:8118](http://localhost:8118) in your browser.
 
 
-**NOTE:** Make sure that you have `useHashRouter` set to `true` in ReDNATCO configuration if you use this option. Otherwise the navigation will not work correctly.
+**NOTE:** Make sure that you have `useHashRouter` set to `true` in ReDNATCO configuration if you use Webpack internal server. Otherwise the navigation will not work correctly.
 
 **NOTE 2:** Webpack server does not provide the full functionality of ReDNATCO server. It is intended for development purposes only.
 
 Configuration
 ---
-ReDNATCO can be configured through a JSON configuration file. The file must be named `config.json` and it must be places in the site's root directory. Annotated configuration file is listed below
+ReDNATCO can be configured through a JSON configuration file. The file must be named `config.json` and it must be placed in the site's root directory. Annotated configuration file is listed below
 
 ```
 {
