@@ -59,9 +59,9 @@ npm run serve-dev
 and navigate to [http://localhost:8118](http://localhost:8118) in your browser.
 
 
-*NOTE:* Make sure that you have `useHashRouter` set to `true` in ReDNATCO configuration if you use this option. Otherwise the navigation will not work correctly.
+**NOTE:** Make sure that you have `useHashRouter` set to `true` in ReDNATCO configuration if you use this option. Otherwise the navigation will not work correctly.
 
-*NOTE 2:* Webpack server does not provide the full functionality of ReDNATCO server. It is intended for development purposes only.
+**NOTE 2:** Webpack server does not provide the full functionality of ReDNATCO server. It is intended for development purposes only.
 
 Configuration
 ---
@@ -222,5 +222,5 @@ ReDNATCO can be configured through a JSON configuration file. The file must be n
 }
 ```
 #### Note about configuration
-Mind that the JSON format *does not* support comments and the annotated example above is not a valid JSON file. Unless specifically overridden in the configuration file,
+Mind that the JSON format **does not** support comments and the annotated example above **is not** a valid JSON file. Unless specifically overridden in the configuration file,
 ReDNATCO will use sensible defaults for all configuration options. It is not necessary to list every single option in your configuration file, override only the options that you need.
