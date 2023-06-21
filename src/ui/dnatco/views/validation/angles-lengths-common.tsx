@@ -1,3 +1,4 @@
+import { PlotData } from 'plotly.js';
 import Plot from 'react-plotly.js';
 import React from 'react';
 import { Subject } from 'rxjs';
@@ -15,7 +16,7 @@ import { Icon } from '../../../common/icon';
 import { ToggleButton } from '../../../common/push-button';
 import { Tooltip } from '../../../common/tooltip';
 import { Window } from '../../../common/window';
-import { colorStyle, colorToTuple } from '../../../util';
+import { colorStyle, colorToTuple, ColorTuple } from '../../../util';
 import { ALM } from '../../../../dnatco/alm';
 import { Dnatcofication } from '../../../../dnatco/dnatcofication';
 import { shiftedName } from '../../../../dnatco/angles-lengths/atoms';
@@ -255,14 +256,26 @@ const ThymineLengthsOrder = [
 const EmptyPlotPoints = new Array<number>();
 
 export type NavalItem = {
+    csdPreferredLeft: number,
+    csdPreferredRight: number,
     value: number;
     quality: Naval.Quality | 'none';
 }
 export function NavalItem(item: Validation.ReportItem<Validation.AngleAtoms | Validation.BondAtoms>): NavalItem {
-    return { value: item.target_value, quality: Naval.quality(item) };
+    const threeSigma =  3 * item.target_sigma;
+    return {
+        csdPreferredLeft: item.target_value - threeSigma,
+        csdPreferredRight: item.target_value + threeSigma,
+        value: item.target_value,
+        quality: Naval.quality(item)
+    };
 }
-const EmptyNavalItem: NavalItem = { value: 0, quality: 'none' };
-
+const EmptyNavalItem: NavalItem = {
+    csdPreferredLeft: 0,
+    csdPreferredRight: 0,
+    value: 0,
+    quality: 'none'
+};
 
 type AveragesChartDownloader = Downloader<Serialization.Serializable>;
 const AveragesChartDownloaders = [
@@ -343,6 +356,22 @@ export class AveragesChart extends React.Component<{
         }
 
         return indices;
+    }
+
+    private makeNavalLine(x: number, text: string, color: ColorTuple, yMax: number, xt: number[]): Partial<PlotData> {
+        return {
+            x: this.props.naval.quality !== 'none' ? [x] : EmptyPlotPoints,
+            y: this.props.naval.quality !== 'none' ? [yMax / 2] : EmptyPlotPoints,
+            type: 'bar',
+            width: 2 * (xt[1] - xt[0]),
+            marker: {
+                color: `rgb(${color[0]}, ${color[1]}, ${color[2]})`,
+            },
+            hoverinfo: 'text',
+            hovertext: text,
+            hoveron: 'fills',
+            showlegend: false,
+        };
     }
 
     render() {
@@ -454,19 +483,9 @@ export class AveragesChart extends React.Component<{
                             hoveron: 'fills',
                             showlegend: false,
                         },
-                        {
-                            x: this.props.naval.quality !== 'none' ? [this.props.naval.value] : EmptyPlotPoints,
-                            y: this.props.naval.quality !== 'none' ? [yMax / 2] : EmptyPlotPoints,
-                            type: 'bar',
-                            width: 2 * (xt[1] - xt[0]),
-                            marker: {
-                                color: `rgb(${navalColorTup[0]}, ${navalColorTup[1]}, ${navalColorTup[2]})`,
-                            },
-                            hoverinfo: 'text',
-                            hovertext: 'Naval target value',
-                            hoveron: 'fills',
-                            showlegend: false,
-                        }
+                        this.makeNavalLine(this.props.naval.value, 'Naval target value', navalColorTup, yMax, xt),
+                        this.makeNavalLine(this.props.naval.csdPreferredLeft, 'Naval CSD-preferred lower bound', navalColorTup, yMax, xt),
+                        this.makeNavalLine(this.props.naval.csdPreferredRight, 'Naval CSD-preferred upper bound', navalColorTup, yMax, xt),
                     ]}
                     layout={{
                         autosize: true,
