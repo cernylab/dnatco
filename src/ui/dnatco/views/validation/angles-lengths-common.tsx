@@ -358,10 +358,10 @@ export class AveragesChart extends React.Component<{
         return indices;
     }
 
-    private makeNavalLine(x: number, text: string, color: ColorTuple, yMax: number, xt: number[]): Partial<PlotData> {
+    private makeNavalLine(x: number, relativeYMax: number, text: string, color: ColorTuple, yMax: number, xt: number[]): Partial<PlotData> {
         return {
             x: this.props.naval.quality !== 'none' ? [x] : EmptyPlotPoints,
-            y: this.props.naval.quality !== 'none' ? [yMax / 2] : EmptyPlotPoints,
+            y: this.props.naval.quality !== 'none' ? [yMax * relativeYMax] : EmptyPlotPoints,
             type: 'bar',
             width: 2 * (xt[1] - xt[0]),
             marker: {
@@ -483,9 +483,9 @@ export class AveragesChart extends React.Component<{
                             hoveron: 'fills',
                             showlegend: false,
                         },
-                        this.makeNavalLine(this.props.naval.value, 'Naval target value', navalColorTup, yMax, xt),
-                        this.makeNavalLine(this.props.naval.csdPreferredLeft, 'Naval CSD-preferred lower bound', navalColorTup, yMax, xt),
-                        this.makeNavalLine(this.props.naval.csdPreferredRight, 'Naval CSD-preferred upper bound', navalColorTup, yMax, xt),
+                        this.makeNavalLine(this.props.naval.value, 0.75, 'Naval target value', navalColorTup, yMax, xt),
+                        this.makeNavalLine(this.props.naval.csdPreferredLeft, 0.50, 'Naval CSD-preferred lower bound', navalColorTup, yMax, xt),
+                        this.makeNavalLine(this.props.naval.csdPreferredRight, 0.50, 'Naval CSD-preferred upper bound', navalColorTup, yMax, xt),
                     ]}
                     layout={{
                         autosize: true,
