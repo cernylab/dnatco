@@ -390,8 +390,8 @@ export class AveragesChart extends React.Component<{
         const yt = this.props.bins.map(b => this.props.yTransform ? this.props.yTransform(b.probability) : b.probability);
         const yMax = Math.max(...yt);
 
-        const xtFrom = Math.min(xt[0], this.props.naval.csdPreferredLeft);
-        const xtTo = Math.max(xt[xt.length - 1], this.props.naval.csdPreferredRight);
+        const xtFrom = this.props.naval.quality !== 'none' ? Math.min(xt[0], this.props.naval.csdPreferredLeft) : xt[0];
+        const xtTo = this.props.naval.quality !== 'none' ? Math.max(xt[xt.length - 1], this.props.naval.csdPreferredRight) : xt[xt.length - 1];
         const xAxisMargin = (xtTo - xtFrom) * 0.05;
         const xRange = [
             (xtFrom > tm ? tm : xtFrom) - xAxisMargin,
