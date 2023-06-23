@@ -2,7 +2,7 @@ import * as jsLLKA from 'jsllka';
 import { BunchOfAtoms, Common, StdBase } from "./common";
 
 const Pyrimidines = new Set([
-    "C", "U", "DC", "DT"
+    "C", "U", "DC", "DT", "DU"
 ]);
 
 function isDeoxyribose(compId: string) {
@@ -164,12 +164,12 @@ export namespace Measure {
         aoi.C5 = Common.findAtom(boa.current, "C5");
         aoi.C6 = Common.findAtom(boa.current, "C6");
 
-        if (compId == "A" || compId == "DA" || compId == "G" || compId == "DG") {
+        if (compId === "A" || compId === "DA" || compId === "G" || compId === "DG") {
             aoi.N7 = Common.findAtom(boa.current, "N7");
             aoi.C8 = Common.findAtom(boa.current, "C8");
             aoi.N9 = Common.findAtom(boa.current, "N9");
 
-            if (compId == "A" || compId == "DA") {
+            if (compId === "A" || compId === "DA") {
                 aoi.N6 = Common.findAtom(boa.current, "N6");
             } else {
                 aoi.N2 = Common.findAtom(boa.current, "N2");
@@ -178,10 +178,10 @@ export namespace Measure {
         } else {
             aoi.O2 = Common.findAtom(boa.current, "O2");
 
-            if (compId == "DT") {
+            if (compId === "DT") {
                 aoi.O4 = Common.findAtom(boa.current, "O4");
                 aoi.C7 = Common.findAtom(boa.current, "C7");
-            } else if (compId == "U") {
+            } else if (compId === "U" || compId === "DU") {
                 aoi.O4 = Common.findAtom(boa.current, "O4");
             } else {
                 aoi.N4 = Common.findAtom(boa.current, "N4");
@@ -644,7 +644,7 @@ export namespace Measure {
         }
 
         isOxyribose() {
-            return !!this.O2p_2;
+            return this.O2p_2 !== undefined;
         }
 
         isValid(b: StdBase, isDeoxyribose: boolean) {
@@ -816,29 +816,29 @@ export namespace Measure {
             public readonly altId: string,
             public readonly aoi: AtomsOfInterest
         ) {
-            if (this.compId == "A")
+            if (this.compId === 'A')
                 this.stdBase = 'A';
-            else if (this.compId == "DA")
+            else if (this.compId === 'DA')
                 this.stdBase =  'DA';
 
-            else if (this.compId == "C")
+            else if (this.compId === 'C')
                 this.stdBase = 'C';
-            else if (this.compId == "DC")
+            else if (this.compId === 'DC')
                 this.stdBase = 'DC';
 
-            else if (this.compId == "G")
+            else if (this.compId === 'G')
                 this.stdBase = 'G';
-            else if (this.compId == "DG")
+            else if (this.compId === 'DG')
                 this.stdBase = 'DG';
 
-            else if (this.compId == "DT")
+            else if (this.compId === 'DT')
                 this.stdBase = 'DT';
-            else if (this.compId == "U")
+            else if (this.compId === 'U' || this.compId === 'DU')
                 this.stdBase = 'U';
             else
                 throw new Error('Unknown comp_id. This should never happen!');
 
-            this.isDeoxyribose = Common.baseIs(this.stdBase, 'DA', 'DC', 'DG', 'DT');
+            this.isDeoxyribose = Common.baseIs(this.stdBase, 'DA', 'DC', 'DG', 'DT') || this.compId === 'DU';
 
             this.gamma = 0;
             this.delta = 0;

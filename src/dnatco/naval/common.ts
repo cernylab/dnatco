@@ -1,7 +1,7 @@
 import * as jsLLKA from 'jsllka';
 
 const StandardNucleotides = new Set([
-    'A', 'C', 'G', 'U', 'DA', 'DC', 'DG', 'DT'
+    'A', 'C', 'G', 'U', 'DA', 'DC', 'DG', 'DT', 'DU'
 ]);
 
 export type BunchOfAtoms = {

@@ -14,6 +14,7 @@ import { CollapsibleVertical } from '../../../common/collapsible-vertical';
 import { ComboBox } from '../../../common/combo-box';
 import { NamedList, NamedListItem } from '../../../common/named-list';
 import { Icon } from '../../../common/icon';
+import { Popup } from '../../../common/popup';
 import { IconButton } from '../../../common/push-button';
 import { SpinBox } from '../../../common/spin-box';
 import { Window } from '../../../common/window';
@@ -1334,11 +1335,17 @@ export class AnglesLengthsByResidue extends View<
                         <div
                             className='rdo-dynamic-table-download-button'
                             style={{ flex: 1, justifyContent: 'center'}}
-                            onClick={() => Net.serveFile(
-                                FileTypes['csv'].mimeType,
-                                Naval.bondsAsCsv(this.props.dnatcofication.data.naval.bonds, ','),
-                                `${this.props.dnatcofication.pdbId}_naval_bonds_report.csv`
-                            )}
+                            onClick={() => {
+                                if (this.props.dnatcofication.data.naval.bonds.length === 0) {
+                                    Popup.create(<div className='rdo-error-text'>Naval bonds report does not contain any data</div>);
+                                } else {
+                                    Net.serveFile(
+                                        FileTypes['csv'].mimeType,
+                                        Naval.bondsAsCsv(this.props.dnatcofication.data.naval.bonds, ','),
+                                        `${this.props.dnatcofication.pdbId}_naval_bonds_report.csv`
+                                    );
+                                }
+                            }}
                         >
                             <Icon img='imgs/data-transfer-download.svg' size='text' />
                             Bond lengths
@@ -1346,11 +1353,17 @@ export class AnglesLengthsByResidue extends View<
                         <div
                             className='rdo-dynamic-table-download-button'
                             style={{ flex: 1, justifyContent: 'center' }}
-                            onClick={() => Net.serveFile(
-                                FileTypes['csv'].mimeType,
-                                Naval.anglesAsCsv(this.props.dnatcofication.data.naval.angles, ','),
-                                `${this.props.dnatcofication.pdbId}_naval_angles_report.csv`
-                            )}
+                            onClick={() => {
+                                if (this.props.dnatcofication.data.naval.angles.length === 0) {
+                                    Popup.create(<div className='rdo-error-text'>Naval angles report does not contain any data</div>);
+                                } else {
+                                    Net.serveFile(
+                                        FileTypes['csv'].mimeType,
+                                        Naval.anglesAsCsv(this.props.dnatcofication.data.naval.angles, ','),
+                                        `${this.props.dnatcofication.pdbId}_naval_angles_report.csv`
+                                    );
+                                }
+                            }}
                         >
                             <Icon img='imgs/data-transfer-download.svg' size='text' />
                             Bond angles
@@ -1358,11 +1371,17 @@ export class AnglesLengthsByResidue extends View<
                         <div
                             className='rdo-dynamic-table-download-button'
                             style={{ flex: 1, justifyContent: 'center' }}
-                            onClick={() => Net.serveFile(
-                                FileTypes['csv'].mimeType,
-                                Naval.geometryAsCsv(this.props.dnatcofication.data.naval.geometry, ','),
-                                `${this.props.dnatcofication.pdbId}_naval_geometry_report.csv`
-                            )}
+                            onClick={() => {
+                                if (this.props.dnatcofication.data.naval.geometry.length === 0) {
+                                    Popup.create(<div className='rdo-error-text'>Naval geometry report does not contain any data</div>);
+                                } else {
+                                    Net.serveFile(
+                                        FileTypes['csv'].mimeType,
+                                        Naval.geometryAsCsv(this.props.dnatcofication.data.naval.geometry, ','),
+                                        `${this.props.dnatcofication.pdbId}_naval_geometry_report.csv`
+                                    );
+                                }
+                            }}
                         >
                             <Icon img='imgs/data-transfer-download.svg' size='text' />
                             Geometry

@@ -28,6 +28,24 @@ function allAvailableAltIds(structures: (jsLLKA.LLKAStructure|undefined)[]) {
     return seenAltIds;
 }
 
+function areNucleotidesSensible(stru: jsLLKA.LLKAStructure) {
+    if (stru.size() === 0)
+        throw new Error('Structure does not contain any atoms. This should not happen here');
+
+    const compId = stru.get(0).label_comp_id;
+    for (let idx = 0; idx < stru.size(); idx++) {
+        const atom = stru.get(idx);
+        if (!Common.isStandardNucleotide(atom.label_comp_id))
+            return false;
+
+        // Disallow residues with microheterogenity
+        if (atom.label_comp_id !== compId)
+            return false;
+    }
+
+    return true;
+}
+
 function areResiduesConnected(first: jsLLKA.LLKAStructure|undefined, second: jsLLKA.LLKAStructure|undefined) {
     if (!first || !second)
         return false;
@@ -96,14 +114,14 @@ function measureStructure(pdbcode: string, segs: any) {
                 const current = residues[idx];
                 let after = idx < N - 1 ? residues[idx + 1] : void 0;
 
-                if (!Common.isStandardNucleotide(current.get(0).label_comp_id))
+                if (!areNucleotidesSensible(current))
                     continue;
 
                 // Eliminate the pieces from the chain that we do not know how to deal with
                 // We are dealing with only with standard residues identified as A, DA, C, DC, G, DG, DT and U
-                if (before && !Common.isStandardNucleotide(before.get(0).label_comp_id))
+                if (before && !areNucleotidesSensible(before))
                     before = void 0;
-                if (after && !Common.isStandardNucleotide(after.get(0).label_comp_id))
+                if (after && !areNucleotidesSensible(after))
                     after = void 0;
 
                 const bunches = makeBunches(before, current, after);
