@@ -375,16 +375,18 @@ export namespace Measure {
         if (aoi.hasPhosphateTetraherdron()) {
             m.OP1_P = measureLength([aoi.OP1_2, aoi.P_2]);
             m.OP2_P = measureLength([aoi.OP2_2, aoi.P_2]);
-            m.O3p_P = measureLength([aoi.O3p_1, aoi.P_2]);
             m.O5p_P = measureLength([aoi.O5p_2, aoi.P_2]);
 
             m.OP1_P_OP2 = measureAngle([aoi.OP1_2, aoi.P_2, aoi.OP2_2]);
-            m.OP1_P_O3p = measureAngle([aoi.OP1_2, aoi.P_2, aoi.O3p_1]);
             m.OP1_P_O5p = measureAngle([aoi.OP1_2, aoi.P_2, aoi.O5p_2]);
-            m.OP2_P_O3p = measureAngle([aoi.OP2_2, aoi.P_2, aoi.O3p_1]);
+            if (aoi.canLookBack()) {
+                m.O3p_P = measureLength([aoi.O3p_1, aoi.P_2]);
+                m.OP1_P_O3p = measureAngle([aoi.OP1_2, aoi.P_2, aoi.O3p_1]);
+                m.OP2_P_O3p = measureAngle([aoi.OP2_2, aoi.P_2, aoi.O3p_1]);
+                m.O3p_P_O5p = measureAngle([aoi.O3p_1, aoi.P_2, aoi.O5p_2]);
+                m.P_O3p_C3p = measureAngle([aoi.P_2, aoi.O3p_1, aoi.C3p_1]);
+            }
             m.OP2_P_O5p = measureAngle([aoi.OP2_2, aoi.P_2, aoi.O5p_2]);
-            m.O3p_P_O5p = measureAngle([aoi.O3p_1, aoi.P_2, aoi.O5p_2]);
-            m.P_O3p_C3p = measureAngle([aoi.P_2, aoi.O3p_1, aoi.C3p_1]);
             m.P_O5p_C5p = measureAngle([aoi.P_2, aoi.O5p_2, aoi.C5p_2]);
         }
     }

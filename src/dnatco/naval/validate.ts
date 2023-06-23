@@ -108,6 +108,11 @@ function measureStructure(pdbcode: string, segs: any) {
 
                 const bunches = makeBunches(before, current, after);
                 for (const bunch of bunches) {
+                    // Structures with creatively assigned altIds may yield "empty" residues after we
+                    // do the split by altIds. Just sigh and move on...
+                    if (bunch.current.size() === 0)
+                        continue;
+
                     // Remove preceding/following residue from the bunch if they are not connected
                     // in the structure
                     const bef = areResiduesConnected(bunch.before, bunch.current)
