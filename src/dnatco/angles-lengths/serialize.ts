@@ -1,10 +1,9 @@
-import { AnglesLengths } from '.';
+import { AnglesLengths, ElementaryResidue } from './';
 import { Triplet } from './angles';
 import { Pair } from './lengths';
 import { Measurements } from './measurements';
 import { Summarize } from './summarize';
 import { ALM } from '../alm';
-import { Residues } from '../residues';
 import { filterObject, objKeys } from '../../util';
 import { Serialization } from '../../util/serialization';
 
@@ -126,7 +125,7 @@ export namespace SerializeByCompound {
         type AngleOutStats = OutStats<ALM.AngleStats['angles']>;
         type LengthOutStats = OutStats<ALM.LengthStats['lengths']>;
 
-        const outAngles: Record<Residues.ElementaryResidue, Map<string, AngleOutStats[]>> = {
+        const outAngles: Record<ElementaryResidue, Map<string, AngleOutStats[]>> = {
             'A': new Map(),
             'C': new Map(),
             'G': new Map(),
@@ -135,8 +134,9 @@ export namespace SerializeByCompound {
             'DC': new Map(),
             'DG': new Map(),
             'DT': new Map(),
+            'DU': new Map(),
         };
-        const outLengths: Record<Residues.ElementaryResidue, Map<string, LengthOutStats[]>> = {
+        const outLengths: Record<ElementaryResidue, Map<string, LengthOutStats[]>> = {
             'A': new Map(),
             'C': new Map(),
             'G': new Map(),
@@ -145,6 +145,7 @@ export namespace SerializeByCompound {
             'DC': new Map(),
             'DG': new Map(),
             'DT': new Map(),
+            'DU': new Map(),
         };
 
         // We need to map the input arrays out to compoud -> metric mapping again to get nicely structured JSONs.

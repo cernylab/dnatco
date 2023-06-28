@@ -34,6 +34,7 @@ export const Atoms = {
     'DG': Guanosine,
     'DT': Thymine,
     'U': Uracil,
+    'DU': Uracil,
 };
 
 const ShiftSuffix = 'r2';

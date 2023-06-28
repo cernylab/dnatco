@@ -1,5 +1,5 @@
 import * as jsLLKA from 'jsllka';
-import { Residues } from '../residues';
+import { isAnglesLengthsElementaryResidue, ElementaryResidue } from './';
 import { tripletTag, Angles, Triplet } from './angles';
 import { shiftedName, Atoms } from './atoms';
 import { pairTag, Lengths, Pair } from './lengths';
@@ -78,7 +78,7 @@ export namespace Measurements {
         const compId = firstAtom.label_comp_id;
         const seqId = firstAtom.label_seq_id;
 
-        if (!Residues.isElementaryResidue(compId))
+        if (!isAnglesLengthsElementaryResidue(compId))
             return void 0;
 
         const residue: Residue = {
@@ -142,7 +142,7 @@ export namespace Measurements {
     };
 
     export type Residue = {
-        compound: Residues.ElementaryResidue,
+        compound: ElementaryResidue,
         chain: string,
 
         seqId: number,

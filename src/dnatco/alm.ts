@@ -1,10 +1,9 @@
-import { AnglesLengths } from './angles-lengths';
+import { AnglesLengths, ElementaryResidue } from './angles-lengths';
 import { tripletTag, Angles, Triplet } from './angles-lengths/angles';
 import { Bin } from './angles-lengths/bin';
 import { pairTag, Lengths, Pair } from './angles-lengths/lengths';
 import { Measurements } from './angles-lengths/measurements';
 import { Summarize } from './angles-lengths/summarize';
-import { Residues } from './residues';
 import { objKeys } from '../util';
 import { InvalidModelIndex } from '../ui/dnatco/structure-selection';
 
@@ -116,7 +115,7 @@ function getBondLength(tag: string, lengths: Measurements.BondLength[]) {
 
 export namespace ALM {
     export type AngleStats = {
-        base: Residues.ElementaryResidue,
+        base: ElementaryResidue,
         angles: {
             angle: Measurements.BondAngle,
             residue: Measurements.Residue,
@@ -124,7 +123,7 @@ export namespace ALM {
             bin: MaybeBin,
         }[],
     }
-    function AngleStats(base: Residues.ElementaryResidue): AngleStats {
+    function AngleStats(base: ElementaryResidue): AngleStats {
         return {
             base,
             angles: [],
@@ -132,7 +131,7 @@ export namespace ALM {
     }
 
     export type LengthStats = {
-        base: Residues.ElementaryResidue,
+        base: ElementaryResidue,
         lengths: {
             length: Measurements.BondLength,
             residue: Measurements.Residue,
@@ -140,7 +139,7 @@ export namespace ALM {
             bin: MaybeBin,
         }[],
     }
-    function LengthStats(base: Residues.ElementaryResidue): LengthStats {
+    function LengthStats(base: ElementaryResidue): LengthStats {
         return {
             base,
             lengths: [],
@@ -148,9 +147,9 @@ export namespace ALM {
     }
 
     export type ByCompound = {
-        angles: Record<Residues.ElementaryResidue, ALM.CompoundStats<ALM.AngleStats>>,
+        angles: Record<ElementaryResidue, ALM.CompoundStats<ALM.AngleStats>>,
         overallAngles: Summarize.Counts,
-        lengths: Record<Residues.ElementaryResidue, ALM.CompoundStats<ALM.LengthStats>>,
+        lengths: Record<ElementaryResidue, ALM.CompoundStats<ALM.LengthStats>>,
         overallLengths: Summarize.Counts,
     }
     function ByCompound(): ByCompound {
@@ -164,6 +163,7 @@ export namespace ALM {
                 'DC': CompoundStats(),
                 'DG': CompoundStats(),
                 'DT': CompoundStats(),
+                'DU': CompoundStats(),
             },
             overallAngles: { cumulative: [], exclusive: [] },
             lengths: {
@@ -175,6 +175,7 @@ export namespace ALM {
                 'DC': CompoundStats(),
                 'DG': CompoundStats(),
                 'DT': CompoundStats(),
+                'DU': CompoundStats(),
             },
             overallLengths: { cumulative: [], exclusive: [] },
         };
@@ -197,7 +198,7 @@ export namespace ALM {
         overall: Summarize.Counts,
         individual: T,
     }
-    function AngleMetricStats(base: Residues.ElementaryResidue, triplet: Triplet): MetricStats<AngleStats> {
+    function AngleMetricStats(base: ElementaryResidue, triplet: Triplet): MetricStats<AngleStats> {
         return {
             type: 'angle',
             identifier: triplet,
@@ -205,7 +206,7 @@ export namespace ALM {
             individual: AngleStats(base ),
         };
     }
-    function LengthMetricStats(base: Residues.ElementaryResidue, pair: Pair): MetricStats<LengthStats> {
+    function LengthMetricStats(base: ElementaryResidue, pair: Pair): MetricStats<LengthStats> {
         return {
             type: 'length',
             identifier: pair,

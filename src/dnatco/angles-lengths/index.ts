@@ -8,17 +8,22 @@ import { VoidResult, ErrorResult, Result } from '../';
 import { GlobalConfig } from '../../global-config';
 import { htmlColorAsNumber, isWithin, isWithinTri, iterate, objKeys } from '../../util';
 
+export type ElementaryResidue = Residues.ElementaryResidue | 'DU';
+export function isAnglesLengthsElementaryResidue(name: string): name is ElementaryResidue {
+    return Residues.isElementaryResidue(name) || name === 'DU';
+}
+
 /**
  * Averaged values of how probable is a particular bond angle or length of a particular base
  * to fall within a (narrow) range of values. These (narrow) ranges are expressed as an array of Bin objects.
  * Averages are obtained from an external resources.
  */
-type Average = [base: Residues.ElementaryResidue, tag: string, bins: Bins];
+type Average = [base: ElementaryResidue, tag: string, bins: Bins];
 /**
  * Averaged probability values mapped by residue and angle/length tag.
  */
 type AverageData = Record<
-    Residues.ElementaryResidue,
+    ElementaryResidue,
     Map<string, Bins>
 >;
 
@@ -27,7 +32,7 @@ type AverageData = Record<
  * computed from the thresholds specified by PGroups.
  */
 type PGroupData = Record<
-    Residues.ElementaryResidue,
+    ElementaryResidue,
     Map<
         string, // Angle or length tag
         { pgroup: PGroup, groupedBins: Bin[] }[]
@@ -44,6 +49,7 @@ const AngleAverageData: AverageData = {
     'DC': new Map(),
     'DG': new Map(),
     'DT': new Map(),
+    'DU': new Map(),
 };
 
 const LengthAverageData: AverageData = {
@@ -55,6 +61,7 @@ const LengthAverageData: AverageData = {
     'DC': new Map(),
     'DG': new Map(),
     'DT': new Map(),
+    'DU': new Map(),
 }
 
 const AnglePGroupData: PGroupData = {
@@ -66,6 +73,7 @@ const AnglePGroupData: PGroupData = {
     'DC': new Map(),
     'DG': new Map(),
     'DT': new Map(),
+    'DU': new Map(),
 };
 
 const LengthPGroupData: PGroupData = {
@@ -77,6 +85,7 @@ const LengthPGroupData: PGroupData = {
     'DC': new Map(),
     'DG': new Map(),
     'DT': new Map(),
+    'DU': new Map(),
 };
 
 export type AnglesLengthsContext = {
@@ -124,7 +133,7 @@ async function fetchAverages(prefix: string, resources: Resource[]) {
     return averages;
 }
 
-function fileName(base: Residues.ElementaryResidue, data: { kind: 'length', v: Pair } | { kind: 'angle', v: Triplet }) {
+function fileName(base: ElementaryResidue, data: { kind: 'length', v: Pair } | { kind: 'angle', v: Triplet }) {
     return `${base}_${data.kind}_${data.v.map(x => x.replace("'", "p")).join('_')}_prosco.json`;
 }
 
@@ -254,12 +263,12 @@ export namespace AnglesLengths {
         OutlierColor = ctx.outlierColor;
     }
 
-    export function angleAverages(base: Residues.ElementaryResidue, triplet: Triplet) {
+    export function angleAverages(base: ElementaryResidue, triplet: Triplet) {
         const tag = tripletTag(triplet);
         return AngleAverageData[base].get(tag);
     }
 
-    export function angleBin(base: Residues.ElementaryResidue, angle: Measurements.BondAngle) {
+    export function angleBin(base: ElementaryResidue, angle: Measurements.BondAngle) {
         const bins = AngleAverageData[base].get(tripletTag(angle.triplet));
         if (!bins)
             return void 0;
@@ -267,7 +276,7 @@ export namespace AnglesLengths {
         return getBin(bins, angle.angle);
     }
 
-    export function anglePGroup(base: Residues.ElementaryResidue, angle: Measurements.BondAngle) {
+    export function anglePGroup(base: ElementaryResidue, angle: Measurements.BondAngle) {
         const tag = tripletTag(angle.triplet);
         const pgrps = AnglePGroupData[base].get(tag);
 
@@ -279,7 +288,7 @@ export namespace AnglesLengths {
         return getPGroup(pgrps, angle.angle);
     }
 
-    export function lengthBin(base: Residues.ElementaryResidue, length: Measurements.BondLength) {
+    export function lengthBin(base: ElementaryResidue, length: Measurements.BondLength) {
         const bins = LengthAverageData[base].get(pairTag(length.pair));
         if (!bins)
             return void 0;
@@ -287,12 +296,12 @@ export namespace AnglesLengths {
         return getBin(bins, length.length);
     }
 
-    export function anglePGroupData(idx: number, base: Residues.ElementaryResidue, triplet: Triplet) {
+    export function anglePGroupData(idx: number, base: ElementaryResidue, triplet: Triplet) {
         const tag = tripletTag(triplet);
         return AnglePGroupData[base].get(tag)?.[idx];
     }
 
-    export function lengthPGroup(base: Residues.ElementaryResidue, length: Measurements.BondLength) {
+    export function lengthPGroup(base: ElementaryResidue, length: Measurements.BondLength) {
         const tag = pairTag(length.pair);
         const pgrps = LengthPGroupData[base].get(tag);
 
@@ -304,12 +313,12 @@ export namespace AnglesLengths {
         return getPGroup(pgrps, length.length);
     }
 
-    export function lengthAverages(base: Residues.ElementaryResidue, pair: Pair) {
+    export function lengthAverages(base: ElementaryResidue, pair: Pair) {
         const tag = pairTag(pair);
         return LengthAverageData[base].get(tag);
     }
 
-    export function lengthPGroupData(idx: number, base: Residues.ElementaryResidue, pair: Pair) {
+    export function lengthPGroupData(idx: number, base: ElementaryResidue, pair: Pair) {
         const tag = pairTag(pair);
         return LengthPGroupData[base].get(tag)?.[idx];
     }

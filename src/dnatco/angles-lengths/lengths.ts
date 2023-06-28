@@ -1,5 +1,5 @@
+import { ElementaryResidue } from './';
 import { shiftedName } from './atoms';
-import { Residues } from '../residues';
 
 export type Pair = [a: string, b: string];
 
@@ -131,7 +131,7 @@ const Thymine = [
     [shiftedName("O3'", -1), "P"],
 ] as Pair[];
 
-export const Lengths: Record<Residues.ElementaryResidue, Pair[]> = {
+export const Lengths: Record<ElementaryResidue, Pair[]> = {
     'A': Adenine,
     'DA': Adenine,
     'C': Cytidine,
@@ -140,7 +140,8 @@ export const Lengths: Record<Residues.ElementaryResidue, Pair[]> = {
     'DG': Guanosine,
     'DT': Thymine,
     'U': Uracil,
-};
+    'DU': Uracil,
+} as const;
 
 export function pairTag(p: Pair) {
     return p.join('^');

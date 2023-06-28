@@ -1,5 +1,5 @@
+import { ElementaryResidue } from './';
 import { shiftedName } from './atoms';
-import { Residues } from '../residues';
 
 export type Triplet = [a: string, b: string, c: string];
 
@@ -172,7 +172,7 @@ const Thymine = [
     [shiftedName("C3'", -1), shiftedName("O3'", -1), "P"],
 ] as Triplet[];
 
-export const Angles: Record<Residues.ElementaryResidue, Triplet[]> = {
+export const Angles: Record<ElementaryResidue, Triplet[]> = {
     'A': Adenine,
     'DA': Adenine,
     'C': Cytidine,
@@ -181,7 +181,8 @@ export const Angles: Record<Residues.ElementaryResidue, Triplet[]> = {
     'DG': Guanosine,
     'DT': Thymine,
     'U': Uracil,
-};
+    'DU': Uracil,
+} as const;
 
 export function tripletTag(t: Triplet) {
     return t.join('^');

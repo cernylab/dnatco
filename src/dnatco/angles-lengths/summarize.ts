@@ -1,6 +1,5 @@
-import { AnglesLengths } from './';
+import { AnglesLengths, ElementaryResidue } from './';
 import { Measurements } from './measurements';
-import { Residues } from '../residues';
 import { initedArray } from '../../util';
 
 export namespace Summarize {
@@ -36,7 +35,7 @@ export namespace Summarize {
         counts.exclusive[pgrp ? pgrp.index : nPGroups]++;
     }
 
-    export function angles(angles: { angle: Measurements.BondAngle, base: Residues.ElementaryResidue }[]) {
+    export function angles(angles: { angle: Measurements.BondAngle, base: ElementaryResidue }[]) {
         const nPGroups = AnglesLengths.pGroupCount();
         const counts = Counts(nPGroups);
 
@@ -63,7 +62,7 @@ export namespace Summarize {
         return cig;
     }
 
-    export function lengths(lengths: { length: Measurements.BondLength, base: Residues.ElementaryResidue }[]) {
+    export function lengths(lengths: { length: Measurements.BondLength, base: ElementaryResidue }[]) {
         const nPGroups = AnglesLengths.pGroupCount();
         const counts = Counts(nPGroups);
 

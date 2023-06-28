@@ -20,7 +20,7 @@ import { colorStyle, colorToTuple, ColorTuple } from '../../../util';
 import { ALM } from '../../../../dnatco/alm';
 import { Dnatcofication } from '../../../../dnatco/dnatcofication';
 import { shiftedName } from '../../../../dnatco/angles-lengths/atoms';
-import { AnglesLengths as DAnglesLengths } from '../../../../dnatco/angles-lengths';
+import { AnglesLengths as DAnglesLengths, ElementaryResidue } from '../../../../dnatco/angles-lengths';
 import { tripletTag, Triplet } from '../../../../dnatco/angles-lengths/angles';
 import { isShiftedName, unshiftName } from '../../../../dnatco/angles-lengths/atoms';
 import { Bins } from '../../../../dnatco/angles-lengths/bin';
@@ -29,7 +29,6 @@ import { Measurements } from '../../../../dnatco/angles-lengths/measurements';
 import { Naval } from '../../../../dnatco/naval';
 import { Validation } from '../../../../dnatco/naval/validation';
 import { Summarize } from '../../../../dnatco/angles-lengths/summarize';
-import { Residues } from '../../../../dnatco/residues';
 import { GlobalConfig } from '../../../../global-config';
 import { htmlColorAsNumber, isWithin, replaceAll } from '../../../../util';
 import { doDownload, Downloader, FileTypes } from '../../../../util/downloader';
@@ -816,7 +815,7 @@ export class WindowsTracker {
 export namespace AnglesLengthsCommon {
     export type ResidueToggledEvent = Subject<{ residue: Measurements.Residue, transition: 'selected' | 'deselected' }>;
 
-    export const AnglesDisplayOrder: Record<Residues.ElementaryResidue, string[]> = {
+    export const AnglesDisplayOrder: Record<ElementaryResidue, string[]> = {
         'A': AdenineAnglesOrder,
         'C': CytidineAnglesOrder,
         'G': GuanosineAnglesOrder,
@@ -825,9 +824,10 @@ export namespace AnglesLengthsCommon {
         'DC': CytidineAnglesOrder,
         'DG': GuanosineAnglesOrder,
         'DT': ThymineAnglesOrder,
-    };
+        'DU': UracilAnglesOrder,
+    } as const;
 
-    export const LengthsDisplayOrder: Record<Residues.ElementaryResidue, string[]> = {
+    export const LengthsDisplayOrder: Record<ElementaryResidue, string[]> = {
         'A': AdenineLengthsOrder,
         'C': CytidineLengthsOrder,
         'G': GuanosineLengthsOrder,
@@ -836,7 +836,8 @@ export namespace AnglesLengthsCommon {
         'DC': CytidineLengthsOrder,
         'DG': GuanosineLengthsOrder,
         'DT': ThymineLengthsOrder,
-    };
+        'DU': UracilLengthsOrder,
+    } as const;
 
     export const BlockListStyle = { display: 'flex', flexDirection: 'column', gap: 'calc(var(--h2-gap) / 2)' } as StandardLonghandProperties;
     export const StayAboveStyle = { position: 'absolute', zIndex: 1 } as StandardLonghandProperties;
