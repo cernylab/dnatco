@@ -15,6 +15,8 @@ const ClassificationLimits: jsLLKA.LLKAClassificationLimits = {
     pseudorotationCutoff: M.d2r(72.0)
 };
 
+const MaxCloseEnoughRmsd = 0.5;
+
 export namespace ClassificationContext {
     export async function initialize(clustersPath: string, confalsPath: string, goldenStepsPath: string, nuAnglesPath: string) {
         if (_theContext)
@@ -70,7 +72,8 @@ export namespace ClassificationContext {
             resGoldenSteps.success(),
             resConfals.success(),
             resNus.success(),
-            ClassificationLimits
+            ClassificationLimits,
+            MaxCloseEnoughRmsd,
         );
 
         if (!resCtx.isSuccess()) {
