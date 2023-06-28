@@ -25,6 +25,8 @@ import { ImageSerialization } from '../../util/image-serialization';
 import { Serialization } from '../../util/serialization';
 import { GlobalConfig } from '../../global-config';
 
+type ReportGenerationState = 'none' | 'generating';
+
 async function checkRsccRmsdAvailability(d: Dnatcofication) {
     const availability = new Array<{ assigned: boolean, unassigned: boolean }>();
 
@@ -183,9 +185,13 @@ export function Downloads(props: { dnatcofication: Dnatcofication }) {
         return <Navigate to='/app' />;
 
     // We need this shinanegan because unhiding a scrollbar with default appearance
-    // in Chrome is a topic for the Ph.D. theses.
+    // in Chrome is a topic for two Ph.D. theses.
     const [mouseInDlList, setMouseInDlList] = React.useState(false);
     const [listAllDinus, setListAllDinus] = React.useState(false);
+
+    // Report generation may take a little while and the user needs to know
+    // that the browser is doing a thing
+    const [reportGenerationState, setReportGenerationState] = React.useState('none' as ReportGenerationState);
 
     const structureName = props.dnatcofication.identifyingName ?? props.dnatcofication.pdbId;
 
@@ -349,9 +355,12 @@ export function Downloads(props: { dnatcofication: Dnatcofication }) {
                                 <DownloadButton
                                     caption='PDF'
                                     onClick={() => {
+                                        setReportGenerationState('generating');
                                         Report.pdf(props.dnatcofication, { completeStepsTable: listAllDinus }).then((report) => {
                                             Net.serveFileRaw(FileTypes.pdf.mimeType, report, `${props.dnatcofication.pdbId}_${GlobalConfig.data().displayedProductName.toLowerCase()}_validation_report.${FileTypes.pdf.suffix}`);
+                                            setReportGenerationState('none');
                                         }).catch(e => {
+                                            setReportGenerationState('none');
                                             Popup.create(
                                                 <div className='rdo-error-text'>
                                                     Could not create validation report: {(e as Error).message}
@@ -363,9 +372,12 @@ export function Downloads(props: { dnatcofication: Dnatcofication }) {
                                 <DownloadButton
                                     caption='Plain text'
                                     onClick={() => {
+                                        setReportGenerationState('generating');
                                         Report.text(props.dnatcofication, { completeStepsTable: listAllDinus }).then((report) => {
                                             Net.serveFile(FileTypes.text.mimeType, report, `${props.dnatcofication.pdbId}_${GlobalConfig.data().displayedProductName.toLowerCase()}_validation_report.${FileTypes.text.suffix}`);
+                                            setReportGenerationState('none');
                                         }).catch(e => {
+                                            setReportGenerationState('none');
                                             Popup.create(
                                                 <div className='rdo-error-text'>
                                                     Could not create validation report: {(e as Error).message}
@@ -382,6 +394,10 @@ export function Downloads(props: { dnatcofication: Dnatcofication }) {
                                     />
                                 </div>
                             </_Downloads.DownloadBox>
+                            { reportGenerationState !== 'none'
+                                ? <div>Generating report. This may take a little while...</div>
+                                : null
+                            }
                         </div>
                     </div>
                 </div>
