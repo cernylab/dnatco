@@ -104,6 +104,7 @@ export namespace BondsReport {
             case 'DT':
                 return restrs.T;
             case 'U':
+            case 'DU':
                 return restrs.U;
         }
     }
@@ -141,7 +142,7 @@ export namespace BondsReport {
         if (Common.baseIs(m.stdBase, 'DA', 'DG'))
             return restrs.other_DA_DG;
 
-        if (Common.baseIs(m.stdBase, 'DC', 'DT'))
+        if (Common.baseIs(m.stdBase, 'DC', 'DT', 'DU'))
             return restrs.other_DT_DC;
 
         throw new Error('Cannot figure out which PO4 restraint to use');
@@ -160,6 +161,7 @@ export namespace BondsReport {
                 return restrs.U_C;
             case 'DC':
             case 'DT':
+            case 'DU':
                 return restrs.DT_DC;
         }
     }
@@ -176,7 +178,7 @@ export namespace BondsReport {
                 if (Common.baseIs(m.stdBase, 'DA', 'DG'))
                     return restrsPucker.DA_DG_C2p_endo;
 
-                if (Common.baseIs(m.stdBase, 'DT', 'DC'))
+                if (Common.baseIs(m.stdBase, 'DT', 'DC', 'DU'))
                     return restrsPucker.DT_DC_C2p_endo;
 
             } else if (m.pucker == 'C3Endo') {
@@ -189,7 +191,7 @@ export namespace BondsReport {
                 if (Common.baseIs(m.stdBase, 'DA', 'DG'))
                     return restrsPucker.DA_DG_C3p_endo;
 
-                if (Common.baseIs(m.stdBase, 'DT',  'DC'))
+                if (Common.baseIs(m.stdBase, 'DT', 'DC', 'DU'))
                     return restrsPucker.DT_DC_C3p_endo;
             } else {
                 if (Common.baseIs(m.stdBase, 'A', 'G'))
@@ -201,7 +203,7 @@ export namespace BondsReport {
                 if (Common.baseIs(m.stdBase, 'DA', 'DG'))
                     return restrsPucker.DA_DG_other;
 
-                if (Common.baseIs(m.stdBase, 'DT', 'DC'))
+                if (Common.baseIs(m.stdBase, 'DT', 'DC', 'DU'))
                     return restrsPucker.DT_DC_other;
             }
         } else {
@@ -214,7 +216,7 @@ export namespace BondsReport {
             if (Common.baseIs(m.stdBase, 'DA', 'DG'))
                 return restrsBasic.DA_DG;
 
-            if (Common.baseIs(m.stdBase, 'DT', 'DC'))
+            if (Common.baseIs(m.stdBase, 'DT', 'DC', 'DU'))
                 return restrsBasic.DT_DC;
         }
 

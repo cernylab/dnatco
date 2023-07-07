@@ -15,7 +15,7 @@ export function BunchOfAtoms(before: jsLLKA.LLKAStructure|undefined, current: js
     return { before, current, after, expandedAltId, owning };
 }
 
-export type StdBase = 'A' | 'DA' | 'C' | 'DC' | 'G' | 'DG' | 'DT' | 'U';
+export type StdBase = 'A' | 'DA' | 'C' | 'DC' | 'G' | 'DG' | 'DT' | 'U' | 'DU';
 
 export namespace Common {
     export function baseIs(compare: StdBase, ...against: StdBase[]) {

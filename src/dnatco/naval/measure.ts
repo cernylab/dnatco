@@ -670,6 +670,7 @@ export namespace Measure {
                     return this.isT() && riboseOk;
 
                 case 'U':
+                case 'DU':
                     return this.isU() && riboseOk;
             }
         }
@@ -833,12 +834,14 @@ export namespace Measure {
 
             else if (this.compId === 'DT')
                 this.stdBase = 'DT';
-            else if (this.compId === 'U' || this.compId === 'DU')
+            else if (this.compId === 'DU')
+                this.stdBase = 'DU';
+            else if (this.compId === 'U')
                 this.stdBase = 'U';
             else
                 throw new Error('Unknown comp_id. This should never happen!');
 
-            this.isDeoxyribose = Common.baseIs(this.stdBase, 'DA', 'DC', 'DG', 'DT') || this.compId === 'DU';
+            this.isDeoxyribose = Common.baseIs(this.stdBase, 'DA', 'DC', 'DG', 'DT', 'DU');
 
             this.gamma = 0;
             this.delta = 0;
@@ -895,7 +898,7 @@ export namespace Measure {
                     return GSpecific();
                 else if (Common.baseIs(this.stdBase, 'DT'))
                     return TSpecific();
-                else if (Common.baseIs(this.stdBase, 'U'))
+                else if (Common.baseIs(this.stdBase, 'U', 'DU'))
                     return USpecific();
                 else
                     return { base: 'none' };

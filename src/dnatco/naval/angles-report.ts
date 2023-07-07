@@ -146,6 +146,7 @@ export namespace AnglesReport {
                 return restrs.G;
             case 'DT':
                 return restrs.T;
+            case 'DU':
             case 'U':
                 return restrs.U;
         }
@@ -192,6 +193,7 @@ export namespace AnglesReport {
                 return restrs.U_C;
             case 'DC':
             case 'DT':
+            case 'DU':
                 return restrs.DT_DC;
         }
     }
@@ -208,7 +210,7 @@ export namespace AnglesReport {
                 if (Common.baseIs(m.stdBase, 'DA', 'DG'))
                     return restrsPucker.DA_DG_C2p_endo;
 
-                if (Common.baseIs(m.stdBase, 'DT', 'DC'))
+                if (Common.baseIs(m.stdBase, 'DT', 'DC', 'DU'))
                     return restrsPucker.DT_DC_C2p_endo;
 
             } else if (m.pucker == 'C3Endo') {
@@ -221,7 +223,7 @@ export namespace AnglesReport {
                 if (Common.baseIs(m.stdBase, 'DA', 'DG'))
                     return restrsPucker.DA_DG_C3p_endo;
 
-                if (Common.baseIs(m.stdBase, 'DT',  'DC'))
+                if (Common.baseIs(m.stdBase, 'DT', 'DC', 'DU'))
                     return restrsPucker.DT_DC_C3p_endo;
             } else {
                 if (Common.baseIs(m.stdBase, 'A', 'G'))
@@ -233,7 +235,7 @@ export namespace AnglesReport {
                 if (Common.baseIs(m.stdBase, 'DA', 'DG'))
                     return restrsPucker.DA_DG_other;
 
-                if (Common.baseIs(m.stdBase, 'DT', 'DC'))
+                if (Common.baseIs(m.stdBase, 'DT', 'DC', 'DU'))
                     return restrsPucker.DT_DC_other;
             }
         } else {
@@ -246,7 +248,7 @@ export namespace AnglesReport {
             if (Common.baseIs(m.stdBase, 'DA', 'DG'))
                 return restrsBasic.DA_DG;
 
-            if (Common.baseIs(m.stdBase, 'DT', 'DC'))
+            if (Common.baseIs(m.stdBase, 'DT', 'DC', 'DU'))
                 return restrsBasic.DT_DC;
         }
 

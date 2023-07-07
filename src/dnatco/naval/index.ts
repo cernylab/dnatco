@@ -65,7 +65,7 @@ export namespace Naval {
                 item.atoms.a.res_name, item.atoms.a.resid, item.atoms.a.name, item.atoms.a.altloc,
                 item.atoms.b.res_name, item.atoms.b.resid, item.atoms.b.name, item.atoms.b.altloc,
                 item.atoms.c.res_name, item.atoms.c.resid, item.atoms.c.name, item.atoms.c.altloc,
-                item.calculated_value.toFixed(1), item.target_value, QualityName[qual], item.name
+                item.calculated_value.toFixed(1), item.target_value.toFixed(1), QualityName[qual], item.name
             ].join(delimiter) + '\n';
         }
 
@@ -83,7 +83,7 @@ export namespace Naval {
                 'bond', pdbcode, item.modelNum - 1, item.chain,
                 item.atoms.a.res_name, item.atoms.a.resid, item.atoms.a.name, item.atoms.a.altloc,
                 item.atoms.b.res_name, item.atoms.b.resid, item.atoms.b.name, item.atoms.b.altloc,
-                item.calculated_value.toFixed(3), item.target_value, QualityName[qual], item.name
+                item.calculated_value.toFixed(3), item.target_value.toFixed(3), QualityName[qual], item.name
             ].join(delimiter) + '\n';
         }
 
@@ -91,10 +91,12 @@ export namespace Naval {
     }
 
     export function geometryAsCsv(geometry: GeometryReport.Report, delimiter = ';') {
+        const pdbcode = geometry[0].pdbcode.toLowerCase();
+
         let out = GeometryHeader.join(delimiter) + '\n';
 
         for (const item of geometry) {
-            out += [item.type, item.pdbcode, item.model_id, item.chain, item.res_name, item.altloc, item.name, item.calculated?.toFixed(1) ?? '', item.value_label].join(delimiter);
+            out += [item.type, pdbcode, item.model_id - 1, item.chain, item.res_name, item.resid, item.altloc, item.name, item.calculated?.toFixed(1) ?? '', item.value_label].join(delimiter);
             out += '\n';
         }
 
