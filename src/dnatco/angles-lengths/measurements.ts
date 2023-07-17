@@ -19,12 +19,20 @@ export namespace Measurements {
         return altIds.size === 0 ? '' : Array.from(altIds.values())[0];
     }
 
-    function findAtom(stru: jsLLKA.LLKAStructure, name: string, altId: string, seqId: number, modelNum: number) {
+    function findAtom(stru: jsLLKA.LLKAStructure, name: string, altId: string, seqId: number, insCode: string, modelNum: number) {
         const _altId = !altId ? jsLLKA.NO_ALTID : altId.codePointAt(0);
+        const _insCode = !insCode ? jsLLKA.NO_INSCODE : insCode;
+
         for (let idx = 0; idx < stru.size(); idx++) {
             let atom = stru.get(idx);
-            if (jsLLKA.atomMatches(atom, name, '', '', seqId, _altId, jsLLKA.NO_INSCODE, modelNum))
+            if (jsLLKA.atomMatches(atom, name, '', '', seqId, _altId, _insCode, modelNum))
                 return atom;
+
+            if (_altId !== jsLLKA.NO_ALTID) {
+                // Try again without altId
+                if (jsLLKA.atomMatches(atom, name, '', '', seqId, jsLLKA.NO_ALTID, _insCode, modelNum))
+                    return atom;
+            }
         }
 
         return undefined;
@@ -100,9 +108,11 @@ export namespace Measurements {
 
         const requiredAtoms = new Map<string, jsLLKA.LLKAAtom>();
         for (const [name, shift] of Atoms[compId]) {
-            const a = findAtom(step, name, altId, seqId + shift, firstAtom.pdbx_PDB_model_num);
-            if (!a)
+            const a = findAtom(step, name, altId, seqId + shift, firstAtom.pdbx_PDB_ins_code, firstAtom.pdbx_PDB_model_num);
+            if (!a) {
+                console.warn(`AnglesLengths: Atom ${seqId + shift} ${name} (altId ${altId}) (model ${firstAtom.pdbx_PDB_model_num}) not found`);
                 return void 0;
+            }
 
             if (shift === -1) {
                 // Yes, this is awkward but then again the problem itself is awkward
@@ -197,7 +207,7 @@ export namespace Measurements {
             // such a residue and a residue that would be the first residue in this non-existent step.
             // Ignoring this "invisible" residue might actually be the right thing because we measure
             // cross-residue angles and these angles would most likely turn out wrong.
-            const tag = `${firstAtom.pdbx_PDB_model_num}_${firstAtom.label_asym_id}_${firstAtom.label_seq_id}_${firstAtom.pdbx_PDB_ins_code}_${altId})`;
+            const tag = `${firstAtom.pdbx_PDB_model_num}_${firstAtom.label_asym_id}_${firstAtom.label_seq_id}_${firstAtom.pdbx_PDB_ins_code}_${altId}`;
             if (seenResidues.has(tag)) {
                 step.delete();
                 continue;
