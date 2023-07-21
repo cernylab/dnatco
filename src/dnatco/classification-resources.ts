@@ -4,14 +4,16 @@ export namespace ClassificationResources {
         confals: '',
         goldenSteps: '',
         nuAngles: '',
+        confalPercentiles: '',
     };
     export type Data = typeof Data;
 
-    export async function load(clustersPath: string, confalsPath: string, goldenStepsPath: string, nuAnglesPath: string): Promise<Data> {
+    export async function load(clustersPath: string, confalsPath: string, goldenStepsPath: string, nuAnglesPath: string, confalPercentilesPath: string): Promise<Data> {
         const clustersResp = fetch(clustersPath);
         const confalsResp = fetch(confalsPath);
         const goldenStepsResp = fetch(goldenStepsPath);
         const nuAnglesResp = fetch(nuAnglesPath);
+        const confalPercentilesResp = fetch(confalPercentilesPath);
 
         let r = await clustersResp;
         if (!r.ok)
@@ -33,11 +35,17 @@ export namespace ClassificationResources {
             throw new Error(`Failed to download average Nu angles definitions: ${r.status} ${r.statusText}`);
         const nuAnglesText = r.text();
 
+        r = await confalPercentilesResp;
+        if (!r.ok)
+            throw new Error(`Failed to download confal percentiles definitions: ${r.status} ${r.statusText}`);
+        const confalPercentilesText = r.text();
+
         return {
             clusters: await clustersText,
             confals: await confalsText,
             goldenSteps: await goldenStepsText,
-            nuAngles: await nuAnglesText
+            nuAngles: await nuAnglesText,
+            confalPercentiles: await confalPercentilesText,
         };
     }
 }

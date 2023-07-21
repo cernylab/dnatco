@@ -330,7 +330,8 @@ function App(props: { initial: Initial }) {
             `${prefix}/classification/clusters.csv`,
             `${prefix}/classification/confals.csv`,
             `${prefix}/classification/golden_steps.csv`,
-            `${prefix}/classification/nu_angles.csv`
+            `${prefix}/classification/nu_angles.csv`,
+            `${prefix}/classification/confal_percentiles.csv`
         ).then(retval => {
             if (retval === undefined) {
                 Fingerprint.fingerprintFromUrls(`${prefix}/classification/golden_steps.csv`, `${prefix}/classification/order_of_steps.txt`).then(fprint => {

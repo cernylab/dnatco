@@ -29,8 +29,10 @@ export namespace Dnatcofier {
         const attemptedSteps = res.success();
         res.delete();
 
+        const avgConfal = jsLLKA.LLKA.averageConfalAttempted(attemptedSteps, clsfCtx);
+
         ctx.status = 'Adding DNATCO categories to mmCIF';
-        const cifDataDNATCO = jsLLKA.addDNATCOCategoriesToCif(imported.cifData, attemptedSteps, steps, imported.id);
+        const cifDataDNATCO = jsLLKA.addDNATCOCategoriesToCif(imported.cifData, attemptedSteps, avgConfal, steps, imported.id);
         attemptedSteps.delete();
         clsfCtx.delete();
 

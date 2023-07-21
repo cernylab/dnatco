@@ -18,12 +18,12 @@ const ClassificationLimits: jsLLKA.LLKAClassificationLimits = {
 const MaxCloseEnoughRmsd = 0.5;
 
 export namespace ClassificationContext {
-    export async function initialize(clustersPath: string, confalsPath: string, goldenStepsPath: string, nuAnglesPath: string) {
+    export async function initialize(clustersPath: string, confalsPath: string, goldenStepsPath: string, nuAnglesPath: string, confalPercentilesPath: string) {
         if (_theContext)
             throw new Error('Classification context has been already initialized. We do not allow this.');
 
         try {
-            _contextData = await ClassificationResources.load(clustersPath, confalsPath, goldenStepsPath, nuAnglesPath);
+            _contextData = await ClassificationResources.load(clustersPath, confalsPath, goldenStepsPath, nuAnglesPath, confalPercentilesPath);
             _theContext = initializeContext(_contextData);
 
             return void 0;
@@ -67,11 +67,23 @@ export namespace ClassificationContext {
             throw new Error(`Failed to load average Nu angles definitions: ${jsLLKA.LLKA.errorToString(fail)}`);
         }
 
+        const resCps = jsLLKA.LLKA.loadConfalPercentiles(data.confalPercentiles);
+        if (!resCps.isSuccess()) {
+            const fail = resCps.failure();
+            resClusters.delete();
+            resConfals.delete();
+            resGoldenSteps.delete();
+            resNus.delete();
+            resCps.delete();
+            throw new Error(`Failed to load confal percentiles definitions: ${jsLLKA.LLKA.errorToString(fail)}`);
+        }
+
         const resCtx = jsLLKA.LLKA.initializeClassificationContext(
             resClusters.success(),
             resGoldenSteps.success(),
             resConfals.success(),
             resNus.success(),
+            resCps.success(),
             ClassificationLimits,
             MaxCloseEnoughRmsd,
         );
@@ -91,6 +103,7 @@ export namespace ClassificationContext {
         resConfals.delete();
         resGoldenSteps.delete();
         resNus.delete();
+        resCps.delete();
         resCtx.delete();
 
         return clsfCtx;

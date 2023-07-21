@@ -1,8 +1,9 @@
 import type { StandardLonghandProperties } from 'csstype';
+import * as jsLLKA from 'jsllka';
 import React from 'react';
 import { BasePushButton } from '../common/push-button';
 import { GlobalConfig } from '../../global-config';
-import { clamp } from '../../util';
+import { ClassificationContext } from '../../dnatco/classification-context';
 import { Step } from '../../dnatco/step';
 import '../../../../assets/imgs/data-transfer-download.svg';
 
@@ -19,20 +20,8 @@ export namespace Common {
     export const StyleTableSameColumnWidth = { tableLayout: 'fixed', width: '100%' } as StandardLonghandProperties;
 }
 
-// NO NO NO: This is just a very interim solution to check that we're correct
-export function confalPercentile(confal: number) {
-    // TODO: Better function
-    const x = clamp(confal, 0.0, 100.0);
-    const Coeffs = [
-        -8.43983519489781E-13, 2.99903652081687E-10, -4.04702262570393E-08, 2.54732719424787E-06, -7.55126681196185E-05, 0.00111573721670155, -0.00220044745406717, 0.0259204823080706
-    ];
-    const N = Coeffs.length - 1;
-
-    let y = 0;
-    for (let idx = 0; idx < Coeffs.length; idx++)
-        y += Coeffs[idx] * Math.pow(x, N - idx);
-
-    return y * 100.0;
+export function confalPercentile(confalScore: number) {
+    return jsLLKA.LLKA.confalPercentile(confalScore, ClassificationContext.context());
 }
 
 export function niceStepName(step: Step, showModelNum = false) {
