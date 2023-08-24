@@ -20,7 +20,7 @@ export function PlotPointsLegend(props: Partial<{
     return (
         <div style={{ alignItems: 'center', display: 'flex', flexDirection: 'row', gap: 'var(--h-gap)', justifyContent: 'center' }}>
             {show.normal ? <div><span style={SymbolStyle}>{'\u23FA'}</span> - NtC</div> : void 0}
-            {show.current ? <div><span style={SymbolStyle}>{'\uD83D\uDDD9'}</span> - Currently shown NtC</div> : void 0}
+            {show.current ? <div><span style={SymbolStyle}>{'\u2715'}</span> - Currently shown NtC</div> : void 0}
             {show.computed ? <div><span style={SymbolStyle}>{'\u23F9'}</span> - Computed NtC</div> : void 0}
         </div>
     );
