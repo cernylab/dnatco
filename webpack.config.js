@@ -118,6 +118,11 @@ function sharedConfig(productionBuild) {
                         from: 'assets/angles_lengths/*.json',
                         to() { return path.resolve(__dirname, DistDir, 'angles_lengths/[name][ext]') },
                     },
+                    // Molstar viewer image assets must be copied to dist like this
+                    {
+                        from: 'molstar/build/rednatco/assets/imgs/*',
+                        to() { return path.resolve(__dirname, DistDir, 'imgs/[name][ext]') },
+                    }
                 ]
             }),
             new webpack.ProvidePlugin({
