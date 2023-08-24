@@ -1,14 +1,14 @@
 import * as React from 'react';
+import { DefinitionNewTrans2Img } from '../assets/images';
 import { GlobalConfig } from '../global-config';
 import { Version } from '../version';
-import 'assets/imgs/definition_new_trans2.png';
 
 export class BigLogo extends React.Component {
     render() {
         return (
             <div className='rdo-big-logo-container'>
                 <img
-                    src={`${GlobalConfig.data().pathPrefix}/imgs/definition_new_trans2.png`}
+                    src={DefinitionNewTrans2Img}
                     style={{
                         height: '7em',
                         margin: '0.5em',

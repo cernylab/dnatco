@@ -2,8 +2,7 @@ import * as React from 'react';
 import * as RDC from 'react-dom/client';
 import { EquiBox } from './common/equibox';
 import { BasePushButton } from './common/push-button';
-import { GlobalConfig }  from '../global-config';
-import '../../../assets/imgs/grid-three-up.svg';
+import { GridThreeUpImg } from '../assets/images';
 
 const MinimumWidthForStandardBar = 1000;
 
@@ -81,7 +80,7 @@ function TabButton(props: {
         >
             <img
                 className='rdo-tab-button-icon'
-                src={`${GlobalConfig.data().pathPrefix}/${props.icon}`}
+                src={props.icon}
             />
             <div className={props.noCaps ? 'rdo-tab-button-text-no-caps' : 'rdo-tab-button-text'}>{props.caption}</div>
         </BasePushButton>
@@ -162,7 +161,7 @@ function NavigationBarCompact<TK extends string>(props: {
                 >
                     <img
                         className={`rdo-navigation-bar-hamburger-icon ${hamburgerHovered ? 'rdo-navigation-bar-hamburger-icon-active' : ''}`}
-                        src={`${GlobalConfig.data().pathPrefix}/imgs/grid-three-up.svg`}
+                        src={GridThreeUpImg}
                     />
                 </div>
                 <div style={{ width: 'min-content' }}>

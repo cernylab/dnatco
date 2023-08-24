@@ -1,8 +1,6 @@
 import React from 'react';
 import * as RDC from 'react-dom/client';
-import { GlobalConfig } from '../../global-config';
-import '../../../../assets/imgs/triangle-down.svg';
-import '../../../../assets/imgs/x.svg';
+import { TriangleDownImg, XImg } from '../../assets/images';
 
 class WindowStack {
     private readonly BottomZIndex = 100;
@@ -52,8 +50,6 @@ function Header(props: {
     onCollapsedExpanded: (expanded: boolean) => void,
     onDragged: (dx: number, dy: number) => void,
 }) {
-    const pfx = GlobalConfig.data().pathPrefix;
-
     const [isExpanded, setIsExpanded] = React.useState(true);
     const hdrRef = React.createRef<HTMLDivElement>();
     const title = typeof props.title === 'string' ? <div className='rdo-strong'>{props.title}</div> : props.title;
@@ -109,14 +105,14 @@ function Header(props: {
             }}>
                 <img
                     className='rdo-window-button'
-                    src={`${pfx}/imgs/triangle-down.svg`}
+                    src={TriangleDownImg}
                     style={{ transition: 'rotate var(--anim-speed)', rotate: isExpanded ? '180deg' : '0deg' }}
                 />
             </div>
             <div onClick={() => props.onClosed()}>
                 <img
                     className='rdo-window-button'
-                    src={`${pfx}/imgs/x.svg`}
+                    src={XImg}
                 />
             </div>
         </div>

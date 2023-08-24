@@ -1,6 +1,6 @@
 import { type StandardLonghandProperties } from 'csstype';
 import React from 'react';
-import 'assets/imgs/down_arrow.svg';
+import { DownArrowImg } from '../../assets/images';
 
 const SizingPolicy = {
     'min-content': 'min-content',
@@ -10,7 +10,7 @@ const SizingPolicy = {
 
 const DropdownArrowStyle = {
     'backgroundRepeat': 'no-repeat',
-    'backgroundImage': 'url("/imgs/down_arrow.svg")',
+    'backgroundImage': `url("${DownArrowImg}")`,
     'backgroundPosition': 'right',
     'backgroundSize': '1em',
 };

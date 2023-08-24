@@ -7,13 +7,11 @@ import { Popup } from './common/popup';
 import { ShadowedBox } from './common/shadowed-box';
 import { Tooltip } from './common/tooltip';
 import { Common } from './dnatco/common';
+import { MagnifyingGlassImg, MediaPlayImg, ReloadImg, XImg } from '../assets/images';
 import { DensityMap, DensityMapKinds } from '../dnatco/density-map';
 import { BuiltInRemoteDatabases, UserRemoteDatabases } from '../remote/db/register';
 import { copyString, isPdbId, toPdbId } from '../util';
 import { GlobalConfig, GlobalConfigData } from '../global-config';
-import 'assets/imgs/magnifying-glass.svg';
-import 'assets/imgs/media-play.svg';
-import 'assets/imgs/x.svg';
 
 const AllowedDensityMapKinds = [...DensityMapKinds, 'coefficients'] as const;
 type AllowedDensityMapKinds = typeof AllowedDensityMapKinds[number];
@@ -37,7 +35,7 @@ function listOfValidExamples(examples: GlobalConfigData['exampleStructures']) {
         if (dbIds.includes(ex.db) && isPdbId(ex.pdbId, true))
             valid.push(ex);
         else
-            console.warn(`Example structure entry "${ex.pdbId}" from DB "${ex.db}" is invalid. Check the PDB ID and that it references a valid database.`);
+            console.warn(`Example structure entry "${ex.pdbId}" from DB "${ex.db}" is invalid. Check the PDB ID is valid and that it references a valid database.`);
     }
 
     return valid;
@@ -60,7 +58,7 @@ class AnalyzeButton extends React.Component<{ ready: boolean, onClick: () => voi
     render() {
         return (
             <IconTextButton
-                src='imgs/media-play.svg'
+                src={MediaPlayImg}
                 caption='Analyze'
                 onClick={() => this.props.onClick()}
                 disabled={!this.props.ready}
@@ -100,7 +98,7 @@ class Coordinates extends React.Component<Coordinates.Props> {
                             <div style={ CoordsItemProps }>
                                 <label htmlFor='upload-coords-file' style={{ display: 'flex', justifyContent: 'end', height: '100%' }}>
                                     <DummyIconTextButton
-                                        src='imgs/magnifying-glass.svg'
+                                        src={MagnifyingGlassImg}
                                         caption='Browse'
                                     />
                                 </label>
@@ -187,7 +185,7 @@ class DensityMapFiles extends React.Component<
                         <div className={textCls} style={{ flex: 1, fontSize: 'var(--font-large)' }}>{NiceMapKinds[f.kind]}</div>
                         <div style={{ width: '2em' }}>
                             <IconButton
-                                src='imgs/x.svg'
+                                src={XImg}
                                 onClick={() => this.props.onRemoveFile(_idx)}
                                 className='rdo-remove-icon-button'
                                 classNameDisabled='rdo-remove-icon-button-disabled'
@@ -248,7 +246,7 @@ class DensityMapFiles extends React.Component<
                     {opts.length > 0
                         ? <label htmlFor='upload-density-map' style={{ display: 'flex', justifyContent: 'end', height: '100%' }}>
                             <DummyIconTextButton
-                                src='imgs/magnifying-glass.svg'
+                                src={MagnifyingGlassImg}
                                 caption='Browse'
                                 disabled={this.props.disabled}
                             />
@@ -496,7 +494,7 @@ export class StartTab extends React.Component<StartTab.Props, State> {
                                         }}
                                     />
                                     <IconTextButton
-                                        src='imgs/reload.svg'
+                                        src={ReloadImg}
                                         caption='Reset'
                                         onClick={() => this.setState({ ...this.defaultState() })}
                                         className='rdo-pushbutton rdo-pushbutton-border rdo-start-reset-button'

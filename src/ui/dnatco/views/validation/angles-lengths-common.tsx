@@ -17,6 +17,7 @@ import { ToggleButton } from '../../../common/push-button';
 import { Tooltip } from '../../../common/tooltip';
 import { Window } from '../../../common/window';
 import { colorStyle, colorToTuple, ColorTuple } from '../../../util';
+import { DataTransferDownloadImg, InfoInverseImg } from '../../../../assets/images';
 import { ALM } from '../../../../dnatco/alm';
 import { Dnatcofication } from '../../../../dnatco/dnatcofication';
 import { shiftedName } from '../../../../dnatco/angles-lengths/atoms';
@@ -450,7 +451,7 @@ export class AveragesChart extends React.Component<{
                                 }}
                                 key={idx}
                             >
-                                <Icon img='imgs/data-transfer-download.svg' size='text' />
+                                <Icon img={DataTransferDownloadImg} size='text' />
                                 {dl.caption}
                             </div>
                         );
@@ -1211,7 +1212,7 @@ export namespace AnglesLengthsCommon {
         return (
             <div className='rdo-vflexalign' style={{ gap: 'var(--h2-gap)', paddingLeft: 'var(--h2-gap)' }}>
                 <div style={ AnglesLengthsCommon.BarCaptionStyle }>{text}</div>
-                <img className='rdo-info-icon-white' style={{ filter: 'invert() drop-shadow(0 0 3px black)' }} src={`${GlobalConfig.data().pathPrefix}/imgs/info-inverse.svg`} />
+                <img className='rdo-info-icon-white' style={{ filter: 'invert() drop-shadow(0 0 3px black)' }} src={InfoInverseImg} />
             </div>
         );
     }

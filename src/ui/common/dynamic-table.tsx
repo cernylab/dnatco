@@ -2,13 +2,9 @@ import * as React from 'react';
 import { Icon } from './icon';
 import { Tooltip } from './tooltip';
 import { colorToHex, scrollIntoViewIfNeeded } from '../util';
-import { GlobalConfig } from '../../global-config';
+import { DataTransferDownloadImg, SortImg, SortAscImg, SortDescImg } from '../../assets/images';
 import { type FileType } from '../../util/downloader';
 import { arraysAreSame } from '../../util';
-import 'assets/imgs/data-transfer-download.svg';
-import 'assets/imgs/sort.svg';
-import 'assets/imgs/sorted-ascending.svg';
-import 'assets/imgs/sorted-descending.svg';
 
 const NotHighlighted = { background: 'none' };
 
@@ -226,7 +222,7 @@ export class DynamicTable extends React.Component<DynamicTable.Props, { sorting:
                         dl.download(fileName, this.props.model, this.state.sorting);
                     }}
                 >
-                    <Icon img='imgs/data-transfer-download.svg' size='text' />
+                    <Icon img={DataTransferDownloadImg} size='text' />
                     {dl.caption}
                 </div>
             );
@@ -241,7 +237,6 @@ export class DynamicTable extends React.Component<DynamicTable.Props, { sorting:
     }
 
     private renderHeader() {
-        const prefix = GlobalConfig.data().pathPrefix;
         const headers = new Array<JSX.Element>();
         const sorting = this.state.sorting;
 
@@ -249,8 +244,9 @@ export class DynamicTable extends React.Component<DynamicTable.Props, { sorting:
             const col = this.props.model.columns[idx];
 
             const imgSrc = sorting.columnIdx  === idx
-                ? sorting.order === 'asc' ? `${prefix}/imgs/sorted-ascending.svg` : `${prefix}/imgs/sorted-descending.svg`
-                : `${prefix}/imgs/sort.svg`;
+                ? sorting.order === 'asc'
+                    ? SortAscImg : SortDescImg
+                : SortImg;
 
             headers.push(
                 <th

@@ -9,13 +9,13 @@ import { Popup } from './common/popup';
 import { ShadowedBox } from './common/shadowed-box';
 import { SideSwitchingPanel } from './common/side-switching-panel';
 import { Common, DownloadButton } from './dnatco/common';
+import { DefinitionNewTrans2Img } from '../assets/images';
 import { ListOfConformers } from '../dnatco/list-of-conformers';
 import { Step } from '../dnatco/step';
 import { Search } from '../remote/search';
 import { doDownload, FileTypes } from '../util/downloader';
 import { Net } from '../util/net';
 import { Serialization } from '../util/serialization';
-import { GlobalConfig } from '../global-config';
 
 const Tabs = [
     ['about-ntcs', { caption: 'About NtCs', title: 'About NtCs' }],
@@ -46,8 +46,6 @@ function fmtFlt(f: number, n = 1) {
 }
 
 function AboutNtCs() {
-    const prefix = React.useMemo(() => GlobalConfig.data().pathPrefix, []);
-
     return (
         <Help.Container>
             <div className='rdo-page'>
@@ -60,7 +58,7 @@ function AboutNtCs() {
                 </div>
 
                 <div className='rdo-image-tainer'>
-                    <img className='rdo-image' src={`${prefix}/imgs/definition_new_trans2.png`} />
+                    <img className='rdo-image' src={DefinitionNewTrans2Img} />
                     <div>
                         Figure 1. Dinucleotide step with the 12 parameters <br /> (backbone torsions shown in gray, distances in blue) <br /> that define the NtC conformational class.
                     </div>

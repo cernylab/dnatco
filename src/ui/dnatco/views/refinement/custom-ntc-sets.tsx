@@ -4,11 +4,9 @@ import { ComboBox } from '../../../common/combo-box';
 import { InputDialog } from '../../../common/input-dialog';
 import { IconTextButton } from '../../../common/push-button';
 import { WithSubscriptions } from '../../../service/with-subscriptions';
+import { PlusImg, ReloadImg, XImg } from '../../../../assets/images';
 import { CustomNtCs } from '../../../../dnatco/custom-ntcs';
 import { Empty } from '../../../../util/types';
-import 'assets/imgs/plus.svg';
-import 'assets/imgs/reload.svg';
-import 'assets/imgs/x.svg';
 
 export class CustomNtCSets extends WithSubscriptions<CustomNtCSets.Props, Empty> {
     constructor(props: CustomNtCSets.Props) {
@@ -55,7 +53,7 @@ export class CustomNtCSets extends WithSubscriptions<CustomNtCSets.Props, Empty>
                     />
                     <IconTextButton
                         caption='Add'
-                        src='imgs/plus.svg'
+                        src={PlusImg}
                         onClick={() => {
                             InputDialog.create({
                                 caption: 'Name of the new set',
@@ -73,7 +71,7 @@ export class CustomNtCSets extends WithSubscriptions<CustomNtCSets.Props, Empty>
                     />
                     <IconTextButton
                         caption='Rename'
-                        src='imgs/reload.svg'
+                        src={ReloadImg}
                         onClick={() => {
                             InputDialog.create({
                                 caption: `Set new name for set ${this.props.selectedSet}`,
@@ -91,7 +89,7 @@ export class CustomNtCSets extends WithSubscriptions<CustomNtCSets.Props, Empty>
                     />
                     <IconTextButton
                         caption='Delete'
-                        src='imgs/x.svg'
+                        src={XImg}
                         onClick={() => {
                             if (this.props.selectedSet !== '') {
                                 this.props.customNtCs.deleteSet(this.props.selectedSet);

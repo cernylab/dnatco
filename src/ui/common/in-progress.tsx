@@ -1,7 +1,5 @@
-import { GlobalConfig } from '../../global-config';
+import { ThingsAreHappeningImg } from '../../assets/images';
 import { v4 as uuidv4 } from 'uuid';
-// Image assets
-import 'assets/imgs/things-are-happening.svg';
 
 const SpinnerStyle = 'height: 1.5em; width: auto;';
 
@@ -14,8 +12,6 @@ export namespace InProgress {
         `;
     }
     function makeContent(title: string, status: string, abortButton: boolean, spinnerId: string) {
-        const Prefix = GlobalConfig.data().pathPrefix;
-
         return `
             <div class="rdo-popup">
                 <div class="rdo-popup-inner">
@@ -24,7 +20,7 @@ export namespace InProgress {
                             ${makeText(title, status)}
                         </div>
                         <img
-                            src="${Prefix}/imgs/things-are-happening.svg"
+                            src="${ThingsAreHappeningImg}"
                             style="${SpinnerStyle}"
                             id="${spinnerId}"
                         />

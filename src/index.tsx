@@ -2,6 +2,13 @@ import React from 'react';
 import * as RDC from 'react-dom/client';
 import { useLocation, useNavigate, BrowserRouter, HashRouter, Navigate, Routes, Route } from 'react-router-dom';
 import { Subject } from 'rxjs';
+import {
+    DataTransferDownloadImg, DocumentImg, HomeImg,
+    InfoImg, ListImg, LoopImg,
+    TaskImg
+} from './assets/images';
+import { ConformersFile } from './assets/misc';
+import { NavalAngleRestraintsFile, NavalBondRestraintsFile } from './assets/params';
 import { GlobalConfig } from './global-config';
 import { Globals } from './globals';
 import { isPdbId } from './util';
@@ -33,20 +40,7 @@ import { BackgroundWorker, WorkerMessage } from './tasks/worker';
 import { ViewerInterop } from './viewer/viewer-interop';
 import { Task } from './tasks/task';
 import { objKeys } from './util';
-import 'assets/conformers.csv';
-// Image assets
-import 'assets/imgs/elixir.png';
-import 'assets/imgs/home.svg';
-import 'assets/imgs/ibt.png';
-import 'assets/imgs/info.svg';
-import 'assets/imgs/magnifying-glass.svg';
-import 'assets/imgs/list.svg';
-import 'assets/imgs/task.svg';
-import 'assets/imgs/loop.svg';
-import 'assets/imgs/document.svg';
-import 'assets/imgs/data-transfer-download.svg';
-// Base assets
-import 'assets/index.html';
+
 import 'assets/rednatco.css';
 
 const IsDnatcoNavigation = new RegExp('^\/app\/dnatco\/(annotation|refinement|validation|downloads)');
@@ -60,74 +54,74 @@ const Params = {
 const TabsForModes = {
     nothing: {
         start: {
-            icon: 'imgs/home.svg',
+            icon: HomeImg,
             caption: 'Home',
             enabled: true,
         },
         annotation: {
-            icon: 'imgs/list.svg',
+            icon: ListImg,
             caption: 'Annotation',
             enabled: false,
         },
         validation: {
-            icon: 'imgs/task.svg',
+            icon: TaskImg,
             enabled: false,
             caption: 'Validation',
         },
         refinement: {
-            icon: 'imgs/loop.svg',
+            icon: LoopImg,
             caption: 'Refinement',
             enabled: false,
         },
         downloads: {
-            icon: 'imgs/data-transfer-download.svg',
+            icon: DataTransferDownloadImg,
             caption: 'Downloads',
             enabled: false,
         },
         'list-of-conformers': {
-            icon: 'imgs/document.svg',
+            icon: DocumentImg,
             caption: 'Conformers',
             enabled: true,
         },
         about: {
-            icon: 'imgs/info.svg',
+            icon: InfoImg,
             caption: 'About',
             enabled: true,
         }
     },
     structure: {
         start: {
-            icon: 'imgs/home.svg',
+            icon: HomeImg,
             caption: 'Home',
             enabled: true,
         },
         annotation: {
-            icon: 'imgs/list.svg',
+            icon: ListImg,
             caption: 'Annotation',
             enabled: true,
         },
         validation: {
-            icon: 'imgs/task.svg',
+            icon: TaskImg,
             enabled: true,
             caption: 'Validation',
         },
         refinement: {
-            icon: 'imgs/loop.svg',
+            icon: LoopImg,
             caption: 'Refinement',
             enabled: true,
         },
         downloads: {
-            icon: 'imgs/data-transfer-download.svg',
+            icon: DataTransferDownloadImg,
             caption: 'Downloads',
             enabled: true,
         },
         'list-of-conformers': {
-            icon: 'imgs/document.svg',
+            icon: DocumentImg,
             caption: 'Conformers',
             enabled: true,
         },
         about: {
-            icon: 'imgs/info.svg',
+            icon: InfoImg,
             caption: 'About',
             enabled: true,
         }
@@ -323,18 +317,17 @@ function App(props: { initial: Initial }) {
     const navigate = useNavigate();
 
     React.useEffect(() => {
-        const prefix = GlobalConfig.data().pathPrefix;
         const FailMsg = <div>{GlobalConfig.data().displayedProductName} cannot function when its engine fails to initialize. Try to refresh the page...</div>
 
         ClassificationContext.initialize(
-            `${prefix}/classification/clusters.csv`,
-            `${prefix}/classification/confals.csv`,
-            `${prefix}/classification/golden_steps.csv`,
-            `${prefix}/classification/nu_angles.csv`,
-            `${prefix}/classification/confal_percentiles.csv`
+            '/classification/clusters.csv',
+            '/classification/confals.csv',
+            '/classification/golden_steps.csv',
+            '/classification/nu_angles.csv',
+            '/classification/confal_percentiles.csv'
         ).then(retval => {
             if (retval === undefined) {
-                Fingerprint.fingerprintFromUrls(`${prefix}/classification/golden_steps.csv`, `${prefix}/classification/order_of_steps.txt`).then(fprint => {
+                Fingerprint.fingerprintFromUrls('/classification/golden_steps.csv', '/classification/order_of_steps.txt').then(fprint => {
                     dh.dnatcofication.setParametersFingerprint(fprint, GlobalConfig.data().expectedParametersFingerprint);
 
                     AnglesLengths.initialize().then(res => {
@@ -348,8 +341,8 @@ function App(props: { initial: Initial }) {
                             );
                         } else {
                             Naval.initialize(
-                                `${prefix}/naval/angle_restraints.csv`,
-                                `${prefix}/naval/bond_restraints.csv`
+                                `${NavalAngleRestraintsFile}`,
+                                `${NavalBondRestraintsFile}`
                             ).then(res => {
                                 if (isError(res)) {
                                     setDnatcofierState('failed');
@@ -411,7 +404,7 @@ function App(props: { initial: Initial }) {
             );
         });
 
-        ListOfConformers.load(`${prefix}/conformers.csv`);
+        ListOfConformers.load(ConformersFile);
     }, []);
 
     React.useEffect(() => {

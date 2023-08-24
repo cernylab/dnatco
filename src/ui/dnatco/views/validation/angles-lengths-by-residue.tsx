@@ -18,6 +18,7 @@ import { Popup } from '../../../common/popup';
 import { IconButton } from '../../../common/push-button';
 import { SpinBox } from '../../../common/spin-box';
 import { Window } from '../../../common/window';
+import { DataTransferDownloadImg, MagnifyingGlassImg, TriangleDownImg } from '../../../../assets/images';
 import { ALM } from '../../../../dnatco/alm';
 import { Dnatcofication } from '../../../../dnatco/dnatcofication';
 import { AnglesLengths as DAnglesLengths } from '../../../../dnatco/angles-lengths';
@@ -35,9 +36,6 @@ import { EventsKeeper } from '../../../../util/events-keeper';
 import { M } from '../../../../util/math';
 import { Net } from '../../../../util/net';
 import { ViewerInterop, ViewerApi } from '../../../../viewer/viewer-interop';
-import 'assets/imgs/data-transfer-download.svg';
-import 'assets/imgs/info-inverse.svg';
-import 'assets/imgs/triangle-down.svg';
 
 type StatsDownloader = Downloader<{
     residues: Measurements.Residue[],
@@ -433,7 +431,7 @@ function DownloadButtons(props: {
                         e.stopPropagation();
                         dl.download(props.fileName, { residues: props.residues, counts: props.counts, stats: props.stats });
                 }}>
-                    <Icon img='imgs/data-transfer-download.svg' size='text' />
+                    <Icon img={DataTransferDownloadImg} size='text' />
                     {dl.caption}
                 </div>
             ))}
@@ -1112,13 +1110,12 @@ export class AnglesLengthsByResidue extends View<
 
         const mkHeader = (text: string) => {
             const Style = { display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center' } as StandardLonghandProperties;
-            const pfx = GlobalConfig.data().pathPrefix;
 
             return {
                 collapsed: (
                     <div className='rdo-secondary-caption rdo-active' style={Style}>
                         <img
-                            src={`${pfx}/imgs/triangle-down.svg`}
+                            src={TriangleDownImg}
                             style={{ transition: 'rotate var(--anim-speed)', rotate: '0deg' }}
                         />
                         <div style={{ flex: 1 }}>{text}</div>
@@ -1127,7 +1124,7 @@ export class AnglesLengthsByResidue extends View<
                 expanded: (
                     <div className='rdo-secondary-caption rdo-active' style={Style}>
                         <img
-                            src={`${pfx}/imgs/triangle-down.svg`}
+                            src={TriangleDownImg}
                             style={{ transition: 'rotate var(--anim-speed)', rotate: '180deg' }}
                         />
                         <div style={{ flex: 1 }}>{text}</div>
@@ -1224,7 +1221,7 @@ export class AnglesLengthsByResidue extends View<
                             </div>
                             <div className='rdo-floating-search-icon-tainer' style={{ bottom: 'var(--x-gap)', right: 'var(--x-gap)' }}>
                                 <IconButton
-                                    src='imgs/magnifying-glass.svg'
+                                    src={MagnifyingGlassImg}
                                     className='rdo-floating-search-icon rdo-pushbutton-border'
                                     onClick={() => {
                                         if (this.searchBoxOpen === true || !residuesOuterTainerRef.current)
@@ -1347,7 +1344,7 @@ export class AnglesLengthsByResidue extends View<
                                 }
                             }}
                         >
-                            <Icon img='imgs/data-transfer-download.svg' size='text' />
+                            <Icon img={DataTransferDownloadImg} size='text' />
                             Bond lengths
                         </div>
                         <div
@@ -1365,7 +1362,7 @@ export class AnglesLengthsByResidue extends View<
                                 }
                             }}
                         >
-                            <Icon img='imgs/data-transfer-download.svg' size='text' />
+                            <Icon img={DataTransferDownloadImg} size='text' />
                             Bond angles
                         </div>
                         <div
@@ -1383,7 +1380,7 @@ export class AnglesLengthsByResidue extends View<
                                 }
                             }}
                         >
-                            <Icon img='imgs/data-transfer-download.svg' size='text' />
+                            <Icon img={DataTransferDownloadImg} size='text' />
                             Geometry
                         </div>
                     </div>

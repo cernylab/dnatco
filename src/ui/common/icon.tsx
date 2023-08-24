@@ -1,5 +1,4 @@
 import React from 'react';
-import { GlobalConfig } from '../../global-config';
 
 export function Icon(props: { img: string, size: 'text' | '1.5x-text' | string }) {
     const size = props.size === 'text'
@@ -8,13 +7,11 @@ export function Icon(props: { img: string, size: 'text' | '1.5x-text' | string }
             ? '1.5em'
             : props.size;
 
-    const prefix = GlobalConfig.data().pathPrefix;
-
     return (
         <div className='rdo-icon-tainer' style={{ width: size, height: size }}>
             <img
                 className='rdo-icon'
-                src={`${prefix}/${props.img}`}
+                src={props.img}
             />
         </div>
     );

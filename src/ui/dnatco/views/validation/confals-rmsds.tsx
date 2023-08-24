@@ -22,6 +22,7 @@ import { DynamicTable } from '../../../common/dynamic-table';
 import { IconButton } from '../../../common/push-button';
 import { NamedList, NamedListItem } from '../../../common/named-list';
 import { Tooltip } from '../../../common/tooltip';
+import { InfoImg, MagnifyingGlassImg } from '../../../../assets/images';
 import { Cif } from '../../../../cif';
 import {
     NdbStructNtcOverall, NdbStructNtcStep, NdbStructNtcStepSummary,
@@ -33,8 +34,6 @@ import { StepsMapper } from '../../../../dnatco/steps-mapper';
 import { parseIntStrict } from '../../../../util';
 import { doDownload, FileTypes } from '../../../../util/downloader';
 import { Serialization } from '../../../../util/serialization';
-import 'assets/imgs/info.svg';
-import 'assets/imgs/magnifying-glass.svg';
 
 const CellBgAlpha = 0.5;
 
@@ -253,8 +252,8 @@ export class ConfalsRmsds extends View<View.Props> {
         };
         const torsionsColumn: DynamicTable.Column<string> = {
             name: '?', cells: new Array<DynamicTable.Cell<string>>(), alignment: 'center', notSortable: true, noData: true,
-            tooltip: <div>Hover over the <Icon img='imgs/info.svg' size='text' /> to get details about torsions and distances.</div>,
-            elem: <Icon img='imgs/info.svg' size='0.75em' />,
+            tooltip: <div>Hover over the <Icon img={InfoImg} size='text' /> to get details about torsions and distances.</div>,
+            elem: <Icon img={InfoImg} size='0.75em' />,
             cellStyle: () => ({ padding: '0' }),
             headerStyle: { padding: '0' }
         };
@@ -321,7 +320,7 @@ export class ConfalsRmsds extends View<View.Props> {
                     () => (
                         <Tooltip
                             tag={
-                                <Icon img='imgs/info.svg' size='0.75em' />
+                                <Icon img={InfoImg} size='0.75em' />
                             }
                             delayMsec={300}
                         >
@@ -479,7 +478,7 @@ export class ConfalsRmsds extends View<View.Props> {
 
                 <div className='rdo-floating-search-icon-tainer' style={{ bottom: 'var(--x-gap)', right: 'var(--x-gap)' }}>
                     <IconButton
-                        src='imgs/magnifying-glass.svg'
+                        src={MagnifyingGlassImg}
                         className='rdo-floating-search-icon rdo-pushbutton-border'
                         onClick={() => {
                             const tainer = selfRef.current;

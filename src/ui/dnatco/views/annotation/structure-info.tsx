@@ -7,23 +7,20 @@ import * as SI from '../../../structure-info-util';
 import { CollapsibleVertical } from '../../../common/collapsible-vertical';
 import { Link } from '../../../common/link';
 import { NamedList, NamedListItem } from '../../../common/named-list';
+import { TriangleDownImg } from '../../../../assets/images';
 import { Exptl } from '../../../../cif/categories/experimental';
 import { PdbxDatabaseStatus } from '../../../../cif/categories/pdbx-database-status';
 import { Refine } from '../../../../cif/categories/refine';
 import { Struct } from '../../../../cif/categories/struct';
 import { Dnatcofication } from '../../../../dnatco/dnatcofication';
-import { GlobalConfig } from '../../../../global-config';
 import { doiLink, pubmedLink, rcsbLink } from '../../../../util/resources';
-import 'assets/imgs/triangle-down.svg';
 
 function mkHeader(text: string) {
-    const prefix = GlobalConfig.data().pathPrefix;
-
     return {
         collapsed: (
             <div className='rdo-hflex rdo-h2gap rdo-taller rdo-active'>
                 <img
-                    src={`${prefix}/imgs/triangle-down.svg`}
+                    src={TriangleDownImg}
                     style={{ transition: 'rotate var(--anim-speed)', rotate: '0deg' }}
                 />
                 <div className='rdo-strong' style={{ flex: 1 }}>{text}</div>
@@ -32,7 +29,7 @@ function mkHeader(text: string) {
         expanded: (
             <div className='rdo-hflex rdo-h2gap rdo-taller rdo-active'>
                 <img
-                    src={`${prefix}/imgs/triangle-down.svg`}
+                    src={TriangleDownImg}
                     style={{ transition: 'rotate var(--anim-speed)', rotate: '180deg' }}
                 />
                 <div className='rdo-strong' style={{ flex: 1 }}>{text}</div>

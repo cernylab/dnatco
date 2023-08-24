@@ -3,13 +3,13 @@ import { Colors, Fonts, Tables } from '../styling';
 import { Layout } from '../layout';
 import { NTTable } from '../nottex/primitives';
 import { NTMm, NTUnit, NTXYWH } from '../nottex/space';
+import { DefinitionNewTrans2Img } from '../../assets/images';
 import { GlobalConfig } from '../../global-config';
 import { niceDate } from '../../ui/dnatco/util';
 import { Version } from '../../version';
-import '../../../../assets/imgs/definition_new_trans2.png';
 
 async function getImage() {
-    const req = await fetch(`${GlobalConfig.data().pathPrefix}/imgs/definition_new_trans2.png`);
+    const req = await fetch(DefinitionNewTrans2Img);
     if (!req.ok)
         throw new Error('Cannot get title image');
     return await req.arrayBuffer();

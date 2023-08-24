@@ -1,7 +1,9 @@
+// vim: set sw=4 ts=4 sts=4 expandtab :
 const path = require('path');
 const CopyPlugin = require('copy-webpack-plugin');
 const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
 const webpack = require('webpack');
 ////  const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
@@ -45,43 +47,12 @@ function sharedConfig(productionBuild) {
                     }],
                 },
                 {
-                    test: /\.php$/,
-                    use: [{
-                        loader: 'file-loader',
-                        options: {
-                            name: '[name].[ext]',
-                            sourceMap: false,
-                        },
-                    }],
-                },
-                {
-                    test: /\.html$/,
-                    use: [{
-                        loader: 'file-loader',
-                        options: {
-                            name: '[name].[ext]',
-                            outputPath: 'html/',
-                            sourceMap: false,
-                        }
-                    }],
-                },
-                {
-                    test: /index.html/,
-                    use: [{
-                        loader: 'file-loader',
-                        options: {
-                            name: '[name].[ext]',
-                            sourceMap: false,
-                        }
-                    }],
-                },
-                {
                     test: /\.(svg|png|jpe?g)$/,
                     use: [{
                         loader: 'file-loader',
                         options: {
                             outputPath: 'imgs',
-                            name: '[name].[ext]',
+                            name: '[contenthash].[ext]',
                             sourceMap: false,
                         },
                     }],
@@ -98,11 +69,23 @@ function sharedConfig(productionBuild) {
                     }],
                 },
                 {
-                    test: /\.(csv)$/,
+                    test: /\.csv$/,
+                    include: [path.resolve(__dirname, 'assets/naval')],
                     use: [{
                         loader: 'file-loader',
                         options: {
-                            name: '[name].[ext]',
+                            outputPath: 'naval',
+                            name: '[contenthash].[ext]',
+                            sourceMap: false,
+                        }
+                    }],
+                },
+                {
+                    test: /\.csv$/,
+                    exclude: [path.resolve(__dirname, 'assets/naval')],
+                    use: [{
+                        loader: 'file-loader',
+                        options: {
                             sourceMap: false,
                         }
                     }],
@@ -111,12 +94,7 @@ function sharedConfig(productionBuild) {
                     test: /\.(s*)css$/,
                     use: [
                         MiniCssExtractPlugin.loader,
-                        {
-                            loader: 'css-loader',
-                            options: {
-                                sourceMap: false
-                            },
-                        },
+                        'css-loader',
                     ],
                 },
             ],
@@ -136,6 +114,10 @@ function sharedConfig(productionBuild) {
                         to() { return path.resolve(__dirname, DistDir, 'contour_plots/gt25/[name][ext]') },
                         filter: async (resourcePath) => { return resourcePath.endsWith('.png') || resourcePath.endsWith('.pdf'); },
                     },
+                    {
+                        from: 'assets/angles_lengths/*.json',
+                        to() { return path.resolve(__dirname, DistDir, 'angles_lengths/[name][ext]') },
+                    },
                 ]
             }),
             new webpack.ProvidePlugin({
@@ -143,6 +125,9 @@ function sharedConfig(productionBuild) {
             }),
             new webpack.ProvidePlugin({
                 Buffer: ['buffer', 'Buffer'],
+            }),
+            new HtmlWebpackPlugin({
+                template: path.resolve(__dirname, 'assets/index.html'),
             }),
             // new BundleAnalyzerPlugin()
         ],
@@ -177,7 +162,7 @@ function createApp(name, productionBuild) {
             app: path.resolve(__dirname, `lib/src/${name}.js`),
         },
         output: {
-            filename: `${name}.js`,
+            filename: `${name}[chunkhash].js`,
             path: path.resolve(__dirname, DistDir)
         },
         ...sharedConfig(productionBuild),

@@ -1,7 +1,5 @@
 import * as React from 'react';
-import { GlobalConfig } from '../../global-config';
-import 'assets/imgs/triangle-up.svg';
-import 'assets/imgs/triangle-down.svg';
+import { TriangleDownImg, TriangleUpImg } from '../../assets/images';
 
 const SizingPolicy = {
     default: 'auto',
@@ -44,8 +42,6 @@ export class SpinBox extends React.Component<SpinBox.Props> {
     }
 
     render() {
-        const pathPrefix = GlobalConfig.data().pathPrefix;
-
         return (
             <div
                 className='rdo-spinbox-container'
@@ -78,11 +74,11 @@ export class SpinBox extends React.Component<SpinBox.Props> {
                 <div className='rdo-spinbox-buttons'>
                     <img
                         className='rdo-spinbox-button'
-                        src={`${pathPrefix}/imgs/triangle-up.svg`} onClick={() => this.increase()}
+                        src={TriangleUpImg} onClick={() => this.increase()}
                     />
                     <img
                         className='rdo-spinbox-button'
-                        src={`${pathPrefix}/imgs/triangle-down.svg`} onClick={() => this.decrease()}
+                        src={TriangleDownImg} onClick={() => this.decrease()}
                     />
                 </div>
             </div>

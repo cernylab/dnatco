@@ -13,6 +13,7 @@ import { CollapsibleVertical } from '../../../common/collapsible-vertical';
 import { Icon } from '../../../common/icon';
 import { Window } from '../../../common/window';
 import { colorStyle, colorToRgb, colorToTuple, hexToRgb, rgbToHex, type ColorTuple, Rgba } from '../../../util';
+import { DataTransferDownloadImg, TriangleDownImg } from '../../../../assets/images';
 import { ALM, ALMCompoundAngleLength } from '../../../../dnatco/alm';
 import { AnglesLengths as DAnglesLengths } from '../../../../dnatco/angles-lengths';
 import { tripletTag, Triplet } from '../../../../dnatco/angles-lengths/angles';
@@ -28,7 +29,6 @@ import { doDownload, Downloader, FileTypes } from '../../../../util/downloader';
 import { EventsKeeper } from '../../../../util/events-keeper';
 import { M } from '../../../../util/math';
 import { ViewerApi, ViewerInterop } from '../../../../viewer/viewer-interop';
-import 'assets/imgs/triangle-down.svg';
 
 type DownloadableData = {
     angles: ALM.AngleStats[],
@@ -104,7 +104,7 @@ function DownloadButtons(props: {
                         e.stopPropagation();
                         dl.download(props.fileName, props.downloadableData);
                 }}>
-                    <Icon img='imgs/data-transfer-download.svg' size='text' />
+                    <Icon img={DataTransferDownloadImg} size='text' />
                     {dl.caption}
                 </div>
             ))}
@@ -773,13 +773,12 @@ export class AnglesLengthsByCompound extends View<View.Props> {
 
         const mkHeader = (text: string) => {
             const Style = { display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center' } as StandardLonghandProperties;
-            const pfx = GlobalConfig.data().pathPrefix;
 
             return {
                 collapsed: (
                     <div className='rdo-secondary-caption rdo-active' style={Style}>
                         <img
-                            src={`${pfx}/imgs/triangle-down.svg`}
+                            src={TriangleDownImg}
                             style={{ transition: 'rotate var(--anim-speed)', rotate: '0deg' }}
                         />
                         <div style={{ flex: 1 }}>{text}</div>
@@ -788,7 +787,7 @@ export class AnglesLengthsByCompound extends View<View.Props> {
                 expanded: (
                     <div className='rdo-secondary-caption rdo-active' style={Style}>
                         <img
-                            src={`${pfx}/imgs/triangle-down.svg`}
+                            src={TriangleDownImg}
                             style={{ transition: 'rotate var(--anim-speed)', rotate: '180deg' }}
                         />
                         <div style={{ flex: 1 }}>{text}</div>

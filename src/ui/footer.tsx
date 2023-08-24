@@ -1,11 +1,9 @@
 import * as React from 'react';
 import { Email } from './common/email';
 import { IconButton } from './common/push-button';
+import { CasLogoImg, ElixirLogoImg, IbtLogoImg } from '../assets/images';
 import { Globals } from '../globals';
 import { Net } from '../util/net';
-import 'assets/imgs/ibt.png';
-import 'assets/imgs/elixir.png';
-import 'assets/imgs/CAS_centred_logo_ENG_rgb.png';
 
 const PadderStyle = { marginLeft: 'calc(var(--h-gap) / 2)', marginRight: 'calc(var(--h-gap) / 2)' };
 
@@ -46,19 +44,19 @@ export function Footer() {
                     <IconButton
                         className='rdo-footer-icon-button'
                         iconClassName='rdo-footer-icon-button-image'
-                        src='imgs/ibt.png'
+                        src={IbtLogoImg}
                         onClick={() => Net.openLink('https://www.ibt.cas.cz/en', true)}
                     />
                     <IconButton
                         className='rdo-footer-icon-button'
                         iconClassName='rdo-footer-icon-button-image'
-                        src='imgs/elixir.png'
+                        src={ElixirLogoImg}
                         onClick={() => Net.openLink('https://www.elixir-czech.cz/', true)}
                     />
                     <IconButton
                         className='rdo-footer-icon-button'
                         iconClassName='rdo-footer-icon-button-image'
-                        src='imgs/CAS_centred_logo_ENG_rgb.png'
+                        src={CasLogoImg}
                         onClick={() => Net.openLink('https://www.avcr.cz/en', true)}
                     />
                 </div>

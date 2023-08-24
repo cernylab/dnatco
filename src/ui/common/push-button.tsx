@@ -1,6 +1,5 @@
 import type { StandardLonghandProperties } from 'csstype';
 import React from 'react';
-import { GlobalConfig } from '../../global-config';
 
 export class BasePushButton<P extends BasePushButton.Props> extends React.Component<P> {
     static defaultProps = {
@@ -85,7 +84,7 @@ export class DummyIconTextButton extends React.Component<Omit<IconTextButton.Pro
                 <div className='rdo-pushbutton-inner-container'>
                     <img
                         className={this.props.iconClassName ?? 'rdo-icon-button-image'}
-                        src={`${GlobalConfig.data().pathPrefix}/${this.props.src}`}
+                        src={this.props.src}
                     />
                     <span className='rdo-pushbutton-text' style={{ flex: 1 }}>{this.props.caption}</span>
                 </div>
@@ -109,7 +108,7 @@ export class IconButton extends React.Component<IconButton.Props> {
                 <div className='rdo-pushbutton-inner-container'>
                     <img
                         className={this.props.iconClassName ?? 'rdo-icon-button-image'}
-                        src={`${GlobalConfig.data().pathPrefix}/${this.props.src}`}
+                        src={this.props.src}
                     />
                 </div>
             </BasePushButton>
@@ -139,7 +138,7 @@ export class IconTextButton extends React.Component<IconTextButton.Props> {
                 <div className='rdo-pushbutton-inner-container'>
                     <img
                         className={this.props.iconClassName ?? 'rdo-icon-button-image'}
-                        src={`${GlobalConfig.data().pathPrefix}/${this.props.src}`}
+                        src={this.props.src}
                     />
                     <span className='rdo-pushbutton-text' style={{ flex: 1 }}>{this.props.caption}</span>
                 </div>

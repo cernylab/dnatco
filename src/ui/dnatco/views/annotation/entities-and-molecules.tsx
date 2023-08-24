@@ -2,19 +2,16 @@ import React from 'react';
 import { Common } from '../../common';
 import { CollapsibleVertical } from '../../../common/collapsible-vertical';
 import { NamedList, NamedListItem } from '../../../common/named-list';
+import { TriangleDownImg } from '../../../../assets/images';
 import { Entity, EntityPoly } from '../../../../cif/categories/entity';
 import { Dnatcofication } from '../../../../dnatco/dnatcofication';
-import { GlobalConfig } from '../../../../global-config';
-import 'assets/imgs/triangle-down.svg';
 
 function mkHeader(text: string) {
-    const prefix = GlobalConfig.data().pathPrefix;
-
     return {
         collapsed: (
             <div className='rdo-hflex rdo-h2gap rdo-active'>
                 <img
-                    src={`${prefix}/imgs/triangle-down.svg`}
+                    src={TriangleDownImg}
                     style={{ transition: 'rotate var(--anim-speed)', rotate: '0deg' }}
                 />
                 <div style={{ flex: 1 }}>{text}</div>
@@ -23,7 +20,7 @@ function mkHeader(text: string) {
         expanded: (
             <div className='rdo-hflex rdo-h2gap rdo-active'>
                 <img
-                    src={`${prefix}/imgs/triangle-down.svg`}
+                    src={TriangleDownImg}
                     style={{ transition: 'rotate var(--anim-speed)', rotate: '180deg' }}
                 />
                 <div style={{ flex: 1 }}>{text}</div>

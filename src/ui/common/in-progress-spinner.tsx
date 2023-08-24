@@ -1,8 +1,5 @@
 import React from 'react';
-import { GlobalConfig } from '../../global-config';
-// Image assets
-import 'assets/imgs/things-are-happening.svg';
-
+import { ThingsAreHappeningImg } from '../../assets/images';
 
 export class InProgressSpinner extends React.Component<{}, { angle: number }> {
     spinInterval: number = 0;
@@ -26,11 +23,9 @@ export class InProgressSpinner extends React.Component<{}, { angle: number }> {
     }
 
     render() {
-        const Prefix = GlobalConfig.data().pathPrefix;
-
         return (
             <img
-                src={`${Prefix}/imgs/things-are-happening.svg`}
+                src={ThingsAreHappeningImg}
                 style={{
                     height: '1.5em',
                     width: 'auto',

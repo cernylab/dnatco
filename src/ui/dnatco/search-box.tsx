@@ -1,13 +1,13 @@
 import React from 'react';
 import * as RDC from 'react-dom/client';
 import { IconButton, PushButton } from '../common/push-button';
-import 'assets/imgs/chevron-right.svg';
+import { ChevronRightImg } from '../../assets/images';
 
 function positionStyle(anchor: SearchBox.Props<any>['anchor'], x: number, y: number): React.CSSProperties {
     if (anchor === 'top-left') {
         return {
             position: 'absolute',
-            left: x+ 'px',
+            left: x + 'px',
             top: y + 'px',
         };
     } else {
@@ -85,7 +85,7 @@ export function SearchBox<T>(props: SearchBox.Props<T>) {
                         <div style={{ flex: 1 }}>{props.searching.onRenderResult(x, props.searching.onUseResult)}</div>
                         <IconButton
                             className='rdo-pushbutton rdo-pushbutton-border'
-                            src='imgs/chevron-right.svg'
+                            src={ChevronRightImg}
                             onClick={() => props.searching.onUseResult(x)}
                         />
                     </div>

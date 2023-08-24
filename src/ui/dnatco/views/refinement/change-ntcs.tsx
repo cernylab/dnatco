@@ -15,6 +15,7 @@ import { DynamicTable } from '../../../common/dynamic-table';
 import { NamedList, NamedListItem } from '../../../common/named-list';
 import { IconButton } from '../../../common/push-button';
 import { Tooltip } from '../../../common/tooltip';
+import { XImg } from '../../../../assets/images';
 import { Cif } from '../../../../cif';
 import { NdbStructNtcStep, NdbStructNtcStepSummary } from '../../../../cif/categories/ndb-struct-ntc';
 import { Dnatcofication } from '../../../../dnatco/dnatcofication';
@@ -78,7 +79,7 @@ export class ChangeNtCs extends View<Refinement.Props> {
                         {customNtC
                             ?
                                 <IconButton
-                                    src={`imgs/x.svg`}
+                                    src={XImg}
                                     onClick={() => this.props.dnatcofication.customNtCs.deleteCustomNtC(this.props.selectedCustomNtCSet, step)}
                                     className='rdo-icon-text-button'
                                 />

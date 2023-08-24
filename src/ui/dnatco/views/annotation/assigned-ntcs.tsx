@@ -11,6 +11,7 @@ import { DynamicTable } from '../../../common/dynamic-table';
 import { NamedList, NamedListItem } from '../../../common/named-list';
 import { IconButton } from '../../../common/push-button';
 import { Tooltip } from '../../../common/tooltip';
+import { MagnifyingGlassImg } from '../../../../assets/images';
 import { Cif } from '../../../../cif';
 import { NdbStructNtcStep, NdbStructNtcStepSummary } from '../../../../cif/categories/ndb-struct-ntc';
 import { Dnatcofication } from '../../../../dnatco/dnatcofication';
@@ -19,9 +20,6 @@ import { StepsMapper } from '../../../../dnatco/steps-mapper';
 import { parseIntStrict } from '../../../../util';
 import { doDownload, FileTypes } from '../../../../util/downloader';
 import { Serialization } from '../../../../util/serialization';
-import 'assets/imgs/info.svg';
-import 'assets/imgs/info-inverse.svg';
-import 'assets/imgs/magnifying-glass.svg';
 
 export class AssignedNtCs extends View<View.Props> {
     static readonly unscrollableContainer = true;
@@ -294,7 +292,7 @@ export class AssignedNtCs extends View<View.Props> {
 
                 <div className='rdo-floating-search-icon-tainer' style={{ bottom: 'var(--x-gap)', right: 'var(--x-gap)' }}>
                     <IconButton
-                        src='imgs/magnifying-glass.svg'
+                        src={MagnifyingGlassImg}
                         className='rdo-floating-search-icon rdo-pushbutton-border'
                         onClick={() => {
                             const tainer = selfRef.current;

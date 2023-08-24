@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import * as RDC from 'react-dom/client';
-import { GlobalConfig } from '../../global-config';
-import '../../../../assets/imgs/grid-three-up.svg';
+import { GridThreeUpImg } from '../../assets/images';
 
 const MinimumWidthForStandardPanel = 1024;
 
@@ -135,7 +134,7 @@ export function SideSwitchingPanel<K extends string>(props: {
                 >
                     <img
                         className={`rdo-side-switching-panel-hamburger-icon rdo-side-switching-panel-hamburger-icon-${hamburgerHovered ? 'active' : 'inactive'}`}
-                        src={`${GlobalConfig.data().pathPrefix}/imgs/grid-three-up.svg`}
+                        src={GridThreeUpImg}
                     />
                 </div>
                 <div className='rdo-side-switching-panel-item rdo-side-switching-panel-item-compact rdo-side-switching-panel-item-selected-compact'>

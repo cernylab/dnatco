@@ -1,11 +1,10 @@
 import type { StandardLonghandProperties } from 'csstype';
 import * as jsLLKA from 'jsllka';
 import React from 'react';
+import { DataTransferDownloadImg } from '../../assets/images';
 import { BasePushButton } from '../common/push-button';
-import { GlobalConfig } from '../../global-config';
 import { ClassificationContext } from '../../dnatco/classification-context';
 import { Step } from '../../dnatco/step';
-import '../../../../assets/imgs/data-transfer-download.svg';
 
 export namespace Common {
     export const NA = 'N/A';
@@ -76,7 +75,7 @@ export function DownloadButton(props: { caption?: string, onClick: () => void })
             >
                 <img
                     style={{ height: '50%' }}
-                    src={`${GlobalConfig.data().pathPrefix}/imgs/data-transfer-download.svg`}
+                    src={DataTransferDownloadImg}
                 />
                 {props.caption
                     ? <span className='rdo-pushbutton-text' style={{ flex: 1, whiteSpace: 'nowrap' }}>{props.caption}</span>

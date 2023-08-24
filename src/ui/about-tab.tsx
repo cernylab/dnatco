@@ -3,10 +3,8 @@ import { Help as _Help } from './help';
 import { Link } from './common/link';
 import { ShadowedBox } from './common/shadowed-box';
 import { SideSwitchingPanel } from './common/side-switching-panel';
-import { GlobalConfig } from '../global-config';
-// Images needed by Contacts content
-import 'assets/imgs/ibt.png';
-import 'assets/imgs/CAS_centred_logo_ENG_rgb.png';
+import { CasLogoImg, DefinitionNewTrans2Img, IbtLogoImg } from '../assets/images';
+import { ConformersFile } from '../assets/misc';
 
 const Tabs = [
     ['how-to-cite', { caption: 'How to cite' }],
@@ -17,8 +15,6 @@ const Tabs = [
 ] as const;
 
 function Contact() {
-    const prefix = React.useMemo(() => GlobalConfig.data().pathPrefix, []);
-
     return (
         <_Help.Container>
             <div className='rdo-page'>
@@ -41,10 +37,10 @@ function Contact() {
 
                 <div style={{ display: 'grid', gridTemplateColumns: '5em 5em 1fr', alignItems: 'center', justifyContent: 'center', columnGap: 'var(--h-gap)', marginTop: 'var(--v-gap)' }}>
                     <Link url='https://www.ibt.cas.cz/en/' newTab={true} className='rdo-imglink'>
-                        <img src={`${prefix}/imgs/ibt.png`} alt='Institute of Biotechnology logo' style={{ width: '100%' }} />
+                        <img src={IbtLogoImg} alt='Institute of Biotechnology logo' style={{ width: '100%' }} />
                     </Link>
                     <Link url='https://www.avcr.cz/en/' newTab={true} className='rdo-imglink'>
-                        <img src={`${prefix}/imgs/CAS_centred_logo_ENG_rgb.png`} alt='Czech Academy of Sciences logo' style={{ width: '100%' }} />
+                        <img src={CasLogoImg} alt='Czech Academy of Sciences logo' style={{ width: '100%' }} />
                     </Link>
                     <div />
                 </div>
@@ -61,7 +57,7 @@ function Downloads() {
                 <div className='rdo-paragraph'>
                     <ul className='rdo-list'>
                         <li>
-                            Table of NtC conformers - annotation and frequency of occurrence (<a className='rdo-link' href='./conformers.csv'>csv file </a>)
+                            Table of NtC conformers - annotation and frequency of occurrence (<a className='rdo-link' href={ConformersFile} download='conformers.csv'>csv file </a>)
                         </li>
                         <li>
                             Definition of the NtC conformers (<Link url='https://dnatco.datmos.org/next/coords/NtC_averages.csv'>torsion averages</Link> and <Link url='https://dnatco.datmos.org/next/coords/NtC_esd.csv'>esd values</Link>)
@@ -110,8 +106,6 @@ function Downloads() {
 }
 
 function Help() {
-    const prefix = React.useMemo(() => GlobalConfig.data().pathPrefix, []);
-
     return (
         <_Help.Container>
             <div className='rdo-page'>
@@ -125,7 +119,7 @@ function Help() {
                 <div className='rdo-image-tainer'>
                     <img
                         className='rdo-image'
-                        src={`${prefix}/imgs/definition_new_trans2.png`}
+                        src={DefinitionNewTrans2Img}
                     />
                     <div><span className='rdo-bold'>Figure 1.</span> Dinucleotide step with the 12 parameters <br /> (backbone torsions shown in gray, distances in blue) <br /> that define the NtC conformational class.</div>
                 </div>
