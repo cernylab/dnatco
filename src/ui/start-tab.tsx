@@ -9,7 +9,7 @@ import { Tooltip } from './common/tooltip';
 import { Common } from './dnatco/common';
 import { DensityMap, DensityMapKinds } from '../dnatco/density-map';
 import { BuiltInRemoteDatabases, UserRemoteDatabases } from '../remote/db/register';
-import { copyString, isPdbId } from '../util';
+import { copyString, isPdbId, toPdbId } from '../util';
 import { GlobalConfig, GlobalConfigData } from '../global-config';
 import 'assets/imgs/magnifying-glass.svg';
 import 'assets/imgs/media-play.svg';
@@ -34,7 +34,7 @@ function listOfValidExamples(examples: GlobalConfigData['exampleStructures']) {
 
     const valid = new Array<GlobalConfigData['exampleStructures'][0]>();
     for (const ex of examples) {
-        if (dbIds.includes(ex.db) && isPdbId(ex.pdbId))
+        if (dbIds.includes(ex.db) && isPdbId(ex.pdbId, true))
             valid.push(ex);
         else
             console.warn(`Example structure entry "${ex.pdbId}" from DB "${ex.db}" is invalid. Check the PDB ID and that it references a valid database.`);
@@ -347,14 +347,14 @@ class PdbIdInput extends React.Component<{ pdbId: string, onChange: (v: string) 
                     fontSize: 'var(--font-large)',
                     height: CoordsItemProps.height,
                     width: '100%',
-                    ...(!isPdbId(this.props.pdbId) && this.props.pdbId.length > 0 ? { color: 'red' } : {})
+                    ...(!isPdbId(this.props.pdbId, true) && this.props.pdbId.length > 0 ? { color: 'red' } : {})
                 }}
                 type='text'
                 value={this.props.pdbId}
                 onChange={(v) => {
                     const text = v.currentTarget.value;
-                    if (text.length < 5)
-                        this.props.onChange(v.currentTarget.value)
+                    if (text.length <= 12)
+                        this.props.onChange(v.currentTarget.value);
                 }}
                 onKeyDown={(ev) => {
                     const key = ev.key;
@@ -411,16 +411,25 @@ export class StartTab extends React.Component<StartTab.Props, State> {
     }
 
     private actionPdbId(db: string, pdbId: string) {
-        if (isPdbId(pdbId) && !!db)
-            this.props.onDoPdbId(pdbId, db);
-        else if (pdbId.length === 0) {
+        if (!db) {
             Popup.create(
-                <div className='rdo-error-text'>Please enter a valid PDB ID</div>
+                <div className='rdo-error-text'>No database is selected</div>
             );
-        } else {
-            Popup.create(
-                <div className='rdo-error-text'>{`${pdbId} is not a valid PDB ID`}</div>
-            );
+        }
+
+        try {
+            const _pdbId = toPdbId(pdbId);
+            this.props.onDoPdbId(_pdbId, db);
+        } catch (e) {
+            if (pdbId.length === 0) {
+                Popup.create(
+                    <div className='rdo-error-text'>Please enter a valid PDB ID</div>
+                );
+            } else {
+                Popup.create(
+                    <div className='rdo-error-text'>{`${pdbId} is not a valid PDB ID`}</div>
+                );
+            }
         }
     }
 

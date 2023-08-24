@@ -6,7 +6,9 @@ const NineChar = '9'.charCodeAt(0);
 const MinusChar = '-';
 
 const FloatRegex = new RegExp('[0-9eE+.,-]');
-const PdbIdRegex = new RegExp('[0-9]{1}[a-zA-Z0-9]{3}');
+const LegacyPdbIdRegex = new RegExp('^[1-9]{1}[a-zA-Z0-9]{3}$');
+const ExtendedPdbIdLooseRegex = new RegExp('^([pP][dD][bB]_)?([0-9]){0,4}[1-9]([0-9a-zA-Z]){3}$');
+const ExtendedPdbIdStrictRegex = new RegExp('^[pP][dD][bB]_([0-9]){4}[1-9]([0-9a-zA-Z]){3}$');
 const ZeroCode = '0'.charCodeAt(0);
 
 export const Utf8Decoder = new TextDecoder('utf-8');
@@ -128,8 +130,14 @@ export function isWithinTri(value: number, intvl: Interval) {
     return 1; // Above
 }
 
-export function isPdbId(v: string) {
-    return v.length === 4 && PdbIdRegex.test(v);
+export function isLegacyPdbId(v: string) {
+    return LegacyPdbIdRegex.test(v);
+}
+
+export function isPdbId(v: string, loose = false) {
+    return loose
+        ? ExtendedPdbIdLooseRegex.test(v)
+        : LegacyPdbIdRegex.test(v) || ExtendedPdbIdStrictRegex.test(v);
 }
 
 export function keyValue<T extends object, K extends keyof T>(obj: T, key: K): [K, T[K]] {
@@ -229,5 +237,19 @@ export function toFixed(num: number, decimals: number, prefix?: { char: string, 
             return "-" + Math.abs(num).toFixed(decimals).padStart(prefix.length - 1, prefix.char);
         else
             return num.toFixed(decimals).padStart(prefix.length, prefix.char);
+    }
+}
+
+export function toPdbId(v: string) {
+    if (!isPdbId(v, true))
+        throw new Error(`String "${v}" cannot be converted to a valid PDB ID`);
+    else {
+        if (isLegacyPdbId(v))
+            return v;
+        else {
+            let idx = v.indexOf('_');
+            const idPart = v.substring(idx + 1).padStart(8, '0');
+            return 'pdb_' + idPart;
+        }
     }
 }
