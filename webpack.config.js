@@ -41,7 +41,7 @@ function sharedConfig(productionBuild) {
                     use: [{
                         loader: 'file-loader',
                         options: {
-                            name: '[name].[ext]',
+                            name: '[contenthash].[ext]',
                             sourceMap: false,
                         },
                     }],

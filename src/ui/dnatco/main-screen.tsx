@@ -22,6 +22,8 @@ import { StepsMapper } from '../../dnatco/steps-mapper';
 import { navPath, objKeys } from '../../util';
 import { GlobalConfig } from '../../global-config';
 import { Filters } from 'viewer-filters';
+
+// We are not referencing these assets anywhere in the code, we just need to pull them in
 import 'assets/molstar.js';
 import 'assets/molstar.css';
 

@@ -2,10 +2,10 @@
 <html>
     <head>
         <meta charset="UTF-8">
-        <script defer src="/molstar.js"></script>
     </head>
 
     <body>
+        <%= compilation.getAssets().filter(a => a.name.endsWith('.js') && !a.name.startsWith('index')).map(a => `<script defer src="${a.name}"></script>`) %>
         <div id="app"></div>
     </body>
 </html>
