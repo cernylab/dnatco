@@ -1,5 +1,4 @@
-import { Common } from './dnatco/common';
-import { getCifValue } from './dnatco/util';
+import { getCifValue, Common } from './dnatco';
 import { Cif } from '../cif';
 import { Citation } from '../cif/categories/citation';
 import { CitationAuthor } from '../cif/categories/citation-author';

@@ -1,7 +1,7 @@
 import { NTFont, NTTable } from './nottex/primitives';
 import { NTUnit } from './nottex/space';
 import { NTRgba } from './nottex/util';
-import { luminance, nclr, Rgb, rgbToColor } from '../ui/util';
+import { luminance, nclr, Rgb, rgbToColor } from '../util/colors';
 
 const LuminanceToChar = [' ', '░', '▒', '▓', '█' ];
 

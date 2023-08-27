@@ -2,27 +2,21 @@ import type { StandardLonghandProperties } from 'csstype';
 import React from 'react';
 import { Validation } from './common';
 import { ChainSelect, ModelSelect } from '../structure-selectors';
-import {
-    EmptyStructureSelection,
-    InvalidAtom, InvalidChain, InvalidModelIndex, InvalidResidue, InvalidStepId,
-    StructureSelection
-} from '../../structure-selection';
 import { View } from '../view';
-import { confalPercentile, niceStepName, Common } from '../../common';
+import { niceStepName, Common } from '../../common';
 import { Colors } from '../../colors';
 import { Constants } from '../../constants';
 import { SearchBox } from '../../search-box';
 import { StatsBar } from '../../stats-bar';
 import { SingleStepInfo } from '../../single-step-info';
 import { setDynamicTableModelColumns } from '../../util';
-import { valueToSemaphore, GappedSemaphore } from '../../util';
 import { Icon } from '../../../common/icon';
-import { rgbToHex } from '../../../util';
-import { DynamicTable } from '../../../common/dynamic-table';
+import { DynamicTable as DynamicTableComp } from '../../../common/dynamic-table';
 import { IconButton } from '../../../common/push-button';
 import { NamedList, NamedListItem } from '../../../common/named-list';
 import { Tooltip } from '../../../common/tooltip';
 import { InfoImg, MagnifyingGlassImg } from '../../../../assets/images';
+import { doDownload } from '../../../../browser-util/downloader';
 import { Cif } from '../../../../cif';
 import {
     NdbStructNtcOverall, NdbStructNtcStep, NdbStructNtcStepSummary,
@@ -32,8 +26,17 @@ import { Dnatcofication, StepRmsdStats as DnatcoStepRmsdStats } from '../../../.
 import { Step } from '../../../../dnatco/step';
 import { StepsMapper } from '../../../../dnatco/steps-mapper';
 import { parseIntStrict } from '../../../../util';
-import { doDownload, FileTypes } from '../../../../util/downloader';
+import { rgbToHex } from '../../../../util/colors';
+import { confalPercentile } from '../../../../util/dnatco';
+import { DynamicTable } from '../../../../util/dynamic-table';
+import { FileTypes } from '../../../../util/file-type';
+import { valueToSemaphore, GappedSemaphore } from '../../../../util/semaphore';
 import { Serialization } from '../../../../util/serialization';
+import {
+    EmptyStructureSelection,
+    InvalidAtom, InvalidChain, InvalidModelIndex, InvalidResidue, InvalidStepId,
+    StructureSelection
+} from '../../../../util/structure-selection';
 
 const CellBgAlpha = 0.5;
 
@@ -358,7 +361,7 @@ export class ConfalsRmsds extends View<View.Props> {
         const stepName = this.props.structureSelection.steps.length === 0 ? '' : StepsMapper.byId(this.props.dnatcofication, this.props.structureSelection.steps[0]).name;
 
         return (
-            <DynamicTable
+            <DynamicTableComp
                 model={this.tableModel}
                 onCellClicked={(data, row, colName) => {
                     const cIdx = this.tableModel.columnNames.findIndex(cn => cn === 'Step');

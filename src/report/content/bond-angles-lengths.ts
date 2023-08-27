@@ -9,8 +9,8 @@ import { Dnatcofication } from '../../dnatco/dnatcofication';
 import { AnglesLengths } from '../../dnatco/angles-lengths';
 import { ByResidueHelpers } from '../../dnatco/angles-lengths/helpers';
 import { Summarize } from '../../dnatco/angles-lengths/summarize';
-import { InvalidChain } from '../../ui/dnatco/structure-selection';
-import { colorToRgb, nrgb } from '../../ui/util';
+import { colorToRgb, nrgb } from '../../util/colors';
+import { InvalidChain } from '../../util/structure-selection';
 
 const Monospace = { ...Fonts.Default, family: 'monospace' } as NTFont;
 const CountCellText = { hAlign: 'right' as NTHAlignment, font: Monospace };

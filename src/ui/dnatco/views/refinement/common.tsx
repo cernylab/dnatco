@@ -1,6 +1,6 @@
 import React from 'react';
 import { Colors } from '../../colors';
-import { InvalidStepId, SelectedPieces } from '../../structure-selection';
+import { SelectedPieces } from '../../structure-selection';
 import { makeStepSelection } from '../../util';
 import { View } from '../../views/view';
 import { ComboBox } from '../../../common/combo-box';
@@ -9,6 +9,7 @@ import { CustomNtCs } from '../../../../dnatco/custom-ntcs';
 import { NtC } from '../../../../dnatco/ntc';
 import { Step } from '../../../../dnatco/step';
 import { StepsMapper } from '../../../../dnatco/steps-mapper';
+import { InvalidStepId } from '../../../../util/structure-selection';
 import { ViewerInterop, ViewerApi } from '../../../../viewer/viewer-interop';
 
 const NtCSelectorOptions: ComboBox.Option[] = (() => {

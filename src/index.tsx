@@ -12,7 +12,7 @@ import { NavalAngleRestraintsFile, NavalBondRestraintsFile } from './assets/para
 import { GlobalConfig } from './global-config';
 import { Globals } from './globals';
 import { isPdbId } from './util';
-import { Net } from './util/net';
+import { Net } from './browser-util/net';
 import { isError } from './dnatco';
 import { AnglesLengths, AnglesLengthsContext } from './dnatco/angles-lengths';
 import { ClassificationContext } from './dnatco/classification-context';

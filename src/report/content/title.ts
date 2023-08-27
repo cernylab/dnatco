@@ -5,7 +5,7 @@ import { NTTable } from '../nottex/primitives';
 import { NTMm, NTUnit, NTXYWH } from '../nottex/space';
 import { DefinitionNewTrans2Img } from '../../assets/images';
 import { GlobalConfig } from '../../global-config';
-import { niceDate } from '../../ui/dnatco/util';
+import { niceDate } from '../../util/dnatco';
 import { Version } from '../../version';
 
 async function getImage() {

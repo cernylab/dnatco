@@ -1,18 +1,15 @@
 import * as React from 'react';
 import { Icon } from './icon';
 import { Tooltip } from './tooltip';
-import { colorToHex, scrollIntoViewIfNeeded } from '../util';
+import { scrollIntoViewIfNeeded } from '../util';
 import { DataTransferDownloadImg, SortImg, SortAscImg, SortDescImg } from '../../assets/images';
-import { type FileType } from '../../util/downloader';
 import { arraysAreSame } from '../../util';
+import { colorToHex } from '../../util/colors';
+import { DynamicTable as _DynamicTable } from '../../util/dynamic-table';
 
 const NotHighlighted = { background: 'none' };
 
-interface Comparator<T> {
-    (a: T, b: T): number;
-}
-
-function cellShouldUpdate(oldCell: DynamicTable.Cell<any>, newCell: DynamicTable.Cell<any>, oldHighlightedTag?: string, newHighlightedTag?: string) {
+function cellShouldUpdate(oldCell: _DynamicTable.Cell<any>, newCell: _DynamicTable.Cell<any>, oldHighlightedTag?: string, newHighlightedTag?: string) {
     const data = oldCell.data !== newCell.data;
     const elem = oldCell.elem !== newCell.elem;
     const tag = (
@@ -29,7 +26,7 @@ function getCellStyle<T>(v: T, getter?: (v: T) => React.CSSProperties) {
     return getter ? getter(v) : {};
 }
 
-function modelsAreSame(a: DynamicTable.Model, b: DynamicTable.Model) {
+function modelsAreSame(a: _DynamicTable.Model, b: _DynamicTable.Model) {
     return (
         a.rows.length === b.rows.length &&
         a.columns.length === b.columns.length &&
@@ -37,7 +34,7 @@ function modelsAreSame(a: DynamicTable.Model, b: DynamicTable.Model) {
     );
 }
 
-function sortingsAreSame(a: DynamicTable.Sorting, b: DynamicTable.Sorting) {
+function sortingsAreSame(a: _DynamicTable.Sorting, b: _DynamicTable.Sorting) {
     return (
         a.columnIdx === b.columnIdx &&
         a.order === b.order
@@ -45,16 +42,16 @@ function sortingsAreSame(a: DynamicTable.Sorting, b: DynamicTable.Sorting) {
 }
 
 class DynamicTableCell extends React.Component<{
-    item: DynamicTable.Cell<any>,
-    col: DynamicTable.Column<any>,
-    model: DynamicTable.Model,
+    item: _DynamicTable.Cell<any>,
+    col: _DynamicTable.Column<any>,
+    model: _DynamicTable.Model,
     rowIdx: number,
     colIdx: number,
     highlightedTag?: string,
     highlightColor?: number,
-    onCellClicked?: (data: DynamicTable.Cell<any>, row: DynamicTable.Cell<any>[], colName: string) => void,
+    onCellClicked?: (data: _DynamicTable.Cell<any>, row: _DynamicTable.Cell<any>[], colName: string) => void,
 }>  {
-    shouldComponentUpdate(nextProps: Readonly<{item: DynamicTable.Cell<any>; col: DynamicTable.Column<any>; model: DynamicTable.Model; rowIdx: number; colIdx: number; highlightedTag?: string | undefined; onCellClicked?: ((data: DynamicTable.Cell<any>, row: DynamicTable.Cell<any>[], colName: string) => void) | undefined;}>): boolean {
+    shouldComponentUpdate(nextProps: Readonly<{item: _DynamicTable.Cell<any>; col: _DynamicTable.Column<any>; model: _DynamicTable.Model; rowIdx: number; colIdx: number; highlightedTag?: string | undefined; onCellClicked?: ((data: _DynamicTable.Cell<any>, row: _DynamicTable.Cell<any>[], colName: string) => void) | undefined;}>): boolean {
         return cellShouldUpdate(this.props.item, nextProps.item, this.props.highlightedTag, nextProps.highlightedTag)
     }
 
@@ -88,13 +85,13 @@ class DynamicTableCell extends React.Component<{
 }
 
 class DynamicTableRow extends React.Component<{
-    model: DynamicTable.Model,
+    model: _DynamicTable.Model,
     rowIdx: number,
     highlightedTag?: string,
     highlightColor?: number,
     children: React.ReactNode[]
 }> {
-    shouldComponentUpdate(nextProps: Readonly<{model: DynamicTable.Model; rowIdx: number; highlightedTag?: string; children: React.ReactNode[];}>): boolean {
+    shouldComponentUpdate(nextProps: Readonly<{model: _DynamicTable.Model; rowIdx: number; highlightedTag?: string; children: React.ReactNode[];}>): boolean {
         const oldModel = this.props.model;
         const newModel = nextProps.model;
 
@@ -114,8 +111,8 @@ class DynamicTableRow extends React.Component<{
     }
 }
 
-export class DynamicTable extends React.Component<DynamicTable.Props, { sorting: DynamicTable.Sorting }> {
-    constructor(props: DynamicTable.Props) {
+export class DynamicTable extends React.Component<_DynamicTable.Props, { sorting: _DynamicTable.Sorting }> {
+    constructor(props: _DynamicTable.Props) {
         super(props);
 
         this.state = {
@@ -190,7 +187,7 @@ export class DynamicTable extends React.Component<DynamicTable.Props, { sorting:
         return rowElems;
     }
 
-    private renderColumnCaption(col: DynamicTable.Column<any>) {
+    private renderColumnCaption(col: _DynamicTable.Column<any>) {
         if (col.tooltip) {
             return (
                 <Tooltip
@@ -271,7 +268,7 @@ export class DynamicTable extends React.Component<DynamicTable.Props, { sorting:
         return headers;
     }
 
-    shouldComponentUpdate(nextProps: Readonly<DynamicTable.Props>, nextState: Readonly<{ sorting: DynamicTable.Sorting }>): boolean {
+    shouldComponentUpdate(nextProps: Readonly<_DynamicTable.Props>, nextState: Readonly<{ sorting: _DynamicTable.Sorting }>): boolean {
         if (this.props.modelsAlwaysCompareFalse)
             return true;
 
@@ -287,7 +284,7 @@ export class DynamicTable extends React.Component<DynamicTable.Props, { sorting:
         return !sortingsAreSame(nextState.sorting, this.state.sorting);
     }
 
-    componentDidUpdate(prevProps: DynamicTable.Props) {
+    componentDidUpdate(prevProps: _DynamicTable.Props) {
         if (this.props.scrollTainer && this.props.highlightedTag && this.props.highlightedTag !== prevProps.highlightedTag) {
             const cellId = this.findFirstTaggedCellId(this.props.highlightedTag);
             if (cellId)
@@ -312,108 +309,5 @@ export class DynamicTable extends React.Component<DynamicTable.Props, { sorting:
                 </table>
             </div>
         );
-    }
-}
-
-export namespace DynamicTable {
-    export type Cell<T extends string|number> = { data: T, tag?: string, elem?: JSX.Element, tooltip?: React.ReactNode };
-    export type Column<T extends string|number> = {
-        name: string;
-        cells: Cell<T>[];
-        alignment?: 'left'|'center'|'right';
-        comparator?: (a: T, b: T) => number;
-        cellStyle?: (v: T) => React.CSSProperties;
-        headerStyle?: React.CSSProperties;
-        notSortable?: boolean;                 // Do not allow to sort by this column
-        noData?: boolean;                      // This is only a utility column with no actual data
-        tooltip?: React.ReactNode;             // Optional tooltip to display when a column header is hovered
-        elem?: JSX.Element|React.ReactElement; // Optional element to show as column header.
-    }
-    export type Sorting = {
-        columnIdx: number,
-        order: 'asc' | 'desc' | 'none',
-    }
-    export type Style = 'normal' | 'wide';
-
-    export class Model {
-        private readonly _rows: Array<DynamicTable.Cell<any>[]>;
-        private readonly _columnNames: string[];
-
-        private initColumnNames() {
-            return this.columns.map(col => col.name);
-        }
-
-        private initRows() {
-            if (this.columns.length < 1)
-                return [];
-
-            const rows = new Array<DynamicTable.Cell<any>[]>();
-            for (let idx = 0; idx < this.columns[0].cells.length; idx++) {
-                const row = new Array<DynamicTable.Cell<any>>();
-                for (const col of this.columns)
-                    row.push(col.cells[idx]);
-                rows.push(row);
-            }
-
-            return rows;
-        }
-
-        constructor(readonly columns: Column<any>[] = []) {
-            this._rows = this.initRows();
-            this._columnNames = this.initColumnNames();
-        }
-
-        get columnNames() {
-            return this._columnNames;
-        }
-
-        get rows() {
-            return this._rows;
-        }
-
-        sortedRows(sorting: Sorting) {
-            const sortedRows = this._rows.map((row, idx) => ({ row: row, actualIndex: idx })); // actualIndex is the row index in unsorted data
-
-            if (sorting.order === 'none' || sortedRows.length === 0)
-                return sortedRows;
-            else {
-                const sortIdx = sorting.columnIdx;
-                const order = sorting.order;
-                const mainColumn = this.columns[sortIdx];
-                const comparator = mainColumn.comparator
-                    ? mainColumn.comparator
-                    : typeof mainColumn.cells[0].data === 'number'
-                        ? (a: number, b: number) => a - b
-                        : (a: string, b: string) => a.localeCompare(b);
-
-                sortedRows.sort((a, b) => {
-                    const eA = a.row[sortIdx].data;
-                    const eB = b.row[sortIdx].data;
-                    const invert = order === 'asc' ? 1 : -1;
-                    return invert * (comparator as Comparator<typeof eA>)(eA, eB);
-                });
-
-                return sortedRows;
-            }
-        }
-    }
-
-    export type Downloader = {
-        caption: string,
-        download: (fileNameStem: string, data: Model, sorting?: Sorting) => void,
-        fileType: FileType,
-    }
-    export interface Props {
-        model: Model;
-        onCellClicked?: (data: any, row: Cell<any>[], columnName: string) => void;
-        highlightedTag?: string;
-        highlightColor?: number;
-        scrollTainer?: string|HTMLElement; // This needs to be se to a reasonable element to make autoscrolling work reliably
-        style?: Style;
-        download?: {
-            downloaders: Downloader[];
-            fileName: string;
-        };
-        modelsAlwaysCompareFalse?: boolean,
     }
 }

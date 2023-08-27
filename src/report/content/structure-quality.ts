@@ -7,10 +7,10 @@ import { NTRgba } from '../nottex/util';
 import { NTUnit, NTXYWH } from '../nottex/space';
 import { NdbStructNtcOverall } from '../../cif/categories/ndb-struct-ntc';
 import { Dnatcofication, StepRmsdStats } from '../../dnatco/dnatcofication';
-import { nrgb } from '../../ui/util';
-import { confalPercentile, Common } from '../../ui/dnatco/common';
-import { getCifValue, GappedSemaphore } from '../../ui/dnatco/util';
+import { nrgb } from '../../util/colors';
 import { AngstromSignChar } from '../../util';
+import { confalPercentile, getCifValue, Common } from '../../util/dnatco';
+import { GappedSemaphore } from '../../util/semaphore';
 
 async function averageConfalsRow<Output>(avg: number, percentile: number, tbl: NTTable, mIdx: number, ctx: Report.Context<Output>) {
     const row = [
@@ -49,7 +49,7 @@ async function averageConfalsRow<Output>(avg: number, percentile: number, tbl: N
         const NW = NTUnit.num(W);
         const NH = NTUnit.num(H);
         const canvas = new OffscreenCanvas(NW, NH);
-        const ctx2d = canvas.getContext('2d') as CanvasRenderingContext2D | null;
+        const ctx2d = canvas.getContext('2d') as OffscreenCanvasRenderingContext2D | null;
         if (!ctx2d)
             throw new Error('Cannot create offscreen canvas for confal percentile bar rendering');
 

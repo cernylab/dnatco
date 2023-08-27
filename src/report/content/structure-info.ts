@@ -7,9 +7,8 @@ import { Entity } from '../../cif/categories/entity';
 import { Exptl } from '../../cif/categories/experimental';
 import { PdbxDatabaseStatus } from '../../cif/categories/pdbx-database-status';
 import { Refine } from '../../cif/categories/refine';
-import { Common } from '../../ui/dnatco/common';
-import { getCifValue, niceCifDate } from '../../ui/dnatco/util';
-import * as SI from '../../ui/structure-info-util';
+import { getCifValue, niceCifDate, Common } from '../../util/dnatco';
+import * as SI from '../../util/structure-info';
 import { doiLink, pubmedLink, rcsbLink } from '../../util/resources';
 
 export namespace StructureInfo {

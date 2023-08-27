@@ -3,23 +3,29 @@ import { Annotation } from './common';
 import { ChainSelect, ModelSelect } from '../structure-selectors';
 import { View } from '../view';
 import { SearchBox } from '../../search-box';
-import { EmptyStructureSelection, InvalidAtom, InvalidChain, InvalidModelIndex, InvalidResidue, InvalidStepId, StructureSelection } from '../../structure-selection';
 import { Colors } from '../../colors';
 import { niceStepName, Common } from '../../common';
 import { setDynamicTableModelColumns } from '../../util';
-import { DynamicTable } from '../../../common/dynamic-table';
+import { DynamicTable as DynamicTableComp } from '../../../common/dynamic-table';
 import { NamedList, NamedListItem } from '../../../common/named-list';
 import { IconButton } from '../../../common/push-button';
 import { Tooltip } from '../../../common/tooltip';
 import { MagnifyingGlassImg } from '../../../../assets/images';
+import { doDownload } from '../../../../browser-util/downloader';
 import { Cif } from '../../../../cif';
 import { NdbStructNtcStep, NdbStructNtcStepSummary } from '../../../../cif/categories/ndb-struct-ntc';
 import { Dnatcofication } from '../../../../dnatco/dnatcofication';
 import { Step } from '../../../../dnatco/step';
 import { StepsMapper } from '../../../../dnatco/steps-mapper';
 import { parseIntStrict } from '../../../../util';
-import { doDownload, FileTypes } from '../../../../util/downloader';
+import { FileTypes } from '../../../../util/file-type';
+import { DynamicTable } from '../../../../util/dynamic-table';
 import { Serialization } from '../../../../util/serialization';
+import {
+    EmptyStructureSelection,
+    InvalidAtom, InvalidChain, InvalidModelIndex, InvalidResidue, InvalidStepId,
+    StructureSelection
+} from '../../../../util/structure-selection';
 
 export class AssignedNtCs extends View<View.Props> {
     static readonly unscrollableContainer = true;
@@ -177,7 +183,7 @@ export class AssignedNtCs extends View<View.Props> {
         const stepName = this.props.structureSelection.steps.length  === 0 ? '' : StepsMapper.byId(this.props.dnatcofication, this.props.structureSelection.steps[0]).name;
 
         return (
-            <DynamicTable
+            <DynamicTableComp
                 model={this.tableModel}
                 onCellClicked={(data, row, colName) => {
                     const cIdx = this.tableModel.columnNames.findIndex(cn => cn === 'Step');

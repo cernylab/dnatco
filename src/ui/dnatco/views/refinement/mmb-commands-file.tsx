@@ -4,8 +4,8 @@ import { View } from '../view';
 import { CheckBox } from '../../../common/check-box';
 import { ComboBox } from '../../../common/combo-box';
 import { PushButton } from '../../../common/push-button';
+import { Net } from '../../../../browser-util/net';
 import { Mmb } from '../../../../refine/mmb';
-import { Net } from '../../../../util/net';
 
 interface State {
     includeSequences: boolean;

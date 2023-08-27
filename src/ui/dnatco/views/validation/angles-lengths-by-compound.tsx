@@ -4,16 +4,12 @@ import { Subject, type Subscription } from 'rxjs';
 import { AnglesLengthsCommon, FloatingCue, PGroupSummary, Prosco, ResidueName as CommonResidueName, WindowsTracker } from './angles-lengths-common';
 import { View } from '../view';
 import { Common } from '../../common';
-import {
-    InvalidChain, InvalidModelIndex,
-    AuthResidue,
-    StructureSelection
-} from '../../structure-selection';
 import { CollapsibleVertical } from '../../../common/collapsible-vertical';
 import { Icon } from '../../../common/icon';
 import { Window } from '../../../common/window';
-import { colorStyle, colorToRgb, colorToTuple, hexToRgb, rgbToHex, type ColorTuple, Rgba } from '../../../util';
+import { colorStyle } from '../../../util';
 import { DataTransferDownloadImg, TriangleDownImg } from '../../../../assets/images';
+import { doDownload, Downloader } from '../../../../browser-util/downloader';
 import { ALM, ALMCompoundAngleLength } from '../../../../dnatco/alm';
 import { AnglesLengths as DAnglesLengths } from '../../../../dnatco/angles-lengths';
 import { tripletTag, Triplet } from '../../../../dnatco/angles-lengths/angles';
@@ -25,9 +21,15 @@ import { Dnatcofication } from '../../../../dnatco/dnatcofication';
 import { Residues } from '../../../../dnatco/residues';
 import { GlobalConfig } from '../../../../global-config';
 import { objKeys, sequence } from '../../../../util';
-import { doDownload, Downloader, FileTypes } from '../../../../util/downloader';
+import { colorToRgb, colorToTuple, hexToRgb, rgbToHex, type ColorTuple, Rgba } from '../../../../util/colors';
+import { FileTypes } from '../../../../util/file-type';
 import { EventsKeeper } from '../../../../util/events-keeper';
 import { M } from '../../../../util/math';
+import {
+    InvalidChain, InvalidModelIndex,
+    AuthResidue,
+    StructureSelection
+} from '../../../../util/structure-selection';
 import { ViewerApi, ViewerInterop } from '../../../../viewer/viewer-interop';
 
 type DownloadableData = {

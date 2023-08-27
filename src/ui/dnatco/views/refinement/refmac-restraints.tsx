@@ -4,8 +4,8 @@ import { View } from '../view';
 import { ComboBox } from '../../../common/combo-box';
 import { PushButton } from '../../../common/push-button';
 import { SpinBox } from '../../../common/spin-box';
+import { Net } from '../../../../browser-util/net';
 import { Refmac } from '../../../../refine/refmac';
-import { Net } from '../../../../util/net';
 
 interface State {
     maxRmsd: number;

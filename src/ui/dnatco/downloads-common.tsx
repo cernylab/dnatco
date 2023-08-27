@@ -1,10 +1,10 @@
 import React from 'react';
 import { EquiBox } from '../common/equibox';
+import { Net } from '../../browser-util/net';
 import { Cif } from '../../cif';
 import { Struct } from '../../cif/categories/struct';
 import { NdbStructNtcStep, NdbStructNtcStepSummary } from '../../cif/categories/ndb-struct-ntc';
 import { Dnatcofication } from "../../dnatco/dnatcofication";
-import { Net } from '../../util/net';
 
 export namespace Downloads {
     function mmCifName(d: Dnatcofication) {

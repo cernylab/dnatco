@@ -2,19 +2,22 @@ import React from 'react';
 import { ContourPlots } from './contour-plots';
 import { Help } from './help';
 import { SearchConformers } from './search-conformers';
-import { DynamicTable } from './common/dynamic-table';
+import { DynamicTable as DynamicTableComp } from './common/dynamic-table';
 import { InProgress } from './common/in-progress';
 import { NamedList, NamedListItem } from './common/named-list';
 import { Popup } from './common/popup';
 import { ShadowedBox } from './common/shadowed-box';
 import { SideSwitchingPanel } from './common/side-switching-panel';
-import { Common, DownloadButton } from './dnatco/common';
+import { DownloadButton } from './dnatco/common';
 import { DefinitionNewTrans2Img } from '../assets/images';
+import { Net } from '../browser-util/net';
+import { doDownload } from '../browser-util/downloader';
 import { ListOfConformers } from '../dnatco/list-of-conformers';
 import { Step } from '../dnatco/step';
 import { Search } from '../remote/search';
-import { doDownload, FileTypes } from '../util/downloader';
-import { Net } from '../util/net';
+import { Common } from '../util/dnatco';
+import { DynamicTable } from '../util/dynamic-table';
+import { FileTypes } from '../util/file-type';
 import { Serialization } from '../util/serialization';
 
 const Tabs = [
@@ -152,7 +155,7 @@ class BrowseConformers extends React.Component {
 
         return (
             <div>
-                <DynamicTable
+                <DynamicTableComp
                     model={model}
                     style='wide'
                     download={download}

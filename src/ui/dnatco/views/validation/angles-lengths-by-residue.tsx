@@ -4,12 +4,8 @@ import { Subject, Subscription } from 'rxjs';
 import { AnglesLengthsCommon, FloatingCue, NavalItem, PGroupSummary, Prosco, ResidueName, WindowsTracker } from './angles-lengths-common';
 import { View } from '../view';
 import { SearchBox } from '../../search-box';
-import {
-    AuthResidue,
-    StructureSelection,
-} from '../../structure-selection';
 import { Common } from '../../common';
-import { colorStyle, colorToRgb, colorToTuple, hexToRgb, scrollIntoViewIfNeeded, rgbToHex, ColorTuple, Rgba } from '../../../util';
+import { colorStyle, scrollIntoViewIfNeeded } from '../../../util';
 import { CollapsibleVertical } from '../../../common/collapsible-vertical';
 import { ComboBox } from '../../../common/combo-box';
 import { NamedList, NamedListItem } from '../../../common/named-list';
@@ -19,6 +15,8 @@ import { IconButton } from '../../../common/push-button';
 import { SpinBox } from '../../../common/spin-box';
 import { Window } from '../../../common/window';
 import { DataTransferDownloadImg, MagnifyingGlassImg, TriangleDownImg } from '../../../../assets/images';
+import { doDownload, Downloader } from '../../../../browser-util/downloader';
+import { Net } from '../../../../browser-util/net';
 import { ALM } from '../../../../dnatco/alm';
 import { Dnatcofication } from '../../../../dnatco/dnatcofication';
 import { AnglesLengths as DAnglesLengths } from '../../../../dnatco/angles-lengths';
@@ -31,10 +29,11 @@ import { Summarize } from '../../../../dnatco/angles-lengths/summarize';
 import { Naval } from '../../../../dnatco/naval';
 import { GlobalConfig } from '../../../../global-config';
 import { parseIntStrict, sequence } from '../../../../util';
-import { doDownload, Downloader, FileTypes } from '../../../../util/downloader';
+import { colorToRgb, colorToTuple, hexToRgb, rgbToHex, ColorTuple, Rgba } from '../../../../util/colors';
+import { FileTypes } from '../../../../util/file-type';
 import { EventsKeeper } from '../../../../util/events-keeper';
 import { M } from '../../../../util/math';
-import { Net } from '../../../../util/net';
+import { AuthResidue, StructureSelection } from '../../../../util/structure-selection';
 import { ViewerInterop, ViewerApi } from '../../../../viewer/viewer-interop';
 
 type StatsDownloader = Downloader<{

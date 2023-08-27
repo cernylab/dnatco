@@ -13,10 +13,10 @@ import { Pair } from '../../dnatco/angles-lengths/lengths';
 import { Measurements } from '../../dnatco/angles-lengths/measurements';
 import { Dnatcofication } from '../../dnatco/dnatcofication';
 import { ALM } from '../../dnatco/alm';
-import { InvalidChain } from '../../ui/dnatco/structure-selection';
-import { colorToRgb, nrgb } from '../../ui/util';
 import { AngstromSignChar } from '../../util';
+import { colorToRgb, nrgb } from '../../util/colors';
 import { M } from '../../util/math';
+import { InvalidChain } from '../../util/structure-selection';
 
 function drawAngle(angle: Measurements.BondAngle) {
     return `${M.r2d(angle.angle).toFixed(2)}\u00B0`;

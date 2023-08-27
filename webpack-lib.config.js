@@ -1,9 +1,9 @@
 // vim: set sw=4 ts=4 sts=4 expandtab :
 
-const { createApp } = require('./webpack.common.js');
+const { createLib } = require('./webpack.common.js');
 
 module.exports = (env, argv) => {
     const productionBuild = argv.mode === 'production';
 
-    return createApp('index', productionBuild);
-};
+    return createLib('rednatco', productionBuild);
+}

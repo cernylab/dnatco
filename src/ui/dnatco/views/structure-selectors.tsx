@@ -1,11 +1,15 @@
 import React from 'react';
+import { StructureSelectionSwitching } from '../structure-selection';
 import { listOfChains, listOfModels } from '../util';
-import { InvalidChain, InvalidModelIndex, InvalidStepId, StructureSelection, StructureSelectionSwitching } from '../structure-selection';
 import { ComboBox } from '../../common/combo-box';
 import { WithSubscriptions } from '../../service/with-subscriptions';
 import { Dnatcofication } from '../../../dnatco/dnatcofication';
 import { StepsMapper } from '../../../dnatco/steps-mapper';
 import { toComboBoxOptions } from '../../util';
+import {
+    InvalidChain, InvalidModelIndex, InvalidStepId,
+    StructureSelection,
+} from '../../../util/structure-selection';
 
 function chainOptions(modelIndex: number, d: Dnatcofication) {
     if (modelIndex === InvalidModelIndex)

@@ -5,7 +5,7 @@ import { CustomNtCSets } from './custom-ntc-sets';
 import { ChainSelect, ModelSelect, StepSelect } from '../structure-selectors';
 import { View } from '../view';
 import { PlotPointsLegend } from '../../plot-points-legend';
-import { EmptySelectionPieces, InvalidAtom, InvalidResidue, InvalidStepId } from '../../structure-selection';
+import { EmptySelectionPieces } from '../../structure-selection';
 import { NamedList, NamedListItem } from '../../../common/named-list';
 import { Cif } from '../../../../cif';
 import { AtomSite } from '../../../../cif/categories/atom-site';
@@ -15,8 +15,10 @@ import { calculateConnectivities } from '../../../../dnatco/connectivity-similar
 import { Dnatcofication } from '../../../../dnatco/dnatcofication';
 import { Step } from '../../../../dnatco/step';
 import { StepsMapper } from '../../../../dnatco/steps-mapper';
-import { axesMaximumHints, valueToSemaphore } from '../../util';
-import { colorToRgb, rgbToHex } from '../../../util';
+import { axesMaximumHints } from '../../util';
+import { colorToRgb, rgbToHex } from '../../../../util/colors';
+import { valueToSemaphore } from '../../../../util/semaphore';
+import { InvalidAtom, InvalidResidue, InvalidStepId } from '../../../../util/structure-selection';
 
 const MinNumberOfPointsInPlot = 10;
 

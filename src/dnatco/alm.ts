@@ -5,7 +5,7 @@ import { pairTag, Lengths, Pair } from './angles-lengths/lengths';
 import { Measurements } from './angles-lengths/measurements';
 import { Summarize } from './angles-lengths/summarize';
 import { objKeys } from '../util';
-import { InvalidModelIndex } from '../ui/dnatco/structure-selection';
+import { InvalidModelIndex } from '../util/structure-selection';
 
 export type ALMCompoundAngleLength = {
     models: Map<number, ALM.ByCompound>,

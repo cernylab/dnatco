@@ -1,0 +1,159 @@
+import { objKeys } from './';
+import { Dnatcofication } from '../dnatco/dnatcofication';
+import { Structure } from '../dnatco/structure';
+
+export const InvalidAtom: CifAtom = { modelNum: -1, chain: '', seqId: -1, altId: '', atomId: '' };
+export const InvalidModelIndex = -1;
+export const InvalidChain = '';
+export const InvalidResidue: CifResidue = { modelNum: -1, chain: '', seqId: -1, altId: '' };
+export const InvalidStepId = -1;
+
+export type AuthAtom = {
+    modelNum: number,
+    chain: string,
+    cifChain: string,
+    seqId: number,
+    insCode: string,
+    altId: string,
+    cifAtomId: string,
+}
+
+export type AuthResidue = {
+    modelNum: number,
+    chain: string,
+    cifChain: string,
+    seqId: number,
+    insCode: string,
+    altId: string,
+}
+
+export type CifAtom = {
+    modelNum: number,
+    chain: string,
+    seqId: number,
+    altId: string,
+    atomId: string,
+}
+
+export type CifResidue = {
+    modelNum: number,
+    chain: string,
+    seqId: number,
+    altId: string,
+}
+
+export type StructureSelection = {
+    modelIndex: number,
+    chain: string,
+    steps: number[], // Array of step IDs
+    residues: CifResidue[],
+    atoms: CifAtom[],
+}
+
+export namespace StructureSelection {
+    export function authToCifAtom(stru: Structure, a: AuthAtom): CifAtom | undefined {
+        const model = stru.models.find((x) => x.num === a.modelNum);
+        if (!model)
+            return void 0;
+
+        const chain = model.chains.find((x) => x.authName === a.chain && x.name === a.cifChain);
+        if (!chain)
+            return void 0;
+
+        const residue = chain.residues.find((x) => x.authNum === a.seqId && (x.insCode || '') ===  a.insCode);
+        if (!residue)
+            return void 0;
+
+        const atom = residue.atoms.find((x) => x.atomId === a.cifAtomId);
+        return atom ? { modelNum: a.modelNum, chain: chain.name, seqId: residue.num, altId: a.altId, atomId: atom.atomId } : void 0;
+    }
+
+    export function authToCifResidue(stru: Structure, r: AuthResidue): CifResidue | undefined {
+        const model = stru.models.find((x) => x.num === r.modelNum);
+        if (!model)
+            return void 0;
+
+        const chain = model.chains.find((x) => x.authName === r.chain && x.name === r.cifChain);
+        if (!chain)
+            return void 0;
+
+        const residue = chain.residues.find((x) => x.authNum === r.seqId && (x.insCode || '') ===  r.insCode);
+        if (!residue)
+            return void 0;
+
+        return { modelNum: r.modelNum, chain: chain.name, seqId: residue.num, altId: r.altId };
+    }
+
+    export function cifToAuthAtom(stru: Structure, a: CifAtom): AuthAtom | undefined {
+        const model = stru.models.find((x) => x.num === a.modelNum);
+        if (!model)
+            return void 0;
+
+        const chain = model.chains.find((x) => x.name === a.chain);
+        if (!chain)
+            return void 0;
+
+        const residue = chain.residues.find((x) => x.num === a.seqId);
+        if (!residue)
+            return void 0;
+
+        const atom = residue.atoms.find((x) => x.atomId === a.atomId);
+        return atom
+            ? {
+                modelNum: a.modelNum,
+                chain: chain.authName,
+                cifChain: chain.name,
+                seqId: residue.authNum,
+                insCode: residue.insCode || '',
+                altId: a.altId,
+                cifAtomId: a.atomId,
+            }
+            : void 0;
+    }
+
+    export function cifToAuthResidue(stru: Structure, r: CifResidue): AuthResidue | undefined {
+        const model = stru.models.find((x) => x.num === r.modelNum);
+        if (!model)
+            return void 0;
+
+        const chain = model.chains.find((x) => x.name === r.chain);
+        if (!chain)
+            return void 0;
+
+        const residue = chain.residues.find((x) => x.num === r.seqId);
+        if (!residue)
+            return void 0;
+
+        return { modelNum: r.modelNum, chain: chain.authName, cifChain: chain.name, seqId: residue.authNum, insCode: residue.insCode || '', altId: r.altId };
+    }
+
+    const CifAtomCmpKeys = objKeys(InvalidAtom);
+    export function cifAtomsMatch(a: CifAtom, b: CifAtom) {
+        for (const key of CifAtomCmpKeys) {
+            if (a[key] !== b[key])
+                return false;
+        }
+
+        return true;
+    }
+
+    const CifResidueCmpKeys = objKeys(InvalidResidue);
+    export function cifResiduesMatch(a: CifResidue, b: CifResidue) {
+        for (const key of CifResidueCmpKeys) {
+            if (a[key] !== b[key])
+                return false;
+        }
+
+        return true;
+    }
+}
+
+export function EmptyStructureSelection(d: Dnatcofication): StructureSelection {
+    return {
+        modelIndex: d.data.structures[0].models.length === 1 ? 0 : InvalidModelIndex,
+        chain: InvalidChain,
+        steps: [],
+        residues: [],
+        atoms: [],
+    };
+}

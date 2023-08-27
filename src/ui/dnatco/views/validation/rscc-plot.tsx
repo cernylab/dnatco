@@ -5,11 +5,11 @@ import { ModelSelect } from '../structure-selectors';
 import { View } from '../view';
 import { Constants } from '../../constants';
 import { RsccPlot as _RsccPlot } from '../../rscc-plot';
-import { InvalidAtom, InvalidModelIndex, InvalidResidue } from '../../structure-selection';
 import { NamedList, NamedListItem } from '../../../common/named-list';
 import { OkResult, isError, isOk } from '../../../../dnatco';
 import { Dnatcofication } from '../../../../dnatco/dnatcofication';
 import { Rscc } from '../../../../dnatco/rscc';
+import { InvalidAtom, InvalidModelIndex, InvalidResidue } from '../../../../util/structure-selection';
 
 interface State {
     stru: Rscc.StructureRscc;

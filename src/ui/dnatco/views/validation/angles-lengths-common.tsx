@@ -4,20 +4,16 @@ import React from 'react';
 import { Subject } from 'rxjs';
 import type { StandardLonghandProperties } from 'csstype';
 import { View } from '../view';
-import {
-    InvalidAtom, InvalidChain, InvalidModelIndex,
-    CifAtom, CifResidue,
-    SelectedPieces,
-    StructureSelection,
-} from '../../structure-selection';
 import { Colors } from '../../colors';
 import { StatsBar } from '../../stats-bar';
+import { SelectedPieces } from '../../structure-selection';
 import { Icon } from '../../../common/icon';
 import { ToggleButton } from '../../../common/push-button';
 import { Tooltip } from '../../../common/tooltip';
 import { Window } from '../../../common/window';
-import { colorStyle, colorToTuple, ColorTuple } from '../../../util';
+import { colorStyle } from '../../../util';
 import { DataTransferDownloadImg, InfoInverseImg } from '../../../../assets/images';
+import { doDownload, Downloader } from '../../../../browser-util/downloader';
 import { ALM } from '../../../../dnatco/alm';
 import { Dnatcofication } from '../../../../dnatco/dnatcofication';
 import { shiftedName } from '../../../../dnatco/angles-lengths/atoms';
@@ -32,9 +28,15 @@ import { Validation } from '../../../../dnatco/naval/validation';
 import { Summarize } from '../../../../dnatco/angles-lengths/summarize';
 import { GlobalConfig } from '../../../../global-config';
 import { htmlColorAsNumber, isWithin, replaceAll } from '../../../../util';
-import { doDownload, Downloader, FileTypes } from '../../../../util/downloader';
+import { colorToTuple, ColorTuple } from '../../../../util/colors';
+import { FileTypes } from '../../../../util/file-type';
 import { M } from '../../../../util/math';
 import { Serialization } from '../../../../util/serialization';
+import {
+    InvalidAtom, InvalidChain, InvalidModelIndex,
+    CifAtom, CifResidue,
+    StructureSelection,
+} from '../../../../util/structure-selection';
 import { ViewerApi, ViewerInterop } from '../../../../viewer/viewer-interop';
 
 const PairBondNameCache: Map<string, React.ReactElement> = new Map();

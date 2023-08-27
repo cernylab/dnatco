@@ -1,5 +1,5 @@
 import { inWorker } from './';
-import { DynamicTable } from '../ui/common/dynamic-table';
+import { DynamicTable } from './dynamic-table';
 
 const CSV_COL_SEP = ';';
 const ChopUrlTag = /(^[a-zA-Z0-9:./-]+);base64,/;

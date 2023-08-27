@@ -1,8 +1,9 @@
 import { Colors } from '../../colors';
-import { InvalidStepId, SelectedPieces } from '../../structure-selection';
+import { SelectedPieces } from '../../structure-selection';
 import { makeStepSelection } from '../../util';
 import { Dnatcofication } from '../../../../dnatco/dnatcofication';
 import { StepsMapper } from '../../../../dnatco/steps-mapper';
+import { InvalidStepId } from '../../../../util/structure-selection';
 import { ViewerInterop, ViewerApi } from '../../../../viewer/viewer-interop';
 
 export namespace Validation {

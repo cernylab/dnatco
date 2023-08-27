@@ -1,13 +1,10 @@
 import React from 'react';
 import { useLocation, useNavigate, useRoutes, Navigate } from 'react-router';
 import { Subject, Subscription } from 'rxjs';
-import { Common } from './common';
-import { getCifValue } from './util';
 import {
-    EmptySelectionPieces, EmptyStructureSelection,
-    InvalidAtom, InvalidChain, InvalidModelIndex, InvalidStepId, InvalidResidue,
+    EmptySelectionPieces,
     SelectionDisplayer, SelectedPieces,
-    StructureSelection, StructureSelectionFromViewer, StructureSelectionSwitching
+    StructureSelectionFromViewer, StructureSelectionSwitching
 } from './structure-selection';
 import { ViewsList } from './views-list';
 import { Register } from './views/register';
@@ -20,6 +17,12 @@ import { Refine } from '../../cif/categories/refine';
 import { Dnatcofication } from '../../dnatco/dnatcofication';
 import { StepsMapper } from '../../dnatco/steps-mapper';
 import { navPath, objKeys } from '../../util';
+import { getCifValue, Common } from '../../util/dnatco';
+import {
+    EmptyStructureSelection,
+    InvalidAtom, InvalidChain, InvalidModelIndex, InvalidStepId, InvalidResidue,
+    StructureSelection
+} from '../../util/structure-selection';
 import { GlobalConfig } from '../../global-config';
 import { Filters } from 'viewer-filters';
 

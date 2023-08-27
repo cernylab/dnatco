@@ -1,26 +1,16 @@
 import type { StandardLonghandProperties } from 'csstype';
-import * as jsLLKA from 'jsllka';
 import React from 'react';
 import { DataTransferDownloadImg } from '../../assets/images';
 import { BasePushButton } from '../common/push-button';
-import { ClassificationContext } from '../../dnatco/classification-context';
 import { Step } from '../../dnatco/step';
 
 export namespace Common {
-    export const NA = 'N/A';
-
-    export const MethodsWithCommonResolution = ['x-ray diffraction', 'neutron diffraction', 'fiber diffraction', 'electron crystallography', 'powder diffraction'];
-
     export const BarHeightEm = 0.75;
     export const VScrollElement = { overflow: 'hidden', flex: 1 } as StandardLonghandProperties;
     export const VScrollJail = { overflow: 'hidden', height: '100%', display: 'flex', flexDirection: 'column' } as StandardLonghandProperties;
     export const VScrollGridJail = { overflow: 'hidden', height: '100%', display: 'grid' } as StandardLonghandProperties;
     export const StyleScoreBar = { width: '100%', height: `${BarHeightEm}em` };
     export const StyleTableSameColumnWidth = { tableLayout: 'fixed', width: '100%' } as StandardLonghandProperties;
-}
-
-export function confalPercentile(confalScore: number) {
-    return jsLLKA.LLKA.confalPercentile(confalScore, ClassificationContext.context());
 }
 
 export function niceStepName(step: Step, showModelNum = false) {
@@ -45,21 +35,6 @@ export function niceStepName(step: Step, showModelNum = false) {
             {step.altPos2 !== '' ? <span className='rdo-nice-step-altpos'>(alt. {step.altPos2})</span> : void 0}
         </span>
     );
-}
-
-export function niceStepNameText(step: Step, showModelNum = false) {
-    const SP = '\u00A0';
-
-    const nice =
-        step.base1 + SP +
-        step.resNo1Auth + step.insCode1 +
-        (step.altPos1 !== '' ? `(alt ${step.altPos1})` : '') +
-        SP +
-        step.base2 + SP +
-        step.resNo2Auth + step.insCode2 +
-        (step.altPos2 !== '' ? `(alt ${step.altPos2})` : '');
-
-    return (showModelNum ? `M${step.model} ` : '') + nice;
 }
 
 export function DownloadButton(props: { caption?: string, onClick: () => void }) {

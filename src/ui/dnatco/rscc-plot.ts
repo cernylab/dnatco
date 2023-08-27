@@ -1,8 +1,8 @@
 import { Data as PlotlyData } from 'plotly.js';
-import { niceStepNameText } from './common';
 import { Dnatcofication } from '../../dnatco/dnatcofication';
 import { Rscc } from '../../dnatco/rscc';
 import { StepsMapper } from '../../dnatco/steps-mapper';
+import { niceStepNameText } from '../../util/dnatco';
 
 /*const Colorscale = [
     [0, 'rgb(210, 210, 210)'],

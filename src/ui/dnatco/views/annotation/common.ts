@@ -1,9 +1,10 @@
 import { Colors } from '../../colors';
-import { InvalidStepId, SelectedPieces } from '../../structure-selection';
+import { SelectedPieces } from '../../structure-selection';
 import { makeStepSelection } from '../../util';
 import { Dnatcofication } from '../../../../dnatco/dnatcofication';
 import { StepsMapper } from '../../../../dnatco/steps-mapper';
 import { ViewerInterop, ViewerApi } from '../../../../viewer/viewer-interop';
+import { InvalidStepId } from '../../../../util/structure-selection';
 
 export namespace Annotation {
     export function granularitySwitcher(vi: ViewerInterop) {

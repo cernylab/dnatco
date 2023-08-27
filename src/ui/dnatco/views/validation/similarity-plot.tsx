@@ -4,14 +4,16 @@ import { PlotPointsLegend } from '../../plot-points-legend';
 import { Validation } from './common';
 import { ChainSelect, ModelSelect, StepSelect } from '../structure-selectors';
 import { View } from '../view';
-import { EmptySelectionPieces, InvalidAtom, InvalidResidue } from '../../structure-selection';
-import { axesMaximumHints, valueToSemaphore } from '../../util';
+import { EmptySelectionPieces } from '../../structure-selection';
+import { axesMaximumHints } from '../../util';
 import { NamedList, NamedListItem } from '../../../common/named-list';
 import { Constants } from '../../../dnatco/constants';
-import { rgbToHex } from '../../../util';
 import { Dnatcofication } from '../../../../dnatco/dnatcofication';
 import { Step } from '../../../../dnatco/step';
 import { StepsMapper } from '../../../../dnatco/steps-mapper';
+import { rgbToHex } from '../../../../util/colors';
+import { valueToSemaphore } from '../../../../util/semaphore';
+import { InvalidAtom, InvalidResidue } from '../../../../util/structure-selection';
 
 const PlotData = {
     x: new Array<number>(),

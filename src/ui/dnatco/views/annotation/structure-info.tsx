@@ -1,9 +1,6 @@
 import * as React from 'react';
 import { EntitiesAndMolecules } from './entities-and-molecules';
 import { View } from '../view';
-import { Common } from '../../common';
-import { getCifValue, niceCifDate } from '../../util';
-import * as SI from '../../../structure-info-util';
 import { CollapsibleVertical } from '../../../common/collapsible-vertical';
 import { Link } from '../../../common/link';
 import { NamedList, NamedListItem } from '../../../common/named-list';
@@ -14,6 +11,8 @@ import { Refine } from '../../../../cif/categories/refine';
 import { Struct } from '../../../../cif/categories/struct';
 import { Dnatcofication } from '../../../../dnatco/dnatcofication';
 import { doiLink, pubmedLink, rcsbLink } from '../../../../util/resources';
+import { getCifValue, niceCifDate, Common } from '../../../../util/dnatco';
+import * as SI from '../../../../util/structure-info';
 
 function mkHeader(text: string) {
     return {

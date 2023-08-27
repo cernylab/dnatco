@@ -1,12 +1,10 @@
 import React from 'react';
 import { Validation } from './common';
 import { ChainSelect, ModelSelect, StepSelect } from '../structure-selectors';
-import { EmptySelectionPieces, InvalidAtom, InvalidResidue } from '../../structure-selection';
+import { EmptySelectionPieces } from '../../structure-selection';
 import { View } from '../view';
-import { Common as C } from '../../common';
 import { NamedList, NamedListItem } from '../../../common/named-list';
 import { Tooltip } from '../../../common/tooltip';
-import { colorToRgb, rgbToHex } from '../../../util';
 import { Cif } from '../../../../cif';
 import {
     NdbStructNtcStepParameters, NdbStructNtcStepParameters_Schema,
@@ -15,8 +13,11 @@ import {
 } from '../../../../cif/categories/ndb-struct-ntc';
 import { Dnatcofication } from '../../../../dnatco/dnatcofication';
 import { Step } from '../../../../dnatco/step';
-import { htmlColorAsNumber, toFixed } from '../../../../util';
 import { GlobalConfig } from '../../../../global-config';
+import { htmlColorAsNumber, toFixed } from '../../../../util';
+import { colorToRgb, rgbToHex } from '../../../../util/colors';
+import { Common as C } from '../../../../util/dnatco';
+import { InvalidAtom, InvalidResidue } from '../../../../util/structure-selection';
 
 const TorsionsDisplayOrder: Step.Torsion[] = ['delta1', 'epsilon1', 'zeta1', 'alpha2', 'beta2', 'gamma2', 'delta2', 'chi1', 'chi2', 'nccn'];
 const TorsionsCaptions = {

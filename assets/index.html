@@ -5,7 +5,7 @@
     </head>
 
     <body>
-        <%= compilation.getAssets().filter(a => a.name.endsWith('.js') && !a.name.startsWith('index')).map(a => `<script defer src="${a.name}"></script>`) %>
+        <%= compilation.getAssets().filter(a => a.name.endsWith('.js') && !a.name.startsWith('index')).map(a => `<script defer src="${a.name}"></script>`).join('') %>
         <div id="app"></div>
     </body>
 </html>

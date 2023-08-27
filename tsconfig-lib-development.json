@@ -1,0 +1,46 @@
+{
+    "compilerOptions": {
+        "declaration": true,
+        "declarationMap": true,
+        "incremental": true,
+        "lib": [ "es6", "es2016", "webworker" ],
+        "module": "es6",
+        "target": "es6",
+
+        "alwaysStrict": true,
+        "noImplicitThis": true,
+        "strict": true,
+        "strictNullChecks": true,
+        "strictFunctionTypes": true,
+
+        "noUnusedLocals": true,
+        "esModuleInterop": true,
+
+        "moduleResolution": "node",
+        "inlineSourceMap": true,
+        "inlineSources": true,
+
+	"skipLibCheck": true,
+
+        "outDir": "lib/librednatco",
+        "rootDirs": [
+            "src",
+            "molstar/src/apps/rednatco",
+            "tscif/src"
+        ],
+
+        "baseUrl": ".",
+        "paths": {
+            "assets/*": [ "assets" ]
+        }
+    },
+    "include": [ "src/**/*" ],
+    "exclude": [
+	"src/browser-util/**/*",
+	"src/ui/**/*",
+	"src/tasks/**/*",
+	"src/viewer",
+
+	"src/index.tsx"
+    ]
+}

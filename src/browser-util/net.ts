@@ -29,6 +29,10 @@ export namespace Net {
         }
     }
 
+    export function href() {
+        return `${window.location.protocol}//${window.location.host}`;
+    }
+
     export function isAbortError(e: Error) {
         return e.name === 'AbortError';
     }

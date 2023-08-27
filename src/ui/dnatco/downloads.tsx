@@ -11,6 +11,8 @@ import { InProgressSpinner } from '../common/in-progress-spinner';
 import { Popup } from '../common/popup';
 import { ShadowedBox } from '../common/shadowed-box';
 import { toComboBoxOptions } from '../util';
+import { doDownload } from '../../browser-util/downloader';
+import { Net } from '../../browser-util/net';
 import { SerializeByCompound, SerializeByResidue } from '../../dnatco/angles-lengths/serialize';
 import { isOk } from '../../dnatco';
 import { Summarize } from '../../dnatco/angles-lengths/summarize';
@@ -19,8 +21,7 @@ import { Naval } from '../../dnatco/naval';
 import { Rscc } from '../../dnatco/rscc';
 import { Report } from '../../report';
 import { objKeys } from '../../util';
-import { doDownload, FileTypes } from '../../util/downloader';
-import { Net } from '../../util/net';
+import { FileTypes } from '../../util/file-type';
 import { ImageSerialization } from '../../util/image-serialization';
 import { Serialization } from '../../util/serialization';
 import { GlobalConfig } from '../../global-config';
@@ -356,7 +357,7 @@ export function Downloads(props: { dnatcofication: Dnatcofication }) {
                                     caption='PDF'
                                     onClick={() => {
                                         setReportGenerationState('generating');
-                                        Report.pdf(props.dnatcofication, { completeStepsTable: listAllDinus }).then((report) => {
+                                        Report.pdf(props.dnatcofication, { completeStepsTable: listAllDinus, href: Net.href() }).then((report) => {
                                             Net.serveFileRaw(FileTypes.pdf.mimeType, report, `${props.dnatcofication.pdbId}_${GlobalConfig.data().displayedProductName.toLowerCase()}_validation_report.${FileTypes.pdf.suffix}`);
                                             setReportGenerationState('none');
                                         }).catch(e => {
@@ -373,7 +374,7 @@ export function Downloads(props: { dnatcofication: Dnatcofication }) {
                                     caption='Plain text'
                                     onClick={() => {
                                         setReportGenerationState('generating');
-                                        Report.text(props.dnatcofication, { completeStepsTable: listAllDinus }).then((report) => {
+                                        Report.text(props.dnatcofication, { completeStepsTable: listAllDinus, href: Net.href() }).then((report) => {
                                             Net.serveFile(FileTypes.text.mimeType, report, `${props.dnatcofication.pdbId}_${GlobalConfig.data().displayedProductName.toLowerCase()}_validation_report.${FileTypes.text.suffix}`);
                                             setReportGenerationState('none');
                                         }).catch(e => {

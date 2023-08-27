@@ -3,8 +3,8 @@ import { Bin } from './bin';
 import { Measurements } from './measurements';
 import { ALM } from '../alm';
 import { Dnatcofication } from '../dnatcofication';
-import { InvalidModelIndex } from '../../ui/dnatco/structure-selection';
 import { sequence } from '../../util';
+import { InvalidModelIndex } from '../../util/structure-selection';
 
 function compareMaybeBins(a: ALM.MaybeBin, b: ALM.MaybeBin) {
     const aOut = a === 'above' || a === 'below' || a === 'no-data';

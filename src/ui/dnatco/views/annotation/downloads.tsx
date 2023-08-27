@@ -2,8 +2,8 @@ import React from 'react';
 import { View } from '../view';
 import { Common, DownloadButton } from '../../common';
 import { Downloads as _Downloads } from '../../downloads-common';
-import { Net } from '../../../../util/net';
-import { FileTypes } from '../../../../util/downloader';
+import { Net } from '../../../../browser-util/net';
+import { FileTypes } from '../../../../util/file-type';
 import { Serialization } from '../../../../util/serialization';
 
 export function Downloads(props: View.Props) {

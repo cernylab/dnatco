@@ -1,10 +1,10 @@
 import React from 'react';
-import { Common } from '../../common';
 import { CollapsibleVertical } from '../../../common/collapsible-vertical';
 import { NamedList, NamedListItem } from '../../../common/named-list';
 import { TriangleDownImg } from '../../../../assets/images';
 import { Entity, EntityPoly } from '../../../../cif/categories/entity';
 import { Dnatcofication } from '../../../../dnatco/dnatcofication';
+import { Common } from '../../../../util/dnatco';
 
 function mkHeader(text: string) {
     return {

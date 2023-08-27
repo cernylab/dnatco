@@ -6,10 +6,9 @@ import { NTRgba } from '../../nottex/util';
 import { NTMm, NTUnit } from '../../nottex/space';
 import { Cif } from '../../../cif';
 import { NdbStructNtcStep, NdbStructNtcStepSummary } from '../../../cif/categories/ndb-struct-ntc';
-import { valueToSemaphore } from '../../../ui/dnatco/util';
-import { nclr } from '../../../ui/util';
-
-const NA = 'N/A';
+import { nclr } from '../../../util/colors';
+import { Common } from '../../../util/dnatco';
+import { valueToSemaphore } from '../../../util/semaphore';
 
 export namespace StepTable {
     export function fill<Output>(tbl: NTTable, hasMultipleModels: boolean, ctx: Report.Context<Output>, options?: Partial<{ rmsdCutoff: number, filter: 'only-unassigned' | 'only-assigned' | 'all' }>) {
@@ -39,7 +38,7 @@ export namespace StepTable {
                 continue;
 
             const modelNo = Cif.Column.value(PDB_model_number, row) ?? 1;
-            const chain = Cif.Column.value(label_asym_id_1, row) ?? NA;
+            const chain = Cif.Column.value(label_asym_id_1, row) ?? Common.NA;
             const authChain = Cif.Column.value(auth_asym_id_1, row) ?? chain;
 
             const compOne = Cif.Column.value(label_comp_id_1, row)!;

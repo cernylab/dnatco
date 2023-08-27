@@ -26,10 +26,6 @@ const PageSize = {
     height: NTMm(297),
 };
 
-function href() {
-    return `${window.location.protocol}//${window.location.host}`;
-}
-
 function makeContext<Output>(dnatcofication: Dnatcofication, ntDoc: NTDocument<Output>, href: string, mode: OutputMode): Report.Context<Output> {
     return {
         dnatcofication,
@@ -71,22 +67,21 @@ export namespace Report {
         completeStepsTable: boolean,
     }
 
-    export async function pdf(dnatcofication: Dnatcofication, options: Partial<Options> = {}) {
+    export async function pdf(dnatcofication: Dnatcofication, options: Partial<Options> & { href: string }) {
         await _Fonts.load();
 
-        const ntDoc = await NTPdfDocument.create(Margins, PageSize, _Fonts.get(), Fonts.Default)
-        const ctx = makeContext(dnatcofication, ntDoc, href(), 'graphical');
+        const ntDoc = await NTPdfDocument.create(Margins, PageSize, _Fonts.get(), Fonts.Default);
+        const ctx = makeContext(dnatcofication, ntDoc, options.href, 'graphical');
         await addContent(ctx, !!options?.completeStepsTable);
 
         return await ntDoc.render();
     }
 
-    export async function text(dnatcofication: Dnatcofication, options: Partial<Options> = {}) {
+    export async function text(dnatcofication: Dnatcofication, options: Partial<Options> & { href: string }) {
         await _Fonts.load();
 
         const ntDoc = await NTTextDocument.create(80, 5, _Fonts.get());
-        const ctx = makeContext(dnatcofication, ntDoc, href(), 'textual');
-
+        const ctx = makeContext(dnatcofication, ntDoc, options.href, 'textual');
         await addContent(ctx, !!options?.completeStepsTable);
 
         return await ntDoc.render();

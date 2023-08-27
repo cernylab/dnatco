@@ -5,13 +5,8 @@ import { ChainSelect, ModelSelect } from '../structure-selectors';
 import { View } from '../view';
 import { Colors } from '../../colors';
 import { Common, niceStepName } from '../../common';
-import {
-    EmptyStructureSelection,
-    InvalidAtom, InvalidChain, InvalidModelIndex, InvalidResidue, InvalidStepId,
-    StructureSelection
-} from '../../structure-selection';
 import { setDynamicTableModelColumns } from '../../util';
-import { DynamicTable } from '../../../common/dynamic-table';
+import { DynamicTable as DynamicTableComp } from '../../../common/dynamic-table';
 import { NamedList, NamedListItem } from '../../../common/named-list';
 import { IconButton } from '../../../common/push-button';
 import { Tooltip } from '../../../common/tooltip';
@@ -20,6 +15,12 @@ import { Cif } from '../../../../cif';
 import { NdbStructNtcStep, NdbStructNtcStepSummary } from '../../../../cif/categories/ndb-struct-ntc';
 import { Dnatcofication } from '../../../../dnatco/dnatcofication';
 import { StepsMapper } from '../../../../dnatco/steps-mapper';
+import { DynamicTable } from '../../../../util/dynamic-table';
+import {
+    EmptyStructureSelection,
+    InvalidAtom, InvalidChain, InvalidModelIndex, InvalidResidue, InvalidStepId,
+    StructureSelection
+} from '../../../../util/structure-selection';
 
 export class ChangeNtCs extends View<Refinement.Props> {
     static readonly unscrollableContainer = true;
@@ -146,7 +147,7 @@ export class ChangeNtCs extends View<Refinement.Props> {
         const stepName = this.props.structureSelection.steps.length === 0 ? '' : StepsMapper.byId(this.props.dnatcofication, this.props.structureSelection.steps[0]).name;
 
         return (
-            <DynamicTable
+            <DynamicTableComp
                 model={this.tableModel}
                 onCellClicked={(data, row, colName) => {
                     if (colName === 'Custom NtC')
