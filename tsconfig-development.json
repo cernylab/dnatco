@@ -11,6 +11,8 @@
         "alwaysStrict": true,
         "noImplicitThis": true,
         "strict": true,
+        "strictNullChecks": true,
+        "strictFunctionTypes": true,
 
         "noUnusedLocals": true,
         "esModuleInterop": true,

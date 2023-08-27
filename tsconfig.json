@@ -13,14 +13,15 @@
         "strict": true,
         "strictNullChecks": true,
         "strictFunctionTypes": true,
+        "importHelpers": true,
+
+        "noUnusedLocals": true,
+        "esModuleInterop": true,
 
         "moduleResolution": "node",
         "inlineSourceMap": false,
         "inlineSources": false,
         "sourceMap": false,
-
-        "noUnusedLocals": true,
-        "esModuleInterop": true,
 
         "outDir": "lib",
         "rootDirs": [
