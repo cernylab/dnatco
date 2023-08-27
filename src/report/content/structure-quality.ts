@@ -48,6 +48,14 @@ async function averageConfalsRow<Output>(avg: number, percentile: number, tbl: N
         const H = NTUnit.multiply(1, ctx.tDims.characterHeight);
         const NW = NTUnit.num(W);
         const NH = NTUnit.num(H);
+
+        // NO NO NO!!!
+        try {
+            new OffscreenCanvas(1, 1);
+        } catch (e) {
+            return;
+        }
+
         const canvas = new OffscreenCanvas(NW, NH);
         const ctx2d = canvas.getContext('2d') as OffscreenCanvasRenderingContext2D | null;
         if (!ctx2d)

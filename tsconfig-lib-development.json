@@ -25,7 +25,6 @@
         "outDir": "lib/librednatco",
         "rootDirs": [
             "src",
-            "molstar/src/apps/rednatco",
             "tscif/src"
         ],
 

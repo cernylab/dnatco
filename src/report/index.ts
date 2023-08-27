@@ -4,7 +4,7 @@ import { BondAnglesLengths } from './content/bond-angles-lengths';
 import { CompleteStepsTable } from './content/complete-steps-table';
 import { DinucleotideOutliers } from './content/dinucleotide-outliers';
 import { Title } from './content/title';
-import { RsccRmsd } from './content/rscc-rmsd';
+//import { RsccRmsd } from './content/rscc-rmsd';
 import { StructureInfo } from './content/structure-info';
 import { StructureQuality } from './content/structure-quality';
 import { UntypicalAnglesLengths } from './content/untypical-angles-lengths';
@@ -40,14 +40,14 @@ function makeContext<Output>(dnatcofication: Dnatcofication, ntDoc: NTDocument<O
 }
 
 export namespace Report {
-    async function addContent<Output>(ctx: Context<Output>, completeStepsTable: boolean) {
-        await Title.add(ctx);
+    async function addContent<Output>(ctx: Context<Output>, options: Partial<Options>) {
+        await Title.add(ctx, options.assetLoaderFunc);
         StructureInfo.add(ctx);
         await StructureQuality.add(ctx);
-        if (completeStepsTable)
+        if (!!options.completeStepsTable)
             CompleteStepsTable.add(ctx);
         DinucleotideOutliers.add(ctx);
-        await RsccRmsd.add(ctx);
+        //await RsccRmsd.add(ctx);
         BondAnglesLengths.add(ctx);
         UntypicalAnglesLengths.add(ctx);
     }
@@ -64,27 +64,27 @@ export namespace Report {
     }
 
     export type Options = {
+        assetLoaderFunc: (subpath: string) => Uint8Array,
         completeStepsTable: boolean,
     }
 
     export async function pdf(dnatcofication: Dnatcofication, options: Partial<Options> & { href: string }) {
-        await _Fonts.load();
+        await _Fonts.load(options.assetLoaderFunc);
 
         const ntDoc = await NTPdfDocument.create(Margins, PageSize, _Fonts.get(), Fonts.Default);
         const ctx = makeContext(dnatcofication, ntDoc, options.href, 'graphical');
-        await addContent(ctx, !!options?.completeStepsTable);
+        await addContent(ctx, options);
 
         return await ntDoc.render();
     }
 
     export async function text(dnatcofication: Dnatcofication, options: Partial<Options> & { href: string }) {
-        await _Fonts.load();
+        await _Fonts.load(options.assetLoaderFunc);
 
         const ntDoc = await NTTextDocument.create(80, 5, _Fonts.get());
         const ctx = makeContext(dnatcofication, ntDoc, options.href, 'textual');
-        await addContent(ctx, !!options?.completeStepsTable);
+        await addContent(ctx, options);
 
         return await ntDoc.render();
     }
-
 }

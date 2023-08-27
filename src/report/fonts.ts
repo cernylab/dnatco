@@ -92,7 +92,7 @@ export namespace Fonts {
         }
     }
 
-    export async function load() {
+    export async function load(loaderFunc?: (subpath: string) => Uint8Array) {
         if (loaded)
             return;
 
@@ -101,12 +101,19 @@ export namespace Fonts {
             const Family = Sources[family]
             for (const _style in Family) {
                 const style = _style as keyof typeof Family;
-                const req = await fetch(`${GlobalConfig.data().pathPrefix}/${Family[style]}`);
-                if (!req.ok)
-                    throw new Error(`Cannot get font ${Family[style]} that is required for report generation`);
+                let buf;
 
-                const buf = await req.arrayBuffer();
-                fonts[family][style] = new Uint8Array(buf);
+                if (loaderFunc) {
+                    buf = loaderFunc(Family[style]);
+                } else {
+                    const req = await fetch(`${GlobalConfig.data().pathPrefix}/${Family[style]}`);
+                    if (!req.ok)
+                        throw new Error(`Cannot get font ${Family[style]} that is required for report generation`);
+
+                    buf = new Uint8Array(await req.arrayBuffer());
+                }
+
+                fonts[family][style] = buf;
             }
         }
 

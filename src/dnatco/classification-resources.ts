@@ -8,7 +8,7 @@ export namespace ClassificationResources {
     };
     export type Data = typeof Data;
 
-    export async function load(clustersPath: string, confalsPath: string, goldenStepsPath: string, nuAnglesPath: string, confalPercentilesPath: string): Promise<Data> {
+    export async function download(clustersPath: string, confalsPath: string, goldenStepsPath: string, nuAnglesPath: string, confalPercentilesPath: string): Promise<Data> {
         const clustersResp = fetch(clustersPath);
         const confalsResp = fetch(confalsPath);
         const goldenStepsResp = fetch(goldenStepsPath);

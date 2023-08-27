@@ -24,6 +24,7 @@ export namespace ImageSerialization {
     export type Format = 'jpeg' | 'png' | 'svg' | 'webp';
 
     export async function toImage(data: PlotData[], layout: Partial<Layout>, width: number, height: number, format: Format) {
+        console.log('Doing stuff with PlotData', data);
 
         const imgData = await Plotly.toImage({ data, layout }, { format, width, height });
         return imageDataToArray(imgData, format);

@@ -5,6 +5,8 @@ import { IdTransformations, StaticDb } from './remote/db/static-db';
 import { deepCopy, objKeys } from './util';
 import { fromTemplate } from './util/json';
 
+const SchemeRegex = new RegExp('^([a-zA-Z]){1}([a-zA-Z0-9])*:\\/\\/');
+
 export type AngleLengthPGroup = {
     threshold: number,
     color: string,
@@ -97,7 +99,7 @@ function checkAndSet(data: GlobalConfigData, input: Record<string, any>) {
 }
 
 function fixups(data: GlobalConfigData) {
-    if (data.pathPrefix.length > 0 && !data.pathPrefix.startsWith('/'))
+    if (data.pathPrefix.length > 0 && !data.pathPrefix.startsWith('/') && !SchemeRegex.test(data.pathPrefix))
         data.pathPrefix = '/' + data.pathPrefix;
 
     data.userDatabases = data.userDatabases.filter((x) => {

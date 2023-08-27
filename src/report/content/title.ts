@@ -8,16 +8,20 @@ import { GlobalConfig } from '../../global-config';
 import { niceDate } from '../../util/dnatco';
 import { Version } from '../../version';
 
-async function getImage() {
-    const req = await fetch(DefinitionNewTrans2Img);
-    if (!req.ok)
-        throw new Error('Cannot get title image');
-    return await req.arrayBuffer();
+async function getImage(loaderFunc?: (subpath: string) => Uint8Array) {
+    if (loaderFunc)
+        return loaderFunc(DefinitionNewTrans2Img);
+    else {
+        const req = await fetch(DefinitionNewTrans2Img);
+        if (!req.ok)
+            throw new Error('Cannot get title image');
+        return await req.arrayBuffer();
+    }
 }
 
 export namespace Title {
-    export async function add<Output>(ctx: Report.Context<Output>) {
-        const imgBuf = await getImage();
+    export async function add<Output>(ctx: Report.Context<Output>, assetLoaderFunc?: (subpath: string) => Uint8Array) {
+        const imgBuf = await getImage(assetLoaderFunc);
 
         const root = ctx.ntDoc;
 
