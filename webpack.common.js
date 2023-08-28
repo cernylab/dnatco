@@ -3,17 +3,13 @@ const path = require('path');
 const CopyPlugin = require('copy-webpack-plugin');
 const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
 const webpack = require('webpack');
 ////  const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
-const BinDir = 'bin';
-const DistDir = 'dist';
-
-// NO NO NO! We need to pass app vs lib specific options as config parameters!!!
-
-function sharedConfig(productionBuild, buildingApp, extraConfig) {
+function sharedConfig(productionBuild, outDir, extraConfig) {
     return {
+        externals: extraConfig?.externals ?? void 0,
+
         devServer: {
             client: {
                 logging: 'warn',
@@ -25,7 +21,7 @@ function sharedConfig(productionBuild, buildingApp, extraConfig) {
                 progress: true,
             },
             static: {
-                directory: path.join(__dirname, DistDir),
+                directory: path.join(__dirname, outDir),
             },
             compress: false,
             port: 8118,
@@ -36,20 +32,10 @@ function sharedConfig(productionBuild, buildingApp, extraConfig) {
             global: true,
         },
 
-        externals: {
-            'canvas': 'commonjs canvas',
-        },
-
         mode: productionBuild ? 'production' : 'development',
         module: {
             rules: [
-                {
-                    test: /canvas\.node$/,
-                    loader: "node-loader",
-                    options: {
-                        name: '[name].[ext]',
-                    },
-                },
+                ...(extraConfig?.moduleRules ?? []),
                 {
                     test: /molstar.js/,
                     use: [{
@@ -120,44 +106,26 @@ function sharedConfig(productionBuild, buildingApp, extraConfig) {
                 patterns: [
                     {
                         from: 'assets/contour_plots/le18/**/*',
-                        to() { return path.resolve(__dirname, DistDir, 'contour_plots/le18/[name][ext]') },
+                        to() { return path.resolve(__dirname, outDir, 'contour_plots/le18/[name][ext]') },
                         filter: async (resourcePath) => { return resourcePath.endsWith('.png') || resourcePath.endsWith('.pdf'); },
                     },
                     {
                         from: 'assets/contour_plots/gt25/**/*',
-                        to() { return path.resolve(__dirname, DistDir, 'contour_plots/gt25/[name][ext]') },
+                        to() { return path.resolve(__dirname, outDir, 'contour_plots/gt25/[name][ext]') },
                         filter: async (resourcePath) => { return resourcePath.endsWith('.png') || resourcePath.endsWith('.pdf'); },
                     },
                     // TODO: Turn the .json files into actual assets. This will allow us to do away with this lame hack
-                    buildingApp
-                        ? {
-                            from: 'assets/angles_lengths/*.json',
-                            to() { return path.resolve(__dirname, DistDir, 'angles_lengths/[name][ext]') },
-                        }
-                        : {
-                            from: 'assets/angles_lengths/*.json',
-                            to() { return path.resolve(__dirname, BinDir, 'angles_lengths/[name][ext]') },
-                        },
-                    // Molstar viewer image assets must be copied to dist like this
                     {
-                        from: 'molstar/build/rednatco/assets/imgs/*',
-                        to() { return path.resolve(__dirname, DistDir, 'imgs/[name][ext]') },
-                    }
+                        from: 'assets/angles_lengths/*.json',
+                        to() { return path.resolve(__dirname, outDir, 'angles_lengths/[name][ext]') },
+                    },
+                    ...(extraConfig?.copyPluginPatterns ?? []),
                 ]
             }),
-            buildingApp
-                ? new webpack.ProvidePlugin({
-                        process: 'process/browser'
-                    })
-                : void 0,
             new webpack.ProvidePlugin({
                 Buffer: ['buffer', 'Buffer'],
             }),
-            buildingApp
-                ? new HtmlWebpackPlugin({
-                    template: path.resolve(__dirname, 'assets/index.html'),
-                })
-                : void 0,
+            ...(extraConfig?.plugins ?? []),
             // new BundleAnalyzerPlugin()
         ],
         resolve: {
@@ -183,7 +151,7 @@ function sharedConfig(productionBuild, buildingApp, extraConfig) {
     };
 };
 
-function createApp(name, productionBuild) {
+function createApp(name, productionBuild, outDir, extraConfig) {
     if (productionBuild)
         console.log('Building for production...');
     else
@@ -197,13 +165,13 @@ function createApp(name, productionBuild) {
         },
         output: {
             filename: `${name}[chunkhash].js`,
-            path: path.resolve(__dirname, DistDir)
+            path: path.resolve(__dirname, outDir)
         },
-        ...sharedConfig(productionBuild, true),
+        ...sharedConfig(productionBuild, outDir, extraConfig),
     };
 }
 
-function createLib(name, productionBuild) {
+function createLib(name, productionBuild, outDir, extraConfig) {
     if (productionBuild)
         console.log('Building for production...');
     else
@@ -217,9 +185,9 @@ function createLib(name, productionBuild) {
         },
         output: {
             filename: `${name}.js`,
-            path: path.resolve(__dirname, BinDir)
+            path: path.resolve(__dirname, outDir)
         },
-        ...sharedConfig(productionBuild, false),
+        ...sharedConfig(productionBuild, outDir, extraConfig),
     };
 }
 
