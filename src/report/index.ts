@@ -4,7 +4,7 @@ import { BondAnglesLengths } from './content/bond-angles-lengths';
 import { CompleteStepsTable } from './content/complete-steps-table';
 import { DinucleotideOutliers } from './content/dinucleotide-outliers';
 import { Title } from './content/title';
-//import { RsccRmsd } from './content/rscc-rmsd';
+import { RsccRmsd } from './content/rscc-rmsd';
 import { StructureInfo } from './content/structure-info';
 import { StructureQuality } from './content/structure-quality';
 import { UntypicalAnglesLengths } from './content/untypical-angles-lengths';
@@ -47,7 +47,7 @@ export namespace Report {
         if (!!options.completeStepsTable)
             CompleteStepsTable.add(ctx);
         DinucleotideOutliers.add(ctx);
-        //await RsccRmsd.add(ctx);
+        await RsccRmsd.add(ctx);
         BondAnglesLengths.add(ctx);
         UntypicalAnglesLengths.add(ctx);
     }

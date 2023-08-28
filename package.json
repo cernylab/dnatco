@@ -49,7 +49,6 @@
         "html-webpack-plugin": "^5.5.3",
         "mini-css-extract-plugin": "^2.5.3",
         "node-loader": "^2.0.0",
-        "plotly.js": "^2.20.0",
         "process": "^0.11.10",
         "stream-browserify": "^3.0.0",
         "typescript": "^5.0.4",
@@ -63,12 +62,15 @@
         "@types/plotly.js": "^2.12.18",
         "@types/uuid": "^8.3.4",
         "assert": "^2.0.0",
+	"browser-env": "^3.3.0",
         "buffer": "^6.0.3",
+	"bufferutil": "^4.0.7",
         "canvas": "^2.11.2",
         "crypto-js": "^4.1.1",
         "dompurify": "^2.4.0",
         "jsllka": "file:./jsllka",
         "pdf-lib": "^1.17.1",
+        "plotly.js-cartesian-dist": "^2.26.0",
         "react": "^18.2.0",
         "react-dom": "^18.2.0",
         "react-plotly.js": "^2.6.0",
@@ -80,5 +82,8 @@
         "tspdb": "file:./tspdb",
         "uuid": "^8.3.2",
         "webpack-dev-server": "^4.15.1"
+    },
+    "optionalDependencies": {
+	    "utf-8-validate": "^6.0.3"
     }
 }

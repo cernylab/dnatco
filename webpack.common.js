@@ -145,11 +145,11 @@ function sharedConfig(productionBuild, buildingApp, extraConfig) {
                     }
                 ]
             }),
-            buildingApp || true
+            buildingApp
                 ? new webpack.ProvidePlugin({
                         process: 'process/browser'
                     })
-                : webpack.ProvidePlugin({ process: 'process' }),
+                : void 0,
             new webpack.ProvidePlugin({
                 Buffer: ['buffer', 'Buffer'],
             }),

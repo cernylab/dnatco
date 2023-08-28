@@ -1,4 +1,5 @@
-import { type PlotData } from 'plotly.js';
+// @ts-ignore DefinitelyTyped does not have definitions for this flavor of plotly.js. Sadge...
+import { type PlotData } from 'plotly.js-cartesian-dist';
 import React from 'react';
 import { Navigate } from 'react-router';
 import { Common, DownloadButton } from './common';

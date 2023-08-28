@@ -1,5 +1,5 @@
-import Plotly, { type PlotData, type Layout } from 'plotly.js';
-
+// @ts-ignore DefinitelyTyped does not have definitions for this flavor of plotly.js. Sadge...
+import Plotly, { type PlotData, type Layout } from 'plotly.js-cartesian-dist';
 const JpegPayloadIndicator = new RegExp('^data:image/jpeg;base64,');
 const PngPayloadIndicator = new RegExp('^data:image/png;base64,');
 const SvgPayloadIndicator = new RegExp('^data:image/svg\\+xml,');
@@ -24,8 +24,6 @@ export namespace ImageSerialization {
     export type Format = 'jpeg' | 'png' | 'svg' | 'webp';
 
     export async function toImage(data: PlotData[], layout: Partial<Layout>, width: number, height: number, format: Format) {
-        console.log('Doing stuff with PlotData', data);
-
         const imgData = await Plotly.toImage({ data, layout }, { format, width, height });
         return imageDataToArray(imgData, format);
     }

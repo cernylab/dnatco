@@ -1,4 +1,5 @@
-import { Data as PlotlyData } from 'plotly.js';
+// @ts-ignore DefinitelyTyped does not have definitions for this flavor of plotly.js. Sadge...
+import { Data as PlotlyData } from 'plotly.js-cartesian-dist';
 import { Dnatcofication } from '../../dnatco/dnatcofication';
 import { Rscc } from '../../dnatco/rscc';
 import { StepsMapper } from '../../dnatco/steps-mapper';
@@ -132,6 +133,8 @@ export namespace RsccPlot {
         const plotType = useGl ? 'scattergl' : 'scatter';
         const zMinMax = minAndMax(contour.z);
         const zRng = zMinMax.max - zMinMax.min;
+
+        console.log(plotType);
 
         const allContours = contour.levels.map(v => {
             const clr = 128 - Math.round(128 * (v - zMinMax.min) / zRng);
