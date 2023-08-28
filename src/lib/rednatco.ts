@@ -86,13 +86,13 @@ async function main(argv: string[]) {
     }
 
     const coordsFilePath = argv[0];
+    const reflnsFilePath = argv[1];
 
     try {
         loadConfig();
         const cfg = GlobalConfig.data();
 
-        const phenixUsable = Phenix.isUsable(cfg.phenix.exec, cfg.phenix.scratchDir);
-        console.log(phenixUsable);
+        const phenixCtx = reflnsFilePath ? Phenix.makeContext(cfg.phenix.exec, cfg.phenix.scratchDir) : void 0;
 
         await initClassificationContext();
         await initAnglesLengthsContext();
@@ -100,8 +100,8 @@ async function main(argv: string[]) {
 
         const coords = await getCoordinates(coordsFilePath);
 
-        if (phenixUsable) {
-            Phenix.calculateRscc(coords);
+        if (phenixCtx) {
+            Phenix.calculateRscc({ coords, filePath: coordsFilePath }, reflnsFilePath, phenixCtx);
         }
 
         const dd = Dnatcofication.ingest(
