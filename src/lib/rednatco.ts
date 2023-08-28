@@ -1,6 +1,7 @@
-import path from 'path';
-import process from 'process';
+import path from 'node:path';
+import process from 'node:process';
 import { fileExists, readBinaryFile, readTextFile, writeBinaryFile, writeTextFile } from './io';
+import { Phenix } from './phenix';
 import { isError } from '../dnatco';
 import { AnglesLengths } from '../dnatco/angles-lengths';
 import { ClassificationContext } from '../dnatco/classification-context';
@@ -88,12 +89,21 @@ async function main(argv: string[]) {
 
     try {
         loadConfig();
+        const cfg = GlobalConfig.data();
+
+        const phenixUsable = Phenix.isUsable(cfg.phenix.exec, cfg.phenix.scratchDir);
+        console.log(phenixUsable);
 
         await initClassificationContext();
         await initAnglesLengthsContext();
         await initNavalContext();
 
         const coords = await getCoordinates(coordsFilePath);
+
+        if (phenixUsable) {
+            Phenix.calculateRscc(coords);
+        }
+
         const dd = Dnatcofication.ingest(
             coords,
             null,
@@ -102,7 +112,7 @@ async function main(argv: string[]) {
             AnglesLengths.context(),
             Naval.context(),
             false, // NO NO NO, decide what is a custom structure
-            GlobalConfig.data(),
+            cfg,
             new TaskContext<DnatcoficationData>(''),
         );
         if (!dd)

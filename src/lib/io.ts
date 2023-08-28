@@ -1,7 +1,19 @@
-import fs from 'fs';
+import fs from 'node:fs';
+import path from 'node:path';
 
 const decoder = new TextDecoder('utf-8');
 const encoder = new TextEncoder();
+
+export function copyFile(fromPath: string, toPath: string) {
+    const fromPathNorm = path.normalize(fromPath);
+    const toPathNorm = path.normalize(toPath);
+
+    if (fromPathNorm === toPathNorm)
+        throw new Error(`Cannot copy file because the target path "${toPath}" is the same as the source path.`);
+
+    const buf = readBinaryFile(fromPathNorm);
+    writeBinaryFile(toPathNorm, buf);
+}
 
 export function fileExists(filePath: string) {
     try {

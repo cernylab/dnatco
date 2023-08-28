@@ -48,6 +48,10 @@ export type GlobalConfigData = {
 
     // Options relevant only for library build
     referenceUrl: string,
+    phenix: {
+        exec: string,
+        scratchDir: string,
+    }
 };
 const GlobalConfigData: GlobalConfigData = {
     isDevel: false,
@@ -79,6 +83,10 @@ const GlobalConfigData: GlobalConfigData = {
     expectedParametersFingerprint: '',
     useHashRouter: false,
     referenceUrl: '',
+    phenix: {
+        exec: '',
+        scratchDir: '',
+    },
 };
 const AllowedPartials: Partial<{[k in keyof GlobalConfigData]: object}> = {
     anglesLengths: {}
