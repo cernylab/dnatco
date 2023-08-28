@@ -1,6 +1,6 @@
 import path from 'path';
 import process from 'process';
-import { readBinaryFile, readTextFile, writeBinaryFile, writeTextFile } from './io';
+import { fileExists, readBinaryFile, readTextFile, writeBinaryFile, writeTextFile } from './io';
 import { isError } from '../dnatco';
 import { AnglesLengths } from '../dnatco/angles-lengths';
 import { ClassificationContext } from '../dnatco/classification-context';
@@ -12,6 +12,8 @@ import { Report } from '../report';
 import { TaskContext } from '../tasks/task';
 
 import { NavalAngleRestraintsFile, NavalBondRestraintsFile } from '../assets/params';
+
+const ConfigFilePath = './config.json';
 
 function _relPath(_path: string) {
     return './' + _path;
@@ -55,13 +57,21 @@ async function initNavalContext() {
         throw new Error(res.message ?? 'Unknown error during initialization of Naval context');
 }
 
+async function loadConfig() {
+    if (!fileExists(ConfigFilePath))
+        return;
+
+    const text = readTextFile(ConfigFilePath);
+    GlobalConfig.load(JSON.parse(text));
+}
+
 function writeCif(d: Dnatcofication) {
     writeTextFile(`/tmp/${d.pdbId}_annotated.cif`, d.rawCif());
 }
 
-async function writeValidationReport(d: Dnatcofication) {
+async function writeValidationReport(d: Dnatcofication, url: string) {
     const report = await Report.pdf(d, {
-        href: 'NOT YET',
+        href: url,
         assetLoaderFunc: readBinaryFile
     });
 
@@ -77,6 +87,8 @@ async function main(argv: string[]) {
     const coordsFilePath = argv[0];
 
     try {
+        loadConfig();
+
         await initClassificationContext();
         await initAnglesLengthsContext();
         await initNavalContext();
@@ -100,7 +112,7 @@ async function main(argv: string[]) {
         d.setData(dd);
 
         writeCif(d);
-        writeValidationReport(d);
+        writeValidationReport(d, GlobalConfig.data().referenceUrl);
     } catch (e) {
         console.log((e as Error).message);
         process.exit(1);

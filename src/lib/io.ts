@@ -3,6 +3,15 @@ import fs from 'fs';
 const decoder = new TextDecoder('utf-8');
 const encoder = new TextEncoder();
 
+export function fileExists(filePath: string) {
+    try {
+        const s = fs.statSync(filePath);
+        return s.isFile();
+    } catch (e) {
+        return false;
+    }
+}
+
 export function readBinaryFile(filePath: string) {
     let s;
     try {
@@ -19,7 +28,7 @@ export function readBinaryFile(filePath: string) {
 
     const buf = new Uint8Array(s.size);
     const bytesRead = fs.readSync(fd, buf, 0, s.size, null);
-    if (bytesRead != s.size) {
+    if (bytesRead !== s.size) {
         fs.closeSync(fd);
         throw new Error(`Expected to read ${s.size} bytes from file "${filePath}" but the number of actually read bytes was ${bytesRead}`);
     }

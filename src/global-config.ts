@@ -45,6 +45,9 @@ export type GlobalConfigData = {
     highlightThickness: number,
     expectedParametersFingerprint: string,
     useHashRouter: boolean,
+
+    // Options relevant only for library build
+    referenceUrl: string,
 };
 const GlobalConfigData: GlobalConfigData = {
     isDevel: false,
@@ -75,6 +78,7 @@ const GlobalConfigData: GlobalConfigData = {
     highlightThickness: 2.0,
     expectedParametersFingerprint: '',
     useHashRouter: false,
+    referenceUrl: '',
 };
 const AllowedPartials: Partial<{[k in keyof GlobalConfigData]: object}> = {
     anglesLengths: {}
