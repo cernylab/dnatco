@@ -101,33 +101,53 @@ type PGroup = { threshold: number, color: number };
 const PGroups = new Array<PGroup>();
 let OutlierColor = 0;
 
-async function fetchAverages(prefix: string, resources: Resource[]) {
+async function fetchAverages(prefix: string, resources: Resource[], loaderFunc?: (subpath: string) => string) {
     const averages = [] as Average[];
 
-    const requests = [] as [Residues.ElementaryResidue, string, Promise<Response>][];
-    for (const [base, tag, file] of resources) {
-        const req = fetch(`${prefix}/${file}`);
-        requests.push([base, tag, req]);
-    }
+    if (loaderFunc) {
+        for (const [base, tag, file] of resources) {
+            const text = loaderFunc(`${prefix}/${file}`);
 
-    for (const [base, tag, req] of requests) {
-        const resp = await req;
-        if (!resp.ok)
-            throw new Error(`Bad server response: ${resp.statusText}`);
+            const wireBins = JSON.parse(text);
+            if (!isWireBins(wireBins))
+                throw new Error('Invalid bond angle or length object type');
 
-        const wireBins = await resp.json();
-        if (!isWireBins(wireBins))
-            throw new Error('Invalid bond angle or length object type');
+            for (let idx = 0; idx < wireBins.from.length; idx++) {
+                if (wireBins.from[idx] >= wireBins.to[idx])
+                    throw new Error('Bin has invalid range');
 
-        for (let idx = 0; idx < wireBins.from.length; idx++) {
-            if (wireBins.from[idx] >= wireBins.to[idx])
-                throw new Error('Bin has invalid range');
+                if (wireBins.binprob[idx] < 0.0)
+                    throw new Error('Bin has invalid probability');
+            }
 
-            if (wireBins.binprob[idx] < 0.0)
-                throw new Error('Bin has invalid probability');
+            averages.push([base, tag, toBins(wireBins)]);
+        }
+    } else {
+        const requests = [] as [Residues.ElementaryResidue, string, Promise<Response>][];
+        for (const [base, tag, file] of resources) {
+            const req = fetch(`${prefix}/${file}`);
+            requests.push([base, tag, req]);
         }
 
-        averages.push([base, tag, toBins(wireBins)]);
+        for (const [base, tag, req] of requests) {
+            const resp = await req;
+            if (!resp.ok)
+                throw new Error(`Bad server response: ${resp.statusText}`);
+
+            const wireBins = await resp.json();
+            if (!isWireBins(wireBins))
+                throw new Error('Invalid bond angle or length object type');
+
+            for (let idx = 0; idx < wireBins.from.length; idx++) {
+                if (wireBins.from[idx] >= wireBins.to[idx])
+                    throw new Error('Bin has invalid range');
+
+                if (wireBins.binprob[idx] < 0.0)
+                    throw new Error('Bin has invalid probability');
+            }
+
+            averages.push([base, tag, toBins(wireBins)]);
+        }
     }
 
     return averages;
@@ -212,7 +232,7 @@ export namespace AnglesLengths {
         }
     }
 
-    export async function initialize(): Promise<Result<void>> {
+    export async function initialize(loaderFunc?: (subpath: string) => string): Promise<Result<void>> {
         const prefix = `${GlobalConfig.data().pathPrefix}/angles_lengths`;
 
         for (const pgrp of GlobalConfig.data().anglesLengths.pGroups) {
@@ -235,11 +255,13 @@ export namespace AnglesLengths {
         try {
             const angleAverages = await fetchAverages(
                 prefix,
-                iterate(Angles).flatMap(([base, triplets]) => triplets.map(t => ([base, tripletTag(t), fileName(base, { kind: 'angle', v: t })] as Resource)))
+                iterate(Angles).flatMap(([base, triplets]) => triplets.map(t => ([base, tripletTag(t), fileName(base, { kind: 'angle', v: t })] as Resource))),
+                loaderFunc
             );
             const lengthAverages = await fetchAverages(
                 prefix,
-                iterate(Lengths).flatMap(([base, pairs]) => pairs.map(p => ([base, pairTag(p), fileName(base, { kind: 'length', v: p })] as Resource)))
+                iterate(Lengths).flatMap(([base, pairs]) => pairs.map(p => ([base, pairTag(p), fileName(base, { kind: 'length', v: p })] as Resource))),
+                loaderFunc
             );
 
             setAverages(AngleAverageData, angleAverages);

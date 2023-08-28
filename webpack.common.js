@@ -10,7 +10,9 @@ const webpack = require('webpack');
 const BinDir = 'bin';
 const DistDir = 'dist';
 
-function sharedConfig(productionBuild, buildingApp) {
+// NO NO NO! We need to pass app vs lib specific options as config parameters!!!
+
+function sharedConfig(productionBuild, buildingApp, extraConfig) {
     return {
         devServer: {
             client: {
@@ -34,9 +36,20 @@ function sharedConfig(productionBuild, buildingApp) {
             global: true,
         },
 
+        externals: {
+            'canvas': 'commonjs canvas',
+        },
+
         mode: productionBuild ? 'production' : 'development',
         module: {
             rules: [
+                {
+                    test: /canvas\.node$/,
+                    loader: "node-loader",
+                    options: {
+                        name: '[name].[ext]',
+                    },
+                },
                 {
                     test: /molstar.js/,
                     use: [{
@@ -197,7 +210,7 @@ function createLib(name, productionBuild) {
         console.log('Building for development');
 
     return {
-        node: true,
+        node: false,
         target: 'node',
         entry: {
             app: path.resolve(__dirname, `lib/librednatco/lib/${name}.js`),

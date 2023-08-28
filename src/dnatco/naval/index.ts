@@ -103,20 +103,25 @@ export namespace Naval {
         return out;
     }
 
-    export async function initialize(anglesUrl: string, bondsUrl: string) {
+    export async function initialize(anglesUrl: string, bondsUrl: string, loaderFunc?: (path: string) => string) {
         try {
-            const anglesReq = fetch(anglesUrl);
-            const bondsReq = fetch(bondsUrl);
+            if (loaderFunc) {
+                anglesStr = loaderFunc(anglesUrl);
+                bondsStr = loaderFunc(bondsUrl);
+            } else {
+                const anglesReq = fetch(anglesUrl);
+                const bondsReq = fetch(bondsUrl);
 
-            const anglesResp = await anglesReq;
-            if (!anglesResp.ok)
-                throw new Error(`Cannot fetch Naval angles restraints: ${anglesResp.status} - ${anglesResp.statusText}`);
-            anglesStr = await anglesResp.text();
+                const anglesResp = await anglesReq;
+                if (!anglesResp.ok)
+                    throw new Error(`Cannot fetch Naval angles restraints: ${anglesResp.status} - ${anglesResp.statusText}`);
+                anglesStr = await anglesResp.text();
 
-            const bondsResp = await bondsReq;
-            if (!bondsResp.ok)
-                throw new Error(`Cannot fetch Naval bonds restraints: ${bondsResp.status} - ${bondsResp.statusText}`);
-            bondsStr = await bondsResp.text();
+                const bondsResp = await bondsReq;
+                if (!bondsResp.ok)
+                    throw new Error(`Cannot fetch Naval bonds restraints: ${bondsResp.status} - ${bondsResp.statusText}`);
+                bondsStr = await bondsResp.text();
+            }
 
             return VoidResult();
         } catch (e) {

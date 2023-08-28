@@ -1,6 +1,6 @@
 bin/
 dist/
-lib/
 node_modules/
+/lib/
 
 assets/molstar.*

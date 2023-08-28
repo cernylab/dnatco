@@ -18,7 +18,7 @@ const ClassificationLimits: jsLLKA.LLKAClassificationLimits = {
 const MaxCloseEnoughRmsd = 0.5;
 
 export namespace ClassificationContext {
-    export async function initialize(clustersPath: string, confalsPath: string, goldenStepsPath: string, nuAnglesPath: string, confalPercentilesPath: string, loaderFunc?: (subpath: string) => string) {
+    export async function initialize(clustersPath: string, confalsPath: string, goldenStepsPath: string, nuAnglesPath: string, confalPercentilesPath: string, loaderFunc?: (filePath: string) => string) {
         if (_theContext)
             throw new Error('Classification context has been already initialized. We do not allow this.');
 

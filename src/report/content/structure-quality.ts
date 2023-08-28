@@ -10,6 +10,7 @@ import { Dnatcofication, StepRmsdStats } from '../../dnatco/dnatcofication';
 import { nrgb } from '../../util/colors';
 import { AngstromSignChar } from '../../util';
 import { confalPercentile, getCifValue, Common } from '../../util/dnatco';
+import { UOffscreenCanvas } from '../../util/offscreen-canvas';
 import { GappedSemaphore } from '../../util/semaphore';
 
 async function averageConfalsRow<Output>(avg: number, percentile: number, tbl: NTTable, mIdx: number, ctx: Report.Context<Output>) {
@@ -49,14 +50,7 @@ async function averageConfalsRow<Output>(avg: number, percentile: number, tbl: N
         const NW = NTUnit.num(W);
         const NH = NTUnit.num(H);
 
-        // NO NO NO!!!
-        try {
-            new OffscreenCanvas(1, 1);
-        } catch (e) {
-            return;
-        }
-
-        const canvas = new OffscreenCanvas(NW, NH);
+        const canvas = UOffscreenCanvas.make(NW, NH);
         const ctx2d = canvas.getContext('2d') as OffscreenCanvasRenderingContext2D | null;
         if (!ctx2d)
             throw new Error('Cannot create offscreen canvas for confal percentile bar rendering');
@@ -75,10 +69,7 @@ async function averageConfalsRow<Output>(avg: number, percentile: number, tbl: N
 
         ctx2d.stroke();
 
-        // @ts-ignore
-        const blob = await canvas.convertToBlob();
-        const imgBuf = await (blob as Blob).arrayBuffer();
-
+        const imgBuf = await UOffscreenCanvas.toBuffer(canvas);
         tbl.addRow([
             NTTable.Cell.lineText('', tbl),
             NTTable.Cell.image('png', imgBuf, tbl, { scale: 0.1 * PDFUnit}, { colSpan: tbl.numColumns - 1 })

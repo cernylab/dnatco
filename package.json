@@ -7,29 +7,22 @@
         "build-dev": "npm run build-tsc-dev && npm run build-webpack-dev",
         "build-lib": "npm run build-tsc-lib && npm run build-webpack-lib",
         "build-lib-dev": "npm run build-tsc-lib-dev && npm run build-webpack-lib-dev",
-
         "watch": "concurrently -c \"green,blue\" --names \"tsc\" --kill-others \"npm:watch-tsc\" \"npm:watch-webpack\"",
         "watch-lib": "concurrently -c \"green,blue\" --names \"tsc\" --kill-others \"npm:watch-tsc-lib\" \"npm:watch-webpack-lib\"",
-
         "watch-tsc": "tsc --watch --project tsconfig-development.json",
         "watch-tsc-lib": "tsc --watch --project tsconfig-lib-development.json",
-
         "watch-webpack": "webpack -w --mode development --stats minimal --config ./webpack.config.js",
         "watch-webpack-lib": "webpack -w --mode development --stats minimal --config ./webpack-lib.config.js",
-
         "start-server": "webpack serve --mode development --stats minimal --config ./webpack.config.js",
         "serve-dev": "concurrently -c \"green,blue\" --names \"tsc\" --kill-others \"npm:watch-tsc\" \"npm:start-server\"",
-
         "build-tsc": "tsc --build tsconfig.json",
         "build-tsc-dev": "tsc --build tsconfig-development.json",
         "build-tsc-lib": "tsc --build tsconfig-lib.json",
         "build-tsc-lib-dev": "tsc --build tsconfig-lib-development.json",
-
         "build-webpack": "webpack --mode production --config ./webpack.config.js",
         "build-webpack-dev": "webpack --mode development --config ./webpack.config.js",
         "build-webpack-lib": "webpack --mode production --config ./webpack-lib.config.js",
         "build-webpack-lib-dev": "webpack --mode development --config ./webpack-lib.config.js",
-
         "lint": "eslint ./**/*.{ts,tsx}",
         "lint-fix": "eslint ./**/*.{ts,tsx} --fix",
         "test": "npm run lint",
@@ -55,6 +48,7 @@
         "file-loader": "^6.2.0",
         "html-webpack-plugin": "^5.5.3",
         "mini-css-extract-plugin": "^2.5.3",
+        "node-loader": "^2.0.0",
         "plotly.js": "^2.20.0",
         "process": "^0.11.10",
         "stream-browserify": "^3.0.0",
@@ -70,6 +64,7 @@
         "@types/uuid": "^8.3.4",
         "assert": "^2.0.0",
         "buffer": "^6.0.3",
+        "canvas": "^2.11.2",
         "crypto-js": "^4.1.1",
         "dompurify": "^2.4.0",
         "jsllka": "file:./jsllka",
