@@ -1,6 +1,6 @@
 import path from 'node:path';
 import process from 'node:process';
-import { fileExists, isReadable, readBinaryFile, readTextFile, writeBinaryFile, writeTextFile } from './io';
+import { fileExists, isDirectory, isReadable, isWriteable, readBinaryFile, readTextFile, writeBinaryFile, writeTextFile } from './io';
 import { Phenix } from './phenix';
 import { isError, isOk } from '../dnatco';
 import { AnglesLengths } from '../dnatco/angles-lengths';
@@ -113,31 +113,46 @@ function loadConfig() {
     GlobalConfig.load(JSON.parse(text));
 }
 
-function writeCif(d: Dnatcofication) {
-    writeTextFile(`/tmp/${d.pdbId}_annotated.cif`, d.rawCif());
+function printUsage() {
+    const execName = path.basename(process.argv[1]);
+    console.log(`Usage: ${execName} OUTPUT_DIRECTORY COORDINATES_FILE.(cif|pdb) [MAP_COEFFICIENTS.mtz]`);
 }
 
-async function writeValidationReport(d: Dnatcofication, url: string) {
+function writeCif(d: Dnatcofication, outputDirPath: string) {
+    const outPath = path.resolve(outputDirPath, `${d.pdbId}_annotated.cif`);
+    writeTextFile(outPath, d.rawCif());
+}
+
+async function writeValidationReport(d: Dnatcofication, url: string, outputDirPath: string) {
     const report = await Report.pdf(d, {
         href: url,
         assetLoaderFunc: readBinaryFile
     });
 
-    writeBinaryFile(`/tmp/${d.pdbId}_report.pdf`, report);
+    const outPath = path.resolve(outputDirPath, `${d.pdbId}_report.pdb`);
+    writeBinaryFile(outPath, report);
 }
 
 async function main(argv: string[]): Promise<ExitCode> {
-    if (argv.length < 1) {
+    if (argv.length < 2) {
         console.log('Invalid arguments');
+        printUsage();
+
+        return EXIT_FAILURE;
+    }
+
+    const outputDirPath = argv[0];
+    const coordsFilePath = argv[1];
+    const reflnsFilePath = argv[2];
+
+    if (!isDirectory(outputDirPath) || !isWriteable(outputDirPath)) {
+        console.log(`Output directory "${outputDirPath}" does not appear to be a writeable directory.`);
         return EXIT_FAILURE;
     }
 
     const ctx = await initializeEverything();
     if (!ctx)
         return EXIT_FAILURE;
-
-    const coordsFilePath = argv[0];
-    const reflnsFilePath = argv[1];
 
     if (!isReadable(coordsFilePath)) {
         console.log(`Coordinates file "${coordsFilePath}" does not appear to be readable.`)
@@ -177,8 +192,8 @@ async function main(argv: string[]): Promise<ExitCode> {
         const d = new Dnatcofication();
         d.setData(dd);
 
-        writeCif(d);
-        await writeValidationReport(d, GlobalConfig.data().referenceUrl);
+        writeCif(d, outputDirPath);
+        await writeValidationReport(d, GlobalConfig.data().referenceUrl, outputDirPath);
     } catch (e) {
         console.log((e as Error).message);
 

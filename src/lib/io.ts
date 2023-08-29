@@ -23,6 +23,15 @@ export function fileExists(filePath: string) {
     }
 }
 
+export function isDirectory(objPath: string) {
+    try {
+        const s = fs.statSync(objPath);
+        return s.isDirectory();
+    } catch (e) {
+        return false;
+    }
+}
+
 export function isExecutable(filePath: string) {
     try {
         const s = fs.statSync(filePath);
@@ -36,6 +45,14 @@ export function isReadable(objPath: string) {
     try {
         const s = fs.statSync(objPath);
         return (s.isFile() || s.isDirectory()) && s.mode && 0o444;
+    } catch (e) {
+        return false;
+    }
+}
+export function isWriteable(objPath: string) {
+    try {
+        const s = fs.statSync(objPath);
+        return (s.isFile() || s.isDirectory()) && s.mode && 0o222;
     } catch (e) {
         return false;
     }
