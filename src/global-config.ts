@@ -46,11 +46,10 @@ export type GlobalConfigData = {
     expectedParametersFingerprint: string,
     useHashRouter: boolean,
 
-    // Options relevant only for library build
+    // Options relevant only for NodeJS builds
     referenceUrl: string,
     phenix: {
-        exec: string,
-        scratchDir: string,
+        rsccExec: string,
     }
 };
 const GlobalConfigData: GlobalConfigData = {
@@ -84,8 +83,7 @@ const GlobalConfigData: GlobalConfigData = {
     useHashRouter: false,
     referenceUrl: '',
     phenix: {
-        exec: '',
-        scratchDir: '',
+        rsccExec: '',
     },
 };
 const AllowedPartials: Partial<{[k in keyof GlobalConfigData]: object}> = {

@@ -6,6 +6,21 @@ const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const webpack = require('webpack');
 ////  const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
+function removeContextFromPath(path, ctx) {
+    const pathToks = path.split('/');
+    const ctxToks = ctx.split('/');
+
+    // The context in which this function is intended to be used requires
+    // that the "path" contains at least a directory and a file name
+    if (ctxToks.length - 1 >= pathToks)
+        throw new Error('Context is too short for the given resourceUrl');
+
+    let idx = 0;
+    while (pathToks[idx] === ctxToks[idx]) idx++;
+
+    return pathToks.slice(idx);
+}
+
 function sharedConfig(productionBuild, outDir, extraConfig) {
     return {
         externals: extraConfig?.externals ?? void 0,
@@ -35,6 +50,24 @@ function sharedConfig(productionBuild, outDir, extraConfig) {
         mode: productionBuild ? 'production' : 'development',
         module: {
             rules: [
+                {
+                    test: /\.json$/,
+                    type: 'javascript/auto',
+                    include: [path.resolve(__dirname, 'assets')],
+                    use: [{
+                        loader: 'file-loader',
+                        options: {
+                            outputPath: (url, resourcePath, context) => {
+                                let out = removeContextFromPath(resourcePath, context);
+                                out = out.slice(1, out.length - 1);
+
+                                return path.join(...out, url);
+                            },
+                            name: '[contenthash].[ext]',
+                            sourceMap: false,
+                        }
+                    }],
+                },
                 ...(extraConfig?.moduleRules ?? []),
                 {
                     test: /molstar.js/,

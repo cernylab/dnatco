@@ -6,6 +6,11 @@
  *                                       *
  * THIS IS JUST A LAME STOPGAP MEASURE.  *
  *                                       *
+ *                                       *
+ * (And if you are reading this, you can *
+ *  probably guess how well that plan    *
+ *  went...)                             *
+ *                                       *
  * * * * * * * * * * * * * * * * * * * * */
 
 import { ErrorResult, OkResult } from './';
@@ -14,6 +19,11 @@ import { Residues } from './residues';
 import { Rscc as RemoteRscc } from '../remote/rscc';
 import { StepsMapper } from './steps-mapper';
 import { fromTemplate, isObj, isType } from '../util/json';
+
+import {
+    DnaBackdropAssigned, DnaBackdropUnassigned,
+    RnaBackdropAssigned, RnaBackdropUnassigned
+} from '../assets/rscc';
 
 const BackdropRscc = {
     x: [] as number[],
@@ -60,12 +70,12 @@ function isBackdropRsccSane(bdrop: Rscc.BackdropRscc) {
 function makeBackdropRsccUrl(kind: keyof BackdropRsccCache) {
     const url = '/rscc/backdrops/' +
         (kind === 'dna-assigned'
-            ? 'dna_assigned.json'
+            ? DnaBackdropAssigned
             : kind === 'dna-unassigned'
-                ? 'dna_unassigned.json'
+                ? DnaBackdropUnassigned
                 : kind === 'rna-assigned'
-                    ? 'rna_assigned.json'
-                    : 'rna_unassigned.json');
+                    ? RnaBackdropAssigned
+                    : RnaBackdropUnassigned);
 
     return url;
 }
@@ -171,13 +181,7 @@ export namespace Rscc {
                     return ErrorResult(req.statusText);
 
                 const bdrop = await req.json();
-                if (!isBackdropRscc(bdrop))
-                    return ErrorResult('Invalid backdrop RSCC data');
-
-                if (!isBackdropRsccSane(bdrop))
-                    return ErrorResult('Malformed backdrop RSCC data');
-
-                BackdropRsccCache[kind] = bdrop;
+                return loadBackdropRscc(bdrop, kind);
             } catch (e) {
                 return ErrorResult((e as Error).toString());
             }
@@ -192,6 +196,18 @@ export namespace Rscc {
 
     export function isBackdropRsccEmpty(bdrop: Rscc.BackdropRscc) {
         return bdrop.z.length === 0;
+    }
+
+    export function loadBackdropRscc(bdrop: Record<string, any>, kind: BackdropRsccKind) {
+        if (!isBackdropRscc(bdrop))
+            return ErrorResult('Invalid backdrop RSCC data');
+
+        if (!isBackdropRsccSane(bdrop))
+            return ErrorResult('Malformed backdrop RSCC data');
+
+        BackdropRsccCache[kind] = bdrop;
+
+        return OkResult(bdrop);
     }
 
     export async function structureRscc(d: Dnatcofication, modelIdx: number) {

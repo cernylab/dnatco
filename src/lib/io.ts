@@ -11,14 +11,31 @@ export function copyFile(fromPath: string, toPath: string) {
     if (fromPathNorm === toPathNorm)
         throw new Error(`Cannot copy file because the target path "${toPath}" is the same as the source path.`);
 
-    const buf = readBinaryFile(fromPathNorm);
-    writeBinaryFile(toPathNorm, buf);
+    fs.copyFileSync(fromPathNorm, toPathNorm);
 }
 
 export function fileExists(filePath: string) {
     try {
         const s = fs.statSync(filePath);
         return s.isFile();
+    } catch (e) {
+        return false;
+    }
+}
+
+export function isExecutable(filePath: string) {
+    try {
+        const s = fs.statSync(filePath);
+        return s.isFile() && s.mode && 0o111;
+    } catch (e) {
+        return false;
+    }
+}
+
+export function isReadable(objPath: string) {
+    try {
+        const s = fs.statSync(objPath);
+        return (s.isFile() || s.isDirectory()) && s.mode && 0o444;
     } catch (e) {
         return false;
     }

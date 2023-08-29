@@ -1,8 +1,9 @@
 import child_process from 'node:child_process';
-import fs from 'node:fs';
 import path from 'node:path';
 import { Category, Parser as CifParser } from 'tscif';
 import { Pdb, PdbParser } from 'tspdb';
+import { isExecutable } from './io';
+import { ErrorResult, OkResult } from '../dnatco';
 import { Coordinates } from '../dnatco/coordinates';
 import { dequote } from '../util';
 
@@ -237,26 +238,8 @@ function isAlpha(cc: number) {
     );
 }
 
-function isExecutable(filePath: string) {
-    try {
-        const s = fs.statSync(filePath);
-        return s.isFile() && s.mode && 0o111;
-    } catch (e) {
-        return false;
-    }
-}
-
 function isSpace(cc: number) {
     return (cc === NL) || (cc === CR) || (cc === Tab);
-}
-
-function isWritableDirectory(dirPath: string) {
-    try {
-        const s = fs.statSync(dirPath);
-        return s.isDirectory() && s.mode && 0o444;
-    } catch (e) {
-        return false;
-    }
 }
 
 function parseChainAndAltId(str: string): { chain: string, altId: string } {
@@ -418,7 +401,6 @@ export function toStructure(atomSites: AtomSite[]): Structure {
 export namespace Phenix {
     export type Context = {
         exec: string,
-        scratchDir: string,
     };
     export type RsccElement = [atomId: number, rscc: number];
     export type Rscc = RsccElement[];
@@ -432,26 +414,25 @@ export namespace Phenix {
         try {
             const stdout = child_process.execFileSync(cmd, args);
             const phenixOutput = stdout.toString('utf8');
-            return coords.coords.type === 'cif'
+            const rscc = coords.coords.type === 'cif'
                 ? convertWithCif(coords.coords.data, phenixOutput)
                 : convertWithPdb(coords.coords.data, phenixOutput);
+
+            return OkResult(rscc);
         } catch (e) {
             const _e = e as child_process.SpawnSyncReturns<Buffer>;
-            console.log(`Phenix process has failed with exit code ${_e.status} and stderr output: "${_e.stderr}"`);
+            const errMsg = `Phenix process has failed with exit code ${_e.status} and stderr output: "${_e.stderr}"`;
+
+            return ErrorResult(errMsg);
         }
     }
 
-    export function makeContext(exec: string, scratchDir: string): Context | undefined {
+    export function makeContext(exec: string): Context | undefined {
         if (!isExecutable(exec)) {
             console.log(`Path "${exec}" does not point to an executable file. Disabling Phenix.`);
             return void 0;
         }
 
-        if (!isWritableDirectory(scratchDir)) {
-            console.log(`Path "${scratchDir}" does not point to a writable directory. Disabling Phenix.`);
-            return void 0;
-        }
-
-        return { exec, scratchDir: path.normalize(scratchDir) };
+        return { exec };
     }
 }

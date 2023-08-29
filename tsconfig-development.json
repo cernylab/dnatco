@@ -35,5 +35,6 @@
             "viewer-filters": [ "molstar/src/apps/rednatco/filters.ts" ]
         }
     },
-    "include": [ "src/**/*" ]
+    "include": [ "src/**/*" ],
+    "exclude": [ "src/node-util/**/*" ]
 }

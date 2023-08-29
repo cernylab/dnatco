@@ -62,10 +62,11 @@
         "@types/plotly.js": "^2.12.18",
         "@types/uuid": "^8.3.4",
         "assert": "^2.0.0",
-	"browser-env": "^3.3.0",
+        "browser-env": "^3.3.0",
         "buffer": "^6.0.3",
-	"bufferutil": "^4.0.7",
+        "bufferutil": "^4.0.7",
         "canvas": "^2.11.2",
+        "canvg": "^4.0.1",
         "crypto-js": "^4.1.1",
         "dompurify": "^2.4.0",
         "jsllka": "file:./jsllka",
@@ -84,6 +85,6 @@
         "webpack-dev-server": "^4.15.1"
     },
     "optionalDependencies": {
-	    "utf-8-validate": "^6.0.3"
+        "utf-8-validate": "^6.0.3"
     }
 }

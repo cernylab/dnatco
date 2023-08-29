@@ -134,8 +134,6 @@ export namespace RsccPlot {
         const zMinMax = minAndMax(contour.z);
         const zRng = zMinMax.max - zMinMax.min;
 
-        console.log(plotType);
-
         const allContours = contour.levels.map(v => {
             const clr = 128 - Math.round(128 * (v - zMinMax.min) / zRng);
             const clrstr = `rgb(${clr}, ${clr}, ${clr})`;

@@ -1,20 +1,29 @@
 import path from 'node:path';
 import process from 'node:process';
-import { fileExists, readBinaryFile, readTextFile, writeBinaryFile, writeTextFile } from './io';
+import { fileExists, isReadable, readBinaryFile, readTextFile, writeBinaryFile, writeTextFile } from './io';
 import { Phenix } from './phenix';
-import { isError } from '../dnatco';
+import { isError, isOk } from '../dnatco';
 import { AnglesLengths } from '../dnatco/angles-lengths';
 import { ClassificationContext } from '../dnatco/classification-context';
 import { Coordinates } from '../dnatco/coordinates';
 import { Dnatcofication, DnatcoficationData } from '../dnatco/dnatcofication';
 import { Naval } from '../dnatco/naval';
+import { Rscc } from '../dnatco/rscc'
 import { GlobalConfig } from '../global-config';
 import { Report } from '../report';
 import { TaskContext } from '../tasks/task';
 
 import { NavalAngleRestraintsFile, NavalBondRestraintsFile } from '../assets/params';
+import {
+    DnaBackdropAssigned, DnaBackdropUnassigned,
+    RnaBackdropAssigned, RnaBackdropUnassigned
+} from '../assets/rscc';
 
 const ConfigFilePath = './config.json';
+
+const EXIT_SUCCESS = 0;
+const EXIT_FAILURE = 1;
+type ExitCode = typeof EXIT_SUCCESS | typeof EXIT_FAILURE;
 
 function _relPath(_path: string) {
     return './' + _path;
@@ -58,7 +67,45 @@ async function initNavalContext() {
         throw new Error(res.message ?? 'Unknown error during initialization of Naval context');
 }
 
-async function loadConfig() {
+function initRscc() {
+    try {
+        initRsccFile(DnaBackdropAssigned, 'dna-assigned');
+        initRsccFile(DnaBackdropUnassigned, 'dna-unassigned');
+        initRsccFile(RnaBackdropAssigned, 'rna-assigned');
+        initRsccFile(RnaBackdropUnassigned, 'rna-unassigned');
+    } catch (e) {
+        throw new Error(`Rscc initialization failed: ${(e as Error).message}`);
+    }
+}
+
+function initRsccFile(filePath: string, kind: Rscc.BackdropRsccKind) {
+    const text = readTextFile(_relPath(filePath));
+    const json = JSON.parse(text);
+    const res = Rscc.loadBackdropRscc(json, kind);
+    if (isError(res))
+        throw new Error(`Cannot laod Rscc backdrop from file "${filePath}": ${res.message}`);
+}
+
+async function initializeEverything() {
+    try {
+        loadConfig();
+
+        await initClassificationContext();
+        await initAnglesLengthsContext();
+        await initNavalContext();
+        initRscc();
+
+        return {
+            phenixCtx: Phenix.makeContext(GlobalConfig.data().phenix.rsccExec),
+        };
+    } catch (e) {
+        console.log(`Initialization failed: ${(e as Error).message}`);
+
+        return void 0;
+    }
+}
+
+function loadConfig() {
     if (!fileExists(ConfigFilePath))
         return;
 
@@ -79,30 +126,31 @@ async function writeValidationReport(d: Dnatcofication, url: string) {
     writeBinaryFile(`/tmp/${d.pdbId}_report.pdf`, report);
 }
 
-async function main(argv: string[]) {
+async function main(argv: string[]): Promise<ExitCode> {
     if (argv.length < 1) {
         console.log('Invalid arguments');
-        process.exit(1);
+        return EXIT_FAILURE;
     }
+
+    const ctx = await initializeEverything();
+    if (!ctx)
+        return EXIT_FAILURE;
 
     const coordsFilePath = argv[0];
     const reflnsFilePath = argv[1];
 
+    if (!isReadable(coordsFilePath)) {
+        console.log(`Coordinates file "${coordsFilePath}" does not appear to be readable.`)
+        return EXIT_FAILURE;
+    }
+    if (reflnsFilePath && !isReadable(reflnsFilePath)) {
+        console.log(`Reflections file "${reflnsFilePath}" does not appear to be readable.`);
+        return EXIT_FAILURE;
+    }
+
     try {
-        loadConfig();
         const cfg = GlobalConfig.data();
-
-        const phenixCtx = reflnsFilePath ? Phenix.makeContext(cfg.phenix.exec, cfg.phenix.scratchDir) : void 0;
-
-        await initClassificationContext();
-        await initAnglesLengthsContext();
-        await initNavalContext();
-
         const coords = await getCoordinates(coordsFilePath);
-
-        if (phenixCtx) {
-            Phenix.calculateRscc({ coords, filePath: coordsFilePath }, reflnsFilePath, phenixCtx);
-        }
 
         const dd = Dnatcofication.ingest(
             coords,
@@ -111,24 +159,34 @@ async function main(argv: string[]) {
             ClassificationContext.data(),
             AnglesLengths.context(),
             Naval.context(),
-            false, // NO NO NO, decide what is a custom structure
+            false, // TODO: When should we mark a structure as custom structure?
             cfg,
             new TaskContext<DnatcoficationData>(''),
         );
         if (!dd)
             throw new Error('Failed to dnatcoify structure');
 
+        if (ctx.phenixCtx && reflnsFilePath) {
+            const rscc = Phenix.calculateRscc({ coords, filePath: coordsFilePath }, reflnsFilePath, ctx.phenixCtx);
+            if (isOk(rscc)) {
+                dd.rscc = rscc.data;
+            } else
+                console.log(rscc.message);
+        }
+
         const d = new Dnatcofication();
         d.setData(dd);
 
         writeCif(d);
-        writeValidationReport(d, GlobalConfig.data().referenceUrl);
+        await writeValidationReport(d, GlobalConfig.data().referenceUrl);
     } catch (e) {
         console.log((e as Error).message);
-        process.exit(1);
+
+        return EXIT_FAILURE;
     }
 
+    return EXIT_SUCCESS;
 }
 
 process.chdir(path.dirname(process.argv[1]));
-main(process.argv.slice(2));
+main(process.argv.slice(2)).then((ret) => process.exit(ret));
