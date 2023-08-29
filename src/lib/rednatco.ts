@@ -1,6 +1,7 @@
 import path from 'node:path';
 import process from 'node:process';
 import { fileExists, isDirectory, isReadable, isWriteable, readBinaryFile, readTextFile, writeBinaryFile, writeTextFile } from './io';
+import { Logger } from './log';
 import { Phenix } from './phenix';
 import { isError, isOk } from '../dnatco';
 import { AnglesLengths } from '../dnatco/angles-lengths';
@@ -29,6 +30,10 @@ function _relPath(_path: string) {
     return './' + _path;
 }
 
+function getAppName() {
+    return path.basename(process.argv[1]);
+}
+
 async function getCoordinates(filePath: string): Promise<Coordinates> {
     const data = readTextFile(filePath);
     const ext = path.extname(filePath);
@@ -38,13 +43,13 @@ async function getCoordinates(filePath: string): Promise<Coordinates> {
     else if (ext === '.pdb')
         return { data, type: 'pdb' };
     else
-        throw new Error(`Cannot determine coordinates file type from an unknown suffix "${ext}"`);
+        throw new Error(`Cannot determine coordinates file type from an unknown suffix "${ext}".`);
 }
 
 async function initAnglesLengthsContext() {
     const res = await AnglesLengths.initialize((subpath) => readTextFile(_relPath(subpath)));
     if (isError(res))
-        throw new Error(`Cannot initialize AnglesLengths context: ${res.message}`);
+        throw new Error(`Cannot initialize AnglesLengths context: ${res.message}.`);
 }
 
 async function initClassificationContext() {
@@ -58,13 +63,13 @@ async function initClassificationContext() {
     );
 
     if (err)
-        throw new Error(`Failed to initialize classification context: ${err}`);
+        throw new Error(`Failed to initialize classification context: ${err}.`);
 }
 
 async function initNavalContext() {
     const res = await Naval.initialize(_relPath(NavalAngleRestraintsFile), _relPath(NavalBondRestraintsFile), readTextFile);
     if (isError(res))
-        throw new Error(res.message ?? 'Unknown error during initialization of Naval context');
+        throw new Error(res.message ?? 'Unknown error during initialization of Naval context.');
 }
 
 function initRscc() {
@@ -83,7 +88,7 @@ function initRsccFile(filePath: string, kind: Rscc.BackdropRsccKind) {
     const json = JSON.parse(text);
     const res = Rscc.loadBackdropRscc(json, kind);
     if (isError(res))
-        throw new Error(`Cannot laod Rscc backdrop from file "${filePath}": ${res.message}`);
+        throw new Error(`Cannot laod Rscc backdrop from file "${filePath}": ${res.message}.`);
 }
 
 async function initializeEverything() {
@@ -114,8 +119,8 @@ function loadConfig() {
 }
 
 function printUsage() {
-    const execName = path.basename(process.argv[1]);
-    console.log(`Usage: ${execName} OUTPUT_DIRECTORY COORDINATES_FILE.(cif|pdb) [MAP_COEFFICIENTS.mtz]`);
+    const appName = getAppName();
+    console.log(`Usage: ${appName} OUTPUT_DIRECTORY COORDINATES_FILE.(cif|pdb) [MAP_COEFFICIENTS.mtz]`);
 }
 
 function writeCif(d: Dnatcofication, outputDirPath: string) {
@@ -135,7 +140,7 @@ async function writeValidationReport(d: Dnatcofication, url: string, outputDirPa
 
 async function main(argv: string[]): Promise<ExitCode> {
     if (argv.length < 2) {
-        console.log('Invalid arguments');
+        Logger.log(Logger.Severity.Error, 'Invalid arguments');
         printUsage();
 
         return EXIT_FAILURE;
@@ -146,7 +151,7 @@ async function main(argv: string[]): Promise<ExitCode> {
     const reflnsFilePath = argv[2];
 
     if (!isDirectory(outputDirPath) || !isWriteable(outputDirPath)) {
-        console.log(`Output directory "${outputDirPath}" does not appear to be a writeable directory.`);
+        Logger.log(Logger.Severity.Error, `Output directory "${outputDirPath}" does not appear to be a writeable directory.`);
         return EXIT_FAILURE;
     }
 
@@ -155,11 +160,11 @@ async function main(argv: string[]): Promise<ExitCode> {
         return EXIT_FAILURE;
 
     if (!isReadable(coordsFilePath)) {
-        console.log(`Coordinates file "${coordsFilePath}" does not appear to be readable.`)
+        Logger.log(Logger.Severity.Error, `Coordinates file "${coordsFilePath}" does not appear to be readable.`)
         return EXIT_FAILURE;
     }
     if (reflnsFilePath && !isReadable(reflnsFilePath)) {
-        console.log(`Reflections file "${reflnsFilePath}" does not appear to be readable.`);
+        Logger.log(Logger.Severity.Error, `Reflections file "${reflnsFilePath}" does not appear to be readable.`);
         return EXIT_FAILURE;
     }
 
@@ -186,7 +191,7 @@ async function main(argv: string[]): Promise<ExitCode> {
             if (isOk(rscc)) {
                 dd.rscc = rscc.data;
             } else
-                console.log(rscc.message);
+                Logger.log(Logger.Severity.Warning, rscc.message);
         }
 
         const d = new Dnatcofication();
@@ -194,14 +199,23 @@ async function main(argv: string[]): Promise<ExitCode> {
 
         writeCif(d, outputDirPath);
         await writeValidationReport(d, GlobalConfig.data().referenceUrl, outputDirPath);
+
+        Logger.log(Logger.Severity.Debug, `Done processing "${coordsFilePath}"`);
     } catch (e) {
-        console.log((e as Error).message);
+        Logger.log(Logger.Severity.Error, (e as Error).message);
 
         return EXIT_FAILURE;
     }
 
     return EXIT_SUCCESS;
 }
+
+Logger.initialize(getAppName(),
+    {
+        appId: process.pid.toString(),
+        logFileDir: process.argv[2],
+    }
+);
 
 process.chdir(path.dirname(process.argv[1]));
 main(process.argv.slice(2)).then((ret) => process.exit(ret));

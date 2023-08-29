@@ -3,6 +3,7 @@ import path from 'node:path';
 import { Category, Parser as CifParser } from 'tscif';
 import { Pdb, PdbParser } from 'tspdb';
 import { isExecutable } from './io';
+import { Logger } from './log';
 import { ErrorResult, OkResult } from '../dnatco';
 import { Coordinates } from '../dnatco/coordinates';
 import { dequote } from '../util';
@@ -429,7 +430,7 @@ export namespace Phenix {
 
     export function makeContext(exec: string): Context | undefined {
         if (!isExecutable(exec)) {
-            console.log(`Path "${exec}" does not point to an executable file. Disabling Phenix.`);
+            Logger.log(Logger.Severity.Info, `Path "${exec}" does not point to an executable file. Disabling Phenix.`);
             return void 0;
         }
 
