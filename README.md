@@ -16,7 +16,7 @@ As the very first step, use `git clone` to clone this repository. Once done, `cd
 
 Then make sure that you have also pulled all the submodules. Run
 ```
-git submodule update --init --recursive
+git submodule update --init --recursive --checkout
 ```
 
 ReDNATCO relies on [Molstar](https://molstar.org/) Viewer for visualisation. To avoid any potential issues during the build process, it is highly recommended that you build the Molstar viewer first.
@@ -64,6 +64,34 @@ and navigate to [http://localhost:8118](http://localhost:8118) in your browser.
 **NOTE:** Make sure that you have `useHashRouter` set to `true` in ReDNATCO configuration if you use Webpack internal server. Otherwise the navigation will not work correctly.
 
 **NOTE 2:** Webpack server does not provide the full functionality of ReDNATCO server. It is intended for development purposes only.
+
+### NodeJS binaries for offline use
+
+ReDNATCO provides binaries for NodeJS that can be run as standalone applications. Unless you are building on a Windows machine, make sure that the `node-canvas` module is compiled correctly
+by executing
+
+```
+rm -rf node_modules/canvas
+npm install --build-from-source canvas
+```
+
+For the build from source to succeed it is necessary to have a series of `development` packages installed. The approximate list of packages is:
+- gcc-c++
+- cairo-devel
+- pango-devel
+- libjpeg8-devel
+- librsvg-devel
+- nodejs20-devel
+
+Keep in mind that the names of these packages will likely be different on your Linux distribution of choice. If in doubt, refer to [node-canvas README](https://github.com/Automattic/node-canvas) for more information.
+
+Once the `node-canvas` module is set up, execute
+```
+npm run build-lib
+```
+
+NodeJS binaries and the corresponding assets will be built into the `bin` subdirectory. Note that some binaries must be launched in a specific way to work correctly. To make it easy, ReDNATCO provides launcher scripts in the `scripts` subdirectory.
+To use these scripts, simply run `./scripts/<name_of_the_script.sh>` from ReDNATCO's directory.
 
 Configuration
 ---
@@ -221,6 +249,19 @@ ReDNATCO can be configured through a JSON configuration file. The file must be n
     // i. e. when the user refreshes the page. Unless the server knows how to deal with the /app
     // endpoint correctly, this would result in 404s.
     "useHashRouter": true
+
+    //
+    // Options used only by the NodeJS binaries
+    //
+
+    // URL to use in places where the value for "window.location" would have been used in browser environment
+    "referenceUrl": "http://somewhere.net",
+
+    // Information how to launch Phenix binaries
+    "phenix": {
+        // Path to Phenix's "phenix.real_space_correlation" binary
+        "rsccExec": "/path/to/a/binary",
+    }
 }
 ```
 #### Note about configuration
