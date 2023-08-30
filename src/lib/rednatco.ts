@@ -134,7 +134,7 @@ async function writeValidationReport(d: Dnatcofication, url: string, outputDirPa
         assetLoaderFunc: readBinaryFile
     });
 
-    const outPath = path.resolve(outputDirPath, `${d.pdbId}_report.pdb`);
+    const outPath = path.resolve(outputDirPath, `${d.pdbId}_report.pdf`);
     writeBinaryFile(outPath, report);
 }
 
@@ -159,6 +159,8 @@ async function main(argv: string[]): Promise<ExitCode> {
     if (!ctx)
         return EXIT_FAILURE;
 
+    const cfg = GlobalConfig.data();
+
     if (!isReadable(coordsFilePath)) {
         Logger.log(Logger.Severity.Error, `Coordinates file "${coordsFilePath}" does not appear to be readable.`)
         return EXIT_FAILURE;
@@ -168,10 +170,16 @@ async function main(argv: string[]): Promise<ExitCode> {
         return EXIT_FAILURE;
     }
 
+    // TODO:
+    // The entire content of this try-catch block could be done in a loop
+    // for multiple structures. This would be a major performance improvement
+    // for mass-processing use cases. Especially for smaller structures the cost
+    // of starting NodeJS and initializing the analyzing engine is quite high.
+    //
+    // To make this happen, the CLI of this program needs to be extended to support
+    // input multiple structures.
     try {
-        const cfg = GlobalConfig.data();
         const coords = await getCoordinates(coordsFilePath);
-
         const dd = Dnatcofication.ingest(
             coords,
             null,
@@ -198,7 +206,7 @@ async function main(argv: string[]): Promise<ExitCode> {
         d.setData(dd);
 
         writeCif(d, outputDirPath);
-        await writeValidationReport(d, GlobalConfig.data().referenceUrl, outputDirPath);
+        await writeValidationReport(d, cfg.referenceUrl, outputDirPath);
 
         Logger.log(Logger.Severity.Debug, `Done processing "${coordsFilePath}"`);
     } catch (e) {
