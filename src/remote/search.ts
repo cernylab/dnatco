@@ -1,5 +1,6 @@
 import { CANA } from '../dnatco/cana';
 import { NtC } from '../dnatco/ntc';
+import { Logger } from '../log/logger';
 import { objKeys } from '../util';
 import { EventsKeeper } from '../util/events-keeper';
 import { WebApi } from '../web-api';
@@ -77,7 +78,7 @@ export namespace Search {
                 continue; // Having null for "resolution" is fine
 
             if (typeof obj[prop] !== typeof FoundStep[prop as keyof FoundStep]) {
-                console.log(prop, typeof obj[prop], typeof FoundStep[prop as keyof FoundStep], obj[prop]);
+                Logger.log(Logger.Severity.Warning, [prop, typeof obj[prop], typeof FoundStep[prop as keyof FoundStep], obj[prop]].join(', '));
                 return false;
             }
         }

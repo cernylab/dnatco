@@ -3,6 +3,7 @@ import { Common } from "./common";
 import { Measure } from "./measure";
 import { MappedAngleRestraints } from "./restraints";
 import { Validation } from "./validation";
+import { Logger } from '../../log/logger';
 
 type MeasuredAngle<T> = {
     name1: string,
@@ -265,7 +266,7 @@ export namespace AnglesReport {
     ) {
         const r = restrs.find(x => x.atom1_name === n1 && x.atom2_name === n2 && x.atom3_name === n3);
         if (!r) {
-            console.warn(`No restraint for bond ${n1} - ${n2} - ${n3}`);
+            Logger.log(Logger.Severity.Warning, `No restraint for bond ${n1} - ${n2} - ${n3}`);
         } else {
             report.push({
                 name: r.name,

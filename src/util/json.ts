@@ -1,5 +1,6 @@
 import { parseFloatStrict, parseIntStrict } from './';
 import { AnyObject } from './types';
+import { Logger } from '../log/logger';
 
 export interface TypeChecker<V> {
     (v: unknown): v is V;
@@ -22,7 +23,7 @@ export function checkProps<T>(checked: unknown, template: T): checked is T {
         return false;
     for (const prop in template) {
         if (!Object.prototype.hasOwnProperty.call(checked, prop)) {
-            console.log(`No property ${prop} on object`);
+            Logger.log(Logger.Severity.Warning, `No property ${prop} on object`);
             return false;
         }
     }

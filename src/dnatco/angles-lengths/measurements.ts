@@ -3,6 +3,7 @@ import { isAnglesLengthsElementaryResidue, ElementaryResidue } from './';
 import { tripletTag, Angles, Triplet } from './angles';
 import { shiftedName, Atoms } from './atoms';
 import { pairTag, Lengths, Pair } from './lengths';
+import { Logger } from '../../log/logger';
 
 export namespace Measurements {
     function expandAltId(step: jsLLKA.LLKAStructure, seqId: number) {
@@ -110,7 +111,7 @@ export namespace Measurements {
         for (const [name, shift] of Atoms[compId]) {
             const a = findAtom(step, name, altId, seqId + shift, firstAtom.pdbx_PDB_ins_code, firstAtom.pdbx_PDB_model_num);
             if (!a) {
-                console.warn(`AnglesLengths: Atom ${seqId + shift} ${name} (altId ${altId}) (model ${firstAtom.pdbx_PDB_model_num}) not found`);
+                Logger.log(Logger.Severity.Warning, `AnglesLengths: Atom ${seqId + shift} ${name} (altId ${altId}) (model ${firstAtom.pdbx_PDB_model_num}) not found`);
                 return void 0;
             }
 

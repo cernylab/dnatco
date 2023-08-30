@@ -9,6 +9,7 @@ import { CustomNtCs } from './custom-ntcs';
 import { DensityMap } from './density-map';
 import { Dnatcofier } from './dnatcofier';
 import { ExtractInfo } from './extract-info';
+import { Logger } from '../log/logger';
 import { NavalContext, NavalResult } from './naval';
 import { GeometryReport } from './naval/geometry-report';
 import { Validation } from './naval/validation';
@@ -259,7 +260,7 @@ export class Dnatcofication {
 
     setParametersFingerprint(fingerprint: string, expectededFinder?: string) {
         if (expectededFinder && fingerprint !== expectededFinder)
-            console.warn(`Fingerprint ${fingerprint} differs from the expected fingerprint ${expectededFinder}`);
+            Logger.log(Logger.Severity.Warning, `Fingerprint ${fingerprint} differs from the expected fingerprint ${expectededFinder}`);
 
         this.fingerprint = fingerprint;
     }
@@ -416,7 +417,7 @@ export namespace Dnatcofication {
 
             const tEnd = performance.now();
 
-            console.log(`Dnatcofication process took ${((tEnd - tStart) / 1000.0).toFixed(3)} sec`);
+            Logger.log(Logger.Severity.Info, (`Dnatcofication process took ${((tEnd - tStart) / 1000.0).toFixed(3)} sec`));
 
             Dnatcofier.destroyImported(llkaImported);
 
@@ -439,7 +440,7 @@ export namespace Dnatcofication {
             };
 
             const tEnd2 = performance.now();
-            console.log(`Dnatcofication process with finalization overhead took ${((tEnd2 - tStart) / 1000.0).toFixed(3)} sec`);
+            Logger.log(Logger.Severity.Info, `Dnatcofication process with finalization overhead took ${((tEnd2 - tStart) / 1000.0).toFixed(3)} sec`);
 
             return data;
         } catch (e) {

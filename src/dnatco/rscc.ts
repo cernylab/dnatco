@@ -18,6 +18,7 @@ import { Dnatcofication } from './dnatcofication';
 import { Residues } from './residues';
 import { Rscc as RemoteRscc } from '../remote/rscc';
 import { StepsMapper } from './steps-mapper';
+import { Logger } from '../log/logger';
 import { fromTemplate, isObj, isType } from '../util/json';
 
 import {
@@ -90,7 +91,7 @@ function findRscc(atomId: number, list: [atomId: number, rscc: number][], startI
     }
     const idx = list.findIndex(x => x[0] === atomId);
 
-    console.warn(`RSCC lookup slow path when looking for atomId ${atomId} from index ${startIdx}, total hits ${++slowPath}`);
+    Logger.log(Logger.Severity.Debug, `RSCC lookup slow path when looking for atomId ${atomId} from index ${startIdx}, total hits ${++slowPath}`);
 
     return idx >= 0 ? { rscc: list[idx][1], idx } : undefined;
 }

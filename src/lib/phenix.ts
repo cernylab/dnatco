@@ -3,7 +3,7 @@ import path from 'node:path';
 import { Category, Parser as CifParser } from 'tscif';
 import { Pdb, PdbParser } from 'tspdb';
 import { isExecutable } from './io';
-import { Logger } from './log';
+import { Logger } from '../log/logger';
 import { ErrorResult, OkResult } from '../dnatco';
 import { Coordinates } from '../dnatco/coordinates';
 import { dequote } from '../util';

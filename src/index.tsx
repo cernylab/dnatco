@@ -23,6 +23,7 @@ import { Coordinates } from './dnatco/coordinates';
 import { DensityMap } from './dnatco/density-map';
 import { Dnatcofication, DnatcoficationData } from './dnatco/dnatcofication';
 import { ListOfConformers } from './dnatco/list-of-conformers';
+import { Logger } from './log/logger';
 import { UserRemoteDatabases, isBuiltIn } from './remote/db/register';
 import { AboutTab } from './ui/about-tab';
 import { Downloads } from './ui/dnatco/downloads';
@@ -287,7 +288,7 @@ class DnatcoficationHandler {
                     this.dnatcofication.setData(data.finished.data!);
 
                     const tEnd = performance.now();
-                    console.log(`Total structure ingestion time was ${((tEnd - tStart) / 1000).toFixed(3)} sec`);
+                    Logger.log(Logger.Severity.Info, `Total structure ingestion time was ${((tEnd - tStart) / 1000).toFixed(3)} sec`);
 
                     onSuccess();
                 } else if (data.finished.state === 'aborted')
@@ -439,7 +440,7 @@ function App(props: { initial: Initial }) {
                 db,
                 () => {
                     setAppMode('structure');
-                    console.log(props.initial);
+                    Logger.log(Logger.Severity.Debug, JSON.stringify(props.initial, void 0, 2));
                     if (props.initial.pathname.search(IsDnatcoNavigation) !== -1)
                         navigate(props.initial.pathname);
                     else
@@ -598,6 +599,8 @@ async function bootstrap() {
             UserRemoteDatabases.add(db);
         if (!(isBuiltIn(configData.primaryDatabase) || UserRemoteDatabases.exists(configData.primaryDatabase)))
             throw new Error(`Primary database ID "${configData.primaryDatabase}" is not known`);
+
+        Logger.initialize(configData.displayedProductName);
 
         const initial = {
             hash: window.location.hash,

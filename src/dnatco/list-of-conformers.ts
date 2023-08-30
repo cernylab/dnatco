@@ -1,5 +1,6 @@
 import { CANA } from './cana';
 import { NtC } from './ntc';
+import { Logger } from '../log/logger';
 
 export type ConformerInfo = {
     NtC: NtC.Class,
@@ -106,7 +107,7 @@ export class _ListOfConformers {
     async load(url: string) {
         const resp = await fetch(url);
         if (!resp.ok) {
-            console.warn(`Cannot fetch list of conformers: ${resp.statusText}`);
+            Logger.log(Logger.Severity.Warning, `Cannot fetch list of conformers: ${resp.statusText}`);
             this._fail = resp.statusText;
         } else {
             const text = await resp.text();
@@ -117,7 +118,7 @@ export class _ListOfConformers {
                 this._mapping = mapping;
                 this._raw = text;
             } catch (e) {
-                console.warn(`Cannot parse list of conformers: ${e}`);
+                Logger.log(Logger.Severity.Warning, `Cannot parse list of conformers: ${e}`);
                 this._fail = (e as Error).message;
             }
         }

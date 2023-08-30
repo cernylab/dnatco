@@ -9,6 +9,7 @@ import { Tooltip } from './common/tooltip';
 import { Common } from './dnatco/common';
 import { MagnifyingGlassImg, MediaPlayImg, ReloadImg, XImg } from '../assets/images';
 import { DensityMap, DensityMapKinds } from '../dnatco/density-map';
+import { Logger } from '../log/logger';
 import { BuiltInRemoteDatabases, UserRemoteDatabases } from '../remote/db/register';
 import { copyString, isPdbId, toPdbId } from '../util';
 import { GlobalConfig, GlobalConfigData } from '../global-config';
@@ -35,7 +36,7 @@ function listOfValidExamples(examples: GlobalConfigData['exampleStructures']) {
         if (dbIds.includes(ex.db) && isPdbId(ex.pdbId, true))
             valid.push(ex);
         else
-            console.warn(`Example structure entry "${ex.pdbId}" from DB "${ex.db}" is invalid. Check the PDB ID is valid and that it references a valid database.`);
+            Logger.log(Logger.Severity.Warning, `Example structure entry "${ex.pdbId}" from DB "${ex.db}" is invalid. Check the PDB ID is valid and that it references a valid database.`);
     }
 
     return valid;

@@ -1,5 +1,6 @@
 import React from 'react';
 import DOMPurify from 'dompurify';
+import { Logger } from '../../log/logger';
 
 interface State {
     content: string;
@@ -20,14 +21,14 @@ export class TextContainer extends React.Component<TextContainer.Props, State> {
                 const content = await resp.text();
                 this.setState({ ...this.state, content: DOMPurify.sanitize(content) });
             } catch (e) {
-                console.warn(e);
+                Logger.log(Logger.Severity.Warning, (e as Error).toString());
                 this.setState({
                     ...this.state,
                     content: '<div class="rdo-error-text">Failed to download content</div>',
                 });
             }
         } else {
-            console.warn(resp.status, resp.statusText);
+            Logger.log(Logger.Severity.Warning, `${resp.status}, resp.statusText`);
             this.setState({
                 ...this.state,
                 content: '<div class="rdo-error-text">Failed to download content</div>',

@@ -1,8 +1,9 @@
 import * as jsLLKA from 'jsllka';
-import { Common } from "./common";
+import { Common } from './common';
 import { Measure } from "./measure";
-import { MappedBondRestraints } from "./restraints";
-import { Validation } from "./validation";
+import { MappedBondRestraints } from './restraints';
+import { Validation } from './validation';
+import { Logger } from '../../log/logger';
 
 type MeasuredBond<T> = {
     name1: string,
@@ -233,7 +234,7 @@ export namespace BondsReport {
     ) {
         const r = restrs.find(x => x.atom1_name === n1 && x.atom2_name === n2);
         if (!r) {
-            console.warn(`No restraint for bond ${n1} - ${n2}`);
+            Logger.log(Logger.Severity.Warning, `No restraint for bond ${n1} - ${n2}`);
         } else {
             report.push({
                 name: r.name,

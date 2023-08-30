@@ -1,4 +1,5 @@
 import { NTUnit, NTXYWH } from './space';
+import{ Logger } from '../../log/logger';
 
 const XName = '\u03BD\u03BF\u03C4TEX';
 
@@ -62,10 +63,10 @@ export function NTcantorEncode(x: number, y: number) {
 }
 
 export function NTerror(message: string) {
-    console.error(`${XName} Error: ${message}`);
+    Logger.log(Logger.Severity.Error, `${XName}: ${message}`);
     throw new Error(message);
 }
 
 export function NTwarning(message: string) {
-    console.warn(`${XName} Warning: ${message}`);
+    Logger.log(Logger.Severity.Warning, `${XName}: ${message}`);
 }

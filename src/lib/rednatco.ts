@@ -1,7 +1,7 @@
 import path from 'node:path';
 import process from 'node:process';
 import { fileExists, isDirectory, isReadable, isWriteable, readBinaryFile, readTextFile, writeBinaryFile, writeTextFile } from './io';
-import { Logger } from './log';
+import { Logger } from '../log/logger';
 import { Phenix } from './phenix';
 import { isError, isOk } from '../dnatco';
 import { AnglesLengths } from '../dnatco/angles-lengths';

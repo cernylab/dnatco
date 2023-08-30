@@ -176,6 +176,7 @@ function sharedConfig(productionBuild, outDir, extraConfig) {
                 'assert': require.resolve('assert'),
                 'buffer': require.resolve('buffer'),
                 'stream': require.resolve('stream-browserify'),
+                ...extraConfig.resolveFallbacks,
             }
         },
         experiments: {

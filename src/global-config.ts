@@ -5,6 +5,14 @@ import { IdTransformations, StaticDb } from './remote/db/static-db';
 import { deepCopy, objKeys } from './util';
 import { fromTemplate } from './util/json';
 
+//                              *** BEWARE BEWARE ***
+//
+// Do not use any "Logger" facilities here. Configuration is supposed to be loaded
+// early in the bootstrapping process. The Logger is expected to rely on information
+// read from configuration so it is reasonable to assume that the Logger
+// will *NOT* be initialized when this code runs!
+//
+
 const SchemeRegex = new RegExp('^([a-zA-Z]){1}([a-zA-Z0-9])*:\\/\\/');
 
 export type AngleLengthPGroup = {

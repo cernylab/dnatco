@@ -1,8 +1,9 @@
 import * as jsLLKA from 'jsllka';
 import { Cif } from '../cif';
-import { AtomSite, AtomSite_Schema } from '../cif/categories/atom-site';
 import { NtC } from './ntc';
 import { Step } from './step';
+import { AtomSite, AtomSite_Schema } from '../cif/categories/atom-site';
+import { Logger } from '../log/logger';
 
 export type Connectivity = {
     C5PrimeDistance: number;
@@ -115,7 +116,7 @@ function calculateConnectivitiesInternal(currentStepStru: jsLLKA.LLKAStructure, 
             succ.delete();
             backward = connectivities;
         } else
-            console.warn(`Cannot measure connectivity: ${jsLLKA.LLKA.errorToString(resConn.failure())}`);
+            Logger.log(Logger.Severity.Warning, `Cannot measure connectivity: ${jsLLKA.LLKA.errorToString(resConn.failure())}`);
 
         resConn.delete();
     }
@@ -132,7 +133,7 @@ function calculateConnectivitiesInternal(currentStepStru: jsLLKA.LLKAStructure, 
             succ.delete();
             forward = connectivities;
         } else
-            console.warn(`Cannot measure connectivity: ${jsLLKA.LLKA.errorToString(resConn.failure())}`);
+            Logger.log(Logger.Severity.Warning, `Cannot measure connectivity: ${jsLLKA.LLKA.errorToString(resConn.failure())}`);
 
         resConn.delete();
     }

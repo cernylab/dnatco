@@ -5,6 +5,7 @@ import { Step } from './step';
 import { Structure } from './structure';
 import { Cif } from '../cif';
 import { NdbStructNtcStep_Schema, NdbStructNtcStepSummary_Schema } from '../cif/categories/ndb-struct-ntc';
+import { Logger } from '../log/logger';
 
 export namespace StepsMapper {
     function findNtC(id: number, summaries: Cif.Table<NdbStructNtcStepSummary_Schema>): { assignedNtC: NtC.Class, closestNtC: NtC.Class, CANA: CANA.Class, confal: number, rmsd: number } {
@@ -159,7 +160,7 @@ export namespace StepsMapper {
                 }
             }
             if (!found)
-                console.warn(`Could not find previous step for step ${step.name}`);
+                Logger.log(Logger.Severity.Warning, `Could not find previous step for step ${step.name}`);
         }
 
         return {

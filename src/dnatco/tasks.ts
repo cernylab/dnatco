@@ -5,6 +5,7 @@ import { Coordinates } from './coordinates';
 import { DensityMap } from './density-map';
 import { Dnatcofication, DnatcoficationData, DnatcoficationTaskContext } from './dnatcofication';
 import { NavalContext } from './naval';
+import { Logger } from '../log/logger';
 import { UserRemoteDatabases, BuiltInRemoteDatabases } from '../remote/db/register';
 import { Rscc } from '../remote/rscc';
 import { GlobalConfig, GlobalConfigData } from '../global-config';
@@ -93,6 +94,8 @@ export const Tasks = {
             nvCtx: NavalContext,
         }
     ) {
+        Logger.initialize(GlobalConfig.data().displayedProductName);
+
         try {
             const configData = await getConfigData();
             UserRemoteDatabases._import(configData.userDatabases);
@@ -123,6 +126,8 @@ export const Tasks = {
             nvCtx: NavalContext,
         }
     ) {
+        Logger.initialize(GlobalConfig.data().displayedProductName);
+
         try {
             const configData = await getConfigData();
             UserRemoteDatabases._import(configData.userDatabases);
@@ -140,7 +145,7 @@ export const Tasks = {
             const coordsResult = await Coordinates.fromPdbId(payload.pdbId, db);
             const densityMapResult = await DensityMap.fromPdbId(payload.pdbId, db);
             if (isError(densityMapResult))
-                console.warn(densityMapResult.message); // Log a warning because we do not consider a density map fetch failure a hard failure
+                Logger.log(Logger.Severity.Warning, densityMapResult.message); // Log a warning because we do not consider a density map fetch failure a hard failure
 
             let data = await tryIngestData(coordsResult, isOk(densityMapResult) ? [densityMapResult] : [], null, payload.clsfResData, payload.alCtx, payload.nvCtx, false, configData, ctx);
             if (data)
@@ -159,6 +164,8 @@ export const Tasks = {
             nvCtx: NavalContext,
         }
     ) {
+        Logger.initialize(GlobalConfig.data().displayedProductName);
+
         try {
             const configData = await getConfigData();
             UserRemoteDatabases._import(configData.userDatabases);

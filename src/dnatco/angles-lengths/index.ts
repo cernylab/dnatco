@@ -6,6 +6,7 @@ import { Measurements } from './measurements';
 import { Residues } from '../residues';
 import { VoidResult, ErrorResult, Result } from '../';
 import { GlobalConfig } from '../../global-config';
+import { Logger } from '../../log/logger';
 import { htmlColorAsNumber, isWithin, isWithinTri, iterate, objKeys } from '../../util';
 
 export type ElementaryResidue = Residues.ElementaryResidue | 'DU';
@@ -303,7 +304,7 @@ export namespace AnglesLengths {
         const pgrps = AnglePGroupData[base].get(tag);
 
         if (!pgrps) {
-            console.warn(`Unknown bond angle tag ${tag}`);
+            Logger.log(Logger.Severity.Warning, `Unknown bond angle tag ${tag}`);
             return void 0;
         }
 
@@ -328,7 +329,7 @@ export namespace AnglesLengths {
         const pgrps = LengthPGroupData[base].get(tag);
 
         if (!pgrps) {
-            console.warn(`Unknown bond length tag ${tag}`);
+            Logger.log(Logger.Severity.Warning, `Unknown bond length tag ${tag}`);
             return void 0;
         }
 

@@ -1,6 +1,7 @@
 import { Subject } from 'rxjs';
 import { ReDNATCOMspApi as ViewerApi } from 'viewer-api';
 import { DensityMap } from '../dnatco/density-map';
+import { Logger } from '../log/logger';
 import { EventsKeeper } from '../util/events-keeper';
 import { htmlColorAsNumber, sleep } from '../util';
 
@@ -57,7 +58,7 @@ export class ViewerInterop {
                                 else if (sel.type === 'residue')
                                     this.events.residueSelected.next(sel);
                                 else if (sel.type === 'atom')
-                                    console.log('"atom" selection type is currently not handled');
+                                    Logger.log(Logger.Severity.Debug, '"atom" selection type is currently not handled');
                             }
                         }
                     } else if (ev.type === 'structures-deselected')
@@ -68,7 +69,7 @@ export class ViewerInterop {
                         else if (ev.selection.type === 'residue')
                             this.events.residueRequested.next(ev.selection);
                         else if (ev.selection.type === 'atom')
-                            console.log('"atom" request type is currently not handled');
+                            Logger.log(Logger.Severity.Debug, '"atom" request type is currently not handled');
                     } else if (ev.type === 'structure-loaded')
                         this.events.structureLoaded.next();
                 },

@@ -9,6 +9,7 @@ import { NamedList, NamedListItem } from '../../../common/named-list';
 import { OkResult, isError, isOk } from '../../../../dnatco';
 import { Dnatcofication } from '../../../../dnatco/dnatcofication';
 import { Rscc } from '../../../../dnatco/rscc';
+import { Logger } from '../../../../log/logger';
 import { InvalidAtom, InvalidModelIndex, InvalidResidue } from '../../../../util/structure-selection';
 
 interface State {
@@ -50,15 +51,15 @@ export class RsccPlot extends View<View.Props, State> {
 
         let fetchFailed = false;
         if (!isOk(struRsccRes)) {
-            console.log(`Structure RSCC data error: ${struRsccRes.message}`);
+            Logger.log(Logger.Severity.Warning, `Structure RSCC data error: ${struRsccRes.message}`);
             fetchFailed = true;
         }
         if (!isOk(backdropAssignedRes)) {
-            console.log(`Backdrop-assigned RSCC data error: ${backdropAssignedRes.message}`);
+            Logger.log(Logger.Severity.Warning, `Backdrop-assigned RSCC data error: ${backdropAssignedRes.message}`);
             fetchFailed = true;
         }
         if (!isOk(backdropUnassignedRes)) {
-            console.log(`Backdrop-unassigned RSCC data error: ${backdropUnassignedRes.message}`);
+            Logger.log(Logger.Severity.Warning, `Backdrop-unassigned RSCC data error: ${backdropUnassignedRes.message}`);
             fetchFailed = true;
         }
 

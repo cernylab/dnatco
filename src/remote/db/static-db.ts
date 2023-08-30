@@ -2,6 +2,7 @@ import { RemoteDatabase } from './';
 import { ErrorResult, OkResult } from '../../dnatco';
 import { Coordinates } from '../../dnatco/coordinates';
 import { DensityMap } from '../../dnatco/density-map';
+import { Logger } from '../../log/logger';
 import { replaceAll, Utf8Decoder } from '../../util';
 import { ungzip } from '../../zip/unzip';
 
@@ -56,13 +57,13 @@ export function StaticDb(
                 const _id = transformId(id, dm.idTransformation)
                 const req = await fetch(replaceAll(dm.link, '${id}', _id));
                 if (!req.ok)
-                    console.warn(`Failed to download density map: ${req.statusText}`);
+                    Logger.log(Logger.Severity.Warning, `Failed to download density map: ${req.statusText}`);
                 else {
                     try {
                         const data = new Uint8Array(await req.arrayBuffer());
                         maps.push({ data, type: dm.type, kind: dm.kind });
                     } catch (e) {
-                        console.warn(`Invalid database reponse: ${e}`);
+                        Logger.log(Logger.Severity.Warning, `Invalid database reponse: ${e}`);
                     }
                 }
             }

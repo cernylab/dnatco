@@ -16,6 +16,7 @@ import { Exptl } from '../../cif/categories/experimental';
 import { Refine } from '../../cif/categories/refine';
 import { Dnatcofication } from '../../dnatco/dnatcofication';
 import { StepsMapper } from '../../dnatco/steps-mapper';
+import { Logger } from '../../log/logger';
 import { navPath, objKeys } from '../../util';
 import { getCifValue, Common } from '../../util/dnatco';
 import {
@@ -157,7 +158,7 @@ function Inner(props: {
                             if (props.viewerInterop.ready())
                                 props.viewerInterop.api.command(ViewerApi.Commands.Redraw());
                             else {
-                                console.warn(`Viewer was not ready on attempt ${attempt + 1}`);
+                                Logger.log(Logger.Severity.Warning, `Viewer was not ready on attempt ${attempt + 1}`);
                                 setTimeout(() => tryRedraw(attempt + 1), 100);
                             }
                         };
