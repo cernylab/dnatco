@@ -94,11 +94,11 @@ export const Tasks = {
             nvCtx: NavalContext,
         }
     ) {
-        Logger.initialize(GlobalConfig.data().displayedProductName);
-
         try {
             const configData = await getConfigData();
+            Logger.initialize(configData.displayedProductName);
             UserRemoteDatabases._import(configData.userDatabases);
+
             ctx.status = 'Reading data';
             const coordsResult = await Coordinates.fromFile(payload.coords.file, payload.coords.type);
             const densityMaps = await tryGetDensityMaps(payload.densityMaps);
@@ -126,10 +126,9 @@ export const Tasks = {
             nvCtx: NavalContext,
         }
     ) {
-        Logger.initialize(GlobalConfig.data().displayedProductName);
-
         try {
             const configData = await getConfigData();
+            Logger.initialize(configData.displayedProductName);
             UserRemoteDatabases._import(configData.userDatabases);
 
             ctx.status = 'Downloading data';
@@ -164,10 +163,9 @@ export const Tasks = {
             nvCtx: NavalContext,
         }
     ) {
-        Logger.initialize(GlobalConfig.data().displayedProductName);
-
         try {
             const configData = await getConfigData();
+            Logger.initialize(configData.displayedProductName);
             UserRemoteDatabases._import(configData.userDatabases);
 
             ctx.status = 'Downloading data';
