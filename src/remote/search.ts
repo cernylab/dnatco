@@ -88,7 +88,7 @@ export namespace Search {
             return false;
         if (!NtC.isNtCClass(tObj.nearestNtC))
             return false;
-        if (!CANA.Classes.includes(tObj.CANA))
+        if (!CANA.isCanaClass(tObj.CANA))
             return false;
 
         return true;

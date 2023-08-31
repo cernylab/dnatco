@@ -16,7 +16,7 @@ export namespace StepsMapper {
                 return {
                     assignedNtC: (Cif.Column.value(summaries.assigned_NtC, row) ?? 'NANT') as NtC.Class,
                     closestNtC: Cif.Column.value(summaries.closest_NtC, row)! as NtC.ValidClass,
-                    CANA: Cif.Column.value(summaries.assigned_CANA, row)!,
+                    CANA: (Cif.Column.value(summaries.assigned_CANA, row) ?? 'NAN') as CANA.Class,
                     confal: Cif.Column.value(summaries.confal_score, row)!,
                     rmsd: Cif.Column.value(summaries.cartesian_rmsd_closest_NtC_representative, row)!,
                 };
@@ -29,7 +29,7 @@ export namespace StepsMapper {
                 return {
                     assignedNtC: (Cif.Column.value(summaries.assigned_NtC, row) ?? 'NANT') as NtC.Class,
                     closestNtC: Cif.Column.value(summaries.closest_NtC, row)! as NtC.ValidClass,
-                    CANA: Cif.Column.value(summaries.assigned_CANA, row)!,
+                    CANA: (Cif.Column.value(summaries.assigned_CANA, row) as CANA.Class),
                     confal: Cif.Column.value(summaries.confal_score, row)!,
                     rmsd: Cif.Column.value(summaries.cartesian_rmsd_closest_NtC_representative, row)!,
                 };

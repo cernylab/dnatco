@@ -14,7 +14,15 @@ export namespace CANA {
         'OPN',
         'SYN',
         'ZZZ',
-        'NAN'
-    ];
-    export type Class = typeof Classes[number] | 'NANT';
+    ] as const;
+    export type ValidClass = typeof Classes[number];
+    export type Class = typeof Classes[number] | 'NAN';
+
+    export function isCanaClass(v: string): v is Class {
+        return isCanaValidClass(v as any) || v === 'NAN';
+    }
+
+    export function isCanaValidClass(v: string): v is ValidClass {
+        return Classes.includes(v as any);
+    }
 }
