@@ -14,6 +14,7 @@ import { XImg } from '../../../../assets/images';
 import { Cif } from '../../../../cif';
 import { NdbStructNtcStep, NdbStructNtcStepSummary } from '../../../../cif/categories/ndb-struct-ntc';
 import { Dnatcofication } from '../../../../dnatco/dnatcofication';
+import { NtC } from '../../../../dnatco/ntc';
 import { StepsMapper } from '../../../../dnatco/steps-mapper';
 import { DynamicTable } from '../../../../util/dynamic-table';
 import {
@@ -63,7 +64,7 @@ export class ChangeNtCs extends View<Refinement.Props> {
             ? () => <div style={{ height: '1.5em', textAlign: 'center' }}>(Not changeable)</div>
             : (row: number) => {
                 const step = Cif.Column.value(name, row)!;
-                const computedNtC = Cif.Column.value(closest_NtC, row)!;
+                const computedNtC = Cif.Column.value(closest_NtC, row)! as NtC.ValidClass; // closest_NtC will must always be something
                 const customNtC = this.props.dnatcofication.customNtCs.getCustomNtC(this.props.selectedCustomNtCSet, step);
                 return (
                     <div style={{ display: 'grid', gridTemplateColumns: 'auto 2em 1fr', gap: 'var(--h2-gap)', height: '1.5em' }}>

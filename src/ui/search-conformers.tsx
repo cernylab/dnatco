@@ -44,7 +44,7 @@ export class SearchConformers extends React.Component<SearchConformers.Props, St
                             <ComboBox
                                 options={NtCOptions}
                                 value={this.state.NtC}
-                                onChange={v => this.setState({ ...this.state, NtC: v })}
+                                onChange={v => this.setState({ ...this.state, NtC: v as NtC.Class })}
                                 sizing='maximum-available'
                             />
                         </NamedListItem>

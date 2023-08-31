@@ -23,6 +23,7 @@ import {
     NdbStructNtcStepParameters
 } from '../../../../cif/categories/ndb-struct-ntc';
 import { Dnatcofication, StepRmsdStats as DnatcoStepRmsdStats } from '../../../../dnatco/dnatcofication';
+import { NtC } from '../../../../dnatco/ntc';
 import { Step } from '../../../../dnatco/step';
 import { StepsMapper } from '../../../../dnatco/steps-mapper';
 import { parseIntStrict } from '../../../../util';
@@ -275,7 +276,7 @@ export class ConfalsRmsds extends View<View.Props> {
             const tag = Cif.Column.value(name, row)!;
             const tags = [tag, tag, tag, tag, void 0, void 0, tag];
             const confalScore = Cif.Column.value(confal_score, row)!;
-            const assignedNtC = Cif.Column.value(assigned_NtC, row)!;
+            const assignedNtC = (Cif.Column.value(assigned_NtC, row) ?? 'NANT') as NtC.Class;
             const assignedCANA = Cif.Column.value(assigned_CANA, row)!;
             const _step = StepsMapper.byName(this.props.dnatcofication, tag)!; // tag is the internal step name
 

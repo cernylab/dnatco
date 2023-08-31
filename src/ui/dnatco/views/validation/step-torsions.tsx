@@ -5,6 +5,7 @@ import { EmptySelectionPieces } from '../../structure-selection';
 import { View } from '../view';
 import { NamedList, NamedListItem } from '../../../common/named-list';
 import { Tooltip } from '../../../common/tooltip';
+import { ViolinPlotImages } from '../../../../assets/violin-plots';
 import { Cif } from '../../../../cif';
 import {
     NdbStructNtcStepParameters, NdbStructNtcStepParameters_Schema,
@@ -12,6 +13,7 @@ import {
     NdbStructSugarStepParameters, NdbStructSugarStepParameters_Schema,
 } from '../../../../cif/categories/ndb-struct-ntc';
 import { Dnatcofication } from '../../../../dnatco/dnatcofication';
+import { NtC } from '../../../../dnatco/ntc';
 import { Step } from '../../../../dnatco/step';
 import { GlobalConfig } from '../../../../global-config';
 import { htmlColorAsNumber, toFixed } from '../../../../util';
@@ -152,7 +154,7 @@ function DistanceInfo(): DistanceInfo {
 
 const StepInfo = {
     cartesianRmsd: 0,
-    NtC: C.NA,
+    NtC: 'NANT' as NtC.Class,
     confal: 0,
     p1: 0,
     tau1: 0,
@@ -247,7 +249,7 @@ const ViolinBackdropTickThickness = 2;
 const ViolinMarkerDefaultColor = 16774924; // RGB 255, 247, 12
 
 class ViolinPlot extends React.Component<{
-    NtC: string,
+    NtC: NtC.Class,
     torsions: TorsionInfo['actual'],
     distances: DistanceInfo['actual'],
     maxWidth?: number,
@@ -303,7 +305,7 @@ class ViolinPlot extends React.Component<{
         const clrB = rgbToHex(markerColorB);
 
         try {
-            const req = await fetch(`${GlobalConfig.data().pathPrefix}/violin_plots/${this.props.NtC}.png`);
+            const req = await fetch(ViolinPlotImages[this.props.NtC as NtC.ValidClass]);
             if (!req.ok)
                 throw new Error('Cannot download plot');
 
@@ -350,17 +352,18 @@ class ViolinPlot extends React.Component<{
     }
 
     render() {
-        if (this.props.NtC === C.NA)
+        if (this.props.NtC === 'NANT')
             return undefined;
-
-        return (
-            <canvas
-                ref={this.canvasRef}
-                width={1000}
-                height={1000}
-                style={{ width: '100%', maxWidth: `${this.props.maxWidth ? `${this.props.maxWidth}px` : 'auto'}`} }
-            />
-        );
+        else {
+            return (
+                <canvas
+                    ref={this.canvasRef}
+                    width={1000}
+                    height={1000}
+                    style={{ width: '100%', maxWidth: `${this.props.maxWidth ? `${this.props.maxWidth}px` : 'auto'}`} }
+                />
+            );
+        }
     }
 }
 
@@ -431,7 +434,7 @@ export class StepTorsions extends View<View.Props> {
 
         return {
             cartesianRmsd: Cif.Column.value(cartesian_rmsd_closest_NtC_representative, index) ?? 0,
-            NtC: Cif.Column.value(assigned_NtC, index)!,
+            NtC: (Cif.Column.value(assigned_NtC, index) ?? 'NANT') as NtC.Class,
             confal: Cif.Column.value(confal_score, index)!,
             p1: Cif.Column.value(P_1, index)!,
             tau1: Cif.Column.value(tau_1, index)!,

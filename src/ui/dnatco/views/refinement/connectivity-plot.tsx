@@ -13,10 +13,12 @@ import { Colors } from '../../../dnatco/colors';
 import { Constants } from '../../../dnatco/constants';
 import { calculateConnectivities } from '../../../../dnatco/connectivity-similarity';
 import { Dnatcofication } from '../../../../dnatco/dnatcofication';
+import { NtC } from '../../../../dnatco/ntc';
 import { Step } from '../../../../dnatco/step';
 import { StepsMapper } from '../../../../dnatco/steps-mapper';
 import { axesMaximumHints } from '../../util';
 import { colorToRgb, rgbToHex } from '../../../../util/colors';
+import { objKeys } from '../../../../util';
 import { valueToSemaphore } from '../../../../util/semaphore';
 import { InvalidAtom, InvalidResidue, InvalidStepId } from '../../../../util/structure-selection';
 
@@ -99,7 +101,7 @@ export class ConnectivityPlot extends View<Refinement.Props> {
 
         if (conns) {
             const clr = rgbToHex(colorToRgb(direction == 'previous' ? Colors.PreviousStep() : Colors.NextStep()));
-            for (const ntc in conns) {
+            for (const ntc of objKeys(conns)) {
                 const conn = conns[ntc];
 
                 if (ntc === otherStepSelectedNtC) {
@@ -128,7 +130,7 @@ export class ConnectivityPlot extends View<Refinement.Props> {
         };
     }
 
-    private changeCustomNtC(NtC: string, targetStep: (stepId: number) => Step | undefined) {
+    private changeCustomNtC(ntc: string, targetStep: (stepId: number) => Step | undefined) {
         const stepId = this.props.structureSelection.steps[0];
         if (this.props.selectedCustomNtCSet === '' || stepId === undefined)
             return;
@@ -138,7 +140,7 @@ export class ConnectivityPlot extends View<Refinement.Props> {
             this.props.dnatcofication.customNtCs.setCustomNtC(
                 this.props.selectedCustomNtCSet,
                 step.name,
-                NtC
+                ntc as NtC.ValidClass
             );
         }
     }
@@ -248,25 +250,27 @@ export class ConnectivityPlot extends View<Refinement.Props> {
         const customNtC = this.props.dnatcofication.customNtCs.getCustomNtC(this.props.selectedCustomNtCSet, step.name);
         const selectedNtC = customNtC ?? step.closestNtC;
 
-        for (const ntc in similarities) {
-            const simil = similarities[ntc];
-            const clr = valueToSemaphore(simil.rmsd, Constants.GreenRMSD, Constants.RedRMSD);
+        if (similarities) {
+            for (const ntc of objKeys(similarities)) {
+                const simil = similarities[ntc];
+                const clr = valueToSemaphore(simil.rmsd, Constants.GreenRMSD, Constants.RedRMSD);
 
-            if (ntc === selectedNtC) {
-                xSel.push(simil.rmsd);
-                ySel.push(simil.euclideanDistance);
-                colorsSel.push(rgbToHex(clr));
-                tagsSel.push(ntc);
-            } else if (ntc === step.closestNtC) {
-                xComputed.push(simil.rmsd);
-                yComputed.push(simil.euclideanDistance);
-                colorsComputed.push(rgbToHex(clr));
-                tagsComputed.push(ntc);
-            } else {
-                x.push(simil.rmsd);
-                y.push(simil.euclideanDistance);
-                colors.push(rgbToHex(clr));
-                tags.push(ntc);
+                if (ntc === selectedNtC) {
+                    xSel.push(simil.rmsd);
+                    ySel.push(simil.euclideanDistance);
+                    colorsSel.push(rgbToHex(clr));
+                    tagsSel.push(ntc);
+                } else if (ntc === step.closestNtC) {
+                    xComputed.push(simil.rmsd);
+                    yComputed.push(simil.euclideanDistance);
+                    colorsComputed.push(rgbToHex(clr));
+                    tagsComputed.push(ntc);
+                } else {
+                    x.push(simil.rmsd);
+                    y.push(simil.euclideanDistance);
+                    colors.push(rgbToHex(clr));
+                    tags.push(ntc);
+                }
             }
         }
 

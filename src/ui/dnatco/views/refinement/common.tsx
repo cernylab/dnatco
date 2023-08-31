@@ -36,7 +36,7 @@ export namespace Refinement {
                 <ComboBox
                     options={NtCSelectorOptions}
                     value={this.props.value}
-                    onChange={v => this.props.onChanged(v)}
+                    onChange={v => this.props.onChanged(v as NtC.ValidClass)}
                 />
             );
         }

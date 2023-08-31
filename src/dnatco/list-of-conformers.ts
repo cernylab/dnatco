@@ -41,7 +41,11 @@ function parseList(text: string): { list: ConformerInfo[], mapping: Map<NtC.Clas
         const info: ConformerInfo = {
             description: elems[0],
             CANA: get(elems[1], v => { if (!CANA.Classes.includes(v) && v !== 'NAN') throw new Error(`Invalid CANA class ${v}`); return v; }),
-            NtC: get(elems[2], v => { if (!NtC.Classes.includes(v) && v !== 'NANT') throw new Error(`Invalid NtC class ${v}`); return v; }),
+            NtC: get(elems[2], v => {
+                if (!NtC.isNtCClass(v))
+                    throw new Error(`Invalid NtC class ${v}`);
+                return v;
+            }),
             countInDNA: get(elems[3], v => {
                 const n = parseInt(v);
                 if (isNaN(n))

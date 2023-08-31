@@ -103,7 +103,15 @@ export namespace NtC {
         'ZZ2S',
         'ZZS1',
         'ZZS2',
-    ];
+    ] as const;
     export type ValidClass = typeof Classes[number];
     export type Class = ValidClass | 'NANT';
+
+    export function isNtCClass(v: string): v is Class {
+        return isValidNtCClass(v) || v === 'NANT';
+    }
+
+    export function isValidNtCClass(v: string): v is ValidClass {
+        return NtC.Classes.includes(v as any);
+    }
 }

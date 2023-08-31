@@ -6,8 +6,8 @@ const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const webpack = require('webpack');
 ////  const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
-function removeContextFromPath(path, ctx) {
-    const pathToks = path.split('/');
+function removeContextFromPath(_path, ctx) {
+    const pathToks = _path.split('/');
     const ctxToks = ctx.split('/');
 
     // The context in which this function is intended to be used requires
@@ -19,6 +19,13 @@ function removeContextFromPath(path, ctx) {
     while (pathToks[idx] === ctxToks[idx]) idx++;
 
     return pathToks.slice(idx);
+}
+
+function simplifiedAssetPath(url, resourcePath, ctx) {
+    let out = removeContextFromPath(resourcePath, ctx);
+    out = out.slice(1, out.length - 1);
+
+    return path.join(...out, url);
 }
 
 function sharedConfig(productionBuild, outDir, extraConfig) {
@@ -57,12 +64,7 @@ function sharedConfig(productionBuild, outDir, extraConfig) {
                     use: [{
                         loader: 'file-loader',
                         options: {
-                            outputPath: (url, resourcePath, context) => {
-                                let out = removeContextFromPath(resourcePath, context);
-                                out = out.slice(1, out.length - 1);
-
-                                return path.join(...out, url);
-                            },
+                            outputPath: simplifiedAssetPath,
                             name: '[contenthash].[ext]',
                             sourceMap: false,
                         }
@@ -80,7 +82,20 @@ function sharedConfig(productionBuild, outDir, extraConfig) {
                     }],
                 },
                 {
+                    test: /\.(png|jpe?g)$/,
+                    include: [path.resolve(__dirname, 'assets/violin_plots')],
+                    use: [{
+                        loader: 'file-loader',
+                        options: {
+                            outputPath: simplifiedAssetPath,
+                            name: '[contenthash].[ext]',
+                            sourceMap: false,
+                        },
+                    }]
+                },
+                {
                     test: /\.(svg|png|jpe?g)$/,
+                    exclude: [path.resolve(__dirname, 'assets/violin_plots')],
                     use: [{
                         loader: 'file-loader',
                         options: {

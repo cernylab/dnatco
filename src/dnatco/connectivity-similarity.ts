@@ -24,7 +24,7 @@ for (const ntc of jsLLKA.NtCs)
     NtCsVector.push_back(ntc);
 const NumNtCs = NtCsVector.size();
 
-const NtCNames = Array.from(jsLLKA.IterateVector(NtCsVector)).map(ntc => jsLLKA.LLKA.NtCToName(ntc));
+const NtCNames = Array.from(jsLLKA.IterateVector(NtCsVector)).map(ntc => jsLLKA.LLKA.NtCToName(ntc)) as NtC.Class[];
 
 function gatherStepAtoms(step: Step, atoms: Cif.Table<AtomSite_Schema>) {
     const gathered = jsLLKA.CLLKAStructure();
@@ -109,12 +109,12 @@ function calculateConnectivitiesInternal(currentStepStru: jsLLKA.LLKAStructure, 
         const resConn = jsLLKA.measureStepConnectivityNtCsMultipleFirst(prevStepStru, NtCsVector, currentStepStru, ntc);
         if (resConn.isSuccess()) {
             const succ = resConn.success();
-            const connectivities: Connectivities = {};
+            const connectivities: Partial<Connectivities> = {};
             for (let jdx = 0; jdx < NumNtCs; jdx++)
                 connectivities[NtCNames[jdx]] = { ...succ.get(jdx) };
 
             succ.delete();
-            backward = connectivities;
+            backward = connectivities as Connectivities;
         } else
             Logger.log(Logger.Severity.Warning, `Cannot measure connectivity: ${jsLLKA.LLKA.errorToString(resConn.failure())}`);
 
@@ -126,12 +126,12 @@ function calculateConnectivitiesInternal(currentStepStru: jsLLKA.LLKAStructure, 
         const resConn = jsLLKA.LLKA.measureStepConnectivityNtCsMultipleSecond(currentStepStru, ntc, nextStepStru, NtCsVector);
         if (resConn.isSuccess()) {
             const succ = resConn.success();
-            const connectivities: Connectivities = {};
+            const connectivities: Partial<Connectivities> = {};
             for (let jdx = 0; jdx < NumNtCs; jdx++)
                 connectivities[NtCNames[jdx]] = { ...succ.get(jdx) };
 
             succ.delete();
-            forward = connectivities;
+            forward = connectivities as Connectivities;
         } else
             Logger.log(Logger.Severity.Warning, `Cannot measure connectivity: ${jsLLKA.LLKA.errorToString(resConn.failure())}`);
 
@@ -141,11 +141,11 @@ function calculateConnectivitiesInternal(currentStepStru: jsLLKA.LLKAStructure, 
     return { backward, forward };
 }
 
-export function calculateSimilaritiesInternal(stru: jsLLKA.LLKAStructure) {
+export function calculateSimilaritiesInternal(stru: jsLLKA.LLKAStructure): Similarities|null {
     const resSimil = jsLLKA.LLKA.measureStepSimilarityNtCMultiple(stru, NtCsVector);
 
     if (resSimil.isSuccess()) {
-        const similarities: Similarities = {};
+        const similarities: Partial<Similarities> = {};
         const succ = resSimil.success();
         for (let jdx = 0; jdx < NumNtCs; jdx++)
             similarities[NtCNames[jdx]] = { ...succ.get(jdx) };
@@ -153,7 +153,7 @@ export function calculateSimilaritiesInternal(stru: jsLLKA.LLKAStructure) {
         succ.delete();
         resSimil.delete();
 
-        return similarities;
+        return similarities as Similarities;
     } else {
         resSimil.delete();
         return null;

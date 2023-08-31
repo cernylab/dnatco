@@ -11,6 +11,7 @@ import { Constants } from '../../../dnatco/constants';
 import { Dnatcofication } from '../../../../dnatco/dnatcofication';
 import { Step } from '../../../../dnatco/step';
 import { StepsMapper } from '../../../../dnatco/steps-mapper';
+import { objKeys } from '../../../../util';
 import { rgbToHex } from '../../../../util/colors';
 import { valueToSemaphore } from '../../../../util/semaphore';
 import { InvalidAtom, InvalidResidue } from '../../../../util/structure-selection';
@@ -45,20 +46,23 @@ export class SimilarityPlot extends View<View.Props> {
 
         const step = StepsMapper.byId(this.props.dnatcofication, stepId);
         const similarities = this.props.dnatcofication.getSimilarities(stepId);
-        for (const ntc in similarities) {
-            const simil = similarities[ntc];
-            const clr = valueToSemaphore(simil.rmsd, Constants.GreenRMSD, Constants.RedRMSD);
 
-            if (ntc === step.NtC) {
-                xSel.push(simil.rmsd);
-                ySel.push(simil.euclideanDistance);
-                colorsSel.push(rgbToHex(clr));
-                tagsSel.push(ntc);
-            } else {
-                x.push(simil.rmsd);
-                y.push(simil.euclideanDistance);
-                colors.push(rgbToHex(clr));
-                tags.push(ntc);
+        if (similarities) {
+            for (const ntc of objKeys(similarities)) {
+                const simil = similarities[ntc];
+                const clr = valueToSemaphore(simil.rmsd, Constants.GreenRMSD, Constants.RedRMSD);
+
+                if (ntc === step.NtC) {
+                    xSel.push(simil.rmsd);
+                    ySel.push(simil.euclideanDistance);
+                    colorsSel.push(rgbToHex(clr));
+                    tagsSel.push(ntc);
+                } else {
+                    x.push(simil.rmsd);
+                    y.push(simil.euclideanDistance);
+                    colors.push(rgbToHex(clr));
+                    tags.push(ntc);
+                }
             }
         }
 
