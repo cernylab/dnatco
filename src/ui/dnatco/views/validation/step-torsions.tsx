@@ -62,6 +62,10 @@ function distanceDiffColumn(table: Cif.Table<NdbStructNtcStepParameters_Schema>,
     }
 }
 
+function minCellWidth(chars: number) {
+    return { minWidth: `${chars}rem` };
+}
+
 function torsionColumn(table: Cif.Table<NdbStructNtcStepParameters_Schema>, torsion: Step.Torsion) {
     switch (torsion) {
     case 'delta1':
@@ -556,10 +560,10 @@ export class StepTorsions extends View<View.Props> {
                     <thead>
                         <tr>
                             <th className='rdo-data-table'></th>
-                            <th className='rdo-data-table'>Actual</th>
-                            <th className='rdo-data-table'>{`Reference ${stepInfo.NtC}`}</th>
-                            <th className='rdo-data-table'>Δ actual vs. ref.</th>
-                            <th className='rdo-data-table'>Confal</th>
+                            <th className='rdo-data-table' style={minCellWidth(7)} >Actual</th>
+                            <th className='rdo-data-table' style={minCellWidth(7)} >{`Reference ${stepInfo.NtC}`}</th>
+                            <th className='rdo-data-table' style={minCellWidth(7)} >Δ actual vs. ref.</th>
+                            <th className='rdo-data-table' style={minCellWidth(7)} >Confal</th>
                         </tr>
                     </thead>
                     <tbody>
