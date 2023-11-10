@@ -1,0 +1,86 @@
+{
+    "previousStepColor": "#f0f",
+
+    "currentStepColor": "#2f2",
+
+    "nextStepColor": "#a0a",
+
+    "highlightColor": "#ee0011",
+
+    "violinPlotMarkerColorA": "#fffb7b",
+
+    "violinPlotMarkerColorB": "#000",
+
+    "showHydrogensInReferences": false,
+
+    "exampleStructures": [
+        { "db": "test-local", "pdbId": "1bna" },
+        { "db": "rcsb", "pdbId": "4qvi", "name": "Quadruplex" }
+    ],
+
+    "precalculateConnectivitiesAndSimilarities": false,
+
+    "anglesLengths": {
+
+        "chartMarkerColor": "#000000",
+        "outlierColor": "#ff0000",
+
+        "pGroups": [
+            { "threshold": 80, "color": "#006eee" },
+            { "threshold": 95, "color": "#00ff00" },
+            { "threshold": 99, "color": "#ffff00" },
+            { "threshold": 99.9, "color": "#ffaa00" }
+        ]
+    },
+
+    "userDatabases": [
+        {
+            "id": "my-special-db",
+
+            "name": "My special DB",
+
+            "coords": {
+
+                "link": "/db/coordinates/${pdbId}.cif",
+
+                "type": "cif",
+
+                "gzipped": false,
+
+                "idTransformation": "lower-case"
+            },
+
+            "densityMaps": [
+                {
+                    "link": "/db/density_maps/2fofc/${id}_2fofc.dsn6",
+
+                    "type": "dsn6",
+
+                    "kind": "2fo-fc",
+
+                    "idTransformation": "lower-case"
+                },
+                {
+                    "link": "/db/density_maps/fofc/${id}_fofc.dsn6",
+                    "type": "dsn6",
+                    "kind": "fo-fc"
+                }
+            ]
+        }
+    ],
+
+    "primaryDatabase": "rcsb",
+
+    "expectedParametersFingerprint": "466a5115d59a4b1cd691d7e8f4f7b0aa8a39879fb048f2368692c54935ab2912",
+
+    "isDevel": true,
+
+    "useHashRouter": true,
+
+    "!referenceUrl": "http://somewhere.net",
+
+    "phenix": {
+
+        "rsccExec": "/path/to/a/binary"
+    }
+}

@@ -45,15 +45,14 @@ export function DownloadButton(props: { caption?: string, onClick: () => void })
             classNameDisabled='rdo-icon-text-button-disabled'
         >
             <div
-                className='rdo-pushbutton-inner-container'
-                style={{ paddingLeft: '0.5em', paddingRight: '0.5em' }}
+                className='items-center flex h-full justify-center p-4 bg-primary-first text-white rounded-standart'
             >
                 <img
-                    style={{ height: '50%' }}
+                    className='w-4'
                     src={DataTransferDownloadImg}
                 />
                 {props.caption
-                    ? <span className='rdo-pushbutton-text' style={{ flex: 1, whiteSpace: 'nowrap' }}>{props.caption}</span>
+                    ? <span className='font-700 m-1' style={{ flex: 1, whiteSpace: 'nowrap' }}>{props.caption}</span>
                     : void 0
                 }
             </div>

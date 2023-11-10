@@ -2,7 +2,7 @@
 import { type PlotData } from 'plotly.js-cartesian-dist';
 import React from 'react';
 import { Navigate } from 'react-router';
-import { Common, DownloadButton } from './common';
+import { DownloadButton } from './common';
 import { Downloads as _Downloads } from './downloads-common';
 import { RsccPlot } from './rscc-plot';
 import { modelOptions } from './views/structure-selectors';
@@ -10,7 +10,6 @@ import { CheckBox } from '../common/check-box';
 import { ComboBox } from '../common/combo-box';
 import { InProgressSpinner } from '../common/in-progress-spinner';
 import { Popup } from '../common/popup';
-import { ShadowedBox } from '../common/shadowed-box';
 import { toComboBoxOptions } from '../util';
 import { doDownload } from '../../browser-util/downloader';
 import { Net } from '../../browser-util/net';
@@ -199,8 +198,7 @@ export function Downloads(props: { dnatcofication: Dnatcofication }) {
 
     return (
         <div className='rdo-offset'>
-            <ShadowedBox>
-                <div style={ Common.VScrollJail }>
+                <div className='overflow-hidden h-[calc(100%-6rem)] flex flex-col mt-24'>
                     <div style={{
                         fontSize: 'var(--font-xxlarge)',
                         fontWeight: 'bold',
@@ -216,7 +214,7 @@ export function Downloads(props: { dnatcofication: Dnatcofication }) {
 
                         <div className='rdo-line-spacer' />
 
-                        <div className='rdo-download-item'>
+                        <div className='mb-2'>
                             <_Downloads.Title title='Extended mmCIF file' />
                             <div style={ _Downloads.DownloadItemDescription }>
                                 mmCIF file extended with additional DNATCO categories.
@@ -229,7 +227,7 @@ export function Downloads(props: { dnatcofication: Dnatcofication }) {
                             </_Downloads.DownloadBox>
                         </div>
 
-                        <div className='rdo-download-item'>
+                        <div className='mb-2'>
                             <_Downloads.Title title='Table of assigned NtCs' />
                             <div style={ _Downloads.DownloadItemDescription }>
                                 Table of assigned NtCs.
@@ -270,7 +268,7 @@ export function Downloads(props: { dnatcofication: Dnatcofication }) {
                             </_Downloads.DownloadBox>
                         </div>
 
-                        <div className='rdo-download-item'>
+                        <div className='mb-2'>
                             <_Downloads.Title title='List of bond lengths and angles (grouped by residues)' />
                             <div style={ _Downloads.DownloadItemDescription }>
                                 A list of measured bond lengths and bond angles measured for nucleic acid backbone and base atoms. Grouped by residue. Only residues with standard bases are measured.
@@ -287,7 +285,7 @@ export function Downloads(props: { dnatcofication: Dnatcofication }) {
                             </_Downloads.DownloadBox>
                         </div>
 
-                        <div className='rdo-download-item'>
+                        <div className='mb-2'>
                             <_Downloads.Title title='List of bond lengths and angles (grouped by bases)' />
                             <div style={ _Downloads.DownloadItemDescription }>
                                 A list of measured bond lengths and bond angles measured for nucleic acid backbone and base atoms. Grouped by bases. Only residues with standard bases are measured.
@@ -304,7 +302,7 @@ export function Downloads(props: { dnatcofication: Dnatcofication }) {
                             </_Downloads.DownloadBox>
                         </div>
 
-                        <div className='rdo-download-item'>
+                        <div className='mb-2'>
                             <_Downloads.Title title='Naval validation reports' />
                             <div style={ _Downloads.DownloadItemDescription }>
                                 Naval validation reports of nucleic acid structure quality.
@@ -337,7 +335,7 @@ export function Downloads(props: { dnatcofication: Dnatcofication }) {
                             </_Downloads.DownloadBox>
                         </div>
 
-                        <div className='rdo-download-item'>
+                        <div className='mb-2'>
                             <_Downloads.Title title='RSCC vs. RMSD plots' />
                             <div style={ _Downloads.DownloadItemDescription }>
                                 RSCC vs. RMSD plots.
@@ -348,7 +346,7 @@ export function Downloads(props: { dnatcofication: Dnatcofication }) {
                             />
                         </div>
 
-                        <div className='rdo-download-item'>
+                        <div className='mb-2'>
                             <_Downloads.Title title={`${GlobalConfig.data().displayedProductName} structure validation report`} />
                             <div style={ _Downloads.DownloadItemDescription }>
                                 Comprehensive structure validation report.
@@ -403,7 +401,6 @@ export function Downloads(props: { dnatcofication: Dnatcofication }) {
                         </div>
                     </div>
                 </div>
-            </ShadowedBox>
         </div>
     );
 }

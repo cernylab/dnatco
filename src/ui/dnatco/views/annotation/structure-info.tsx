@@ -17,7 +17,7 @@ import * as SI from '../../../../util/structure-info';
 function mkHeader(text: string) {
     return {
         collapsed: (
-            <div className='rdo-hflex rdo-h2gap rdo-taller rdo-active'>
+            <div className='flex flex-row rdo-h2gap rdo-taller rdo-active'>
                 <img
                     src={TriangleDownImg}
                     style={{ transition: 'rotate var(--anim-speed)', rotate: '0deg' }}
@@ -26,7 +26,7 @@ function mkHeader(text: string) {
             </div>
         ),
         expanded: (
-            <div className='rdo-hflex rdo-h2gap rdo-taller rdo-active'>
+            <div className='flex flex-row rdo-h2gap rdo-taller rdo-active'>
                 <img
                     src={TriangleDownImg}
                     style={{ transition: 'rotate var(--anim-speed)', rotate: '180deg' }}

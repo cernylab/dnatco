@@ -9,10 +9,10 @@ import { Serialization } from '../../../../util/serialization';
 export function Downloads(props: View.Props) {
     return (
         <div style={ Common.VScrollJail }>
-            <div className='rdo-scroll-vertically' style={{ padding: 'var(--h-gap)' }}>
-                <div className='rdo-download-item'>
+            <div className='rdo-scroll-vertically'>
+                <div className='mb-2'>
                     <_Downloads.Title title='Extended mmCIF file' />
-                    <div style={ _Downloads.DownloadItemDescription }>
+                    <div className='mb-4 font-din-2014'>
                         mmCIF file extended with additional DNATCO categories.
                     </div>
                     <_Downloads.DownloadBox>
@@ -23,7 +23,7 @@ export function Downloads(props: View.Props) {
                     </_Downloads.DownloadBox>
                 </div>
 
-                <div className='rdo-download-item'>
+                <div className='mb-2'>
                     <_Downloads.Title title='Table of assigned NtCs' />
                     <div style={ _Downloads.DownloadItemDescription }>
                         Table of assigned NtCs.

@@ -3,7 +3,6 @@ import { CheckBox } from './common/check-box';
 import { ComboBox } from './common/combo-box';
 import { NamedList, NamedListItem } from './common/named-list';
 import { PushButton } from './common/push-button';
-import { ShadowedBox } from './common/shadowed-box';
 import { SpinBox } from './common/spin-box';
 import { NtC } from '../dnatco/ntc';
 import { Search } from '../remote/search';
@@ -37,7 +36,6 @@ export class SearchConformers extends React.Component<SearchConformers.Props, St
 
     render() {
         return (
-            <ShadowedBox>
                 <div className='rdo-offset'>
                     <NamedList sizing='min-content' rowSpacing='half'>
                         <NamedListItem name='Conformation'>
@@ -87,7 +85,6 @@ export class SearchConformers extends React.Component<SearchConformers.Props, St
                         }}
                     />
                 </div>
-            </ShadowedBox>
         )
     }
 }

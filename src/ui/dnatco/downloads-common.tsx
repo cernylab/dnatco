@@ -35,7 +35,7 @@ export namespace Downloads {
     export function Title(props: { title: string }) {
         return (
             <div style={{ display: 'flex', flexDirection: 'row', gap: 'var(--h-gap)' }}>
-                <div className='rdo-download-item-caption'>{props.title}</div>
+                <div className='font-700 font-16px'>{props.title}</div>
             </div>
         );
     }

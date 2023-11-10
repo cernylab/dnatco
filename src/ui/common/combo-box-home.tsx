@@ -15,7 +15,7 @@ const DropdownArrowStyle = {
     'backgroundSize': '1em',
 };
 
-export class ComboBox extends React.Component<ComboBox.Props> {
+export class ComboBoxHome extends React.Component<ComboBox.Props> {
     static defaultProps = {
         disabled: false,
     };
@@ -27,7 +27,7 @@ export class ComboBox extends React.Component<ComboBox.Props> {
     }
 
     private containerClass() {
-        return this.props.disabled ? 'flex justify-center relative rounded-standart p-2 bg-primary-first text-secondary-third' : 'flex justify-center relative rounded-standart p-2 bg-primary-first';
+        return this.props.disabled ? 'flex justify-center relative rounded-standart p-4 bg-primary-first text-secondary-third' : 'flex justify-center relative rounded-standart p-4 bg-primary-first';
     }
 
     onWheelEvent = (ev: WheelEvent) => {

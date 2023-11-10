@@ -4,7 +4,8 @@ import { useLocation, useNavigate, BrowserRouter, HashRouter, Navigate, Routes, 
 import { Subject } from 'rxjs';
 import {
     DataTransferDownloadImg, DocumentImg, HomeImg,
-    InfoImg, ListImg, LoopImg,
+    
+     ListImg, LoopImg,
     TaskImg
 } from './assets/images';
 import { ConformersFile } from './assets/misc';
@@ -81,14 +82,9 @@ const TabsForModes = {
         },
         'list-of-conformers': {
             icon: DocumentImg,
-            caption: 'Conformers',
+            caption: 'Browse',
             enabled: true,
         },
-        about: {
-            icon: InfoImg,
-            caption: 'About',
-            enabled: true,
-        }
     },
     structure: {
         start: {
@@ -118,14 +114,9 @@ const TabsForModes = {
         },
         'list-of-conformers': {
             icon: DocumentImg,
-            caption: 'Conformers',
+            caption: 'Browse',
             enabled: true,
         },
-        about: {
-            icon: InfoImg,
-            caption: 'About',
-            enabled: true,
-        }
     },
 };
 

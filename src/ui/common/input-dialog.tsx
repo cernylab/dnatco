@@ -60,7 +60,7 @@ export class InputDialog extends React.Component<Props, State> {
                     <div className='rdo-named-list-name'>{this.props.caption}</div>
                     <input
                         ref={this.textInputRef}
-                        className='rdo-input-text'
+                        className='text-22px'
                         style={{ width: '100%' }}
                         type='text'
                         value={this.state.value}

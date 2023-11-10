@@ -1,64 +1,47 @@
 import * as React from 'react';
 import { Email } from './common/email';
-import { IconButton } from './common/push-button';
-import { CasLogoImg, ElixirLogoImg, IbtLogoImg } from '../assets/images';
-import { Net } from '../browser-util/net';
+import { ElixirLogoImg, IbtLogoImg } from '../assets/images';
 import { Globals } from '../globals';
 
-const PadderStyle = { marginLeft: 'calc(var(--h-gap) / 2)', marginRight: 'calc(var(--h-gap) / 2)' };
 
 export function Footer() {
     return (
         <>
-            <div className='rdo-footer-gutter' />
-            <div className='rdo-footer'>
-                <div
-                    style={{
-                        marginLeft: '2em',
-                        marginRight: '2em',
-                        display: 'grid',
-                        gridTemplateColumns: 'auto auto auto 1fr auto 5em 5em 5em',
-                        alignItems: 'center',
-                        justifyContent: 'center'
-                    }}
-                >
-                    <div style={PadderStyle}>
-                        <div className='rdo-footer-text'>© 2022</div>
+            <div className='bg-primary-first text-white'>
+                <div className='max-w-[1280px] flex justify-between mx-auto my-4'>
+                    <div className='flex'>
+                        <div className='my-auto mx-1'>
+                            <div className='text-18px text-center font-din-2014'>© 2022</div>
+                        </div>
+                        {Globals.PrimaryContacts.map((c, idx) => (
+                            <div className='my-auto mx-1' key={idx}>
+                                <div className='text-18px text-center font-din-2014'>
+                                    <Email email={c.email} subject='DNATCO'><span style={{ color: 'var(--color-c)' }}>{c.name}</span></Email>
+                                </div>
+                            </div>
+                        ))}
                     </div>
-                    {Globals.PrimaryContacts.map((c, idx) => (
-                        <div style={PadderStyle} key={idx}>
-                            <div className='rdo-footer-text'>
-                                <Email email={c.email} subject='DNATCO'><span style={{ color: 'var(--color-c)' }}>{c.name}</span></Email>
+
+                    <div className='flex'>
+                        <div className='hover-animation my-auto mx-3'><a className='cursor-pointer text-18px font-din-2014' href='/#/app/about'>About</a></div>
+                        <div className='hover-animation my-auto mx-3'><a className='cursor-pointer text-18px'>Contact</a></div>
+                    </div>
+
+                    <div className='flex'>
+                        <div className='my-auto mx-2'>
+                            <div className='text-18px text-center font-din-2014'>
+                                <div>Supported by Institute of Biotechnology & Elixir CZ</div>
                             </div>
                         </div>
-                    ))}
-
-                    <div />
-
-                    <div style={PadderStyle}>
-                        <div className='rdo-footer-text'>
-                            <div style={{ color: 'var(--color-c)' }}>Supported by Institute of Biotechnology & Elixir CZ</div>
+                        <div className='flex my-auto mx-2'>
+                            <a href='https://www.ibt.cas.cz/en' target='_blank'>
+                                <img className='h-12' src={IbtLogoImg} alt='Ibt logo'/>
+                            </a>
+                            <a href='https://www.elixir-czech.cz/' target='_blank'>
+                                <img className='h-12' src={ElixirLogoImg} alt='Elixir logo'/>
+                            </a>
                         </div>
                     </div>
-
-                    <IconButton
-                        className='rdo-footer-icon-button'
-                        iconClassName='rdo-footer-icon-button-image'
-                        src={IbtLogoImg}
-                        onClick={() => Net.openLink('https://www.ibt.cas.cz/en', true)}
-                    />
-                    <IconButton
-                        className='rdo-footer-icon-button'
-                        iconClassName='rdo-footer-icon-button-image'
-                        src={ElixirLogoImg}
-                        onClick={() => Net.openLink('https://www.elixir-czech.cz/', true)}
-                    />
-                    <IconButton
-                        className='rdo-footer-icon-button'
-                        iconClassName='rdo-footer-icon-button-image'
-                        src={CasLogoImg}
-                        onClick={() => Net.openLink('https://www.avcr.cz/en', true)}
-                    />
                 </div>
             </div>
         </>

@@ -55,7 +55,7 @@ export function SearchBox<T>(props: SearchBox.Props<T>) {
             <div className='rdo-strong'>{props.caption}</div>
             <input
                 autoFocus={true}
-                className='rdo-input-text'
+                className='text-22px'
                 type='text'
                 value={state.searchPrompt}
                 onKeyDown={(ev) => {
@@ -81,7 +81,7 @@ export function SearchBox<T>(props: SearchBox.Props<T>) {
             <div className='rdo-vflex rdo-vgap'>
             {
                 (state as State<T>).results.map((x, idx) => (
-                    <div className='rdo-hflex rdo-hgap' key={idx}>
+                    <div className='flex flex-row rdo-hgap' key={idx}>
                         <div style={{ flex: 1 }}>{props.searching.onRenderResult(x, props.searching.onUseResult)}</div>
                         <IconButton
                             className='rdo-pushbutton rdo-pushbutton-border'
@@ -92,7 +92,7 @@ export function SearchBox<T>(props: SearchBox.Props<T>) {
                 ))
             }
             </div>
-            <div className='rdo-hflex'>
+            <div className='flex flex-row'>
                 <div style={{ flex: 1 }} />
                 <PushButton
                     onClick={props.onClose}

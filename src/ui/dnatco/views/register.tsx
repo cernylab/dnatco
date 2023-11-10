@@ -16,6 +16,9 @@ import { SimilarityPlot } from './validation/similarity-plot';
 import { StepTorsions } from './validation/step-torsions';
 import { SelectedPieces, SelectionDisplayer } from '../structure-selection';
 import { Dnatcofication } from '../../../dnatco/dnatcofication';
+import { HelpAnnotation } from './annotation/help-annotation';
+import { HelpRefinement } from './refinement/help-refinement';
+import { HelpValidation } from './validation/help-validation';
 
 const NullDisplayer = async () => {};
 const NullSelectionMaker = () => ({ steps: [], residues: [], atoms: [], reconstruct: true });
@@ -145,5 +148,29 @@ export namespace Register {
             granularity: 'dont-care' as View<any>['granularity'],
             visualizer: false,
         },
+        'help-annotation': {
+            render: (props: View.Props) => <HelpAnnotation {...props} />,
+            selectionDisplayer: NullDisplayer,
+            selectionMaker: NullSelectionMaker,
+            unscrollableContainer: false,
+            granularity: 'dont-care' as View<any>['granularity'],
+            visualizer: false,
+        },
+        'help-refinement': {
+           render: (props: View.Props) => <HelpRefinement {...props} />,
+           selectionDisplayer: NullDisplayer,
+           selectionMaker: NullSelectionMaker,
+           unscrollableContainer: false,
+           granularity: 'dont-care' as View<any>['granularity'],
+           visualizer: false,
+       },
+       'help-validation': {
+           render: (props: View.Props) => <HelpValidation {...props} />,
+           selectionDisplayer: NullDisplayer,
+           selectionMaker: NullSelectionMaker,
+           unscrollableContainer: false,
+           granularity: 'dont-care' as View<any>['granularity'],
+           visualizer: false,
+       },
     };
 }

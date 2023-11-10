@@ -60,7 +60,7 @@ function makeTabs<TK extends string>(onTabSwitched: (tk: TK) => void, tabs: Tabs
 
 function tabButtonCls(enabled: boolean, selected: boolean) {
     if (enabled)
-        return `rdo-tab-button rdo-tab-button-enabled ${selected ? 'rdo-tab-button-selected' : ''}`;
+        return 'rdo-tab-button rdo-tab-button-enabled';
     return 'rdo-tab-button rdo-tab-button-disabled';
 }
 
@@ -72,17 +72,13 @@ function TabButton(props: {
     enabled: boolean;
     noCaps: boolean;
 }) {
-    return (
+    return (    
         <BasePushButton
             className={tabButtonCls(props.enabled, props.selected)}
             classNameDisabled='rdo-tab-button rdo-tab-button-disabled'
             onClick={props.onClick}
         >
-            <img
-                className='rdo-tab-button-icon'
-                src={props.icon}
-            />
-            <div className={props.noCaps ? 'rdo-tab-button-text-no-caps' : 'rdo-tab-button-text'}>{props.caption}</div>
+            <div className={`${props.noCaps ? '' : 'font-din-condensed text-28px'} ${props.enabled && !props.selected ? 'hover-animation' : ''} ${props.selected ? 'text-secondary-first stroke' : ''}`}>{props.caption}</div>
         </BasePushButton>
     );
 }
@@ -109,7 +105,6 @@ export function Menu<TK extends string>(props: {
 
     return (
         <div
-            className='rdo-navigation-menu'
             style={{
                 left: `${props.x}px`,
                 top: `${props.y}px`,
@@ -130,9 +125,22 @@ function NavigationBarCompact<TK extends string>(props: {
     const selected = props.tabs[props.selectedTab]
 
     return (
-        <div className='rdo-navigation-bar'>
-            <div style={{ alignItems: 'center', display: 'flex', flexDirection: 'row' }}>
-                <div style={{ flex: 1 }} />
+        <div className='navigation-mobile'>
+            <div className='flex flex-row items-center'>
+                <div className='dnatco-logo'>
+                    <img src='../assets/imgs/dnatco-logo.png'/>
+                </div>
+                <div>
+                    <TabButton
+                        key={props.selectedTab}
+                        icon={selected.icon}
+                        caption={selected.caption}
+                        onClick={() => {}}
+                        selected={true}
+                        enabled={true}
+                        noCaps={selected.noCaps ?? false}
+                    />
+                </div>
                 <div style={{
                     alignItems: 'center',
                     display: 'flex',
@@ -164,18 +172,6 @@ function NavigationBarCompact<TK extends string>(props: {
                         src={GridThreeUpImg}
                     />
                 </div>
-                <div style={{ width: 'min-content' }}>
-                    <TabButton
-                        key={props.selectedTab}
-                        icon={selected.icon}
-                        caption={selected.caption}
-                        onClick={() => {}}
-                        selected={true}
-                        enabled={true}
-                        noCaps={selected.noCaps ?? false}
-                    />
-                </div>
-                <div style={{ flex: 1 }} />
             </div>
         </div>
     );
@@ -187,7 +183,12 @@ function NavigationBarStandard<TK extends string>(props: {
     selectedTab: TK,
 }) {
     return (
-        <div className='rdo-navigation-bar'>
+        <div className='absolute top-0 w-full z-50 navigation-desktop flex justify-around items-center my-4'>
+            <div>
+                <a href='/'>
+                    <img className='w-28' src='../assets/imgs/dnatco-logo.png' alt='dnatco logo'/>
+                </a>
+            </div>
             <EquiBox
                 padding={33}
                 orientation='row'

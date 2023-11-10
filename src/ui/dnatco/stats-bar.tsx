@@ -19,5 +19,5 @@ export function StatsBar(props: { counts: number[], colors: string[] }) {
 
     blocks.push(<div style={{ flex: (100 - accum), backgroundColor: props.colors[props.colors.length - 1] }} key={props.counts.length - 1} />);
 
-    return <div className='rdo-hflex' style={{ width: '100%', height: '100%' }}>{blocks}</div>;
+    return <div className='flex flex-row w-full h-full'>{blocks}</div>;
 }

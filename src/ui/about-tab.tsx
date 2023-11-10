@@ -1,7 +1,6 @@
 import * as React from 'react';
 import { Help as _Help } from './help';
 import { Link } from './common/link';
-import { ShadowedBox } from './common/shadowed-box';
 import { SideSwitchingPanel } from './common/side-switching-panel';
 import { CasLogoImg, DefinitionNewTrans2Img, IbtLogoImg } from '../assets/images';
 import { ConformersFile } from '../assets/misc';
@@ -346,8 +345,7 @@ export class AboutTab extends React.Component<{}, State> {
     render() {
         return (
             <div className='rdo-offset'>
-                <ShadowedBox>
-                    <div className='rdo-screen-with-side-panel' style={{ overflow: 'hidden' }}>
+                    <div className='rdo-screen-with-side-panel overflow-hidden h-[calc(100%-6rem)] flex flex-col mt-24'>
                         <SideSwitchingPanel
                             items={Tabs}
                             selectedItemId={this.state.selected}
@@ -362,7 +360,6 @@ export class AboutTab extends React.Component<{}, State> {
                             </div>
                         </div>
                     </div>
-                </ShadowedBox>
             </div>
         );
     }

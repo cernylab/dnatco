@@ -6,7 +6,6 @@ import { DynamicTable as DynamicTableComp } from './common/dynamic-table';
 import { InProgress } from './common/in-progress';
 import { NamedList, NamedListItem } from './common/named-list';
 import { Popup } from './common/popup';
-import { ShadowedBox } from './common/shadowed-box';
 import { SideSwitchingPanel } from './common/side-switching-panel';
 import { DownloadButton } from './dnatco/common';
 import { DefinitionNewTrans2Img } from '../assets/images';
@@ -397,7 +396,7 @@ export class ConformersTab extends React.Component<ConformersTab.Props, State> {
         super(props);
 
         this.state = {
-            selected: 'table-of-conformers',
+            selected: 'browse-conformers',
         };
     }
 
@@ -416,14 +415,13 @@ export class ConformersTab extends React.Component<ConformersTab.Props, State> {
     render() {
         return (
             <div className='rdo-offset'>
-                <ShadowedBox>
-                    <div className='rdo-screen-with-side-panel' style={{ overflow: 'hidden' }}>
+                    <div className='rdo-screen-with-side-panel overflow-hidden h-[calc(100%-6rem)] flex flex-col mt-24'>
                         <SideSwitchingPanel
                             items={Tabs}
                             selectedItemId={this.state.selected}
                             onSwitched={id => this.setState({ ...this.state, selected: id })}
                         />
-                        <div style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+                        <div className='flex flex-col overflow-hidden'>
                             <div className='rdo-primary-caption'>
                                 {Tabs.find((tab) => tab[0] === this.state.selected)![1].title}
                             </div>
@@ -432,7 +430,6 @@ export class ConformersTab extends React.Component<ConformersTab.Props, State> {
                             </div>
                         </div>
                     </div>
-                </ShadowedBox>
             </div>
         );
     }

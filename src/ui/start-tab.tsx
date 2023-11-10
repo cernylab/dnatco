@@ -1,10 +1,7 @@
 import React from 'react';
-import { BigLogo } from './big-logo';
 import { ComboBox } from './common/combo-box';
 import { DummyIconTextButton, IconButton, IconTextButton } from './common/push-button';
-import { InProgressSpinner } from './common/in-progress-spinner';
 import { Popup } from './common/popup';
-import { ShadowedBox } from './common/shadowed-box';
 import { Tooltip } from './common/tooltip';
 import { Common } from './dnatco/common';
 import { MagnifyingGlassImg, MediaPlayImg, ReloadImg, XImg } from '../assets/images';
@@ -13,6 +10,7 @@ import { Logger } from '../log/logger';
 import { BuiltInRemoteDatabases, UserRemoteDatabases } from '../remote/db/register';
 import { copyString, isPdbId, toPdbId } from '../util';
 import { GlobalConfig, GlobalConfigData } from '../global-config';
+import { ComboBoxHome } from './common/combo-box-home';
 
 const AllowedDensityMapKinds = [...DensityMapKinds, 'coefficients'] as const;
 type AllowedDensityMapKinds = typeof AllowedDensityMapKinds[number];
@@ -53,7 +51,7 @@ const NiceMapKinds: Record<AllowedDensityMapKinds, string> = {
     '2fo-fc': '2Fo-Fc',
     'em': 'EM',
     'coefficients': 'Map coefficients',
-}
+} 
 
 class AnalyzeButton extends React.Component<{ ready: boolean, onClick: () => void }> {
     render() {
@@ -63,8 +61,8 @@ class AnalyzeButton extends React.Component<{ ready: boolean, onClick: () => voi
                 caption='Analyze'
                 onClick={() => this.props.onClick()}
                 disabled={!this.props.ready}
-                className='rdo-pushbutton rdo-pushbutton-border rdo-start-analyze-button'
-                classNameDisabled='rdo-pushbutton rdo-pushbutton-border rdo-start-analyze-button-disabled'
+                className='items-center flex justify-center transition-all ease-in-out w-full bg-primary-first text-16px text-secondary-first rounded-standart p-2 mx-1 hover:bg-secondary-second'
+                classNameDisabled='items-center flex justify-center rounded-standart w-full p-2 mx-1 text-16px bg-primary-first-disabled text-white'
             />
         );
     }
@@ -76,21 +74,17 @@ class Coordinates extends React.Component<Coordinates.Props> {
         const examples = listOfValidExamples(GlobalConfig.data().exampleStructures);
 
         return (
-            <div className='rdo-start-input-section'>
-                <div className='rdo-start-input-section-caption'>Coordinates</div>
-
+            <div className='mx-auto'>
+                <div className='text-38px font-din-2014 text-center mb-4'>Analyze your structure</div>
                 <div
-                    className='rdo-start-input-block'
-                    style={{ gridTemplateColumns: '6em 1fr' }}
+                    className='items-center grid gap-3'
                 >
-                    <div className='rdo-strong rdo-talgn-right' style={{ ...CoordsItemProps, fontSize: 'var(--font-large)' }}>Source</div>
-                    <div style={{ width: '100%' }}>
-                        <ComboBox
+                    <div className='font-din-2014 text-24px text-primary-first'>Source</div>
+                    <div className='w-300px rounded-standart'>
+                        <ComboBoxHome
                             value={this.props.database}
                             options={this.props.databaseOptions}
                             onChange={(db) => this.props.onDatabaseChange(db)}
-                            innerStyle={{ fontSize: 'var(--font-size)', height: CoordsItemProps.height }}
-                            sizing='auto'
                         />
                     </div>
 
@@ -119,7 +113,7 @@ class Coordinates extends React.Component<Coordinates.Props> {
                                 }
                             </>
                             : <>
-                            <div className='rdo-strong rdo-talgn-right' style={{ ...CoordsItemProps, fontSize: 'var(--font-large)' }}>PDB ID</div>
+                            <div className='font-din-2014 text-24px text-primary-first'>PDB ID</div>
                             <PdbIdInput
                                 pdbId={this.props.pdbId}
                                 onChange={(v) => this.props.onPdbIdChange(v)}
@@ -226,8 +220,8 @@ class DensityMapFiles extends React.Component<
         const addedFiles = this.addedFiles(AllowedDensityMapKinds.length);
 
         return (
-            <div className='rdo-start-input-section' style={{ position: 'relative' }}>
-                <div className='rdo-start-input-section-caption'>Density maps</div>
+            <div className='mx-auto relative'>
+                <div className='text-40px mb-4 text-center'>Density maps</div>
 
                 <FileInput
                     id='upload-density-map'
@@ -241,7 +235,7 @@ class DensityMapFiles extends React.Component<
                     disabled={this.props.disabled}
                 />
                 <div
-                    className='rdo-start-input-block'
+                    className='items-center grid gap-3 grid-cols-2'
                     style={{ gridTemplateColumns: '1fr 12em' }}
                 >
                     {opts.length > 0
@@ -341,12 +335,9 @@ class PdbIdInput extends React.Component<{ pdbId: string, onChange: (v: string) 
     render() {
         return (
             <input
-                className='rdo-input-text'
+                className='bg-primary-first placeholder:text-white text-white rounded-standart p-4 w-full items-center flex'
                 style={{
-                    fontSize: 'var(--font-large)',
-                    height: CoordsItemProps.height,
-                    width: '100%',
-                    ...(!isPdbId(this.props.pdbId, true) && this.props.pdbId.length > 0 ? { color: 'red' } : {})
+                    ...(!isPdbId(this.props.pdbId, true) && this.props.pdbId.length > 0 ? { color: '#FF7973' } : {})
                 }}
                 type='text'
                 value={this.props.pdbId}
@@ -443,79 +434,90 @@ export class StartTab extends React.Component<StartTab.Props, State> {
 
     render() {
         return (
-            <div className='rdo-section-column' style={{ height: '100%' }}>
-                <BigLogo />
+            <div className='flex flex-col h-full relative'>
+                <div className='hidden select-none xl:block xl:absolute xl:top-[-1rem] xl:left-0 xl:w-[44.4%] xl:z-40'>
+                    <img src='../assets/imgs/home-dna-left.png' alt='DNA'/>
+                </div>
+                <div className='hidden select-none xl:block xl:absolute xl:top-14 xl:right-0 xl:w-[24%] xl:z-40'>
+                    <img src='../assets/imgs/home-dna-right.png' alt='DNA'/>
+                </div>
+                <div className='hidden floating select-none xl:block xl:absolute xl:top-0 xl:right-0 xl:z-40 xl:w-[16%] xl:mt-[24%] xl:mr-[19%]'>
+                    <img src='../assets/imgs/density_shadow.png' alt='Density' />
+                </div>
+                <div className='hidden floating select-none xl:block xl:absolute xl:top-0 xl:left-0 xl:z-40 xl:w-[16%] xl:mt-[17%] xl:ml-[19%]'>
+                    <img src='../assets/imgs/naval_aform_shadow.png' alt='Naval aform' />
+                </div>
+                <div className='hidden floating select-none xl:block xl:absolute xl:top-0 xl:left-0 xl:z-40 xl:w-[10%] xl:mt-[32%] xl:ml-[23%]'>
+                    <img src='../assets/imgs/contacts_shadow.png' alt='Contacts' />
+                </div>
                 <div style={ Common.VScrollJail }>
-                    <div className='rdo-offset' style={{ flex: 1 }}>
-                        <ShadowedBox>
-                            <div className='rdo-start-container rdo-scroll-vertically'>
-                                <div className='rdo-hflex' style={{ justifyContent: 'center', gap: 'var(--h-gap)' }}>
-                                    <div style={{ flex: 1, maxWidth: '50%' }}>
-                                        <Coordinates
-                                            coordsFile={this.state.coordsFile}
-                                            database={this.state.database}
-                                            databaseOptions={this.DatabaseOptions}
-                                            pdbId={this.state.pdbId}
-                                            onCoordsFileChange={(f) => this.setState({ ...this.state, coordsFile: f })}
-                                            onDatabaseChange={(db) => this.setState({ ...this.state, database: db })}
-                                            onPdbIdChange={(id) => this.setState({ ...this.state, pdbId: id })}
-                                            onRun={() => this.actionPdbId(this.state.database, this.state.pdbId)}
-                                            onRunExample={(db, pdbId) => this.actionPdbId(db, pdbId)}
-                                        />
-                                    </div>
+                    <div className='rdo-offset'>
+                            <div className='mt-13'>
+                                <div className='text-42px w-[720px] m-auto text-center leading-10 font-din-condensed font-regular'><span className='text-secondary-first uppercase text-42px stroke'>Dnatco</span> enables an in-depth analysis and validation of nucleic acid structures</div>
+                                <div className='mt-10 max-w-[1024px] m-auto'>
+                                    <div className='flex flex-row justify-center' style={{ gap: 'var(--h-gap)' }}>
+                                        <div>
+                                            <Coordinates
+                                                coordsFile={this.state.coordsFile}
+                                                database={this.state.database}
+                                                databaseOptions={this.DatabaseOptions}
+                                                pdbId={this.state.pdbId}
+                                                onCoordsFileChange={(f) => this.setState({ ...this.state, coordsFile: f })}
+                                                onDatabaseChange={(db) => this.setState({ ...this.state, database: db })}
+                                                onPdbIdChange={(id) => this.setState({ ...this.state, pdbId: id })}
+                                                onRun={() => this.actionPdbId(this.state.database, this.state.pdbId)}
+                                                onRunExample={(db, pdbId) => this.actionPdbId(db, pdbId)}
+                                            />
+                                        </div>
 
-                                    {this.state.database === ''
-                                        ?
-                                            <div style={{ flex: 1 }}>
-                                                <DensityMapFiles
-                                                    disabled={this.state.database !== ''}
-                                                    files={this.state.densityMaps}
-                                                    onAddFile={file => {
-                                                        this.state.densityMaps.push(file);
-                                                        this.setState({ ...this.state });
-                                                    }}
-                                                    onRemoveFile={idx => {
-                                                        this.state.densityMaps.splice(idx, 1);
-                                                        this.setState({ ...this.state });
-                                                    }}
-                                                />
-                                            </div>
-                                        : undefined
-                                    }
-                                </div>
-                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 128px 128px 1fr', gap: 'var(--h-gap)' }}>
-                                    <div />
-                                    <AnalyzeButton
-                                        ready={this.props.dnatcofierState === 'ready'}
-                                        onClick={() => {
-                                            if (this.state.database)
-                                                this.actionPdbId(this.state.database, this.state.pdbId)
-                                            else
-                                                this.actionCustomStructure();
-                                        }}
-                                    />
-                                    <IconTextButton
-                                        src={ReloadImg}
-                                        caption='Reset'
-                                        onClick={() => this.setState({ ...this.defaultState() })}
-                                        className='rdo-pushbutton rdo-pushbutton-border rdo-start-reset-button'
-                                    />
-                                    <div />
+                                        {this.state.database === ''
+                                            ?
+                                                <div style={{ flex: 1 }}>
+                                                    <DensityMapFiles
+                                                        disabled={this.state.database !== ''}
+                                                        files={this.state.densityMaps}
+                                                        onAddFile={file => {
+                                                            this.state.densityMaps.push(file);
+                                                            this.setState({ ...this.state });
+                                                        }}
+                                                        onRemoveFile={idx => {
+                                                            this.state.densityMaps.splice(idx, 1);
+                                                            this.setState({ ...this.state });
+                                                        }}
+                                                    />
+                                                </div>
+                                            : undefined
+                                        }
+                                    </div>
+                                    <div className='flex my-2 mx-auto w-400px'>
+                                        <div />
+                                        <AnalyzeButton
+                                            ready={this.props.dnatcofierState === 'ready'}
+                                            onClick={() => {
+                                                if (this.state.database)
+                                                    this.actionPdbId(this.state.database, this.state.pdbId)
+                                                else
+                                                    this.actionCustomStructure();
+                                            }}
+                                        />
+                                        <IconTextButton
+                                            src={ReloadImg}
+                                            caption='Reset'
+                                            onClick={() => this.setState({ ...this.defaultState() })}
+                                            className='items-center flex justify-center transition-all ease-in-out w-full bg-primary-first text-white rounded-standart mx-2 hover:bg-secondary-second hover:text-primary-first'
+                                        />
+                                        <div />
+                                    </div>
                                 </div>
                                 {this.props.dnatcofierState === 'initializing'
-                                    ? <div className='rdo-hflex' style={{ alignItems: 'center', gap: 'var(--h-gap)' }}>
-                                        <div style={{ flex: 1 }} />
-                                        <div className='rdo-rednatco-state'>Please wait for {GlobalConfig.data().displayedProductName} to initialize...</div>
-                                        <InProgressSpinner />
-                                        <div style={{ flex: 1 }} />
+                                    ? <div className='flex flex-row items-center'>
+                                        <div className='text-16px m-auto'>Please wait for {GlobalConfig.data().displayedProductName} to initialize...</div>
                                     </div>
                                     : this.props.dnatcofierState === 'failed'
-                                        ? <div className='rdo-rednatco-state rdo-error-text' style={{ display: 'flex', gap: '1ex' }}>{GlobalConfig.data().displayedProductName} failed to initialize</div>
+                                        ? <div className='text-16px m-auto flex rdo-error-text'>{GlobalConfig.data().displayedProductName} failed to initialize</div>
                                         : undefined
                                 }
-                                <div style={{ flex: 1 }} />
                             </div>
-                        </ShadowedBox>
                     </div>
                 </div>
             </div>

@@ -136,11 +136,7 @@ export class IconTextButton extends React.Component<IconTextButton.Props> {
                 classNameDisabled={this.props.classNameDisabled ?? 'rdo-icon-text-button-disabled'}
             >
                 <div className='rdo-pushbutton-inner-container'>
-                    <img
-                        className={this.props.iconClassName ?? 'rdo-icon-button-image'}
-                        src={this.props.src}
-                    />
-                    <span className='rdo-pushbutton-text' style={{ flex: 1 }}>{this.props.caption}</span>
+                    <span className='rdo-pushbutton-text'>{this.props.caption}</span>
                 </div>
             </BasePushButton>
         );

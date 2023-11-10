@@ -54,12 +54,16 @@ const AvailableViews: Record<ViewId, { caption: string }> = {
     'connectivity-plot': { caption: 'Connectivity plot' },
     'rscc-plot': { caption: 'RSCC/RMSD plot' },
     'angles-lengths': { caption: 'Bond Lengths & Angles' },
+    'help-annotation': { caption: 'Help' },
+    'help-refinement': { caption: 'Help' },
+    'help-validation': { caption: 'Help' },
 };
 const ViewsInMode: Record<MasterMode, [ViewId, Register.View<any>][]> = {
     'annotation': [
         ['assigned-ntcs', Register.Views['assigned-ntcs']],
         ['structure-info', Register.Views['structure-info']],
         ['downloads', Register.Views['downloads']],
+        ['help-annotation', Register.Views['help-annotation']],
     ],
     'refinement': [
         ['connectivity-plot', Register.Views['connectivity-plot']],
@@ -67,6 +71,7 @@ const ViewsInMode: Record<MasterMode, [ViewId, Register.View<any>][]> = {
         ['phenix-restraints', Register.Views['phenix-restraints']],
         ['mmb-commands-file', Register.Views['mmb-commands-file']],
         ['change-ntcs', Register.Views['change-ntcs']],
+        ['help-refinement', Register.Views['help-refinement']],
     ],
     'validation': [
         ['confals-rmsds', Register.Views['confals-rmsds']],
@@ -74,6 +79,7 @@ const ViewsInMode: Record<MasterMode, [ViewId, Register.View<any>][]> = {
         ['similarity-plot', Register.Views['similarity-plot']],
         ['rscc-plot', Register.Views['rscc-plot']],
         ['angles-lengths', Register.Views['angles-lengths']],
+        ['help-validation', Register.Views['help-validation']],
     ]
 }
 
@@ -179,21 +185,21 @@ function Resolution(props: { d: Dnatcofication }) {
     if (Common.MethodsWithCommonResolution.includes(method)) {
         return (
             <div>
-                <span className='rdo-emphasize'>Low:{'\u00A0'}</span><span>{getCifValue(props.d, Refine, 'ls_d_res_low')?.toFixed(3) ?? 'N/A'}</span>
+                <span className='font-din-2014'>Low:{'\u00A0'}</span><span>{getCifValue(props.d, Refine, 'ls_d_res_low')?.toFixed(3) ?? 'N/A'}</span>
                 {',\u00A0'}
-                <span className='rdo-emphasize'>High:{'\u00A0'}</span><span>{getCifValue(props.d, Refine, 'ls_d_res_high')?.toFixed(3) ?? 'N/A'}</span>
+                <span className='font-din-2014'>High:{'\u00A0'}</span><span>{getCifValue(props.d, Refine, 'ls_d_res_high')?.toFixed(3) ?? 'N/A'}</span>
             </div>
         );
     } else if (method === 'electron microscopy') {
         return (
             <div>
-                <span className='rdo-emphasize'>EM:{'\u00A0'}</span><span>{getCifValue(props.d, Em3dReconstruction, 'resolution')?.toFixed(3) ?? 'N/A'}</span>
+                <span className='font-din-2014'>EM:{'\u00A0'}</span><span>{getCifValue(props.d, Em3dReconstruction, 'resolution')?.toFixed(3) ?? 'N/A'}</span>
             </div>
         );
     } else {
         return (
             <div>
-                <span className='rdo-emphasize'>N/A</span>
+                <span className='font-din-2014'>N/A</span>
             </div>
         );
     }
@@ -201,17 +207,17 @@ function Resolution(props: { d: Dnatcofication }) {
 
 function StructureCaption(props: { d: Dnatcofication }) {
     return (
-        <div className='rdo-structure-caption'>
-            <div style={{ display: 'grid', gridTemplateColumns: 'auto auto', alignItems: 'center' }}>
-                <div className='rdo-structure-id'>
+        <div className='structure-caption flex flex-col justify-center mb-2 ml-4'>
+            <div className='flex items-center'>
+                <div className='font-din-2014 text-18px font-700 mr-2'>
                     {props.d.identifyingName}
                 </div>
-                <div className='rdo-structure-title'>
+                <div className='font-din-2014 text-18px font-700'>
                    {props.d.identifyingTitle}
                 </div>
             </div>
-            <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center', gap: 'var(--h-gap)' }}>
-                <div className='rdo-strong'>Resolution</div>
+            <div className='flex'>
+                <div className='font-din-2014 text-18px font-700 mr-2'>Resolution</div>
                 <Resolution d={props.d} />
             </div>
         </div>

@@ -1,13 +1,9 @@
 export namespace Globals {
-    export const DefaultProductName = 'ReDNATCO';
+    export const DefaultProductName = 'DNATCO';
     export const PrimaryContacts = [
         {
-            name: 'Jiří Černý',
+            name: 'Dnatco Team',
             email: 'jiri.cerny@ibt.cas.cz'
         },
-        {
-            name: 'Bohdan Schneider',
-            email: 'bohdan.schneider@ibt.cas.cz'
-        }
     ];
 }
