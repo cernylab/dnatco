@@ -1,10 +1,13 @@
+import { ThingsAreHappeningImg } from '../../assets/images';
 import { v4 as uuidv4 } from 'uuid';
+
+const SpinnerStyle = 'height: 1.5em; width: auto;';
 
 export namespace InProgress {
     function makeAbortButton() {
         return `
-            <div class="rdo-pushbutton rdo-pushbutton-border">
-                <div class="rdo-pushbutton-text">Abort</div>
+            <div class="rdo-pushbutton">
+                <div class="font-din-2014 font-700 text-16px m-1">Abort</div>
             </div>
         `;
     }
@@ -12,10 +15,17 @@ export namespace InProgress {
         return `
             <div class="absolute top-0 left-0 h-full w-full z-[999] m-auto bg-test">
                 <div class="bg-primary-first flex flex-col mx-auto p-4 relative top-[45%] rounded-standart max-w-[33%] text-white">
-                    <div class="flex"">
+                    <div class="flex justify-between">
                         <div class="font-din-2014">
                             ${makeText(title, status)}
                         </div>
+                        <img
+                            class="animate-spin"
+                            src="${ThingsAreHappeningImg}"
+                            style="${SpinnerStyle}"
+                            id="${spinnerId}"
+                        />
+
                     </div>
                     <div class="rdo-popup-button-bar">
                         <div style="flex: 1">&nbsp;</div>

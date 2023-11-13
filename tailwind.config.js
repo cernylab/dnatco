@@ -7,7 +7,9 @@ module.exports = {
     extend: {
       colors: {
         "black": "rgba(0, 0, 0, 0.75)",
-        "white": "rgba(255, 255, 255, 0.8)",
+        "white": "rgba(255, 255, 255, 0.8)", // white with opacity 80%
+        "full-white": "#ffffff", // white
+
 
         "primary-first": "#30595C", // dark blue
         "primary-first-disabled": "rgba(49, 89, 92, 0.7)",  // dark blue with 70% opacity

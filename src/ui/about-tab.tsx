@@ -51,7 +51,7 @@ function Contact() {
 function Downloads() {
     return (
         <_Help.Container>
-            <div className='rdo-page'>
+            <div className='mx-auto max-w-[1280px]'>
                 <div className='rdo-paragraph-caption'>NtC data</div>
                 <div className='rdo-paragraph'>
                     <ul className='rdo-list'>
@@ -106,7 +106,7 @@ function Downloads() {
 
 function Help() {
     return (
-        <_Help.Container>
+        <div>
             <div className='rdo-page'>
                 <div className='rdo-paragraph-caption'>Method</div>
                 <div className='rdo-paragraph'>
@@ -187,7 +187,7 @@ function Help() {
                     </ul>
                 </div>
             </div>
-        </_Help.Container>
+        </div>
     );
 }
 
@@ -351,11 +351,11 @@ export class AboutTab extends React.Component<{}, State> {
                             selectedItemId={this.state.selected}
                             onSwitched={id => this.setState({ ...this.state, selected: id})}
                         />
-                        <div style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-                            <div className='rdo-primary-caption'>
+                        <div className='flex flex-col overflow-hidden rdo-offset'>
+                            <div className='font-din-2014 text-18px font-700'>
                                 {Tabs.find((tab) => tab[0] === this.state.selected)![1].caption}
                             </div>
-                            <div className='rdo-offset' style={{ overflow: 'hidden' }}>
+                            <div className='overflow-hidden'>
                                 {this.renderTab()}
                             </div>
                         </div>

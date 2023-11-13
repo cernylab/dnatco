@@ -24,7 +24,7 @@ export function Footer() {
 
                     <div className='flex'>
                         <div className='hover-animation my-auto mx-3'><a className='cursor-pointer text-18px font-din-2014' href='/#/app/about'>About</a></div>
-                        <div className='hover-animation my-auto mx-3'><a className='cursor-pointer text-18px'>Contact</a></div>
+                        <div className='hover-animation my-auto mx-3'><a className='cursor-pointer text-18px' href='/#/app/about'>Contact</a></div>
                     </div>
 
                     <div className='flex'>

@@ -44,7 +44,7 @@ export class SpinBox extends React.Component<SpinBox.Props> {
     render() {
         return (
             <div
-                className='rdo-spinbox-container'
+                className='bg-primary-first rounded-standart flex justify-between p-2'
                 style={{ width: this.props.sizing ? SizingPolicy[this.props.sizing] : SizingPolicy.default }}
             >
                 <input
@@ -71,7 +71,7 @@ export class SpinBox extends React.Component<SpinBox.Props> {
                     }}
                 />
                 <div />
-                <div className='rdo-spinbox-buttons'>
+                <div className='flex flex-col m-1'>
                     <img
                         className='rdo-spinbox-button'
                         src={TriangleUpImg} onClick={() => this.increase()}

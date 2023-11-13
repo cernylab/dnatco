@@ -149,7 +149,7 @@ function RsccRmsdDownload(props: { d: Dnatcofication, structureName: string }) {
 
         return (
             <_Downloads.DownloadBox>
-                <div className='rdo-vflexalign'>
+                <div className='flex items-center h-full'>
                     <div className='rdo-strong'>Model</div>
                 </div>
                 <ComboBox
@@ -166,7 +166,7 @@ function RsccRmsdDownload(props: { d: Dnatcofication, structureName: string }) {
                         caption='Assigned NtCs'
                         onClick={() => downloadRsccPlot('assigned', props.structureName, parseInt(modelIndex), props.d)}
                         />
-                    : <div className='rdo-vflexalign' style={{ whiteSpace: 'nowrap' }}>(No assigned NtCs)</div>
+                    : <div className='flex items-center h-full' style={{ whiteSpace: 'nowrap' }}>(No assigned NtCs)</div>
             }
             {
                 haveUnassigned
@@ -174,7 +174,7 @@ function RsccRmsdDownload(props: { d: Dnatcofication, structureName: string }) {
                         caption='Unassigned NtCs'
                         onClick={() => downloadRsccPlot('unassinged', props.structureName, parseInt(modelIndex), props.d)}
                     />
-                    : <div className='rdo-vflexalign' style={{ whiteSpace: 'nowrap' }}>(No unassigned NtCs)</div>
+                    : <div className='flex items-center h-full' style={{ whiteSpace: 'nowrap' }}>(No unassigned NtCs)</div>
             }
             </_Downloads.DownloadBox>
         );
@@ -199,11 +199,7 @@ export function Downloads(props: { dnatcofication: Dnatcofication }) {
     return (
         <div className='rdo-offset'>
                 <div className='overflow-hidden h-[calc(100%-6rem)] flex flex-col mt-24'>
-                    <div style={{
-                        fontSize: 'var(--font-xxlarge)',
-                        fontWeight: 'bold',
-                        textAlign: 'center',
-                    }}>
+                    <div className='text-18px font-700 text-center'>
                         Download of data computed for {structureName}
                     </div>
                     <div
@@ -386,7 +382,7 @@ export function Downloads(props: { dnatcofication: Dnatcofication }) {
                                         });
                                     }}
                                 />
-                                <div className='rdo-vflexalign'>
+                                <div className='flex items-center h-full'>
                                     <CheckBox
                                         caption='List all dinucleotides in the report'
                                         checked={listAllDinus}

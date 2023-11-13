@@ -18,7 +18,7 @@ export function niceStepName(step: Step, showModelNum = false) {
         <span>
             {showModelNum
                 ? <>
-                    <span className='rdo-nice-step-model'>M{step.model}</span><div className='rdo-nice-step-msep'>{'\u00A0'}</div>
+                    <span className='rdo-nice-step-model'>M{step.model}</span><div className='inline-block w-1'>{'\u00A0'}</div>
                 </>
                 : undefined
             }
@@ -27,7 +27,7 @@ export function niceStepName(step: Step, showModelNum = false) {
             <span className='rdo-nice-step-residue'>{step.resNo1Auth}{step.insCode1}</span>
             {step.altPos1 !== '' ? <span className='rdo-nice-step-altpos'>(alt. {step.altPos1})</span> : void 0}
 
-            <div className='rdo-nice-step-fssep'>{'\u00A0'}</div>
+            <div className='inline-block w-3'>{'\u00A0'}</div>
 
             <span className='rdo-nice-step-base'>{step.base2}</span>
             <span className='rdo-nice-step-brsep'>{'\u00A0'}</span>

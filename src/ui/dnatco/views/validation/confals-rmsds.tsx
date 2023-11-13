@@ -439,7 +439,7 @@ export class ConfalsRmsds extends View<View.Props> {
 
         return (
             <div style={{ ...Common.VScrollJail, position: 'relative' }} ref={selfRef}>
-                <div className='rdo-view-caption'>Overall structure quality</div>
+                <div className='font-700 mb-2 p-2 text-center border-b-[1px] border-primary-first'>Overall structure quality</div>
 
                 <Stats
                     assigned={Cif.Column.value(overall.num_classified, 0)!}
@@ -483,7 +483,7 @@ export class ConfalsRmsds extends View<View.Props> {
                 <div className='rdo-floating-search-icon-tainer' style={{ bottom: 'var(--x-gap)', right: 'var(--x-gap)' }}>
                     <IconButton
                         src={MagnifyingGlassImg}
-                        className='rdo-floating-search-icon rdo-pushbutton-border'
+                        className='rdo-floating-search-icon'
                         onClick={() => {
                             const tainer = selfRef.current;
                             if (!tainer || this.searchBoxOpen)

@@ -1212,7 +1212,7 @@ export namespace AnglesLengthsCommon {
 
     export function substructureBarCaption(text: string | JSX.Element) {
         return (
-            <div className='rdo-vflexalign' style={{ gap: 'var(--h2-gap)', paddingLeft: 'var(--h2-gap)' }}>
+            <div className='flex items-center h-full' style={{ gap: 'var(--h2-gap)', paddingLeft: 'var(--h2-gap)' }}>
                 <div style={ AnglesLengthsCommon.BarCaptionStyle }>{text}</div>
                 <img className='rdo-info-icon-white' style={{ filter: 'invert() drop-shadow(0 0 3px black)' }} src={InfoInverseImg} />
             </div>

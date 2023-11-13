@@ -104,12 +104,7 @@ export function Menu<TK extends string>(props: {
     }, []);
 
     return (
-        <div
-            style={{
-                left: `${props.x}px`,
-                top: `${props.y}px`,
-            }}
-        >
+        <div className='h-full w-full absolute left-0 top-0 bg-full-white p-8'>
             {makeTabs(props.onTabSwitched, props.tabs, props.selectedTab)}
         </div>
     );
@@ -120,57 +115,54 @@ function NavigationBarCompact<TK extends string>(props: {
     tabs: Tabs<TK>,
     selectedTab: TK,
 }) {
-    const [hamburgerOpen, setHamburberOpen] = React.useState(false);
-    const [hamburgerHovered, setHamburberHovered] = React.useState(false);
+    const [hamburgerOpen, setHamburgerOpen] = React.useState(false);
     const selected = props.tabs[props.selectedTab]
 
     return (
         <div className='navigation-mobile'>
-            <div className='flex flex-row items-center'>
-                <div className='dnatco-logo'>
-                    <img src='../assets/imgs/dnatco-logo.png'/>
-                </div>
+            <div className='flex flex-row justify-between mx-4 items-center'>
                 <div>
-                    <TabButton
-                        key={props.selectedTab}
-                        icon={selected.icon}
-                        caption={selected.caption}
-                        onClick={() => {}}
-                        selected={true}
-                        enabled={true}
-                        noCaps={selected.noCaps ?? false}
-                    />
+                    <a href='/'>
+                        <img className='w-28' src='../assets/imgs/dnatco-logo.png'/>
+                    </a>
                 </div>
-                <div style={{
-                    alignItems: 'center',
-                    display: 'flex',
-                    height: '1.75em',
-                    justifyContent: 'center',
-                    padding: '0.5em'}}
-                    onMouseEnter={() => setHamburberHovered(true)}
-                    onMouseLeave={() => setHamburberHovered(false)}
-                    onClick={(ev) => {
-                        ev.preventDefault();
-                        ev.stopPropagation();
+                <div className='flex'>
+                    <div>
+                        <TabButton
+                            key={props.selectedTab}
+                            icon={selected.icon}
+                            caption={selected.caption}
+                            onClick={() => {}}
+                            selected={true}
+                            enabled={true}
+                            noCaps={selected.noCaps ?? false}
+                        />
+                    </div>
+                    <div className='items-center flex h-7 justify-center p-2 m-auto'
+                        onClick={(ev) => {
+                            ev.preventDefault();
+                            ev.stopPropagation();
+                            setHamburgerOpen(true)
+                            console.log('You just clicked on hamburger')
 
-                        if (hamburgerOpen)
-                            return;
+                            if (hamburgerOpen) 
+                                return;
 
-                        makeMenu(
-                            props.onTabSwitched,
-                            props.tabs,
-                            props.selectedTab,
-                            ev.clientX,
-                            ev.clientY,
-                            () => setHamburberOpen(false),
-                        );
-                        setHamburberOpen(true);
-                    }}
-                >
-                    <img
-                        className={`rdo-navigation-bar-hamburger-icon ${hamburgerHovered ? 'rdo-navigation-bar-hamburger-icon-active' : ''}`}
-                        src={GridThreeUpImg}
-                    />
+                            makeMenu(
+                                props.onTabSwitched,
+                                props.tabs,
+                                props.selectedTab,
+                                ev.clientX,
+                                ev.clientY,
+                                () => setHamburgerOpen(false),
+                            );
+                        }}
+                    >
+                        <img
+                            className='h-[75%]'
+                            src={GridThreeUpImg}
+                        />
+                    </div>
                 </div>
             </div>
         </div>

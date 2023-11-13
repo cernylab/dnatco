@@ -12,7 +12,7 @@ const DropdownArrowStyle = {
     'backgroundRepeat': 'no-repeat',
     'backgroundImage': `url("${DownArrowImg}")`,
     'backgroundPosition': 'right',
-    'backgroundSize': '1em',
+    'backgroundSize': '0.75rem',
 };
 
 export class ComboBox extends React.Component<ComboBox.Props> {

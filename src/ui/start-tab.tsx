@@ -4,7 +4,7 @@ import { DummyIconTextButton, IconButton, IconTextButton } from './common/push-b
 import { Popup } from './common/popup';
 import { Tooltip } from './common/tooltip';
 import { Common } from './dnatco/common';
-import { MagnifyingGlassImg, MediaPlayImg, ReloadImg, XImg } from '../assets/images';
+import { MagnifyingGlassImg, MediaPlayImg, ReloadImg, XImg, DnaLeft, DnaRight, Density, NavalAform, Contacts } from '../assets/images';
 import { DensityMap, DensityMapKinds } from '../dnatco/density-map';
 import { Logger } from '../log/logger';
 import { BuiltInRemoteDatabases, UserRemoteDatabases } from '../remote/db/register';
@@ -176,7 +176,7 @@ class DensityMapFiles extends React.Component<
             elems.push(
                 <React.Fragment key={idx}>
                     <LongFileName name={f.file.name} disabled={this.props.disabled} />
-                    <div style={{ display: 'flex', flexDirection: 'row', width: '100%' }}>
+                    <div className='flex w-full'>
                         <div className={textCls} style={{ flex: 1, fontSize: 'var(--font-large)' }}>{NiceMapKinds[f.kind]}</div>
                         <div style={{ width: '2em' }}>
                             <IconButton
@@ -234,20 +234,7 @@ class DensityMapFiles extends React.Component<
                     }}
                     disabled={this.props.disabled}
                 />
-                <div
-                    className='items-center grid gap-3 grid-cols-2'
-                    style={{ gridTemplateColumns: '1fr 12em' }}
-                >
-                    {opts.length > 0
-                        ? <label htmlFor='upload-density-map' style={{ display: 'flex', justifyContent: 'end', height: '100%' }}>
-                            <DummyIconTextButton
-                                src={MagnifyingGlassImg}
-                                caption='Browse'
-                                disabled={this.props.disabled}
-                            />
-                        </label>
-                        : <div />
-                    }
+                <div className='items-center flex justify-center'>
                     <ComboBox
                         value={this.state.selectedKind}
                         options={opts}
@@ -257,6 +244,16 @@ class DensityMapFiles extends React.Component<
                         disabled={this.props.disabled}
                     />
                     {addedFiles}
+                    {opts.length > 0
+                        ? <label htmlFor='upload-density-map' className='flex justify-end h-full'>
+                            <DummyIconTextButton
+                                src={MagnifyingGlassImg}
+                                caption='Browse'
+                                disabled={this.props.disabled}
+                            />
+                        </label>
+                        : <div />
+                    }
                 </div>
             {this.props.files.length === 0 && this.props.disabled
                 ? <div
@@ -383,7 +380,9 @@ export class StartTab extends React.Component<StartTab.Props, State> {
     constructor(props: StartTab.Props) {
         super(props);
 
-        this.state = { ...this.defaultState() };
+        this.state = { 
+            ...this.defaultState() 
+        };
     }
 
     private actionCustomStructure() {
@@ -431,96 +430,104 @@ export class StartTab extends React.Component<StartTab.Props, State> {
             pdbId: '',
         }
     }
+      
+      render() {
 
-    render() {
         return (
-            <div className='flex flex-col h-full relative'>
-                <div className='hidden select-none xl:block xl:absolute xl:top-[-1rem] xl:left-0 xl:w-[44.4%] xl:z-40'>
-                    <img src='../assets/imgs/home-dna-left.png' alt='DNA'/>
-                </div>
-                <div className='hidden select-none xl:block xl:absolute xl:top-14 xl:right-0 xl:w-[24%] xl:z-40'>
-                    <img src='../assets/imgs/home-dna-right.png' alt='DNA'/>
-                </div>
-                <div className='hidden floating select-none xl:block xl:absolute xl:top-0 xl:right-0 xl:z-40 xl:w-[16%] xl:mt-[24%] xl:mr-[19%]'>
-                    <img src='../assets/imgs/density_shadow.png' alt='Density' />
-                </div>
-                <div className='hidden floating select-none xl:block xl:absolute xl:top-0 xl:left-0 xl:z-40 xl:w-[16%] xl:mt-[17%] xl:ml-[19%]'>
-                    <img src='../assets/imgs/naval_aform_shadow.png' alt='Naval aform' />
-                </div>
-                <div className='hidden floating select-none xl:block xl:absolute xl:top-0 xl:left-0 xl:z-40 xl:w-[10%] xl:mt-[32%] xl:ml-[23%]'>
-                    <img src='../assets/imgs/contacts_shadow.png' alt='Contacts' />
-                </div>
-                <div style={ Common.VScrollJail }>
-                    <div className='rdo-offset'>
-                            <div className='mt-13'>
-                                <div className='text-42px w-[720px] m-auto text-center leading-10 font-din-condensed font-regular'><span className='text-secondary-first uppercase text-42px stroke'>Dnatco</span> enables an in-depth analysis and validation of nucleic acid structures</div>
-                                <div className='mt-10 max-w-[1024px] m-auto'>
-                                    <div className='flex flex-row justify-center' style={{ gap: 'var(--h-gap)' }}>
-                                        <div>
-                                            <Coordinates
-                                                coordsFile={this.state.coordsFile}
-                                                database={this.state.database}
-                                                databaseOptions={this.DatabaseOptions}
-                                                pdbId={this.state.pdbId}
-                                                onCoordsFileChange={(f) => this.setState({ ...this.state, coordsFile: f })}
-                                                onDatabaseChange={(db) => this.setState({ ...this.state, database: db })}
-                                                onPdbIdChange={(id) => this.setState({ ...this.state, pdbId: id })}
-                                                onRun={() => this.actionPdbId(this.state.database, this.state.pdbId)}
-                                                onRunExample={(db, pdbId) => this.actionPdbId(db, pdbId)}
-                                            />
-                                        </div>
-
-                                        {this.state.database === ''
-                                            ?
-                                                <div style={{ flex: 1 }}>
-                                                    <DensityMapFiles
-                                                        disabled={this.state.database !== ''}
-                                                        files={this.state.densityMaps}
-                                                        onAddFile={file => {
-                                                            this.state.densityMaps.push(file);
-                                                            this.setState({ ...this.state });
-                                                        }}
-                                                        onRemoveFile={idx => {
-                                                            this.state.densityMaps.splice(idx, 1);
-                                                            this.setState({ ...this.state });
-                                                        }}
-                                                    />
-                                                </div>
-                                            : undefined
-                                        }
-                                    </div>
-                                    <div className='flex my-2 mx-auto w-400px'>
-                                        <div />
-                                        <AnalyzeButton
-                                            ready={this.props.dnatcofierState === 'ready'}
-                                            onClick={() => {
-                                                if (this.state.database)
-                                                    this.actionPdbId(this.state.database, this.state.pdbId)
-                                                else
-                                                    this.actionCustomStructure();
-                                            }}
-                                        />
-                                        <IconTextButton
-                                            src={ReloadImg}
-                                            caption='Reset'
-                                            onClick={() => this.setState({ ...this.defaultState() })}
-                                            className='items-center flex justify-center transition-all ease-in-out w-full bg-primary-first text-white rounded-standart mx-2 hover:bg-secondary-second hover:text-primary-first'
-                                        />
-                                        <div />
-                                    </div>
-                                </div>
-                                {this.props.dnatcofierState === 'initializing'
-                                    ? <div className='flex flex-row items-center'>
-                                        <div className='text-16px m-auto'>Please wait for {GlobalConfig.data().displayedProductName} to initialize...</div>
-                                    </div>
-                                    : this.props.dnatcofierState === 'failed'
-                                        ? <div className='text-16px m-auto flex rdo-error-text'>{GlobalConfig.data().displayedProductName} failed to initialize</div>
-                                        : undefined
-                                }
+            <>
+                <div className='flex flex-col h-full relative'>
+                    <div className='hidden select-none xl:block xl:absolute xl:top-[-1rem] xl:left-0 xl:w-[44.4%] xl:z-40'>
+                        <img src={DnaLeft} alt='DNA'/>
+                    </div>
+                    <div className='hidden select-none xl:block xl:absolute xl:top-14 xl:right-0 xl:w-[24%] xl:z-40'>
+                        <img src={DnaRight} alt='DNA'/>
+                    </div>
+                    {this.state.database === '' ?
+                        undefined
+                        : <>
+                            <div className='hidden floating select-none xl:block xl:absolute xl:top-0 xl:right-0 xl:z-40 xl:w-[16%] xl:mt-[24%] xl:mr-[19%]'>
+                                <img src={Density} alt='Density' />
                             </div>
+                            <div className='hidden floating select-none xl:block xl:absolute xl:top-0 xl:left-0 xl:z-40 xl:w-[16%] xl:mt-[17%] xl:ml-[19%]'>
+                                <img src={NavalAform} alt='Naval aform' />
+                            </div>
+                            <div className='hidden floating select-none xl:block xl:absolute xl:top-0 xl:left-0 xl:z-40 xl:w-[10%] xl:mt-[32%] xl:ml-[23%]'>
+                                <img src={Contacts} alt='Contacts' />
+                            </div>
+                        </>
+                    }
+                    <div style={ Common.VScrollJail }>
+                        <div className='rdo-offset'>
+                                <div className='mt-13'>
+                                    <div className='text-42px w-[720px] m-auto text-center leading-10 font-din-condensed font-regular'><span className='text-secondary-first uppercase text-42px stroke'>Dnatco</span> enables an in-depth analysis and validation of nucleic acid structures</div>
+                                    <div className='mt-10 max-w-[850px] m-auto'>
+                                        <div className='flex flex-row justify-center'>
+                                            <div>
+                                                <Coordinates
+                                                    coordsFile={this.state.coordsFile}
+                                                    database={this.state.database}
+                                                    databaseOptions={this.DatabaseOptions}
+                                                    pdbId={this.state.pdbId}
+                                                    onCoordsFileChange={(f) => this.setState({ ...this.state, coordsFile: f })}
+                                                    onDatabaseChange={(db) => this.setState({ ...this.state, database: db })}
+                                                    onPdbIdChange={(id) => this.setState({ ...this.state, pdbId: id })}
+                                                    onRun={() => this.actionPdbId(this.state.database, this.state.pdbId)}
+                                                    onRunExample={(db, pdbId) => this.actionPdbId(db, pdbId)}
+                                                />
+                                            </div>
+
+                                            {this.state.database === ''
+                                                ?
+                                                    <div className='ml-4'>
+                                                        <DensityMapFiles
+                                                            disabled={this.state.database !== ''}
+                                                            files={this.state.densityMaps}
+                                                            onAddFile={file => {
+                                                                this.state.densityMaps.push(file);
+                                                                this.setState({ ...this.state });
+                                                            }}
+                                                            onRemoveFile={idx => {
+                                                                this.state.densityMaps.splice(idx, 1);
+                                                                this.setState({ ...this.state });
+                                                            }}
+                                                        />
+                                                    </div>
+                                                : undefined
+                                            }
+                                        </div>
+                                        <div className='flex my-2 mx-auto w-400px'>
+                                            <div />
+                                            <AnalyzeButton
+                                                ready={this.props.dnatcofierState === 'ready'}
+                                                onClick={() => {
+                                                    if (this.state.database)
+                                                        this.actionPdbId(this.state.database, this.state.pdbId)
+                                                    else
+                                                        this.actionCustomStructure();
+                                                }}
+                                            />
+                                            <IconTextButton
+                                                src={ReloadImg}
+                                                caption='Reset'
+                                                onClick={() => this.setState({ ...this.defaultState() })}
+                                                className='items-center flex justify-center transition-all ease-in-out w-full bg-primary-first text-white rounded-standart mx-2 hover:bg-secondary-second hover:text-primary-first'
+                                            />
+                                            <div />
+                                        </div>
+                                    </div>
+                                    {this.props.dnatcofierState === 'initializing'
+                                        ? <div className='flex flex-row items-center'>
+                                            <div className='text-16px m-auto'>Please wait for {GlobalConfig.data().displayedProductName} to initialize...</div>
+                                        </div>
+                                        : this.props.dnatcofierState === 'failed'
+                                            ? <div className='text-16px m-auto flex rdo-error-text'>{GlobalConfig.data().displayedProductName} failed to initialize</div>
+                                            : undefined
+                                    }
+                                </div>
+                        </div>
                     </div>
                 </div>
-            </div>
+            </>
         );
     }
 }

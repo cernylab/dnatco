@@ -1221,7 +1221,7 @@ export class AnglesLengthsByResidue extends View<
                             <div className='rdo-floating-search-icon-tainer' style={{ bottom: 'var(--x-gap)', right: 'var(--x-gap)' }}>
                                 <IconButton
                                     src={MagnifyingGlassImg}
-                                    className='rdo-floating-search-icon rdo-pushbutton-border'
+                                    className='rdo-floating-search-icon'
                                     onClick={() => {
                                         if (this.searchBoxOpen === true || !residuesOuterTainerRef.current)
                                             return;

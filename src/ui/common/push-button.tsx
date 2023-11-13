@@ -52,15 +52,15 @@ export class DummyButton extends React.Component<Omit<PushButton.Props, 'onClick
 
     protected clsName() {
         if (!this.props.disabled)
-            return this.props.className ?? 'rdo-pushbutton rdo-pushbutton-border';
+            return this.props.className ?? 'rdo-pushbutton';
         else
-            return this.props.classNameDisabled ?? 'rdo-pushbutton-disabled rdo-pushbutton-border';
+            return this.props.classNameDisabled ?? 'rdo-pushbutton-disabled';
     }
 
     render() {
         return (
             <div className={this.clsName()}>
-                <div className='rdo-pushbutton-text'>{this.props.caption}</div>
+                <div className='font-din-2014 font-700 text-16px m-1'>{this.props.caption}</div>
             </div>
         );
     }
@@ -73,20 +73,16 @@ export class DummyIconTextButton extends React.Component<Omit<IconTextButton.Pro
 
     protected clsName() {
         if (!this.props.disabled)
-            return this.props.className ?? 'rdo-pushbutton rdo-pushbutton-border';
+            return this.props.className ?? 'items-center flex justify-center p-2 bg-primary-first rounded-standart';
         else
-            return this.props.classNameDisabled ?? 'rdo-pushbutton-disabled rdo-pushbutton-border';
+            return this.props.classNameDisabled ?? 'rdo-pushbutton-disabled';
     }
 
     render() {
         return (
             <div className={this.clsName()}>
                 <div className='rdo-pushbutton-inner-container'>
-                    <img
-                        className={this.props.iconClassName ?? 'rdo-icon-button-image'}
-                        src={this.props.src}
-                    />
-                    <span className='rdo-pushbutton-text' style={{ flex: 1 }}>{this.props.caption}</span>
+                    <span className='font-din-2014 font-700 text-white text-16px m-1'>{this.props.caption}</span>
                 </div>
             </div>
         );
@@ -123,9 +119,9 @@ export class IconTextButton extends React.Component<IconTextButton.Props> {
 
     protected clsName() {
         if (!this.props.disabled)
-            return this.props.className ?? 'rdo-pushbutton rdo-pushbutton-border';
+            return this.props.className ?? 'rdo-pushbutton';
         else
-            return this.props.classNameDisabled ?? 'rdo-pushbutton-disabled rdo-pushbutton-border';
+            return this.props.classNameDisabled ?? 'rdo-pushbutton-disabled';
     }
 
     render() {
@@ -136,7 +132,7 @@ export class IconTextButton extends React.Component<IconTextButton.Props> {
                 classNameDisabled={this.props.classNameDisabled ?? 'rdo-icon-text-button-disabled'}
             >
                 <div className='rdo-pushbutton-inner-container'>
-                    <span className='rdo-pushbutton-text'>{this.props.caption}</span>
+                    <span className='font-din-2014 font-700 text-16px m-1'>{this.props.caption}</span>
                 </div>
             </BasePushButton>
         );
@@ -150,9 +146,9 @@ export class PushButton extends BasePushButton<PushButton.Props> {
 
     protected clsName() {
         if (!this.props.disabled)
-            return this.props.className ?? 'rdo-pushbutton rdo-pushbutton-border'
+            return this.props.className ?? 'rdo-pushbutton'
         else
-            return this.props.classNameDisabled ?? 'rdo-pushbutton-disabled rdo-pushbutton-border';
+            return this.props.classNameDisabled ?? 'rdo-pushbutton-disabled';
     }
 
     render() {
@@ -180,7 +176,7 @@ export class PushButton extends BasePushButton<PushButton.Props> {
                         this.props.onMouseLeave(e);
                 }}
             >
-                <div className='rdo-pushbutton-text'>{this.props.caption}</div>
+                <div className='font-din-2014 font-700 text-16px m-1'>{this.props.caption}</div>
             </div>
         );
     }
@@ -193,9 +189,9 @@ export class ToggleButton extends BasePushButton<ToggleButton.Props> {
 
     protected clsName() {
         if (!this.props.disabled)
-            return this.props.className ?? `rdo-pushbutton rdo-pushbutton-border ${this.props.selected ? 'rdo-togglebutton-selected' : 'rdo-togglebutton-deselected'}`;
+            return this.props.className ?? `rdo-pushbutton ${this.props.selected ? 'rdo-togglebutton-selected' : 'rdo-togglebutton-deselected'}`;
         else
-            return this.props.classNameDisabled ?? 'rdo-pushbutton-disabled rdo-pushbutton-border';
+            return this.props.classNameDisabled ?? 'rdo-pushbutton-disabled';
     }
 
     render() {
@@ -223,7 +219,7 @@ export class ToggleButton extends BasePushButton<ToggleButton.Props> {
                         this.props.onMouseLeave(e);
                 }}
             >
-                <div className='rdo-pushbutton-text'>{this.props.caption}</div>
+                <div className='font-din-2014 font-700 text-16px m-1'>{this.props.caption}</div>
             </div>
         );
     }

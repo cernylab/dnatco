@@ -20,10 +20,10 @@ import { FileTypes } from '../util/file-type';
 import { Serialization } from '../util/serialization';
 
 const Tabs = [
-    ['about-ntcs', { caption: 'About NtCs', title: 'About NtCs' }],
-    ['table-of-conformers', { caption: 'Table of conformers', title: 'Table of conformers' }],
     ['browse-conformers', { caption: 'Browse', title: 'Search PDB database for dinucleotide steps of given conformation (NtC)' }],
+    ['table-of-conformers', { caption: 'Table of conformers', title: 'Table of conformers' }],
     ['contour-plots', { caption: 'Contour plots', title: '' }],
+    ['about-ntcs', { caption: 'About NtCs', title: 'About NtCs' }],
 ] as const;
 
 function fmtInt(n: number) {
@@ -197,14 +197,14 @@ class BrowseConformers extends React.Component {
     render() {
         return (
             <div className='rdo-offset'>
-                <div className='rdo-width-limiter'>
+                <div className='h-full mx-auto'>
                     <div style={{ display: 'grid', height: '100%', gridTemplateRows: 'auto auto 1fr', gridTemplateColumns: 'auto', rowGap: 'var(--x-gap)', columnGap: 'var(--x-gap)' }}>
                         <SearchConformers onDoSearch={this.searchConformers} />
                         {this.search.results.length > 0
                             ? <div className='rdo-secondary-caption'>{`Steps with NtC class ${this.search.criteria.NtC} (randomly selected ${this.search.results.length} steps from PDB database)`}</div>
                             : undefined
                         }
-                        <div style={{ overflow: 'hidden' }}>
+                        <div className='overflow-hidden'>
                             <div className='rdo-scroll-vertically'>
                                 {this.renderStepsTable()}
                             </div>
@@ -356,9 +356,9 @@ class TableOfConformers extends React.Component {
 
     render() {
         return (
-            <div className='rdo-width-limiter' style={{ overflow: 'hidden', flex: 1 }}>
+            <div className='h-full mx-auto overflow-hidden' style={{ flex: 1 }}>
                 <div style={{ display: 'grid', height: '100%', gridTemplateRows: '1fr auto', gridTemplateColumns: 'auto', rowGap: 'var(--x-gap)', columnGap: 'var(--x-gap)' }}>
-                    <div style={{ overflow: 'hidden' }}>
+                    <div className='overflow-hidden'>
                         <div className='rdo-scroll-vertically'>
                             {this.renderList()}
                         </div>
@@ -402,13 +402,13 @@ export class ConformersTab extends React.Component<ConformersTab.Props, State> {
 
     private renderTab() {
         switch (this.state.selected) {
-        case 'about-ntcs': return <AboutNtCs />;
         case 'browse-conformers':
             return (
                 <BrowseConformers />
             );
         case 'table-of-conformers': return <TableOfConformers />;
         case 'contour-plots': return <ContourPlots />;
+        case 'about-ntcs': return <AboutNtCs />;
         }
     }
 
@@ -421,11 +421,11 @@ export class ConformersTab extends React.Component<ConformersTab.Props, State> {
                             selectedItemId={this.state.selected}
                             onSwitched={id => this.setState({ ...this.state, selected: id })}
                         />
-                        <div className='flex flex-col overflow-hidden'>
-                            <div className='rdo-primary-caption'>
+                        <div className='flex flex-col overflow-hidden mx-4 mb-4'>
+                            <div className='font-din-2014 text-18px font-700'>
                                 {Tabs.find((tab) => tab[0] === this.state.selected)![1].title}
                             </div>
-                            <div className='rdo-offset' style={{ overflow: 'scroll' }}>
+                            <div className='overflow-scroll'>
                                 {this.renderTab()}
                             </div>
                         </div>

@@ -21,10 +21,15 @@ import SortImg from 'assets/imgs/sort.svg';
 import SortAscImg from 'assets/imgs/sorted-ascending.svg';
 import SortDescImg from 'assets/imgs/sorted-descending.svg';
 import TaskImg from 'assets/imgs/task.svg';
-import ThingsAreHappeningImg from 'assets/imgs/things-are-happening.svg';
+import ThingsAreHappeningImg from 'assets/imgs/spinning.png';
 import TriangleDownImg from 'assets/imgs/triangle-down.svg';
 import TriangleUpImg from 'assets/imgs/triangle-up.svg';
 import XImg from 'assets/imgs/x.svg';
+import DnaLeft from 'assets/imgs/home-dna-left.png'
+import DnaRight from 'assets/imgs/home-dna-right.png'
+import Density from 'assets/imgs/density.png'
+import NavalAform from 'assets/imgs/naval-aform.png'
+import Contacts from 'assets/imgs/contacts.png'
 
 export {
     CasLogoImg,
@@ -53,4 +58,9 @@ export {
     TriangleDownImg,
     TriangleUpImg,
     XImg,
+    DnaLeft,
+    DnaRight,
+    Density,
+    NavalAform,
+    Contacts
 };

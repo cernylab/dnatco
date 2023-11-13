@@ -504,7 +504,7 @@ export class StepTorsions extends View<View.Props> {
 
         return (
             <div>
-                <div className='rdo-view-caption'>Torsions and distances for selected step</div>
+                <div className='font-700 mb-2 p-2 text-center border-b-[1px] border-primary-first'>Torsions and distances for selected step</div>
 
                 <NamedList sizing='min-content' rowSpacing='half'>
                 {
