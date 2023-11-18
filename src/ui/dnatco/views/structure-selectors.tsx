@@ -16,7 +16,7 @@ function chainOptions(modelIndex: number, d: Dnatcofication) {
         return [{ caption: 'All models selected - cannot filter by chains', value: InvalidChain }];
 
     const opts = [
-        { caption: 'All', value: InvalidChain },
+        { caption: 'All NAs', value: InvalidChain },
         ...listOfChains(modelIndex, d.data.structures[0], d.data.entityKinds[modelIndex]),
     ];
     return opts;

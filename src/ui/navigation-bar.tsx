@@ -3,6 +3,7 @@ import * as RDC from 'react-dom/client';
 import { EquiBox } from './common/equibox';
 import { BasePushButton } from './common/push-button';
 import { GridThreeUpImg } from '../assets/images';
+import { DnatcoLogoImg } from '../assets/images';
 
 const MinimumWidthForStandardBar = 1000;
 
@@ -123,7 +124,7 @@ function NavigationBarCompact<TK extends string>(props: {
             <div className='flex flex-row justify-between mx-4 items-center'>
                 <div>
                     <a href='/'>
-                        <img className='w-28' src='../assets/imgs/dnatco-logo.png'/>
+                        <img className='w-28' src={DnatcoLogoImg}/>
                     </a>
                 </div>
                 <div className='flex'>
@@ -178,7 +179,7 @@ function NavigationBarStandard<TK extends string>(props: {
         <div className='absolute top-0 w-full z-50 navigation-desktop flex justify-around items-center my-4'>
             <div>
                 <a href='/'>
-                    <img className='w-28' src='../assets/imgs/dnatco-logo.png' alt='dnatco logo'/>
+                    <img className='w-28' src={DnatcoLogoImg} alt='dnatco logo'/>
                 </a>
             </div>
             <EquiBox
