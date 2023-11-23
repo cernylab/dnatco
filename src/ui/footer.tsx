@@ -11,7 +11,7 @@ export function Footer() {
                 <div className='max-w-[1280px] flex justify-between mx-auto my-4'>
                     <div className='flex'>
                         <div className='my-auto mx-1'>
-                            <div className='text-18px text-center font-din-2014'>© 2022</div>
+                            <div className='text-18px text-center font-din-2014'>© 2023</div>
                         </div>
                         {Globals.PrimaryContacts.map((c, idx) => (
                             <div className='my-auto mx-1' key={idx}>

@@ -69,7 +69,8 @@ function isBackdropRsccSane(bdrop: Rscc.BackdropRscc) {
 }
 
 function makeBackdropRsccUrl(kind: keyof BackdropRsccCache) {
-    const url = '/rscc/backdrops/' +
+//    const url = '/rscc/backdrops/' +
+    const url = 
         (kind === 'dna-assigned'
             ? DnaBackdropAssigned
             : kind === 'dna-unassigned'

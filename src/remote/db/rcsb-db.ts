@@ -150,7 +150,7 @@ async function fetchDensityMaps(pdbId: string): Promise<Result<DensityMap[]>> {
 
 export function RcsbDb(): RemoteDatabase {
     return {
-        name: 'RCSB',
+        name: 'PDB',
         coordinates: fetchCoordinates,
         densityMaps: fetchDensityMaps,
     };

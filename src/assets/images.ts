@@ -1,4 +1,5 @@
 // @ts-nocheck
+import DnatcoLogoImg from 'assets/imgs/dnatco-logo.png';
 import CasLogoImg from 'assets/imgs/CAS_centred_logo_ENG_rgb.png';
 import ChevronRightImg from 'assets/imgs/chevron-right.svg';
 import DataTransferDownloadImg from 'assets/imgs/data-transfer-download.svg';
@@ -32,6 +33,7 @@ import NavalAform from 'assets/imgs/naval-aform.png'
 import Contacts from 'assets/imgs/contacts.png'
 
 export {
+    DnatcoLogoImg,
     CasLogoImg,
     ChevronRightImg,
     DataTransferDownloadImg,
