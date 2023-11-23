@@ -436,7 +436,7 @@ export class StartTab extends React.Component<StartTab.Props, State> {
         return (
             <>
                 <div className='flex flex-col h-full relative'>
-                    <div className='hidden select-none xl:block xl:absolute xl:top-[-1rem] xl:left-0 xl:w-[44.4%] xl:z-40'>
+                    <div className='hidden select-none xl:block xl:absolute xl:top-[-1rem] xl:left-0 xl:w-[20%] xl:z-40'>
                         <img src={DnaLeft} alt='DNA'/>
                     </div>
                     <div className='hidden select-none xl:block xl:absolute xl:top-14 xl:right-0 xl:w-[24%] xl:z-40'>
