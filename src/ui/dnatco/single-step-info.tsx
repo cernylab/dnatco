@@ -21,7 +21,7 @@ function maxNumLen(props: SingleStepInfo.Props) {
 
 function padFlt(f: number, len: number) {
     const s = fmtFlt(f);
-    return <div className='rdo-monospace'>{s.padStart(len, '\u00A0')}</div>;
+    return <div className='font-din-2014'>{s.padStart(len, '\u00A0')}</div>;
 }
 
 export class SingleStepInfo extends React.Component <SingleStepInfo.Props> {

@@ -181,7 +181,7 @@ export class RsccPlot extends View<View.Props, State> {
                 }
 
                 <div className='rdo-secondary-caption'>RSCC(*) vs RMSD plot of assigned steps</div>
-                <div className='rdo-plot-container' style={{ flex: 1, minHeight: Constants.MinimumFlexiblePlotHeight }}>
+                <div className='flex justify-center items-center' style={{ flex: 1, minHeight: Constants.MinimumFlexiblePlotHeight }}>
                     { _RsccPlot.isPlotEmpty(rsccPlotData.assigned)
                         ? this.state.fetchError
                             ? <div>{this.state.fetchError}</div>
@@ -191,7 +191,7 @@ export class RsccPlot extends View<View.Props, State> {
                 </div>
 
                 <div className='rdo-secondary-caption'>RSCC(*) vs RMSD plot of unassigned steps</div>
-                <div className='rdo-plot-container' style={{ flex: 1, minHeight: Constants.MinimumFlexiblePlotHeight }}>
+                <div className='flex justify-center items-center' style={{ flex: 1, minHeight: Constants.MinimumFlexiblePlotHeight }}>
                     { _RsccPlot.isPlotEmpty(rsccPlotData.unassigned)
                         ? this.state.fetchError
                             ? <div>{this.state.fetchError}</div>

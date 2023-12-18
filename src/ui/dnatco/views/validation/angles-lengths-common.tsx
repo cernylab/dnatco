@@ -401,8 +401,8 @@ export class AveragesChart extends React.Component<{
         ];
 
         return (
-            <div style={{ width: '100%', height: '100%' }}>
-                <div className='rdo-dynamic-table-download-bar'>
+            <div className='w-full h-full'>
+                <div className='rdo-dynamic-table-download-bar bg-secondary-second flex flex-row gap-1'>
                     {AveragesChartDownloaders.map((dl, idx) => {
                         return (
                             <div
@@ -597,7 +597,7 @@ export class PGroupSummary extends React.Component<PGroupSummaryProps, { mode: '
 
     private renderNaval() {
         return <>
-            <div className='rdo-strong rdo-dont-wrap' style={{ gridColumnStart: 'span 2', whiteSpace: 'nowrap' }} >Naval quality</div>
+            <div className='font-700 rdo-dont-wrap' style={{ gridColumnStart: 'span 2', whiteSpace: 'nowrap' }} >Naval quality</div>
             <div className='rdo-dont-wrap'>{this.props.naval.quality === 'none' ? 'N/A' : Naval.QualityName[this.props.naval.quality]}</div>
         </>
     }
@@ -607,7 +607,7 @@ export class PGroupSummary extends React.Component<PGroupSummaryProps, { mode: '
             return (
                 <div style={{ display: 'grid', gridTemplateColumns: 'auto auto auto', columnGap: 'var(--h-gap)' }}>
                     <div style={{ gridColumnStart: 'span 2' }} />{this.renderPGroup()}
-                    <div className='rdo-line-spacer' style={{ gridColumn: 'span 3' }} />
+                    <div className='h-4' style={{ gridColumn: 'span 3' }} />
                     {this.renderNaval()}
                 </div>
             )
@@ -615,24 +615,24 @@ export class PGroupSummary extends React.Component<PGroupSummaryProps, { mode: '
 
         return (
             <div style={{ display: 'grid', gridTemplateColumns: 'auto auto auto', columnGap: 'var(--h-gap)' }}>
-                <div className='rdo-strong'>From</div><div className='rdo-strong'>To</div><div className='rdo-strong rdo-dont-wrap'>Probability (%)</div>
+                <div className='font-700'>From</div><div className='font-700'>To</div><div className='font-700 rdo-dont-wrap'>Probability (%)</div>
                 {this.props.pGroup.groupedBins.map((x, idx) => {
-                    const strg = isWithin(this.props.value, x) ? 'rdo-strong' : '';
+                    const strg = isWithin(this.props.value, x) ? 'font-700' : '';
                     const from = this.props.rangeFormatter(x.from);
                     const to = this.props.rangeFormatter(x.to);
 
                     return (
                         <React.Fragment key={idx}>
-                            <div className={`rdo-monospace rdo-talgn-right ${strg}`}>{`${from}${this.props.suffix ?? ''}`}</div>
-                            <div className={`rdo-monospace rdo-talgn-right ${strg}`}>{`${to}${this.props.suffix ?? ''}`}</div>
-                            <div className={`rdo-monospace rdo-talgn-right ${strg}`}>{(x.probability * 100).toFixed(2)}</div>
+                            <div className={`font-din-2014 text-right ${strg}`}>{`${from}${this.props.suffix ?? ''}`}</div>
+                            <div className={`font-din-2014 text-right ${strg}`}>{`${to}${this.props.suffix ?? ''}`}</div>
+                            <div className={`font-din-2014 text-right ${strg}`}>{(x.probability * 100).toFixed(2)}</div>
                         </React.Fragment>
                     );
                 })}
-                <div className='rdo-line-spacer' style={{ gridColumnStart: 'span 3' }} />
-                <div className='rdo-strong' style={{ gridColumnStart: 'span 2' }}>Percentile</div>
+                <div className='h-4' style={{ gridColumnStart: 'span 3' }} />
+                <div className='font-700' style={{ gridColumnStart: 'span 2' }}>Percentile</div>
                 {this.renderPGroup()}
-                <div className='rdo-line-spacer' style={{ gridColumn: 'span 3' }} />
+                <div className='h-4' style={{ gridColumn: 'span 3' }} />
                 {this.renderNaval()}
             </div>
         );
@@ -654,7 +654,7 @@ export class PGroupSummary extends React.Component<PGroupSummaryProps, { mode: '
         return (
             <div style={{ display: 'grid', gridTemplateColumns: '1em 1fr' }}>
                 <div style={{ backgroundColor: colorStyle(clr) }} />
-                <div className='rdo-monospace rdo-talgn-right'>{text}</div>
+                <div className='font-din-2014 text-right'>{text}</div>
             </div>
         );
     }
@@ -678,7 +678,7 @@ export class PGroupSummary extends React.Component<PGroupSummaryProps, { mode: '
                         </div>
                     </div>
                     <div style={{ flex: 1 }} />
-                    <div className='rdo-monospace rdo-text-large'>
+                    <div className='font-din-2014 rdo-text-large'>
                         {this.props.valueFormatter(this.props.value)}{this.props.suffix}
                     </div>
                 </div>
@@ -694,7 +694,7 @@ export function Prosco( props: { bin: ALM.MaybeBin } ) {
     const renderUnavailable = (belowAbove: 'below'|'above') => {
         return (
             <Tooltip
-                tag=<div className='rdo-monospace rdo-talgn-right'>
+                tag=<div className='font-din-2014 text-right'>
                     {belowAbove === 'below' ? 'N/A (<)' : 'N/A (>)'}
                 </div>
             >
@@ -708,13 +708,13 @@ export function Prosco( props: { bin: ALM.MaybeBin } ) {
     const bin = props.bin;
 
     if (bin === 'no-data') {
-        return <div className='rdo-monospace rdo-talgn-right'>No data</div>
+        return <div className='font-din-2014 text-right'>No data</div>
     } else if (bin === 'below' || bin === 'above')
         return renderUnavailable(bin);
     else {
         return (
             <Tooltip
-                tag=<div className='rdo-monospace rdo-talgn-right'>
+                tag=<div className='font-din-2014 text-right'>
                     {fmtDecimal(bin.prosco * 100, 1)}{'\u00A0'}%
                 </div>
             >
@@ -762,15 +762,15 @@ export function SubstructureSummary(props: { countsInGroups: Summarize.CountsInG
     return (
         <div style={{ display: 'grid', gridTemplateColumns: '1em auto auto auto', columnGap: 'var(--h-gap)' }}>
             <div style={{ gridColumnStart: 'span 2' }} />
-            <div className='rdo-strong' style={{ gridColumn: '3 / span 2', textAlign: 'center', display: 'flex', justifyContent: 'center' }}>Counts</div>
+            <div className='font-700' style={{ gridColumn: '3 / span 2', textAlign: 'center', display: 'flex', justifyContent: 'center' }}>Counts</div>
 
-            <div className='rdo-strong' style={{ gridColumnStart: 'span 2 '}}>
+            <div className='font-700' style={{ gridColumnStart: 'span 2 '}}>
                 Percentile
             </div>
-            <div className='rdo-strong'>
+            <div className='font-700'>
                 Exclusive
             </div>
-            <div className='rdo-strong'>
+            <div className='font-700'>
                 Cumulative
             </div>
             {props.countsInGroups.map((x, idx) => {
@@ -780,9 +780,9 @@ export function SubstructureSummary(props: { countsInGroups: Summarize.CountsInG
                 return (
                     <React.Fragment key={idx}>
                         <div style={{ backgroundColor: colorStyle(colorToTuple(clr)) }} />
-                        <div className='rdo-monospace rdo-talgn-right'>{thr}</div>
-                        <div className='rdo-monospace rdo-talgn-right' style={{ textAlign: 'right' }}>{x.exclusive}</div>
-                        <div className='rdo-monospace rdo-talgn-right' style={{ textAlign: 'right' }}>{`${x.cumulative}\u00A0(${perc.toFixed(2).padStart(6)}\u00A0%)`}</div>
+                        <div className='font-din-2014 text-right'>{thr}</div>
+                        <div className='font-din-2014 text-right'>{x.exclusive}</div>
+                        <div className='font-din-2014 text-right'>{`${x.cumulative}\u00A0(${perc.toFixed(2).padStart(6)}\u00A0%)`}</div>
                     </React.Fragment>
                 );
             })}
@@ -950,7 +950,7 @@ export namespace AnglesLengthsCommon {
 
     export function pGroupWindowTitle(residueName: JSX.Element, metricName: JSX.Element) {
         return (
-            <div className='rdo-strong' style={{ display: 'flex', flexDirection: 'row', gap: '0.25em', alignItems: 'center' }}>
+            <div className='font-700 flex flex-row gap-1 items-center'>
                 {residueName}<div>|</div>{metricName}
             </div>
         );

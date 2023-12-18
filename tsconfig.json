@@ -37,6 +37,6 @@
             "viewer-filters": [ "molstar/src/apps/rednatco/filters.ts" ]
         }
     },
-    "include": [ "src/ui/**/*", "tailwind.config.js" ],
+    "include": [ "src/ui/**/*", "tailwind.config.js", "src/help-tags.ts" ],
     "exclude": [ "src/node-util/**/*" ]
 }

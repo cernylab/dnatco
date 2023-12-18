@@ -8,9 +8,8 @@ import { niceStepName, Common } from '../../common';
 import { setDynamicTableModelColumns } from '../../util';
 import { DynamicTable as DynamicTableComp } from '../../../common/dynamic-table';
 import { NamedList, NamedListItem } from '../../../common/named-list';
-import { IconButton } from '../../../common/push-button';
 import { Tooltip } from '../../../common/tooltip';
-import { MagnifyingGlassImg } from '../../../../assets/images';
+import { searchIcon } from '../../../../assets/images';
 import { doDownload } from '../../../../browser-util/downloader';
 import { Cif } from '../../../../cif';
 import { NdbStructNtcStep, NdbStructNtcStepSummary } from '../../../../cif/categories/ndb-struct-ntc';
@@ -148,7 +147,7 @@ export class AssignedNtCs extends View<View.Props> {
                         assignedNtC === 'NANT'
                             ?
                                 <Tooltip
-                                    tag={<span className='rdo-unassigned-ntc'>{Cif.Column.value(closest_NtC, row)!}</span>}
+                                    tag={<span className='text-secondary-third'>{Cif.Column.value(closest_NtC, row)!}</span>}
                                     delayMsec={300}
                                 >
                                     This step is unassigned. Closest NtC is shown instead.
@@ -159,7 +158,7 @@ export class AssignedNtCs extends View<View.Props> {
                         assignedCANA === 'NAN'
                             ?
                                 <Tooltip
-                                    tag={<span className='rdo-unassigned-ntc'>{Cif.Column.value(closest_CANA, row)!}</span>}
+                                    tag={<span className='text-secondary-third'>{Cif.Column.value(closest_CANA, row)!}</span>}
                                     delayMsec={300}
                                 >
                                     This step is unassigned. Closest CANA is shown instead.
@@ -265,7 +264,7 @@ export class AssignedNtCs extends View<View.Props> {
 
         return (
             <div style={{ ...Common.VScrollJail, position: 'relative' }} ref={selfRef}>
-                <div className='font-700 mb-2 p-2 text-center border-b-[1px] border-primary-first'>Assigned NtCs</div>
+                <div className='font-700 mb-2 p-2 text-center border-b border-primary-first'>Assigned NtCs</div>
 
                 <NamedList sizing='min-content' rowSpacing='half'>
                 {
@@ -287,7 +286,7 @@ export class AssignedNtCs extends View<View.Props> {
                         />
                     </NamedListItem>
                 </NamedList>
-                <div className='rdo-line-spacer' />
+                <div className='h-4' />
 
                 <div className='rdo-secondary-caption'>Table of assigned dinucleotide NtC conformers</div>
                 <div style={ Common.VScrollElement } ref={this.tableTainer}>
@@ -296,10 +295,9 @@ export class AssignedNtCs extends View<View.Props> {
                     </div>
                 </div>
 
-                <div className='rdo-floating-search-icon-tainer' style={{ bottom: 'var(--x-gap)', right: 'var(--x-gap)' }}>
-                    <IconButton
-                        src={MagnifyingGlassImg}
-                        className='rdo-floating-search-icon'
+                <div className='rdo-floating-search-icon-tainer bottom-4 right-4 bg-primary-first rounded-standart absolute flex justify-center items-center opacity-0 hover:opacity-100 w-12 h-12'>
+                    <div
+                        className='rdo-floating-search-icon '
                         onClick={() => {
                             const tainer = selfRef.current;
                             if (!tainer || this.searchBoxOpen)
@@ -308,7 +306,9 @@ export class AssignedNtCs extends View<View.Props> {
                             this.searchBoxOpen = true;
                             SearchBox.create(tainer, this.SearchBoxProps);
                         }}
-                    />
+                    >
+                        <img src={searchIcon} className='w-5'/>
+                    </div>
                 </div>
             </div>
         );

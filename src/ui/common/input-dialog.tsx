@@ -71,9 +71,9 @@ export class InputDialog extends React.Component<Props, State> {
                         }}
                     />
 
-                    {this.state.error ? <div className='rdo-error-text'>{this.state.error}</div> : void 0}
+                    {this.state.error ? <div className='text-secondary-third'>{this.state.error}</div> : void 0}
 
-                    <div className='rdo-line-spacer' />
+                    <div className='h-4' />
                     <div className='rdo-popup-button-bar'>
                         <div style={{ flex: 1 }} />
                         <PushButton

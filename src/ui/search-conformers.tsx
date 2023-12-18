@@ -36,7 +36,7 @@ export class SearchConformers extends React.Component<SearchConformers.Props, St
 
     render() {
         return (
-                <div className='rdo-offset'>
+                <div className='mt-7'>
                     <NamedList sizing='min-content' rowSpacing='half'>
                         <NamedListItem name='Conformation'>
                             <ComboBox

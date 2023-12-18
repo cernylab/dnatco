@@ -4,6 +4,9 @@ import { Link } from './common/link';
 import { SideSwitchingPanel } from './common/side-switching-panel';
 import { CasLogoImg, DefinitionNewTrans2Img, IbtLogoImg } from '../assets/images';
 import { ConformersFile } from '../assets/misc';
+import { about, annotation, browse, home, refinement, validation } from '../help-tags';
+import { useLocation } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 
 const Tabs = [
     ['how-to-cite', { caption: 'How to cite' }],
@@ -17,7 +20,7 @@ function Contact() {
     return (
         <_Help.Container>
             <div className='rdo-page'>
-                <div className='rdo-paragraph'>
+                <div className='mb-2'>
                     ©
                     Michal Malý <span className='rdo-sup'>1</span> &amp;
                     Lada Biedermannová <span className='rdo-sup'>2</span> &amp;
@@ -25,7 +28,7 @@ function Contact() {
                     <a className='rdo-link' href='mailto:bohdan.schneider-at-gmail.com?Subject=DNATCO'>Bohdan Schneider</a> <span className='rdo-sup'>2</span>
                 </div>
 
-                <div className='rdo-paragraph'>
+                <div className='mb-2'>
                     <div>
                         <span className='rdo-sup'>1</span> <a className='rdo-link' href='https://www.ibt.cas.cz/en/research/laboratory-of-structural-bioinformatics-of-proteins/' target='_blank'>Laboratory of Structural Bioinformatics of Proteins</a>, Institute of Biotechnology, Czech Academy of Sciences
                     </div>
@@ -51,53 +54,63 @@ function Contact() {
 function Downloads() {
     return (
         <_Help.Container>
-            <div className='mx-auto max-w-[1280px]'>
-                <div className='rdo-paragraph-caption'>NtC data</div>
-                <div className='rdo-paragraph'>
-                    <ul className='rdo-list'>
-                        <li>
-                            Table of NtC conformers - annotation and frequency of occurrence (<a className='rdo-link' href={ConformersFile} download='conformers.csv'>csv file </a>)
-                        </li>
-                        <li>
-                            Definition of the NtC conformers (<Link url='https://dnatco.datmos.org/next/coords/NtC_averages.csv'>torsion averages</Link> and <Link url='https://dnatco.datmos.org/next/coords/NtC_esd.csv'>esd values</Link>)
-                        </li>
-                        <li>
-                            <a className='rdo-link' href='https://dnatco.datmos.org/next/coords/NtC_representative.zip'>Representative structures</a> of the NtC conformers (cartesian coords).
-                        </li>
-                    </ul>
+            <div>
+                <div className='flex border-t-secondary-second border-t mt-4 pt-3 mb-8'>
+                    <div className='w-[25%]'>
+                        <h3 className='font-din-2014 font-700 text-18px mb-2 uppercase'>
+                            NtC data
+                        </h3>
+                    </div>
+                    <div className='w-[75%] mb-2'>
+                        <div className='font-din-2014 text-16px text-justify'>
+                            Table of NtC conformers - annotation and frequency of occurrence (<a className='underline cursor-pointer' href={ConformersFile} download='conformers.csv' target='_blank'>csv file</a>)
+                        </div>
+                        <div className='w-[75%] font-din-2014 text-16px mb-2 text-justify'>
+                            Definition of the NtC conformers (<Link className='underline cursor-pointer' url='https://dnatco.datmos.org/next/coords/NtC_averages.csv'>torsion averages</Link> and <Link className='underline cursor-pointer' url='https://dnatco.datmos.org/next/coords/NtC_esd.csv'>esd values</Link>)
+                        </div>
+                        <div className='w-[75%] font-din-2014 text-16px mb-2 text-justify'>
+                            <a className='underline cursor-pointer' href='https://dnatco.datmos.org/next/coords/NtC_representative.zip'>Representative structures</a> of the NtC conformers (cartesian coords)
+                        </div>
+                    </div>
                 </div>
-
-                <div className='rdo-paragraph-caption'>Example scripts</div>
-                <div className='rdo-paragraph'>
-                    <ul className='rdo-list'>
-                        <li>
-                            Uploading PDB or mmCIF formatted file using <a className='rdo-link' href='https://dnatco.datmos.org/next/scripts/POST_coords2dnatco.py'>python script</a>.
-                        </li>
-                        <li>
-                            Assign a single step from <Link url='https://dnatco.datmos.org/next/scripts/POST_json_coords.py'>atomic coordinates</Link> or <Link url='https://dnatco.datmos.org/next/scripts/POST_json_torsions.py'>from torsions</Link>.
-                        </li>
-                    </ul>
+                <div className='flex border-t-secondary-second border-t pt-3 mb-8'>
+                    <div className='w-[25%]'>
+                        <h3 className='font-din-2014 font-700 text-18px mb-2 uppercase'>
+                            Example scripts
+                        </h3>
+                    </div>
+                    <div className='w-[75%] mb-2'>
+                        <div className='font-din-2014 text-16px text-justify'>
+                            Uploading PDB or mmCIF formatted file using <a className='underline cursor-pointer' href='https://dnatco.datmos.org/next/scripts/POST_coords2dnatco.py'>python script</a>
+                        </div>
+                        <div className='w-[75%] font-din-2014 text-16px mb-2 text-justify'>
+                            Assign a single step from <Link className='underline cursor-pointer' url='https://dnatco.datmos.org/next/scripts/POST_json_coords.py'>atomic coordinates</Link> or <Link className='underline cursor-pointer' url='https://dnatco.datmos.org/next/scripts/POST_json_torsions.py'>from torsions</Link>
+                        </div>
+                    </div>
                 </div>
-
-                <div className='rdo-paragraph-caption'>Research articles</div>
-                <div className='rdo-paragraph'>
-                    <ul className='rdo-list'>
-                        <li>
-                            Definition of the unified DNA/RNA conformers: <a className='rdo-link' href='https://dnatco.datmos.org/next/papers/gkaa383.pdf'>Černý et al., NAR 48, 6367 (2020)</a>.
-                        </li>
-                        <li>
-                            Description of DNATCO server version 3.2: <a className='rdo-link' href='https://dnatco.datmos.org/next/papers/ir5007.pdf'>Černý et al., Acta Cryst D 76, 805 (2020)</a>.
-                        </li>
-                        <li>
-                            Definition of DNA conformers: <a className='rdo-link' href='https://dnatco.datmos.org/next/papers/rr5151.pdf'>Schneider et al., Acta Cryst D 74, 52 (2018)</a>.
-                        </li>
-                        <li>
-                            Example of application: <a className='rdo-link' href='https://dnatco.datmos.org/next/papers/genes-08-00278-v3.pdf'>Schneider et al., Genes 8, 278, (2017)</a>.
-                        </li>
-                        <li>
-                            Description of DNATCO server version 2: <a className='rdo-link' href='https://dnatco.datmos.org/next/papers/gkw381.pdf'>Černý et al., NAR 44, W284 (2016)</a>.
-                        </li>
-                    </ul>
+                <div className='flex border-t-secondary-second border-t pt-3 mb-8'>
+                    <div className='w-[25%]'>
+                        <h3 className='font-din-2014 font-700 text-18px mb-2 uppercase'>
+                            Research articles
+                        </h3>
+                    </div>
+                    <div className='w-[75%] mb-2'>
+                        <div className='font-din-2014 text-16px text-justify'>
+                            Definition of the unified DNA/RNA conformers: <a className='underline cursor-pointer' href='https://dnatco.datmos.org/next/papers/gkaa383.pdf'>Černý et al., NAR 48, 6367 (2020)</a>
+                        </div>
+                        <div className='w-[75%] font-din-2014 text-16px mb-2 text-justify'>
+                            Description of DNATCO server version 3.2: <a className='underline cursor-pointer' href='https://dnatco.datmos.org/next/papers/ir5007.pdf'>Černý et al., Acta Cryst D 76, 805 (2020)</a>
+                        </div>
+                        <div className='w-[75%] font-din-2014 text-16px mb-2 text-justify'>
+                            Definition of DNA conformers: <a className='underline cursor-pointer' href='https://dnatco.datmos.org/next/papers/rr5151.pdf'>Schneider et al., Acta Cryst D 74, 52 (2018)</a>
+                        </div>
+                        <div className='w-[75%] font-din-2014 text-16px mb-2 text-justify'>
+                            Example of application: <a className='underline cursor-pointer' href='https://dnatco.datmos.org/next/papers/genes-08-00278-v3.pdf'>Schneider et al., Genes 8, 278, (2017)</a>
+                        </div>
+                        <div className='w-[75%] font-din-2014 text-16px mb-2 text-justify'>
+                            Description of DNATCO server version 2: <a className='underline cursor-pointer' href='https://dnatco.datmos.org/next/papers/gkw381.pdf'>Černý et al., NAR 44, W284 (2016)</a>
+                        </div>
+                    </div>
                 </div>
             </div>
         </_Help.Container>
@@ -107,84 +120,256 @@ function Downloads() {
 function Help() {
     return (
         <div>
-            <div className='rdo-page'>
-                <div className='rdo-paragraph-caption'>Method</div>
-                <div className='rdo-paragraph'>
-                    The DNATCO server analyzes structures of nucleic acids - both DNA and RNA - using the NtC structural alphabet developed in our institute.
-                    The NtC structural alphabet describes DNA/RNA backbone conformation using 96 “symbols”, where each symbol consists of four characters (e.g. BB00 or ZZ1S) and corresponds to a distinct dinucleotide conformer.
-                    The dinucleotide conformers are assigned based on the values of 12 backbone torsion parameters (Figure 1).
+            <div className='flex border-t-secondary-second border-t mt-4 pt-3 mb-8'>
+                <div className='w-[25%]'>
+                    <h3 className='font-din-2014 font-700 text-18px mb-2 uppercase'>
+                        {about[0].headline}
+                    </h3>
                 </div>
-
-                <div className='rdo-image-tainer'>
-                    <img
-                        className='rdo-image'
-                        src={DefinitionNewTrans2Img}
-                    />
-                    <div><span className='rdo-bold'>Figure 1.</span> Dinucleotide step with the 12 parameters <br /> (backbone torsions shown in gray, distances in blue) <br /> that define the NtC conformational class.</div>
+                <div className='w-[75%] font-din-2014 text-16px mb-2 text-justify'>
+                    {about[0].subHeadlineText}
                 </div>
-
-                <div className='rdo-paragraph-caption'>NtC conformers</div>
-                <div className='rdo-paragraph'>
-                    Table listing all the conformers is here and can be downloaded.
-                    Definition of the NtC conformers (torsion averages and esd values) can be downloaded.
-                    Representative structures of the NtC conformers (cartesian coords) can be downloaded.
+            </div>
+            <div className='flex border-t-secondary-second border-t pt-3 mb-8'>
+                <div className='w-[25%]'>
+                    <h3 className='font-din-2014 font-700 text-18px mb-2 uppercase'>
+                        {about[0].sections.ntcStructuralAlphabet.headline}
+                    </h3>
                 </div>
-
-                <div className='rdo-paragraph-caption'>NtC naming</div>
-                <div className='rdo-paragraph'>
-                    <ul className='rdo-list'>
-                        <li>
-                            The conformers are identified using four-character symbols.
-                        </li>
-                        <li>
-                            Symbols containing "A", "B", "Z" as the first and/or second character imply a dinucleotide with stacked bases and with first/second nucleotide in an A-, B-, or Z-like conformation.
-                        </li>
-                        <li>
-                            Symbols starting with "IC" correspond to steps with distant but parallel bases that can be InterCalated.
-                        </li>
-                        <li>
-                            Symbols starting with "OP" correspond to steps with unstacked “OPen” bases.
-                        </li>
-                        <li>
-                            Symbols containing "S" at 3rd or 4th position imply that the 1st or 2nd base, respectively, is in syn orientation.
-                        </li>
-                        <li>
-                            Conformationally extreme conformers are not assigned to any of the above; these steps formally represent the 97th conformer denoted as NANT.
-                        </li>
-                    </ul>
+                <div className='w-[75%] font-din-2014 text-16px mb-2 text-justify'>
+                    {about[0].sections.ntcStructuralAlphabet.paragraph1}
+                    <img className='w-[150px] my-2' src={DefinitionNewTrans2Img} />
+                    {about[0].sections.ntcStructuralAlphabet.paragraph2}
+                    <div className='h-3'></div>
+                    {about[0].sections.ntcStructuralAlphabet.paragraph3}
                 </div>
-
-                <div className='rdo-paragraph-caption'>Validation metrics - confal, RMSD</div>
-                <div className='rdo-paragraph'>
-                    <ul className='rdo-list'>
-                        <li>
-                            <span className='rdo-strong'>confal</span> a quality score, with value of 100 corresponding to a perfect fit to the reference and 0 corresponding to conformational outliers.
-                            The confal function is a Gaussian function defined in such a way that it reaches a value of 100 at the average value of the parameter and a value of 1 at the border closer to the average.
-                            The confal value is set to 0 for more distant values. The confal score for a step is then calculated as a harmonic mean of its 12 confal values,
-                            and the confal score for a structure is calculated as an average of the step values.
-                        </li>
-                        <li>
-                            <span className='rdo-strong'>RMSD</span>: root mean square deviation in cartesian space between the analyzed step and reference.
-                        </li>
-                    </ul>
+            </div>
+            <div className='flex border-t-secondary-second border-t pt-3 mb-8'>
+                <div className='w-[25%]'>
+                    <h3 className='font-din-2014 font-700 text-18px mb-2 uppercase'>
+                        {about[0].sections.ntcNamingRules.headline}
+                    </h3>
                 </div>
-
-                <div className='rdo-paragraph-caption'>Analysis of uploaded structures</div>
-                <div className='rdo-paragraph'>
-                    <ul className='rdo-list'>
-                        <li>
-                            DNA/RNA steps are identified based on atom names as defined by the PDB format, version 3.1 or above (sugar atoms as O4' not O4*).
-                        </li>
-                        <li>
-                            Steps with non-standard or missing atoms that define torsions δ1 to δ2, χ1, and χ2 are not considered in the assignment process.
-                        </li>
-                        <li>
-                            Conformers are assigned for modified residues that contain standard names for atoms defining the step torsions between δ and δ+1 and χ and χ+1. <br />
-                            See the  <a className='rdo-link' href='https://dnatco.datmos.org/next/standard.php'>list of accepted residues </a></li>
-                        <li>
-                            Analysis of large structures (multiple NMR MODELs or MD simulation trajectory) or non-standard residues - please, contact the authors for off-line analysis.
-                        </li>
-                    </ul>
+                <div className='w-[75%] font-din-2014 text-16px mb-2 text-justify'>
+                    {about[0].sections.ntcNamingRules.paragraph1}
+                </div>
+            </div>
+            <div className='flex border-t-secondary-second border-t pt-3 mb-8'>
+                <div className='w-[25%]'>
+                    <h3 className='font-din-2014 font-700 text-18px mb-2 uppercase'>
+                        {about[0].sections.glossaryOfAcronyms.headline}
+                    </h3>
+                </div>
+                <div className='w-[75%] font-din-2014 text-16px mb-2 text-justify'>
+                    {about[0].sections.glossaryOfAcronyms.paragraph1}
+                    <div className='h-3'></div>
+                    {about[0].sections.glossaryOfAcronyms.paragraph2}
+                    <div className='h-3'></div>
+                    {about[0].sections.glossaryOfAcronyms.paragraph3}
+                    <div className='h-3'></div>
+                    {about[0].sections.glossaryOfAcronyms.paragraph4}
+                    <div className='h-3'></div>
+                    {about[0].sections.glossaryOfAcronyms.paragraph5}
+                </div>
+            </div>
+            <div className='flex border-t-secondary-second border-t pt-3 mb-8'>
+                <div className='w-[25%]'>
+                    <h3 className='font-din-2014 font-700 text-18px mb-2 uppercase'>
+                        {home[0].headline}
+                    </h3>
+                </div>
+                <div className='w-[75%] font-din-2014 text-16px mb-2 text-justify'>
+                    {home[0].subHeadlineText}
+                    <div className='h-3'></div>
+                    {home[0].paragraph1}
+                    <div className='h-3'></div>
+                    {home[0].paragraph2}
+                </div>
+            </div>
+            <div className='flex border-t-secondary-second border-t pt-3 mb-8'>
+                <div className='w-[25%]'>
+                    <h3 className='font-din-2014 font-700 text-18px mb-2 uppercase'>
+                        {annotation[0].headline}
+                    </h3>
+                </div>
+                <div className='w-[75%] font-din-2014 text-16px mb-2 text-justify'>
+                    {annotation[0].subHeadlineText}
+                </div>
+            </div>
+            <div className='flex border-t-secondary-second border-t pt-3 mb-8'>
+                <div className='w-[25%]'>
+                    <h3 className='font-din-2014 font-700 text-18px mb-2 uppercase'>
+                        {annotation[0].sections.assignedNtCs.headline}
+                    </h3>
+                </div>
+                <div className='w-[75%] font-din-2014 text-16px mb-2 text-justify'>
+                    {annotation[0].sections.assignedNtCs.paragraph1}
+                    <div className='h-3'></div>
+                    {annotation[0].sections.assignedNtCs.paragraph2}
+                </div>
+            </div>
+            <div className='flex border-t-secondary-second border-t pt-3 mb-8'>
+                <div className='w-[25%]'>
+                    <h3 className='font-din-2014 font-700 text-18px mb-2 uppercase'>
+                        {annotation[0].sections.structureInfo.headline}
+                    </h3>
+                </div>
+                <div className='w-[75%] font-din-2014 text-16px mb-2 text-justify'>
+                    {annotation[0].sections.structureInfo.paragraph1}
+                </div>
+            </div>
+            <div className='flex border-t-secondary-second border-t pt-3 mb-8'>
+                <div className='w-[25%]'>
+                    <h3 className='font-din-2014 font-700 text-18px mb-2 uppercase'>
+                        {annotation[0].sections.downloads.headline}
+                    </h3>
+                </div>
+                <div className='w-[75%] font-din-2014 text-16px mb-2 text-justify'>
+                    {annotation[0].sections.downloads.paragraph1}
+                </div>
+            </div>
+            <div className='flex border-t-secondary-second border-t pt-3 mb-8'>
+                <div className='w-[25%]'>
+                    <h3 className='font-din-2014 font-700 text-18px mb-2 uppercase'>
+                        {validation[0].headline}
+                    </h3>
+                </div>
+                <div className='w-[75%] font-din-2014 text-16px mb-2 text-justify'>
+                    {validation[0].subHeadlineText}
+                </div>
+            </div>
+            <div className='flex border-t-secondary-second border-t pt-3 mb-8'>
+                <div className='w-[25%]'>
+                    <h3 className='font-din-2014 font-700 text-18px mb-2 uppercase'>
+                        {validation[0].sections.confalsRMSD.headline}
+                    </h3>
+                </div>
+                <div className='w-[75%] font-din-2014 text-16px mb-2 text-justify'>
+                    {validation[0].sections.confalsRMSD.paragraph1}
+                    <div className='h-3'></div>
+                    {validation[0].sections.confalsRMSD.paragraph2}
+                </div>
+            </div>
+            <div className='flex border-t-secondary-second border-t pt-3 mb-8'>
+                <div className='w-[25%]'>
+                    <h3 className='font-din-2014 font-700 text-18px mb-2 uppercase'>
+                        {validation[0].sections.stepTorsions.headline}
+                    </h3>
+                </div>
+                <div className='w-[75%] font-din-2014 text-16px mb-2 text-justify'>
+                    {validation[0].sections.stepTorsions.paragraph1}
+                </div>
+            </div>
+            <div className='flex border-t-secondary-second border-t pt-3 mb-8'>
+                <div className='w-[25%]'>
+                    <h3 className='font-din-2014 font-700 text-18px mb-2 uppercase'>
+                        {validation[0].sections.similarityPlot.headline}
+                    </h3>
+                </div>
+                <div className='w-[75%] font-din-2014 text-16px mb-2 text-justify'>
+                    {validation[0].sections.similarityPlot.paragraph1}
+                </div>
+            </div>
+            <div className='flex border-t-secondary-second border-t pt-3 mb-8'>
+                <div className='w-[25%]'>
+                    <h3 className='font-din-2014 font-700 text-18px mb-2 uppercase'>
+                        {validation[0].sections.rsccRmsdPlot.headline}
+                    </h3>
+                </div>
+                <div className='w-[75%] font-din-2014 text-16px mb-2 text-justify'>
+                    {validation[0].sections.rsccRmsdPlot.paragraph1}
+                </div>
+            </div>
+            <div className='flex border-t-secondary-second border-t pt-3 mb-8'>
+                <div className='w-[25%]'>
+                    <h3 className='font-din-2014 font-700 text-18px mb-2 uppercase'>
+                        {validation[0].sections.bondLengthsAngles.headline}
+                    </h3>
+                </div>
+                <div className='w-[75%] font-din-2014 text-16px mb-2 text-justify'>
+                    {validation[0].sections.bondLengthsAngles.paragraph1}
+                </div>
+            </div>
+            <div className='flex border-t-secondary-second border-t pt-3 mb-8'>
+                <div className='w-[25%]'>
+                    <h2 className='font-din-2014 font-700 text-18px mb-2 uppercase'>
+                        {refinement[0].headline}
+                    </h2>
+                </div>
+                <div className='w-[75%] font-din-2014 text-16px mb-2 text-justify'>
+                    {refinement[0].subHeadlineText}
+                </div>
+            </div>
+            <div className='flex border-t-secondary-second border-t pt-3 mb-8'>
+                <div className='w-[25%]'>
+                    <h3 className='font-din-2014 font-700 text-18px mb-2 uppercase'>
+                        {refinement[0].sections.connectivityPlot.headline}
+                    </h3>
+                </div>
+                <div className='w-[75%] font-din-2014 text-16px mb-2 text-justify'>
+                    {refinement[0].sections.connectivityPlot.paragraph1}
+                    <div className='h-3'></div>
+                    {refinement[0].sections.connectivityPlot.paragraph2}
+                </div>
+            </div>
+            <div className='flex border-t-secondary-second border-t pt-3 mb-8'>
+                <div className='w-[25%]'>
+                    <h3 className='font-din-2014 font-700 text-18px mb-2 uppercase'>
+                        {refinement[0].sections.restraints.headline}
+                    </h3>
+                </div>
+                <div className='w-[75%] font-din-2014 text-16px mb-2 text-justify'>
+                    {refinement[0].sections.restraints.paragraph1}
+                    <div className='h-3'></div>
+                    {refinement[0].sections.restraints.paragraph2}
+                    <div className='h-3'></div>
+                    {refinement[0].sections.restraints.paragraph3}
+                </div>
+            </div>
+            <div className='flex border-t-secondary-second border-t pt-3 mb-8'>
+                <div className='w-[25%]'>
+                    <h3 className='font-din-2014 font-700 text-18px mb-2 uppercase'>
+                        {refinement[0].sections.changeNtCs.headline}
+                    </h3>
+                </div>
+                <div className='w-[75%] font-din-2014 text-16px mb-2 text-justify'>
+                    {refinement[0].sections.changeNtCs.paragraph1}
+                </div>
+            </div>
+            <div className='flex border-t-secondary-second border-t pt-3 mb-8'>
+                <div className='w-[25%]'>
+                    <h2 className='font-din-2014 font-700 text-18px mb-2 uppercase'>
+                        {browse[0].headline}
+                    </h2>
+                </div>
+                <div className='w-[75%] font-din-2014 text-16px mb-2 text-justify'>
+                    {browse[0].subHeadlineText}
+                </div>
+            </div>
+            <div className='flex border-t-secondary-second border-t pt-3 mb-8'>
+                <div className='w-[25%]'>
+                    <h3 className='font-din-2014 font-700 text-18px mb-2 uppercase'>
+                        {browse[0].sections.browse.headline}
+                    </h3>
+                </div>
+                <div className='w-[75%] font-din-2014 text-16px mb-2 text-justify'>
+                    {browse[0].sections.browse.paragraph1}
+                </div>
+            </div>
+            <div className='flex border-t-secondary-second border-t pt-3 mb-8'>
+                <h3 className='w-[25%] font-din-2014 font-700 text-18px mb-2 uppercase'>
+                    {browse[0].sections.tableOfConformers.headline}
+                </h3>
+                <div className='w-[75%] font-din-2014 text-16px mb-2 text-justify'>
+                    {browse[0].sections.tableOfConformers.paragraph1}
+                </div>
+            </div>
+            <div className='flex border-t-secondary-second border-t pt-3 mb-8'>
+                <h3 className='w-[25%] font-din-2014 font-700 text-18px mb-2 uppercase'>
+                    {browse[0].sections.contourPlots.headline}
+                </h3>
+                <div className='w-[75%] font-din-2014 text-16px mb-2 text-justify'>
+                    {browse[0].sections.contourPlots.paragraph1}
                 </div>
             </div>
         </div>
@@ -193,129 +378,166 @@ function Help() {
 
 function HowToCite() {
     return (
-        <div className='rdo-page'>
-            <ul className='rdo-list'>
-                <li>
-                    The NtC alphabet - a unified dinucleotide alphabet of both RNA and DNA conformations is described in <a className='rdo-link' href='https://dnatco.datmos.org/next/papers/gkaa383.pdf'>Černý et al., NAR 48, 6367 (2020)</a>.
-                </li>
-                <li>
-                    The web service (version 3.2) is described in <a className='rdo-link' href='https://dnatco.datmos.org/next/papers/rr5151.pdf'>Černý et al., Acta Cryst D 76, 805 (2020)</a>.
-                </li>
-                <li>
-                    The DNA-based conformers and the way they were identified is described in <a className='rdo-link' href='https://dnatco.datmos.org/next/papers/rr5151.pdf'>Schneider et al., Acta Cryst D 74, 52 (2018)</a>.
-                </li>
-                <li>
-                    For an example application of the DNA Structural Alphabet see <a className='rdo-link' href='https://dnatco.datmos.org/next/papers/genes-08-00278-v3.pdf'>Schneider et al., Genes 8, 278, (2017)</a>.
-                </li>
-                <li>
-                    The web service (version 2) is described in <a className='rdo-link' href='https://dnatco.datmos.org/next/papers/gkw381.pdf'>Černý et al., NAR 44, W284 (2016)</a>.
-                </li>
-            </ul>
+        <div className='mt-7'>
+            <div>
+                The NtC alphabet - a unified dinucleotide alphabet of both RNA and DNA conformations is described in <a className='underline cursor-pointer' href='https://dnatco.datmos.org/next/papers/gkaa383.pdf' target='_blank'>Černý et al., NAR 48, 6367 (2020)</a>
+            </div>
+            <div>
+                The web service (version 3.2) is described in <a className='underline cursor-pointer' href='https://dnatco.datmos.org/next/papers/rr5151.pdf' target='_blank'>Černý et al., Acta Cryst D 76, 805 (2020)</a>
+            </div>
+            <div>
+                The DNA-based conformers and the way they were identified is described in <a className='underline cursor-pointer' href='https://dnatco.datmos.org/next/papers/rr5151.pdf'>Schneider et al., Acta Cryst D 74, 52 (2018)</a>
+            </div>
+            <div>
+                For an example application of the DNA Structural Alphabet see <a className='underline cursor-pointer' href='https://dnatco.datmos.org/next/papers/genes-08-00278-v3.pdf'>Schneider et al., Genes 8, 278, (2017)</a>
+            </div>
+            <div>
+                The web service (version 2) is described in <a className='underline cursor-pointer' href='https://dnatco.datmos.org/next/papers/gkw381.pdf'>Černý et al., NAR 44, W284 (2016)</a>
+            </div>
         </div>
     );
 }
 
 function VersionHistory() {
     return (
-        <div className='rdo-page'>
-            <div className='rdo-subsection-caption'>v3.2</div>
-            <ul className='rdo-list'>
-                <li>
-                    The version described in <a className='rdo-link' href='https://dnatco.datmos.org/next/papers/ir5007.pdf'>Černý et al., Acta Cryst D 76, 805 (2020)</a>.
-                </li>
-                <li>
-                    Updated the universal set of 96+1 conformers for both DNA and RNA structures.
-                </li>
-                <li>
-                    Restraints for <a className='rdo-link' href='https://www.phenix-online.org/'>Phenix</a>,
-                    <a className='rdo-link' href='https://www2.mrc-lmb.cam.ac.uk/groups/murshudov/content/refmac/refmac.html'>REFMAC</a>,
-                    and <a className='rdo-link' href='https://github.com/samuelflores/MMB'>MMB</a> can be generated.
-                </li>
-                <li>
-                    Support for CCP4/MRC maps was added.
-                </li>
-                <li>
-                    Interactive 'connectivity' scatter plot added.
-                </li>
-                <li>
-                    Contour plots of RSCC vs Cartesian RMSD or Euclidean distance added.
-                </li>
-                <li>
-                    Output of assignment can be downloaded as a JSON file.
-                </li>
-            </ul>
-
-            <div className='rdo-subsection-caption'>v3.1</div>
-            <ul className='rdo-list'>
-                <li>
-                    User-uploaded data in PDB and mmCIF format are supported.
-                </li>
-                <li>
-                    Interactive 'similarity' scatter plot added.
-                </li>
-            </ul>
-
-            <div className='rdo-subsection-caption'>v3.0</div>
-            <ul className='rdo-list'>
-                <li>
-                    A universal set of conformer classes for both DNA and RNA introduced.
-                </li>
-                <li>
-                    Additional parameters (NN, CC, NCCN/μ) for better description of intercalated or open steps.
-                </li>
-                <li>
-                    Structures from PDB and PDB-REDO databases analyzed as mmCIF format internally.
-                </li>
-            </ul>
-
-            <div className='rdo-subsection-caption'>v2.3</div>
-            <ul className='rdo-list'>
-                <li>
-                    Improved assignment protocol involving known δ/pseudorotation angle correlation for detection of outliers.
-                </li>
-                <li>
-                    RMSD between selected step and reference reported for atoms defining the nine torsions.
-                </li>
-                <li>
-                    Tetrahedron representation of the NtC conformer introduced.
-                </li>
-                <li>
-                    <a className='rdo-link' href='https://dnatco.datmos.org/v2.3'>https://dnatco.datmos.org/v2.3</a>
-                </li>
-            </ul>
-
-            <div className='rdo-subsection-caption'>v2.2</div>
-            <ul className='rdo-list'>
-                <li>
-                    Confal (conformer validation score) introduced.
-                </li>
-                <li>
-                    Reporting the 'most similar' conformation for non-assigned (NANT) steps.
-                </li>
-                <li>
-                    <a className='rdo-link' href='https://dnatco.datmos.org/v2.2/'>https://dnatco.datmos.org/v2.2/</a>
-                </li>
-            </ul>
-
-            <div className='rdo-subsection-caption'>v2</div>
-            <ul className='rdo-list'>
-                <li>
-                    The version described in <a className='rdo-link' href='https://dnatco.datmos.org/next/papers/gkw381.pdf'>Černý et al., NAR 44, W284 (2016)</a>.
-                </li>
-                <li>
-                    <a className='rdo-link' href='https://dnatco.datmos.org/v2/'>https://dnatco.datmos.org/v2/</a>
-                </li>
-            </ul>
-
-            <div className='rdo-subsection-caption'>v1</div>
-            <ul className='rdo-list'>
-                <li>
-                    The initial implementation based on <a className='rdo-link' href='https://dnatco.datmos.org/next/papers/gkn260.pdf'>Svozil et al., NAR 36, 3690 (2008)</a>.
-                </li>
-                <li>
-                    <a className='rdo-link' href='https://dnatco.datmos.org/v1/'>https://dnatco.datmos.org/v1/</a>
-                </li>
-            </ul>
+        <div>
+            <div className='flex border-t-secondary-second border-t mt-4 pt-3 mb-8'>
+                <div className='w-[25%]'>
+                    <h3 className='font-din-2014 font-700 text-18px mb-2 uppercase'>
+                        v3.2
+                    </h3>
+                </div>
+                <div className='w-[75%] mb-2'>
+                    <div className='font-din-2014 text-16px text-justify'>
+                        The version described in <a className='underline cursor-pointer' href='https://dnatco.datmos.org/next/papers/ir5007.pdf' target='_blank'>Černý et al., Acta Cryst D 76, 805 (2020)</a>.
+                    </div>
+                    <div className='font-din-2014 text-16px text-justify '>
+                        Updated the universal set of 96+1 conformers for both DNA and RNA structures.
+                    </div>
+                    <div className='font-din-2014 text-16px text-justify'>
+                        Restraints for <a className='underline cursor-pointer' href='https://www.phenix-online.org/' target='_blank'>Phenix</a>,
+                        <a className='underline cursor-pointer' href='https://www2.mrc-lmb.cam.ac.uk/groups/murshudov/content/refmac/refmac.html' target='_blank'>REFMAC</a>,
+                        and <a className='underline cursor-pointer' href='https://github.com/samuelflores/MMB' target='_blank'>MMB</a> can be generated.
+                    </div>
+                    <div className='font-din-2014 text-16px text-justify'>
+                        Support for CCP4/MRC maps was added.
+                    </div>
+                    <div className='font-din-2014 text-16px text-justify'>
+                        Interactive 'connectivity' scatter plot added.
+                    </div>
+                    <div className='font-din-2014 text-16px text-justify'>
+                        Contour plots of RSCC vs Cartesian RMSD or Euclidean distance added.
+                    </div>
+                    <div className='font-din-2014 text-16px text-justify'>
+                        Output of assignment can be downloaded as a JSON file.
+                    </div>
+                </div>
+            </div>
+            <div className='flex border-t-secondary-second border-t mt-4 pt-3 mb-8'>
+                <div className='w-[25%]'>
+                    <h3 className='font-din-2014 font-700 text-18px mb-2 uppercase'>
+                        v3.1
+                    </h3>
+                </div>
+                <div className='w-[75%] mb-2'>
+                    <div className='font-din-2014 text-16px text-justify'>
+                        User-uploaded data in PDB and mmCIF format are supported.
+                    </div>
+                    <div className='font-din-2014 text-16px text-justify '>
+                        Interactive 'similarity' scatter plot added.
+                    </div>
+                </div>
+            </div>
+            <div className='flex border-t-secondary-second border-t mt-4 pt-3 mb-8'>
+                <div className='w-[25%]'>
+                    <h3 className='font-din-2014 font-700 text-18px mb-2 uppercase'>
+                        v3.0
+                    </h3>
+                </div>
+                <div className='w-[75%] mb-2'>
+                    <div className='font-din-2014 text-16px text-justify'>
+                        A universal set of conformer classes for both DNA and RNA introduced.
+                    </div>
+                    <div className='font-din-2014 text-16px text-justify '>
+                        Additional parameters (NN, CC, NCCN/μ) for better description of intercalated or open steps.
+                    </div>
+                    <div className='font-din-2014 text-16px text-justify '>
+                        Structures from PDB and PDB-REDO databases analyzed as mmCIF format internally.
+                    </div>
+                </div>
+            </div>
+            <div className='flex border-t-secondary-second border-t mt-4 pt-3 mb-8'>
+                <div className='w-[25%]'>
+                    <h3 className='font-din-2014 font-700 text-18px mb-2 uppercase'>
+                        v2.3
+                    </h3>
+                </div>
+                <div className='w-[75%] mb-2'>
+                    <div className='font-din-2014 text-16px text-justify'>
+                        Improved assignment protocol involving known δ/pseudorotation angle correlation for detection of outliers.
+                    </div>
+                    <div className='font-din-2014 text-16px text-justify '>
+                        RMSD between selected step and reference reported for atoms defining the nine torsions.
+                    </div>
+                    <div className='font-din-2014 text-16px text-justify '>
+                        Tetrahedron representation of the NtC conformer introduced.
+                    </div>
+                    <div className='font-din-2014 text-16px text-justify '>
+                        <a className='underline cursor-pointer' href='https://dnatco.datmos.org/v2.3' target='_blank'>https://dnatco.datmos.org/v2.3</a>
+                    </div>
+                </div>
+            </div>
+            <div className='flex border-t-secondary-second border-t mt-4 pt-3 mb-8'>
+                <div className='w-[25%]'>
+                    <h3 className='font-din-2014 font-700 text-18px mb-2 uppercase'>
+                        v2.2
+                    </h3>
+                </div>
+                <div className='w-[75%] mb-2'>
+                    <div className='font-din-2014 text-16px text-justify'>
+                        Confal (conformer validation score) introduced.
+                    </div>
+                    <div className='font-din-2014 text-16px text-justify '>
+                        Reporting the 'most similar' conformation for non-assigned (NANT) steps.
+                    </div>
+                    <div className='font-din-2014 text-16px text-justify '>
+                        <a className='underline cursor-pointer' href='https://dnatco.datmos.org/v2.2/' target='_blank'>https://dnatco.datmos.org/v2.2/</a>
+                    </div>
+                </div>
+            </div>
+            <div className='flex border-t-secondary-second border-t mt-4 pt-3 mb-8'>
+                <div className='w-[25%]'>
+                    <h3 className='font-din-2014 font-700 text-18px mb-2 uppercase'>
+                        v2
+                    </h3>
+                </div>
+                <div className='w-[75%] mb-2'>
+                    <div className='font-din-2014 text-16px text-justify'>
+                        The version described in <a className='underline cursor-pointer' href='https://dnatco.datmos.org/next/papers/gkw381.pdf' target='_blank'>Černý et al., NAR 44, W284 (2016)</a>.
+                    </div>
+                    <div className='font-din-2014 text-16px text-justify '>
+                        Reporting the 'most similar' conformation for non-assigned (NANT) steps.
+                    </div>
+                    <div className='font-din-2014 text-16px text-justify '>
+                        <a className='underline cursor-pointer' href='https://dnatco.datmos.org/v2/' target='_blank'>https://dnatco.datmos.org/v2/</a>
+                    </div>
+                </div>
+            </div>
+            <div className='flex border-t-secondary-second border-t mt-4 pt-3 mb-8'>
+                <div className='w-[25%]'>
+                    <h3 className='font-din-2014 font-700 text-18px mb-2 uppercase'>
+                        v1
+                    </h3>
+                </div>
+                <div className='w-[75%] mb-2'>
+                    <div className='font-din-2014 text-16px text-justify'>
+                        The initial implementation based on <a className='underline cursor-pointer' href='https://dnatco.datmos.org/next/papers/gkn260.pdf' target='_blank'>Svozil et al., NAR 36, 3690 (2008)</a>.
+                    </div>
+                    <div className='font-din-2014 text-16px text-justify '>
+                        <a className='underline cursor-pointer' href='https://dnatco.datmos.org/v1/'>https://dnatco.datmos.org/v1/</a>
+                    </div>
+                </div>
+            </div>
         </div>
     );
 }
@@ -323,17 +545,18 @@ function VersionHistory() {
 interface State {
     selected: typeof Tabs[number][0];
 }
-export class AboutTab extends React.Component<{}, State> {
-    constructor(props: {}) {
-        super(props);
+const AboutTab: React.FC = () => {
 
-        this.state = {
-            selected: 'how-to-cite',
-        };
-    }
+        const location = useLocation();
+        const [state, setState] = useState<State>({ selected: 'help' });
 
-    private renderTab() {
-        switch (this.state.selected) {
+        useEffect(() => {
+            const selectedTab = location?.state?.selectedTab || 'help';
+            setState({ selected: selectedTab });
+          }, [location]);
+
+    const renderTab = () => {
+        switch (state.selected) {
         case 'contact': return <Contact />;
         case 'downloads': return <Downloads />;
         case 'help': return <Help />;
@@ -342,25 +565,26 @@ export class AboutTab extends React.Component<{}, State> {
         }
     }
 
-    render() {
+
         return (
             <div className='rdo-offset'>
                     <div className='rdo-screen-with-side-panel overflow-hidden h-[calc(100%-6rem)] flex flex-col mt-24'>
                         <SideSwitchingPanel
                             items={Tabs}
-                            selectedItemId={this.state.selected}
-                            onSwitched={id => this.setState({ ...this.state, selected: id})}
+                            selectedItemId={state.selected}
+                            onSwitched={id => setState({ ...state, selected: id})}
                         />
                         <div className='flex flex-col overflow-hidden rdo-offset'>
-                            <div className='font-din-2014 text-18px font-700'>
-                                {Tabs.find((tab) => tab[0] === this.state.selected)![1].caption}
+                            <div className='font-din-2014 text-22px uppercase font-700 mb-4'>
+                                {Tabs.find((tab) => tab[0] === state.selected)![1].caption}
                             </div>
-                            <div className='overflow-hidden'>
-                                {this.renderTab()}
+                            <div className='overflow-hidden rdo-scroll-vertically'>
+                                {renderTab()}
                             </div>
                         </div>
                     </div>
             </div>
         );
-    }
 }
+
+export default AboutTab;

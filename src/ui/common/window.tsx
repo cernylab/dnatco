@@ -52,7 +52,7 @@ function Header(props: {
 }) {
     const [isExpanded, setIsExpanded] = React.useState(true);
     const hdrRef = React.createRef<HTMLDivElement>();
-    const title = typeof props.title === 'string' ? <div className='rdo-strong'>{props.title}</div> : props.title;
+    const title = typeof props.title === 'string' ? <div className='font-700'>{props.title}</div> : props.title;
 
     React.useEffect(() => {
         const onDown = (evt: MouseEvent) => {
@@ -104,14 +104,14 @@ function Header(props: {
                 props.onCollapsedExpanded(ce);
             }}>
                 <img
-                    className='rdo-window-button'
+                    className='w-4 h-4'
                     src={TriangleDownImg}
                     style={{ transition: 'rotate var(--anim-speed)', rotate: isExpanded ? '180deg' : '0deg' }}
                 />
             </div>
             <div onClick={() => props.onClosed()}>
                 <img
-                    className='rdo-window-button'
+                    className='w-4 h-4'
                     src={XImg}
                 />
             </div>

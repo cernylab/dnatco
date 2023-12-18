@@ -7,16 +7,13 @@ import { DnatcoLogoImg } from '../assets/images';
 
 const MinimumWidthForStandardBar = 1000;
 
-type Tabs<TK extends string> = Record<TK, {
-    icon: string,
+type Tabs {
     caption: string,
-    enabled: boolean,
-    noCaps?: boolean,
-}>;
+};
 
 function makeMenu<TK extends string>(
     onTabSwitched: (tk: TK) => void,
-    tabs: Tabs<TK>,
+    tabs: Tabs,
     selectedTab: TK,
     x: number,
     y: number,
@@ -50,7 +47,6 @@ function makeTabs<TK extends string>(onTabSwitched: (tk: TK) => void, tabs: Tabs
                 caption={tab.caption}
                 onClick={() => onTabSwitched(tk)}
                 selected={selectedTab === tk}
-                enabled={tab.enabled}
                 noCaps={tab.noCaps ?? false}
             />
         );
@@ -59,9 +55,7 @@ function makeTabs<TK extends string>(onTabSwitched: (tk: TK) => void, tabs: Tabs
     return list;
 }
 
-function tabButtonCls(enabled: boolean, selected: boolean) {
-    if (enabled)
-        return 'rdo-tab-button rdo-tab-button-enabled';
+function tabButtonCls(selected: boolean) {
     return 'rdo-tab-button rdo-tab-button-disabled';
 }
 
@@ -70,16 +64,15 @@ function TabButton(props: {
     caption: string;
     icon: string;
     selected: boolean;
-    enabled: boolean;
     noCaps: boolean;
 }) {
     return (    
         <BasePushButton
-            className={tabButtonCls(props.enabled, props.selected)}
+            className={tabButtonCls(props.selected)}
             classNameDisabled='rdo-tab-button rdo-tab-button-disabled'
             onClick={props.onClick}
         >
-            <div className={`${props.noCaps ? '' : 'font-din-condensed text-28px'} ${props.enabled && !props.selected ? 'hover-animation' : ''} ${props.selected ? 'text-secondary-first stroke' : ''}`}>{props.caption}</div>
+            <div className={`${props.noCaps ? '' : 'font-din-condensed text-28px'} ${!props.selected ? 'hover-animation' : ''} ${props.selected ? 'text-secondary-first stroke' : ''}`}>{props.caption}</div>
         </BasePushButton>
     );
 }
@@ -136,7 +129,6 @@ function NavigationBarCompact<TK extends string>(props: {
                             caption={selected.caption}
                             onClick={() => {}}
                             selected={true}
-                            enabled={true}
                             noCaps={selected.noCaps ?? false}
                         />
                     </div>

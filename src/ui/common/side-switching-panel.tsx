@@ -71,10 +71,9 @@ export function Menu<K extends string>(props: {
     });
 
     return (
-        <div style={{
+        <div className='bg-white absolute' style={{
             border: 'var(--thickness-border) solid var(--color-a)',
             left: `${props.x}px`,
-            position: 'absolute',
             top: `${props.y}px`,
             zIndex: 100,
         }}>

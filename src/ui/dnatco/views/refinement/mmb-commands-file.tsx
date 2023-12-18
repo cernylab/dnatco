@@ -30,7 +30,7 @@ export class MmbCommandsFile extends View<Refinement.Props, State> {
                         Note that this is not a complete MMB commands file but just an excerpt that instructs MMB to apply NtCs to the structure
                     </div>
 
-                    <div className='rdo-line-spacer' />
+                    <div className='h-4' />
 
                     <div style={{
                         alignItems: 'center',
@@ -59,7 +59,7 @@ export class MmbCommandsFile extends View<Refinement.Props, State> {
                     </div>
                 </div>
                 <div className='rdo-scroll-vertically-with-scrollbar'>
-                    {lines.map((l, idx) => <div className='rdo-monospace' key={idx}>{l}</div>)}
+                    {lines.map((l, idx) => <div className='font-din-2014' key={idx}>{l}</div>)}
                 </div>
             </div>
         );

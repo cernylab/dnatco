@@ -105,14 +105,14 @@ class Stats extends React.Component<{
 
         return (
             <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr', columnGap: 'var(--h-gap)', rowGap: 'calc(var(--v-gap) / 2)' }}>
-                <div className='rdo-strong'>NtC</div>
+                <div className='font-700'>NtC</div>
                 <div style={this.ValuesCell}>
                     <div style={this.Value}>{`Assigned:\u00A0${this.props.assigned}`}</div>
                     <div style={this.Value}>{`Close:\u00A0${this.props.close}`}</div>
                     <div style={this.Value}>{`Unassigned:\u00A0${this.props.unassigned}`}</div>
                 </div>
 
-                <div className='rdo-strong'>RMSD [{'\u00C5'}]</div>
+                <div className='font-700'>RMSD [{'\u00C5'}]</div>
                 <div style={this.ValuesCell}>
                     {this.props.rmsdStats.slice(0, this.props.rmsdStats.length - 1).map((s, idx, stats) => {
                         const green = stats[0].rmsdThreshold; // First
@@ -144,7 +144,7 @@ class Stats extends React.Component<{
                     <StatsBar counts={rmsdCounts} colors={rmsdColors} />
                 </div>
 
-                <div className='rdo-strong'>Overall CS</div>
+                <div className='font-700'>Overall CS</div>
                 <div style={this.ValuesCell}>
                     <div style={this.Value}>{`Average value:\u00A0${this.props.confalAverage.toFixed(0)}`}</div>
                     <div style={this.Value}>{`Percentile:\u00A0${this.props.confalPercentile.toFixed(0)}`}</div>
@@ -301,7 +301,7 @@ export class ConfalsRmsds extends View<View.Props> {
                         assignedNtC === 'NANT'
                             ?
                                 <Tooltip
-                                    tag={<span className='rdo-unassigned-ntc'>{Cif.Column.value(closest_NtC, row)!}</span>}
+                                    tag={<span className='text-secondary-third'>{Cif.Column.value(closest_NtC, row)!}</span>}
                                     delayMsec={300}
                                 >
                                     This step is unassigned. Closest NtC is shown instead.
@@ -312,7 +312,7 @@ export class ConfalsRmsds extends View<View.Props> {
                         assignedCANA === 'NAN'
                             ?
                                 <Tooltip
-                                    tag={<span className='rdo-unassigned-ntc'>{Cif.Column.value(closest_CANA, row)!}</span>}
+                                    tag={<span className='text-secondary-third'>{Cif.Column.value(closest_CANA, row)!}</span>}
                                     delayMsec={300}
                                 >
                                     This step is unassigned. Closest CANA is shown instead.
@@ -439,7 +439,7 @@ export class ConfalsRmsds extends View<View.Props> {
 
         return (
             <div style={{ ...Common.VScrollJail, position: 'relative' }} ref={selfRef}>
-                <div className='font-700 mb-2 p-2 text-center border-b-[1px] border-primary-first'>Overall structure quality</div>
+                <div className='font-700 mb-2 p-2 text-center border-b border-primary-first'>Overall structure quality</div>
 
                 <Stats
                     assigned={Cif.Column.value(overall.num_classified, 0)!}
@@ -450,7 +450,7 @@ export class ConfalsRmsds extends View<View.Props> {
                     confalPercentile={confalPercentile(confalAverage)}
                 />
 
-                <div className='rdo-line-spacer' />
+                <div className='h-4' />
                 <NamedList sizing='min-content' rowSpacing='half'>
                 {
                     numModels > 1
@@ -472,7 +472,7 @@ export class ConfalsRmsds extends View<View.Props> {
                     </NamedListItem>
                 </NamedList>
 
-                <div className='rdo-line-spacer' />
+                <div className='h-4' />
                 <div className='rdo-secondary-caption'>Table of assigned dinucleotide NtC conformers</div>
                 <div style={ Common.VScrollElement } ref={this.tableTainer}>
                     <div className='rdo-scroll-vertically-with-scrollbar'>

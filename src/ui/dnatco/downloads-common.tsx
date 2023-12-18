@@ -15,11 +15,9 @@ export namespace Downloads {
         return `${entryId}.cif`;
     }
 
-    export const DownloadItemDescription = { marginBottom: 'var(--v-gap)' };
-
     export function DownloadBox(props: { children: JSX.Element[] | JSX.Element }) {
         return (
-            <div style={{ display: 'flex', flexDirection: 'row', height: '2em' }}>
+            <div className='flex flex-row h-8'>
                 <EquiBox
                     padding={0}
                     orientation='row'
@@ -34,8 +32,8 @@ export namespace Downloads {
 
     export function Title(props: { title: string }) {
         return (
-            <div style={{ display: 'flex', flexDirection: 'row', gap: 'var(--h-gap)' }}>
-                <div className='font-700 font-16px'>{props.title}</div>
+            <div className='flex flex-row gap-4'>
+                <div className='font-din-2014 font-700 text-18px mb-2 uppercase'>{props.title}</div>
             </div>
         );
     }

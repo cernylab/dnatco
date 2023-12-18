@@ -1,10 +1,18 @@
 import * as React from 'react';
 import { Email } from './common/email';
 import { ElixirLogoImg, IbtLogoImg } from '../assets/images';
-import { Globals } from '../globals';
+import { Globals } from '../globals'; 
+import { useNavigate } from 'react-router';
 
+const Footer:React.FC = () => {
+    
+    const navigate = useNavigate();
 
-export function Footer() {
+    const handleAboutClick = (selectedTab: string) => {
+        // Pass the selectedTab prop when navigating
+        navigate('/app/about', { state: { selectedTab } });
+      };
+
     return (
         <>
             <div className='bg-primary-first text-white'>
@@ -23,8 +31,20 @@ export function Footer() {
                     </div>
 
                     <div className='flex'>
-                        <div className='hover-animation my-auto mx-3'><a className='cursor-pointer text-18px font-din-2014' href='/#/app/about'>About</a></div>
-                        <div className='hover-animation my-auto mx-3'><a className='cursor-pointer text-18px' href='/#/app/about'>Contact</a></div>
+                        <div
+                            onClick={() => handleAboutClick('help')}className='hover-animation my-auto mx-3'
+                        >
+                            <a className='cursor-pointer text-18px font-din-2014'>
+                                About
+                            </a>
+                        </div>
+                        <div
+                            onClick={() => handleAboutClick('contact')} 
+                            className='hover-animation my-auto mx-3'>
+                            <a className='cursor-pointer text-18px font-din-2014'>
+                                Contact
+                            </a>
+                        </div>
                     </div>
 
                     <div className='flex'>
@@ -35,10 +55,10 @@ export function Footer() {
                         </div>
                         <div className='flex my-auto mx-2'>
                             <a href='https://www.ibt.cas.cz/en' target='_blank'>
-                                <img className='h-12' src={IbtLogoImg} alt='Ibt logo'/>
+                                <img className='h-12 hover-animation' src={IbtLogoImg} alt='Ibt logo'/>
                             </a>
                             <a href='https://www.elixir-czech.cz/' target='_blank'>
-                                <img className='h-12' src={ElixirLogoImg} alt='Elixir logo'/>
+                                <img className='h-12 hover-animation' src={ElixirLogoImg} alt='Elixir logo'/>
                             </a>
                         </div>
                     </div>
@@ -47,3 +67,5 @@ export function Footer() {
         </>
     );
 }
+
+export default Footer;

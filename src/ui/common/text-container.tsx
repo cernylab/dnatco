@@ -24,14 +24,14 @@ export class TextContainer extends React.Component<TextContainer.Props, State> {
                 Logger.log(Logger.Severity.Warning, (e as Error).toString());
                 this.setState({
                     ...this.state,
-                    content: '<div class="rdo-error-text">Failed to download content</div>',
+                    content: '<div class="text-secondary-third">Failed to download content</div>',
                 });
             }
         } else {
             Logger.log(Logger.Severity.Warning, `${resp.status}, resp.statusText`);
             this.setState({
                 ...this.state,
-                content: '<div class="rdo-error-text">Failed to download content</div>',
+                content: '<div class="text-secondary-third">Failed to download content</div>',
             });
         }
     }

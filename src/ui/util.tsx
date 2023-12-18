@@ -15,9 +15,9 @@ export function deselectText() {
 export function formatErrorText(text: string) {
     const toks = text.split('\n');
     if (toks.length === 0)
-        return <div className='rdo-error-text'>toks[0]</div>;
+        return <div className='text-secondary-third'>toks[0]</div>;
 
-    const elems = toks.map(x => <div className='rdo-error-text'>{x}</div>);
+    const elems = toks.map(x => <div className='text-secondary-third'>{x}</div>);
     return <div>{elems}</div>;
 }
 

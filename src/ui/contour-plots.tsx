@@ -98,7 +98,7 @@ export class ContourPlots extends WithSubscriptions<{}, State> {
 
     render() {
         return (
-            <div style={{
+            <div className='' style={{
                 display: 'grid',
                 gridTemplateColumns: 'auto 45% 45%',
                 rowGap: '0.5em',
@@ -106,8 +106,8 @@ export class ContourPlots extends WithSubscriptions<{}, State> {
                 alignItems: 'center',
                 justifyContent: 'center',
             }}>
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                    <span className='rdo-strong' style={{ fontSize: 'var(--font-large)' }}>NtC conformer</span>
+                <div className='flex flex-col items-center'>
+                    <div className='font-din-2014 text-22px uppercase font-700 mb-4'>NtC conformer</div>
                     <ComboBox
                         options={toComboBoxOptions(NtCClassesWithNANT, cls => ({ caption: cls, value: cls}))}
                         value={this.state.ntc}
@@ -117,14 +117,14 @@ export class ContourPlots extends WithSubscriptions<{}, State> {
                         innerStyle={{ fontSize: 'var(--font-large)' }}
                     />
                 </div>
-                <div className='rdo-section-caption' style={{ fontWeight: 'bold' }} >RSCC vs. Torsion space</div>
-                <div className='rdo-section-caption' style={{ fontWeight: 'bold' }}>RSCC vs. Cartesian rmsd</div>
+                <div className='text-20px mb-2 text-center font-700'>RSCC vs. Torsion space</div>
+                <div className='text-20px mb-2 text-center font-700'>RSCC vs. Cartesian rmsd</div>
 
-                <div className='rdo-vertical-text rdo-section-caption' style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>{'At least 1.8\u00C5 resolution'}</div>
+                <div className='rdo-vertical-text text-20px mb-2 text-center flex items-center justify-center font-700'>{'At least 1.8\u00C5 resolution'}</div>
                 {PlotCompomentCache.get(plotTag(this.state.ntc, 'le18', 'euclid'))?.() ?? Placeholder}
                 {PlotCompomentCache.get(plotTag(this.state.ntc, 'le18', 'rmsd'))?.() ?? Placeholder}
 
-                <div className='rdo-vertical-text rdo-section-caption' style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>{'Worse than 2.5\u00C5 resolution'}</div>
+                <div className='rdo-vertical-text text-20px mb-2 text-center font-700 flex items-center justify-center'>{'Worse than 2.5\u00C5 resolution'}</div>
                 {PlotCompomentCache.get(plotTag(this.state.ntc, 'gt25', 'euclid'))?.() ?? Placeholder}
                 {PlotCompomentCache.get(plotTag(this.state.ntc, 'gt25', 'rmsd'))?.() ?? Placeholder}
             </div>

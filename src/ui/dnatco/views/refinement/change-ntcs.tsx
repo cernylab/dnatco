@@ -129,7 +129,7 @@ export class ChangeNtCs extends View<Refinement.Props> {
                         assignedNtC === 'NANT'
                             ?
                                 <Tooltip
-                                    tag={<span className='rdo-unassigned-ntc'>{Cif.Column.value(closest_NtC, row)!}</span>}
+                                    tag={<span className='text-secondary-third'>{Cif.Column.value(closest_NtC, row)!}</span>}
                                     delayMsec={300}
                                 >
                                     This step is unassigned. Closest NtC is shown instead.
@@ -245,7 +245,7 @@ export class ChangeNtCs extends View<Refinement.Props> {
                     </NamedListItem>
                 </NamedList>
 
-                <div className='rdo-line-spacer' />
+                <div className='h-4' />
 
                 <CustomNtCSets
                     customNtCs={this.props.dnatcofication.customNtCs}
@@ -253,7 +253,7 @@ export class ChangeNtCs extends View<Refinement.Props> {
                     onSetChanged={this.props.onCustomNtCSetChanged}
                 />
 
-                <div className='rdo-line-spacer' />
+                <div className='h-4' />
                 <div style={ Common.VScrollElement } ref={this.tableTainer}>
                     <div className='rdo-scroll-vertically-with-scrollbar'>
                         {this.renderStepsTable()}

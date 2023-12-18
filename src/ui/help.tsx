@@ -6,7 +6,7 @@ export namespace Help {
 
         return (
             <div
-                className={isMouseIn ? 'rdo-scroll-vertically-with-scrollbar' : 'rdo-scroll-vertically'}
+                className={isMouseIn ? 'rdo-scroll-vertically' : 'rdo-scroll-vertically'}
                 onMouseOver={() => setIsMouseIn(true)}
                 onMouseLeave={() => setIsMouseIn(false)}
             >

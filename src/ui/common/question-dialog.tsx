@@ -15,14 +15,14 @@ export class QuestionDialog extends React.Component<Props> {
             <div className='rdo-popup'>
                 <div className='rdo-popup-inner'>
                     <div className='rdo-named-list-name'>{this.props.caption}</div>
-                    <div className='rdo-line-spacer' />
+                    <div className='h-4' />
 
                     { typeof this.props.text === 'string'
                         ? <div>{this.props.text}</div>
                         : this.props.text
                     }
 
-                    <div className='rdo-line-spacer' />
+                    <div className='h-4' />
                     <div className='rdo-popup-button-bar'>
                         <div style={{ flex: 1 }} />
                         {

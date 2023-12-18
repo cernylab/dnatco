@@ -22,7 +22,7 @@ function mkHeader(text: string) {
                     src={TriangleDownImg}
                     style={{ transition: 'rotate var(--anim-speed)', rotate: '0deg' }}
                 />
-                <div className='rdo-strong' style={{ flex: 1 }}>{text}</div>
+                <div className='font-700' style={{ flex: 1 }}>{text}</div>
             </div>
         ),
         expanded: (
@@ -31,7 +31,7 @@ function mkHeader(text: string) {
                     src={TriangleDownImg}
                     style={{ transition: 'rotate var(--anim-speed)', rotate: '180deg' }}
                 />
-                <div className='rdo-strong' style={{ flex: 1 }}>{text}</div>
+                <div className='font-700' style={{ flex: 1 }}>{text}</div>
             </div>
         )
     };
@@ -64,7 +64,7 @@ export class StructureInfo extends View {
                     <NamedListItem name='Structure title'>{getCifValue(this.props.dnatcofication, Struct, 'title') ?? Common.NA }</NamedListItem>
                     <NamedListItem name='Deposited to PDB'>{niceCifDate(getCifValue(this.props.dnatcofication, PdbxDatabaseStatus, 'recvd_initial_deposition_date'))}</NamedListItem>
                 </NamedList>
-                <div className='rdo-line-spacer' />
+                <div className='h-4' />
                 <CollapsibleVertical
                     header={mkHeader('Entities and Molecules')}
                 >

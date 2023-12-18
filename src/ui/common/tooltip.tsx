@@ -152,7 +152,7 @@ export class Tooltip extends React.Component<Tooltip.Props> {
 
     render() {
         return (
-            <span className='rdo-tooltip'
+            <span className='relative'
                 style={{ display: this.props.display, overflow: this.props.overflow }}
                 ref={this.ref}
                 onMouseEnter={e => this.scheduleDisplay(e.pageX, e.pageY, false, this.props.delayMsec)}

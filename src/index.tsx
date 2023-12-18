@@ -26,10 +26,10 @@ import { Dnatcofication, DnatcoficationData } from './dnatco/dnatcofication';
 import { ListOfConformers } from './dnatco/list-of-conformers';
 import { Logger } from './log/logger';
 import { UserRemoteDatabases, isBuiltIn } from './remote/db/register';
-import { AboutTab } from './ui/about-tab';
+import AboutTab from './ui/about-tab';
 import { Downloads } from './ui/dnatco/downloads';
 import { DnatcoViewerTab, OutsideControl } from './ui/dnatco-viewer-tab';
-import { Footer } from './ui/footer';
+import Footer from './ui/footer';
 import { ConformersTab } from './ui/conformers-tab';
 import { NavigationBar } from './ui/navigation-bar';
 import { StartTab } from './ui/start-tab';
@@ -52,6 +52,7 @@ const Params = {
     stepName: '',
     db: '',
 };
+
 
 const TabsForModes = {
     nothing: {
@@ -193,7 +194,7 @@ class DnatcoficationHandler {
                 text: (
                     <div>
                         You attached a map coefficients file to the structure. {GlobalConfig.data().displayedProductName} can use this information to calculate additional validation information about the structure. To do this calculation, {GlobalConfig.data().displayedProductName} must upload your structure and the map coefficients to an external server for processing.
-                        <div className='rdo-line-spacer' />
+                        <div className='h-4' />
                         Is this okay?
                     </div>
                 ),
@@ -326,7 +327,7 @@ function App(props: { initial: Initial }) {
                         if (isError(res)) {
                             setDnatcofierState('failed');
                             Popup.create(
-                                <div className='rdo-error-text'>
+                                <div className='text-secondary-third'>
                                     <div>Angles and lengths - {res.message}</div>
                                     {FailMsg}
                                 </div>
@@ -339,7 +340,7 @@ function App(props: { initial: Initial }) {
                                 if (isError(res)) {
                                     setDnatcofierState('failed');
                                     Popup.create(
-                                        <div className='rdo-error-text'>
+                                        <div className='text-secondary-third'>
                                             <div>Naval - {res.message}</div>
                                             {FailMsg}
                                         </div>
@@ -350,7 +351,7 @@ function App(props: { initial: Initial }) {
                                 // We should not really get here but let's catch just in case
                                 setDnatcofierState('failed');
                                 Popup.create(
-                                    <div className='rdo-error-text'>
+                                    <div className='text-secondary-third'>
                                         <div>Naval - {e.toString()}</div>
                                         {FailMsg}
                                     </div>
@@ -361,7 +362,7 @@ function App(props: { initial: Initial }) {
                         // We should not really get here but let's catch just in case
                         setDnatcofierState('failed');
                         Popup.create(
-                            <div className='rdo-error-text'>
+                            <div className='text-secondary-third'>
                                 <div>Angles and lengths - {e.toString()}</div>
                                 {FailMsg}
                             </div>
@@ -370,7 +371,7 @@ function App(props: { initial: Initial }) {
                 }).catch(e => {
                     setDnatcofierState('failed');
                     Popup.create(
-                        <div className='rdo-error-text'>
+                        <div className='text-secondary-third'>
                             <div>Failed to calculate fingerprint of classification parameters: {(e as Error).message}</div>
                             {FailMsg}
                         </div>
@@ -379,7 +380,7 @@ function App(props: { initial: Initial }) {
             } else {
                 setDnatcofierState('failed');
                 Popup.create(
-                    <div className='rdo-error-text'>
+                    <div className='text-secondary-third'>
                         <div>Classification context - {retval}</div>
                         {FailMsg}
                     </div>
@@ -389,7 +390,7 @@ function App(props: { initial: Initial }) {
             // We should not really get here but let's catch just in case
             setDnatcofierState('failed');
             Popup.create(
-                <div className='rdo-error-text'>
+                <div className='text-secondary-third'>
                     <div>Classification context - {e.toString()}</div>
                     {FailMsg}
                 </div>
@@ -409,7 +410,7 @@ function App(props: { initial: Initial }) {
         const params = Net.paramsFromUrl(Params, props.initial.search);
         if (params.cifcode) {
             if (!isPdbId(params.cifcode)) {
-                Popup.create(<div className='rdo-error-text'>{`${params.cifcode} is not a valid PDB ID`}</div>);
+                Popup.create(<div className='text-secondary-third'>{`${params.cifcode} is not a valid PDB ID`}</div>);
                 return;
             }
 
@@ -473,7 +474,7 @@ function App(props: { initial: Initial }) {
                         <Route
                             index
                             path=''
-                            element=<StartTab
+                            element={<StartTab
                                 onDoCustomStructure={(coordsFile, densityMaps, densityMapCoeffs) => {
                                     if (dnatcofierState !== 'ready') return;
 
@@ -511,46 +512,46 @@ function App(props: { initial: Initial }) {
                                     )
                                 }}
                                 dnatcofierState={dnatcofierState}
-                            />
+                            />}
                         />
                         <Route
                             path='list-of-conformers'
-                            element=<ConformersTab />
+                            element={<ConformersTab />}
                         />
                         <Route
                             path='about'
-                            element=<AboutTab />
+                            element={<AboutTab />}
                         />
                         <Route
                             path='dnatco'
                         >
                             <Route
                                 path='annotation/*'
-                                element=<DnatcoViewerTab
+                                element={<DnatcoViewerTab
                                     dnatcofication={dh.dnatcofication}
                                     viewerInterop={vi}
                                     outsideControl={outsideControl}
-                                />
+                                />}
                             />
                             <Route
                                 path='validation/*'
-                                element=<DnatcoViewerTab
+                                element={<DnatcoViewerTab
                                     dnatcofication={dh.dnatcofication}
                                     viewerInterop={vi}
                                     outsideControl={outsideControl}
-                                />
+                                />}
                             />
                             <Route
                                 path='refinement/*'
-                                element=<DnatcoViewerTab
+                                element={<DnatcoViewerTab
                                     dnatcofication={dh.dnatcofication}
                                     viewerInterop={vi}
                                     outsideControl={outsideControl}
-                                />
+                                />}
                             />
                             <Route
                                 path='downloads'
-                                element=<Downloads dnatcofication={dh.dnatcofication} />
+                                element={<Downloads dnatcofication={dh.dnatcofication} />}
                             />
                             <Route path='*' element={<Navigate to='annotation' />} />
                         </Route>
@@ -570,8 +571,8 @@ function InitializationError(props: {e: Error}) {
                 <div className='rdo-init-error'>Application has failed to load because it is misconfigured. Please, report the error below to the site administrators.</div>
                 <div className='rdo-init-error-message'>{props.e.message}</div>
                 <span>
-                    <div className='rdo-strong' style={{ textAlign: 'center'}}>Contact:</div>
-                    <span style={{ display: 'flex', gap: '1em' }}>
+                    <div className='font-700 text-center'>Contact:</div>
+                    <span className='flex gap-4'>
                         {Globals.PrimaryContacts.map((c) => <Email email={c.email} subject='DNATCO misconfiguration error'><span style={{ color: 'black' }}>{c.name}</span></Email>)}
                     </span>
                 </span>

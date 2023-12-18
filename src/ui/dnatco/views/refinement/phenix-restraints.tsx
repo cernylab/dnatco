@@ -16,9 +16,9 @@ function renderLines(lines: Phenix.Line[]) {
     return lines.map((line, idx) => {
         const text = replaceAll(line.text, LeadingWS, '\u00A0');
         if (line.isOk)
-            return <div className='rdo-monospace' key={idx}>{text}</div>;
+            return <div className='font-din-2014' key={idx}>{text}</div>;
         else
-            return <div className='rdo-monospace rdo-error-text' key={idx}>{text}</div>;
+            return <div className='font-din-2014 text-secondary-third' key={idx}>{text}</div>;
     });
 }
 

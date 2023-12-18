@@ -52,7 +52,7 @@ export function SearchBox<T>(props: SearchBox.Props<T>) {
             className='rdo-search-box'
             style={ positionStyle(props.anchor, props.xOffset, props.yOffset) }
         >
-            <div className='rdo-strong'>{props.caption}</div>
+            <div className='font-700'>{props.caption}</div>
             <input
                 autoFocus={true}
                 className='text-22px'
@@ -78,7 +78,7 @@ export function SearchBox<T>(props: SearchBox.Props<T>) {
                     dispatch({ kind: 'set', results, searchPrompt: v });
                 }}
             />
-            <div className='rdo-vgap'>
+            <div className='flex flex-col gap-2'>
             {
                 (state as State<T>).results.map((x, idx) => (
                     <div className='flex flex-row rdo-hgap' key={idx}>

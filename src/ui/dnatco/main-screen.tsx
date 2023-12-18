@@ -143,15 +143,15 @@ function Inner(props: {
                 onSwitchView={viewId => navigate(`/app/dnatco/${props.mode.master}/${viewId}`)}
                 selected={props.mode.viewId}
             />
-            <div style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+            <div className='flex flex-col overflow-hidden'>
                 <StructureCaption d={props.dnatcofication} />
                 <DynamicSplitView
                     containerClass='rdo-view-visualizer-container'
                     visible={view.visualizer ? 'both' : 'first'}
                     first={routes}
                     second={
-                        <div className='rdo-offset' style={{ marginLeft: 0, overflow: 'hidden' }}>
-                            <div id='rdo-id-molstar-container' style={{ height: '100%', position: 'relative' }} />
+                        <div className='rdo-offset ml-0 overflow-hidden'>
+                            <div id='rdo-id-molstar-container' className='h-full relative' />
                         </div>
                     }
                     orientation='horizontal'
@@ -247,13 +247,13 @@ function ViewWrapper<T extends keyof Register.PropsType>(props: {
 
     if (props.view.unscrollableContainer) {
         return (
-            <div className='rdo-side-offset' style={{ overflow: 'hidden' }}>
+            <div className='rdo-side-offset overflow-hidden'>
                 {rendered}
             </div>
         );
     } else {
         return (
-            <div className='rdo-side-offset' style={{ overflow: 'hidden' }}>
+            <div className='rdo-side-offset overflow-hidden'>
                 <div className='rdo-scroll-vertically' ref={scrollableElemRef}>
                     {rendered}
                 </div>
@@ -558,8 +558,8 @@ export function MainScreen(props: {
 
     if (initializationError) {
         return (
-            <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <div className='rdo-error-text'>
+            <div className='h-full flex items-center justify-center'>
+                <div className='text-secondary-third'>
                     Something went wrong during initialization of the interactive viewer. You may try to reload the page and try again...<br />
                     {initializationError}
                 </div>

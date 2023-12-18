@@ -15,6 +15,7 @@ module.exports = {
         "primary-first-disabled": "rgba(49, 89, 92, 0.7)",  // dark blue with 70% opacity
 
         "secondary-first": "#E89E33", // yellow
+        "secondary-first-hover": "rgba(232, 158, 51, 0.7)", // yellow with opacity 70%
         "secondary-second": "#B9DFEA", // light blue
         "secondary-second-hover": "rgba(185, 223, 234, 0.5)", // blue with 50% opacity
         "secondary-third": "#DD4B32", // red
@@ -36,6 +37,7 @@ module.exports = {
 
       borderRadius: {
         'standart': '15px',
+        'smaller': '10px',
       },
       
       fontSize: {
@@ -196,6 +198,10 @@ module.exports = {
 
       minHeight: {
         '4vw': '4vw',
+      },
+
+      borderWidth: {
+        DEFAULT: '1px',
       },
 
       height: {

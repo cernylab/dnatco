@@ -7,8 +7,7 @@ import { InProgress } from './common/in-progress';
 import { NamedList, NamedListItem } from './common/named-list';
 import { Popup } from './common/popup';
 import { SideSwitchingPanel } from './common/side-switching-panel';
-import { DownloadButton } from './dnatco/common';
-import { DefinitionNewTrans2Img } from '../assets/images';
+import { DownloadButtonComponent } from './dnatco/common';
 import { Net } from '../browser-util/net';
 import { doDownload } from '../browser-util/downloader';
 import { ListOfConformers } from '../dnatco/list-of-conformers';
@@ -18,12 +17,14 @@ import { Common } from '../util/dnatco';
 import { DynamicTable } from '../util/dynamic-table';
 import { FileTypes } from '../util/file-type';
 import { Serialization } from '../util/serialization';
+import { browse } from '../help-tags';
+import { arrowDown, arrowDownHover } from '../assets/images';
 
 const Tabs = [
     ['browse-conformers', { caption: 'Browse', title: 'Search PDB database for dinucleotide steps of given conformation (NtC)' }],
     ['table-of-conformers', { caption: 'Table of conformers', title: 'Table of conformers' }],
     ['contour-plots', { caption: 'Contour plots', title: '' }],
-    ['about-ntcs', { caption: 'About NtCs', title: 'About NtCs' }],
+    ['help', { caption: 'help', title: 'help' }],
 ] as const;
 
 function fmtInt(n: number) {
@@ -47,53 +48,50 @@ function fmtFlt(f: number, n = 1) {
     return f.toFixed(n);
 }
 
-function AboutNtCs() {
+function HelpTab() {
     return (
         <Help.Container>
-            <div className='rdo-page'>
-                <div className='rdo-paragraph-caption'>NtC alphabet</div>
-                <div className='rdo-paragraph'>
-                    The NtC structural alphabet describes DNA/RNA backbone conformations using
-                    96 distinct dinucleotide conformers. These dinucleotide conformers are
-                    assigned based on the values of 12 backbone torsion and distance parameters
-                    (Figure 1).
-                </div>
-
-                <div className='rdo-image-tainer'>
-                    <img className='rdo-image' src={DefinitionNewTrans2Img} />
-                    <div>
-                        Figure 1. Dinucleotide step with the 12 parameters <br /> (backbone torsions shown in gray, distances in blue) <br /> that define the NtC conformational class.
+            <div>
+                <div className='flex border-t-secondary-second border-t mt-4 pt-3 mb-8'>
+                    <div className='w-[25%]'>
+                        <h2 className='font-din-2014 font-700 text-18px mb-2 uppercase'>
+                            {browse[0].headline}
+                        </h2>
+                    </div>
+                    <div className='w-[75%] font-din-2014 text-16px mb-2 text-justify'>
+                        {browse[0].subHeadlineText}
                     </div>
                 </div>
-
-                <div className='rdo-paragraph-caption'>NtC naming</div>
-                <div className='rdo-paragraph'>
-                    <ul className='rdo-list'>
-                        <li>
-                            The names of the NtC conformer classes consist of four characters (e.g. BB00 or ZZ1S).
-                        </li>
-                        <li>
-                            Names containing "A", "B", "Z" as the first and/or second character imply
-                            a dinucleotide with stacked bases <br /> and with first/second nucleotide in an A-, B-, or Z-like conformation.
-                        </li>
-                        <li>
-                            Names starting with "IC" correspond to steps with InterCalated bases.
-                        </li>
-                        <li>
-                            Names starting with "OP" correspond to steps with OPen bases.
-                        </li>
-                        <li>
-                            Names containing "S" at 3rd or 4th position imply that the 1st or 2nd base, respectively, is in syn orientation.
-                        </li>
-                        <li>
-                            Conformationally extreme conformers are not assigned to any of the above;
-                            these steps formally represent the 97th conformer named NANT.
-                        </li>
-                    </ul>
+                <div className='flex border-t-secondary-second border-t pt-3 mb-8'>
+                    <div className='w-[25%]'>
+                        <h3 className='font-din-2014 font-700 text-18px mb-2 uppercase'>
+                            {browse[0].sections.browse.headline}
+                        </h3>
+                    </div>
+                    <div className='w-[75%] font-din-2014 text-16px mb-2 text-justify'>
+                        {browse[0].sections.browse.paragraph1}
+                    </div>
+                </div>
+                <div className='flex border-t-secondary-second border-t pt-3 mb-8'>
+                    <h3 className='w-[25%] font-din-2014 font-700 text-18px mb-2 uppercase'>
+                        {browse[0].sections.tableOfConformers.headline}
+                    </h3>
+                    <div className='w-[75%] font-din-2014 text-16px mb-2 text-justify'>
+                        {browse[0].sections.tableOfConformers.paragraph1}
+                    </div>
+                </div>
+                <div className='flex border-t-secondary-second border-t pt-3 mb-8'>
+                    <h3 className='w-[25%] font-din-2014 font-700 text-18px mb-2 uppercase'>
+                        {browse[0].sections.contourPlots.headline}
+                    </h3>
+                    <div className='w-[75%] font-din-2014 text-16px mb-2 text-justify'>
+                        {browse[0].sections.contourPlots.paragraph1}
+                    </div>
                 </div>
             </div>
         </Help.Container>
-    );
+    )
+
 }
 
 class BrowseConformers extends React.Component {
@@ -184,7 +182,7 @@ class BrowseConformers extends React.Component {
 
         if (resp.success === false) {
             Popup.create(
-                <div className='rdo-error-text'>
+                <div className='text-secondary-third'>
                     {resp.message ?? 'Search failed'}
                 </div>
             );
@@ -196,7 +194,7 @@ class BrowseConformers extends React.Component {
 
     render() {
         return (
-            <div className='rdo-offset'>
+            <div>
                 <div className='h-full mx-auto'>
                     <div style={{ display: 'grid', height: '100%', gridTemplateRows: 'auto auto 1fr', gridTemplateColumns: 'auto', rowGap: 'var(--x-gap)', columnGap: 'var(--x-gap)' }}>
                         <SearchConformers onDoSearch={this.searchConformers} />
@@ -220,7 +218,7 @@ class TableOfConformers extends React.Component {
     private renderList() {
         if (!ListOfConformers.has()) {
             if (ListOfConformers.failed())
-                return <div className='rdo-error-text'>{`List of conformers failed to load: ${ListOfConformers.fail}`}</div>
+                return <div className='text-secondary-third'>{`List of conformers failed to load: ${ListOfConformers.fail}`}</div>
             return <div>List of conformers is still loading...</div>
         }
 
@@ -232,29 +230,29 @@ class TableOfConformers extends React.Component {
             <table className='rdo-list-of-conformers rdo-data-table-wide'>
                 <thead>
                     <tr>
-                        <th className='rdo-list-of-conformers-bb' rowSpan={2}>NtC</th>
-                        <th className='rdo-list-of-conformers-bb rdo-list-of-conformers-rb' rowSpan={2}>CANA</th>
-                        <th className='rdo-list-of-conformers-bb rdo-list-of-conformers-rb' rowSpan={2}>Annotation</th>
-                        <th className='rdo-list-of-conformers-rb' colSpan={5}>Number of steps in</th>
-                        <th className='rdo-list-of-conformers-bb rdo-list-of-conformers-highlighted-col' rowSpan={2}>δ1</th>
-                        <th className='rdo-list-of-conformers-bb' rowSpan={2}>ε1</th>
-                        <th className='rdo-list-of-conformers-bb' rowSpan={2}>ζ1</th>
-                        <th className='rdo-list-of-conformers-bb' rowSpan={2}>α2</th>
-                        <th className='rdo-list-of-conformers-bb' rowSpan={2}>β2</th>
-                        <th className='rdo-list-of-conformers-bb' rowSpan={2}>γ2</th>
-                        <th className='rdo-list-of-conformers-bb rdo-list-of-conformers-highlighted-col' rowSpan={2}>δ2</th>
-                        <th className='rdo-list-of-conformers-bb' rowSpan={2}>χ1</th>
-                        <th className='rdo-list-of-conformers-bb' rowSpan={2}>χ2</th>
-                        <th className='rdo-list-of-conformers-bb' rowSpan={2}>μ</th>
-                        <th className='rdo-list-of-conformers-bb' rowSpan={2}>NN</th>
-                        <th className='rdo-list-of-conformers-bb' rowSpan={2}>C'C'</th>
+                        <th className='border-b border-solid border-primary-first' rowSpan={2}>NtC</th>
+                        <th className='border-b border-solid border-primary-first border-r' rowSpan={2}>CANA</th>
+                        <th className='border-b border-solid border-primary-first border-r' rowSpan={2}>Annotation</th>
+                        <th className='border-r border-solid border-primary-first' colSpan={5}>Number of steps in</th>
+                        <th className='border-b border-solid border-primary-first bg-[#FBEDDA]' rowSpan={2}>δ1</th>
+                        <th className='border-b border-solid border-primary-first' rowSpan={2}>ε1</th>
+                        <th className='border-b border-solid border-primary-first' rowSpan={2}>ζ1</th>
+                        <th className='border-b border-solid border-primary-first' rowSpan={2}>α2</th>
+                        <th className='border-b border-solid border-primary-first' rowSpan={2}>β2</th>
+                        <th className='border-b border-solid border-primary-first' rowSpan={2}>γ2</th>
+                        <th className='border-b border-solid border-primary-first bg-[#FBEDDA]' rowSpan={2}>δ2</th>
+                        <th className='border-b border-solid border-primary-first' rowSpan={2}>χ1</th>
+                        <th className='border-b border-solid border-primary-first' rowSpan={2}>χ2</th>
+                        <th className='border-b border-solid border-primary-first' rowSpan={2}>μ</th>
+                        <th className='border-b border-solid border-primary-first' rowSpan={2}>NN</th>
+                        <th className='border-b border-solid border-primary-first' rowSpan={2}>C'C'</th>
                     </tr>
                     <tr>
-                        <th className='rdo-list-of-conformers-bb'>{'N\u00A0DNA'}</th>
-                        <th className='rdo-list-of-conformers-bb'>{'%\u00A0DNA'}</th>
-                        <th className='rdo-list-of-conformers-bb'>{'N\u00A0RNA'}</th>
-                        <th className='rdo-list-of-conformers-rb rdo-list-of-conformers-bb'>{'%\u00A0RNA'}</th>
-                        <th className='rdo-list-of-conformers-rb rdo-list-of-conformers-bb'>{'N\u00A0GS'}</th>
+                        <th className='border-b border-solid border-primary-first'>{'N\u00A0DNA'}</th>
+                        <th className='border-b border-solid border-primary-first'>{'%\u00A0DNA'}</th>
+                        <th className='border-b border-solid border-primary-first'>{'N\u00A0RNA'}</th>
+                        <th className='border-r border-b border-solid border-primary-first'>{'%\u00A0RNA'}</th>
+                        <th className='border-r border-b border-solid border-primary-first'>{'N\u00A0GS'}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -269,85 +267,85 @@ class TableOfConformers extends React.Component {
                                 className={
                                     info.highlight
                                         ?
-                                        'rdo-list-of-conformers-highlighted-row'
+                                        'bg-[#FFDFD1]'
                                         :
                                         idx % 2 === 1
-                                            ? 'rdo-list-of-conformers-alternate-clr' : ''
+                                            ? 'bg-[#E6F4F8]' : ''
                                 }
                                 key={idx}
                             >
-                                <td className='rdo-talgn-center'>{info.NtC}</td>
-                                <td className='rdo-talgn-center rdo-list-of-conformers-rb'>{info.CANA}</td>
-                                <td className='rdo-list-of-conformers-rb'>{info.description}</td>
-                                <td className='rdo-talgn-right'>{fmtInt(info.countInDNA)}</td>
-                                <td className='rdo-talgn-right'>{fmtFlt(info.percentInDNA)}</td>
-                                <td className='rdo-talgn-right'>{fmtInt(info.countInRNA)}</td>
-                                <td className='rdo-list-of-conformers-rb rdo-talgn-right'>{fmtFlt(info.percentInRNA)}</td>
-                                <td className='rdo-list-of-conformers-rb rdo-talgn-right'>{fmtInt(info.countGS)}</td>
-                                <td className={`rdo-talgn-right rdo-list-of-conformers-highlighted-${info.highlight ? 'row' : 'col'}`}>{fmtInt(info.delta1)}</td>
-                                <td className='rdo-talgn-right'>{fmtInt(info.epsilon1)}</td>
-                                <td className='rdo-talgn-right'>{fmtInt(info.zeta1)}</td>
-                                <td className='rdo-talgn-right'>{fmtInt(info.alpha2)}</td>
-                                <td className='rdo-talgn-right'>{fmtInt(info.beta2)}</td>
-                                <td className='rdo-talgn-right'>{fmtInt(info.gamma2)}</td>
-                                <td className={`rdo-talgn-right rdo-list-of-conformers-highlighted-${info.highlight ? 'row' : 'col'}`}>{fmtInt(info.delta2)}</td>
-                                <td className='rdo-talgn-right'>{fmtInt(info.chi1)}</td>
-                                <td className='rdo-talgn-right'>{fmtInt(info.chi2)}</td>
-                                <td className='rdo-talgn-right'>{fmtInt(info.mu)}</td>
-                                <td className='rdo-talgn-right'>{fmtFlt(info.NN)}</td>
-                                <td className='rdo-talgn-right'>{fmtFlt(info.CC)}</td>
+                                <td className='text-center'>{info.NtC}</td>
+                                <td className='text-center border-r border-solid border-primary-first'>{info.CANA}</td>
+                                <td className='border-r border-solid border-primary-first'>{info.description}</td>
+                                <td className='text-right'>{fmtInt(info.countInDNA)}</td>
+                                <td className='text-right'>{fmtFlt(info.percentInDNA)}</td>
+                                <td className='text-right'>{fmtInt(info.countInRNA)}</td>
+                                <td className='border-r border-solid border-primary-first text-right'>{fmtFlt(info.percentInRNA)}</td>
+                                <td className='border-r border-solid border-primary-first text-right'>{fmtInt(info.countGS)}</td>
+                                <td className={`text-right rdo-list-of-conformers-highlighted-${info.highlight ? 'row' : 'col'}`}>{fmtInt(info.delta1)}</td>
+                                <td className='text-right'>{fmtInt(info.epsilon1)}</td>
+                                <td className='text-right'>{fmtInt(info.zeta1)}</td>
+                                <td className='text-right'>{fmtInt(info.alpha2)}</td>
+                                <td className='text-right'>{fmtInt(info.beta2)}</td>
+                                <td className='text-right'>{fmtInt(info.gamma2)}</td>
+                                <td className={`text-right rdo-list-of-conformers-highlighted-${info.highlight ? 'row' : 'col'}`}>{fmtInt(info.delta2)}</td>
+                                <td className='text-right'>{fmtInt(info.chi1)}</td>
+                                <td className='text-right'>{fmtInt(info.chi2)}</td>
+                                <td className='text-right'>{fmtInt(info.mu)}</td>
+                                <td className='text-right'>{fmtFlt(info.NN)}</td>
+                                <td className='text-right'>{fmtFlt(info.CC)}</td>
                             </tr>
                         );
                     })
                 }
                     <tr>
-                        <td className='rdo-list-of-conformers-tb'></td>
-                        <td className='rdo-list-of-conformers-rb rdo-list-of-conformers-tb'></td>
-                        <td className='rdo-list-of-conformers-rb rdo-list-of-conformers-tb'></td>
-                        <td className='rdo-list-of-conformers-tb rdo-talgn-right'>{fmtInt(totalDNACount)}</td>
-                        <td className='rdo-list-of-conformers-tb rdo-talgn-right'></td>
-                        <td className='rdo-list-of-conformers-tb rdo-talgn-right'>{fmtInt(totalRNACount)}</td>
-                        <td className='rdo-list-of-conformers-rb rdo-list-of-conformers-tb rdo-talgn-right'></td>
-                        <td className='rdo-list-of-conformers-rb rdo-list-of-conformers-tb rdo-talgn-right'>{fmtInt(totalGSCount)}</td>
-                        <td className='rdo-list-of-conformers-tb rdo-list-of-conformers-highlighted-col'></td>
-                        <td className='rdo-list-of-conformers-tb'></td>
-                        <td className='rdo-list-of-conformers-tb'></td>
-                        <td className='rdo-list-of-conformers-tb'></td>
-                        <td className='rdo-list-of-conformers-tb'></td>
-                        <td className='rdo-list-of-conformers-tb'></td>
-                        <td className='rdo-list-of-conformers-tb rdo-list-of-conformers-highlighted-col'></td>
-                        <td className='rdo-list-of-conformers-tb'></td>
-                        <td className='rdo-list-of-conformers-tb'></td>
-                        <td className='rdo-list-of-conformers-tb'></td>
-                        <td className='rdo-list-of-conformers-tb'></td>
-                        <td className='rdo-list-of-conformers-tb'></td>
+                        <td className='border-t border-solid border-primary-first'></td>
+                        <td className='border-r border-solid border-primary-first border-t'></td>
+                        <td className='border-r border-solid border-primary-first border-t'></td>
+                        <td className='border-t border-solid border-primary-first text-right'>{fmtInt(totalDNACount)}</td>
+                        <td className='border-t border-solid border-primary-first text-right'></td>
+                        <td className='border-t border-solid border-primary-first text-right'>{fmtInt(totalRNACount)}</td>
+                        <td className='border-r border-solid border-primary-first border-t text-right'></td>
+                        <td className='border-r border-solid border-primary-first border-t text-right'>{fmtInt(totalGSCount)}</td>
+                        <td className='border-t border-solid border-primary-first bg-[#FBEDDA]'></td>
+                        <td className='border-t border-solid border-primary-first'></td>
+                        <td className='border-t border-solid border-primary-first'></td>
+                        <td className='border-t border-solid border-primary-first'></td>
+                        <td className='border-t border-solid border-primary-first'></td>
+                        <td className='border-t border-solid border-primary-first'></td>
+                        <td className='border-t border-solid border-primary-first bg-[#FBEDDA]'></td>
+                        <td className='border-t border-solid border-primary-first'></td>
+                        <td className='border-t border-solid border-primary-first'></td>
+                        <td className='border-t border-solid border-primary-first'></td>
+                        <td className='border-t border-solid border-primary-first'></td>
+                        <td className='border-t border-solid border-primary-first'></td>
                     </tr>
                 </tbody>
                 <thead>
                     <tr>
-                        <th className='rdo-list-of-conformers-bb' rowSpan={2}>NtC</th>
-                        <th className='rdo-list-of-conformers-bb rdo-list-of-conformers-rb' rowSpan={2}>CANA</th>
-                        <th className='rdo-list-of-conformers-bb rdo-list-of-conformers-rb' rowSpan={2}>Annotation</th>
-                        <th className='rdo-list-of-conformers-tb '>{'N\u00A0DNA'}</th>
-                        <th className='rdo-list-of-conformers-tb'>{'%\u00A0DNA'}</th>
-                        <th className='rdo-list-of-conformers-tb'>{'N\u00A0RNA'}</th>
-                        <th className='rdo-list-of-conformers-tb'>{'%\u00A0RNA'}</th>
-                        <th className='rdo-list-of-conformers-tb rdo-list-of-conformers-rb'>{'N\u00A0GS'}</th>
-                        <th className='rdo-list-of-conformers-bb rdo-list-of-conformers-highlighted-col' rowSpan={2}>δ1</th>
-                        <th className='rdo-list-of-conformers-bb' rowSpan={2}>ε1</th>
-                        <th className='rdo-list-of-conformers-bb' rowSpan={2}>ζ1</th>
-                        <th className='rdo-list-of-conformers-bb' rowSpan={2}>α2</th>
-                        <th className='rdo-list-of-conformers-bb' rowSpan={2}>β2</th>
-                        <th className='rdo-list-of-conformers-bb' rowSpan={2}>γ2</th>
-                        <th className='rdo-list-of-conformers-bb rdo-list-of-conformers-highlighted-col' rowSpan={2}>δ2</th>
-                        <th className='rdo-list-of-conformers-bb' rowSpan={2}>χ1</th>
-                        <th className='rdo-list-of-conformers-bb' rowSpan={2}>χ2</th>
-                        <th className='rdo-list-of-conformers-bb' rowSpan={2}>μ</th>
-                        <th className='rdo-list-of-conformers-bb' rowSpan={2}>NN</th>
-                        <th className='rdo-list-of-conformers-bb' rowSpan={2}>C'C'</th>
+                        <th className='border-b border-solid border-primary-first' rowSpan={2}>NtC</th>
+                        <th className='border-b border-solid border-primary-first border-r' rowSpan={2}>CANA</th>
+                        <th className='border-b border-solid border-primary-first border-r' rowSpan={2}>Annotation</th>
+                        <th className='border-t border-solid border-primary-first'>{'N\u00A0DNA'}</th>
+                        <th className='border-t border-solid border-primary-first'>{'%\u00A0DNA'}</th>
+                        <th className='border-t border-solid border-primary-first'>{'N\u00A0RNA'}</th>
+                        <th className='border-t border-solid border-primary-first'>{'%\u00A0RNA'}</th>
+                        <th className='border-t border-r border-solid border-primary-first'>{'N\u00A0GS'}</th>
+                        <th className='border-b border-solid border-primary-first bg-[#FBEDDA]' rowSpan={2}>δ1</th>
+                        <th className='border-b border-solid border-primary-first' rowSpan={2}>ε1</th>
+                        <th className='border-b border-solid border-primary-first' rowSpan={2}>ζ1</th>
+                        <th className='border-b border-solid border-primary-first' rowSpan={2}>α2</th>
+                        <th className='border-b border-solid border-primary-first' rowSpan={2}>β2</th>
+                        <th className='border-b border-solid border-primary-first' rowSpan={2}>γ2</th>
+                        <th className='border-b border-solid border-primary-first bg-[#FBEDDA]' rowSpan={2}>δ2</th>
+                        <th className='border-b border-solid border-primary-first' rowSpan={2}>χ1</th>
+                        <th className='border-b border-solid border-primary-first' rowSpan={2}>χ2</th>
+                        <th className='border-b border-solid border-primary-first' rowSpan={2}>μ</th>
+                        <th className='border-b border-solid border-primary-first' rowSpan={2}>NN</th>
+                        <th className='border-b border-solid border-primary-first' rowSpan={2}>C'C'</th>
                     </tr>
                     <tr>
-                        <th className='rdo-list-of-conformers-rb' colSpan={5}>Number of steps in</th>
+                        <th className='border-r' colSpan={5}>Number of steps in</th>
                     </tr>
                 </thead>
             </table>
@@ -367,13 +365,17 @@ class TableOfConformers extends React.Component {
                         ?
                         <NamedList verticalPosition='center'>
                             <NamedListItem name='Download list'>
-                                <div style={{ display: 'grid', gridTemplateColumns: '6em 6em 1fr', columnGap: 'var(--h2-gap)' }}>
-                                    <DownloadButton
-                                        caption='CSV'
+                                <div className='flex'>
+                                    <DownloadButtonComponent
+                                        title='CSV'
+                                        defaultImage={arrowDown as string} 
+                                        hoverImage={arrowDownHover as string}
                                         onClick={() => Net.serveFile('text/plain', ListOfConformers.raw, 'list_of_conformers.csv')}
                                     />
-                                    <DownloadButton
-                                        caption='JSON'
+                                    <DownloadButtonComponent
+                                        title='JSON'
+                                        defaultImage={arrowDown as string} 
+                                        hoverImage={arrowDownHover as string}
                                         onClick={() => Net.serveFile('application/json', JSON.stringify(ListOfConformers.list), 'list_of_conformers.json')}
                                     />
                                 </div>
@@ -408,7 +410,7 @@ export class ConformersTab extends React.Component<ConformersTab.Props, State> {
             );
         case 'table-of-conformers': return <TableOfConformers />;
         case 'contour-plots': return <ContourPlots />;
-        case 'about-ntcs': return <AboutNtCs />;
+        case 'help': return <HelpTab />;
         }
     }
 
@@ -422,7 +424,7 @@ export class ConformersTab extends React.Component<ConformersTab.Props, State> {
                             onSwitched={id => this.setState({ ...this.state, selected: id })}
                         />
                         <div className='flex flex-col overflow-hidden mx-4 mb-4'>
-                            <div className='font-din-2014 text-18px font-700'>
+                            <div className='font-din-2014 text-22px uppercase font-700 mb-4'>
                                 {Tabs.find((tab) => tab[0] === this.state.selected)![1].title}
                             </div>
                             <div className='overflow-scroll'>

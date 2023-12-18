@@ -2,7 +2,6 @@
 import { type PlotData } from 'plotly.js-cartesian-dist';
 import React from 'react';
 import { Navigate } from 'react-router';
-import { DownloadButton } from './common';
 import { Downloads as _Downloads } from './downloads-common';
 import { RsccPlot } from './rscc-plot';
 import { modelOptions } from './views/structure-selectors';
@@ -25,6 +24,8 @@ import { FileTypes } from '../../util/file-type';
 import { ImageSerialization } from '../../util/image-serialization';
 import { Serialization } from '../../util/serialization';
 import { GlobalConfig } from '../../global-config';
+import { arrowDown, arrowDownHover } from '../../assets/images';
+import { DownloadButtonComponent } from './common';
 
 type ReportGenerationState = 'none' | 'generating';
 
@@ -90,8 +91,8 @@ async function downloadRsccPlot(kind: 'assigned' | 'unassinged', structureName: 
     if (!isOk(struRsccRes)) {
         Popup.create(
             <div>
-                <div className='rdo-error-text'>Cannot fetch RSCC data for the structure</div>
-                <div className='rdo-error-text'>{struRsccRes.message}</div>
+                <div className='text-secondary-third'>Cannot fetch RSCC data for the structure</div>
+                <div className='text-secondary-third'>{struRsccRes.message}</div>
             </div>
         );
         return;
@@ -99,8 +100,8 @@ async function downloadRsccPlot(kind: 'assigned' | 'unassinged', structureName: 
     if (!isOk(backdropRes)) {
         Popup.create(
             <div>
-                <div className='rdo-error-text'>Cannot fetch RSCC backdrop for the structure</div>
-                <div className='rdo-error-text'>{backdropRes.message}</div>
+                <div className='text-secondary-third'>Cannot fetch RSCC backdrop for the structure</div>
+                <div className='text-secondary-third'>{backdropRes.message}</div>
             </div>
         );
         return;
@@ -112,7 +113,7 @@ async function downloadRsccPlot(kind: 'assigned' | 'unassinged', structureName: 
 
     if (RsccPlot.isPlotEmpty(plotData)) {
         Popup.create(
-            <div className='rdo-error-text'>{`No ${kind} RSCC data is available for this structure`}</div>
+            <div className='text-secondary-third'>{`No ${kind} RSCC data is available for this structure`}</div>
         );
         return;
     }
@@ -150,7 +151,7 @@ function RsccRmsdDownload(props: { d: Dnatcofication, structureName: string }) {
         return (
             <_Downloads.DownloadBox>
                 <div className='flex items-center h-full'>
-                    <div className='rdo-strong'>Model</div>
+                    <div className='font-700'>Model</div>
                 </div>
                 <ComboBox
                     options={toComboBoxOptions(
@@ -162,16 +163,20 @@ function RsccRmsdDownload(props: { d: Dnatcofication, structureName: string }) {
             />
             {
                 haveAssigned
-                    ? <DownloadButton
-                        caption='Assigned NtCs'
+                    ? <DownloadButtonComponent
+                        title='Assigned NtCs'
+                        defaultImage={arrowDown as string} 
+                        hoverImage={arrowDownHover as string}
                         onClick={() => downloadRsccPlot('assigned', props.structureName, parseInt(modelIndex), props.d)}
                         />
                     : <div className='flex items-center h-full' style={{ whiteSpace: 'nowrap' }}>(No assigned NtCs)</div>
             }
             {
                 haveUnassigned
-                    ? <DownloadButton
-                        caption='Unassigned NtCs'
+                    ? <DownloadButtonComponent
+                        title='Unassigned NtCs'
+                        defaultImage={arrowDown as string} 
+                        hoverImage={arrowDownHover as string}
                         onClick={() => downloadRsccPlot('unassinged', props.structureName, parseInt(modelIndex), props.d)}
                     />
                     : <div className='flex items-center h-full' style={{ whiteSpace: 'nowrap' }}>(No unassigned NtCs)</div>
@@ -187,7 +192,6 @@ export function Downloads(props: { dnatcofication: Dnatcofication }) {
 
     // We need this shinanegan because unhiding a scrollbar with default appearance
     // in Chrome is a topic for two Ph.D. theses.
-    const [mouseInDlList, setMouseInDlList] = React.useState(false);
     const [listAllDinus, setListAllDinus] = React.useState(false);
 
     // Report generation may take a little while and the user needs to know
@@ -198,158 +202,176 @@ export function Downloads(props: { dnatcofication: Dnatcofication }) {
 
     return (
         <div className='rdo-offset'>
-                <div className='overflow-hidden h-[calc(100%-6rem)] flex flex-col mt-24'>
-                    <div className='text-18px font-700 text-center'>
+                <div className='overflow-hidden h-[calc(100%-6rem)] flex flex-col mt-24 m-auto max-w-[1280px]'>
+                    <div className='font-din-2014 text-22px uppercase font-700 mb-4'>
                         Download of data computed for {structureName}
                     </div>
-                    <div
-                        className={mouseInDlList ? 'rdo-scroll-vertically-with-scrollbar' : 'rdo-scroll-vertically'}
-                        style={{ margin: 'auto', maxWidth: '60em', padding: 'var(--h-gap)' }}
-                        onMouseEnter={() => setMouseInDlList(true)} onMouseLeave={() => setMouseInDlList(false)}
-                    >
+                    <div className='rdo-scroll-vertically'>
 
-                        <div className='rdo-line-spacer' />
-
-                        <div className='mb-2'>
-                            <_Downloads.Title title='Extended mmCIF file' />
-                            <div style={ _Downloads.DownloadItemDescription }>
-                                mmCIF file extended with additional DNATCO categories.
+                        <div className='flex justify-between border-t-secondary-second border-t mt-4 pt-3 mb-8'>
+                            <div>
+                                <_Downloads.Title title='Extended mmCIF file' />
+                                <div className='font-din-2014 text-16px mb-2'>
+                                    mmCIF file extended with additional DNATCO categories.
+                                </div>
                             </div>
-                            <_Downloads.DownloadBox>
-                                <DownloadButton
-                                    caption='Download'
-                                    onClick={() => _Downloads.serveMmCif(props.dnatcofication)}
-                                />
-                            </_Downloads.DownloadBox>
+                            <DownloadButtonComponent title='Download' defaultImage={arrowDown as string} hoverImage={arrowDownHover as string} onClick={() => _Downloads.serveMmCif(props.dnatcofication)}/>
                         </div>
 
-                        <div className='mb-2'>
-                            <_Downloads.Title title='Table of assigned NtCs' />
-                            <div style={ _Downloads.DownloadItemDescription }>
-                                Table of assigned NtCs.
+                        <div className='flex justify-between border-t-secondary-second border-t pt-3 mb-8'>
+                            <div>
+                                <_Downloads.Title title='Table of assigned NtCs' />
+                                <div className='font-din-2014 text-16px mb-2'>
+                                    Table of assigned NtCs.
+                                </div>
                             </div>
-                            <_Downloads.DownloadBox>
-                                <DownloadButton
-                                    caption='CSV'
-                                    onClick={() => {
+                            <div className='flex'>
+                                <DownloadButtonComponent 
+                                title='CSV' 
+                                defaultImage={arrowDown as string} 
+                                hoverImage={arrowDownHover as string} 
+                                onClick={() => {
                                         const t = _Downloads.assignmentTable(props.dnatcofication, false);
                                         const text = Serialization.table(t, 'csv');
                                         Net.serveFile(FileTypes.csv.mimeType, text, `${props.dnatcofication.identifyingName}_assigned_ntcs.${FileTypes.csv.suffix}`);
-                                    }}
-                                />
-                                <DownloadButton
-                                    caption='JSON'
-                                    onClick={() => {
-                                        const t = _Downloads.assignmentTable(props.dnatcofication, false);
-                                        const text = Serialization.table(t, 'json');
-                                        Net.serveFile(FileTypes.json.mimeType, text, `${props.dnatcofication.identifyingName}_assigned_ntcs.${FileTypes.json.suffix}`);
-                                    }}
-                                />
-                                <DownloadButton
-                                    caption='CSV (with CS & RMSD)'
+                                }}/>
+                                <DownloadButtonComponent 
+                                title='JSON' 
+                                defaultImage={arrowDown as string} 
+                                hoverImage={arrowDownHover as string} 
+                                onClick={() => {
+                                    const t = _Downloads.assignmentTable(props.dnatcofication, false);
+                                    const text = Serialization.table(t, 'json');
+                                    Net.serveFile(FileTypes.json.mimeType, text, `${props.dnatcofication.identifyingName}_assigned_ntcs.${FileTypes.json.suffix}`);
+                                }}/>
+                                <DownloadButtonComponent 
+                                    title='CSV (with CS & RMSD)' 
+                                    defaultImage={arrowDown as string} 
+                                    hoverImage={arrowDownHover as string} 
                                     onClick={() => {
                                         const t = _Downloads.assignmentTable(props.dnatcofication, true);
                                         const text = Serialization.table(t, 'csv');
                                         Net.serveFile(FileTypes.csv.mimeType, text, `${props.dnatcofication.identifyingName}_assigned_ntcs_cs_rmsd.${FileTypes.csv.suffix}`);
-                                    }}
-                                />
-                                <DownloadButton
-                                    caption='JSON (with CS & RMSD)'
+                                }}/>
+                                <DownloadButtonComponent 
+                                    title='JSON (with CS & RMSD)' 
+                                    defaultImage={arrowDown as string} 
+                                    hoverImage={arrowDownHover as string}
                                     onClick={() => {
                                         const t = _Downloads.assignmentTable(props.dnatcofication, true);
                                         const text = Serialization.table(t, 'json');
                                         Net.serveFile(FileTypes.json.mimeType, text, `${props.dnatcofication.identifyingName}_assigned_ntcs_cs_rmsd.${FileTypes.json.suffix}`);
-                                    }}
-                                />
-                            </_Downloads.DownloadBox>
+                                }}/>
+                            </div>
                         </div>
 
-                        <div className='mb-2'>
-                            <_Downloads.Title title='List of bond lengths and angles (grouped by residues)' />
-                            <div style={ _Downloads.DownloadItemDescription }>
-                                A list of measured bond lengths and bond angles measured for nucleic acid backbone and base atoms. Grouped by residue. Only residues with standard bases are measured.
+                        <div className='flex justify-between border-t-secondary-second border-t pt-3 mb-8'>
+                            <div>
+                                <_Downloads.Title title='List of bond lengths and angles (grouped by residues)' />
+                                <div className='font-din-2014 text-16px mb-2'>
+                                    A list of measured bond lengths and bond angles measured for nucleic acid backbone and base atoms. Grouped by residue. Only residues with standard bases are measured.
+                                </div>
                             </div>
-                            <_Downloads.DownloadBox>
-                                <DownloadButton
-                                    caption='CSV'
+                            <div className='flex'>
+                                <DownloadButtonComponent 
+                                    title='CSV' 
+                                    defaultImage={arrowDown as string} 
+                                    hoverImage={arrowDownHover as string} 
                                     onClick={() => downloadAnglesLengthsByResidue(structureName, 'csv', props.dnatcofication)}
                                 />
-                                <DownloadButton
-                                    caption='JSON'
+                                <DownloadButtonComponent 
+                                    title='JSON' 
+                                    defaultImage={arrowDown as string} 
+                                    hoverImage={arrowDownHover as string} 
                                     onClick={() => downloadAnglesLengthsByResidue(structureName, 'json', props.dnatcofication)}
                                 />
-                            </_Downloads.DownloadBox>
+                            </div>
                         </div>
 
-                        <div className='mb-2'>
-                            <_Downloads.Title title='List of bond lengths and angles (grouped by bases)' />
-                            <div style={ _Downloads.DownloadItemDescription }>
-                                A list of measured bond lengths and bond angles measured for nucleic acid backbone and base atoms. Grouped by bases. Only residues with standard bases are measured.
+                        <div className='flex justify-between border-t-secondary-second border-t pt-3 mb-8'>
+                            <div>
+                                <_Downloads.Title title='List of bond lengths and angles (grouped by bases)' />
+                                <div className='font-din-2014 text-16px mb-2'>
+                                    A list of measured bond lengths and bond angles measured for nucleic acid backbone and base atoms. Grouped by bases. Only residues with standard bases are measured.
+                                </div>
                             </div>
-                            <_Downloads.DownloadBox>
-                                <DownloadButton
-                                    caption='CSV'
+                            <div className='flex'>
+                                <DownloadButtonComponent 
+                                    title='CSV' 
+                                    defaultImage={arrowDown as string} 
+                                    hoverImage={arrowDownHover as string} 
                                     onClick={() => downloadAnglesLengthsByCompound(structureName, 'csv', props.dnatcofication)}
                                 />
-                                <DownloadButton
-                                    caption='JSON'
+                                <DownloadButtonComponent 
+                                    title='JSON' 
+                                    defaultImage={arrowDown as string} 
+                                    hoverImage={arrowDownHover as string} 
                                     onClick={() => downloadAnglesLengthsByCompound(structureName, 'json', props.dnatcofication)}
                                 />
-                            </_Downloads.DownloadBox>
+                            </div>
                         </div>
 
-                        <div className='mb-2'>
-                            <_Downloads.Title title='Naval validation reports' />
-                            <div style={ _Downloads.DownloadItemDescription }>
-                                Naval validation reports of nucleic acid structure quality.
+                        <div className='flex justify-between border-t-secondary-second border-t pt-3 mb-8'>
+                            <div>
+                                <_Downloads.Title title='Naval validation reports' />
+                                <div className='font-din-2014 text-16px mb-2'>
+                                    Naval validation reports of nucleic acid structure quality.
+                                </div>
                             </div>
-                            <_Downloads.DownloadBox>
-                                <DownloadButton
-                                    caption='Bond lengths'
+                            <div className='flex'>
+                                <DownloadButtonComponent 
+                                    title='Bond lengths' 
+                                    defaultImage={arrowDown as string} 
+                                    hoverImage={arrowDownHover as string} 
                                     onClick={() => Net.serveFile(
                                         FileTypes.csv.mimeType,
                                         Naval.bondsAsCsv(props.dnatcofication.data.naval.bonds, ','),
                                         `${structureName}_naval_bonds_report.${FileTypes.csv.suffix}`
                                     )}
                                 />
-                                <DownloadButton
-                                    caption='Bond angles'
+                                <DownloadButtonComponent 
+                                    title='Bond angles' 
+                                    defaultImage={arrowDown as string} 
+                                    hoverImage={arrowDownHover as string} 
                                     onClick={() => Net.serveFile(
                                         FileTypes.csv.mimeType,
                                         Naval.anglesAsCsv(props.dnatcofication.data.naval.angles, ','),
                                         `${structureName}_naval_angles_report.${FileTypes.csv.suffix}`
                                     )}
                                 />
-                                <DownloadButton
-                                    caption='Geometry'
+                                <DownloadButtonComponent 
+                                    title='Geometry' 
+                                    defaultImage={arrowDown as string} 
+                                    hoverImage={arrowDownHover as string} 
                                     onClick={() => Net.serveFile(
                                         FileTypes.csv.mimeType,
                                         Naval.geometryAsCsv(props.dnatcofication.data.naval.geometry, ','),
                                         `${structureName}_naval_geometry_report.${FileTypes.csv.suffix}`
                                     )}
                                 />
-                            </_Downloads.DownloadBox>
+                            </div>
                         </div>
 
-                        <div className='mb-2'>
+                        <div className='flex justify-between border-t-secondary-second border-t pt-3 mb-8'>
                             <_Downloads.Title title='RSCC vs. RMSD plots' />
-                            <div style={ _Downloads.DownloadItemDescription }>
-                                RSCC vs. RMSD plots.
-                            </div>
                             <RsccRmsdDownload
                                 structureName={structureName}
                                 d={props.dnatcofication}
                             />
                         </div>
 
-                        <div className='mb-2'>
-                            <_Downloads.Title title={`${GlobalConfig.data().displayedProductName} structure validation report`} />
-                            <div style={ _Downloads.DownloadItemDescription }>
-                                Comprehensive structure validation report.
+                        <div className='flex justify-between border-t-secondary-second border-t pt-3 mb-8'>
+                            <div>
+                                <_Downloads.Title title={`${GlobalConfig.data().displayedProductName} structure validation report`} />
+                                <div className='font-din-2014 text-16px mb-2'>
+                                    Comprehensive structure validation report.
+                                </div>
                             </div>
-                            <_Downloads.DownloadBox>
-                                <DownloadButton
-                                    caption='PDF'
+                            <div className='flex'>
+                                <DownloadButtonComponent
+                                    title='PDF'
+                                    defaultImage={arrowDown as string} 
+                                    hoverImage={arrowDownHover as string} 
                                     onClick={() => {
                                         setReportGenerationState('generating');
                                         Report.pdf(props.dnatcofication, { completeStepsTable: listAllDinus, href: Net.href() }).then((report) => {
@@ -358,15 +380,17 @@ export function Downloads(props: { dnatcofication: Dnatcofication }) {
                                         }).catch(e => {
                                             setReportGenerationState('none');
                                             Popup.create(
-                                                <div className='rdo-error-text'>
+                                                <div className='text-secondary-third'>
                                                     Could not create validation report: {(e as Error).message}
                                                 </div>
                                             );
                                         })
                                     }}
                                 />
-                                <DownloadButton
-                                    caption='Plain text'
+                                <DownloadButtonComponent
+                                    title='Plain text'
+                                    defaultImage={arrowDown as string} 
+                                    hoverImage={arrowDownHover as string} 
                                     onClick={() => {
                                         setReportGenerationState('generating');
                                         Report.text(props.dnatcofication, { completeStepsTable: listAllDinus, href: Net.href() }).then((report) => {
@@ -375,21 +399,21 @@ export function Downloads(props: { dnatcofication: Dnatcofication }) {
                                         }).catch(e => {
                                             setReportGenerationState('none');
                                             Popup.create(
-                                                <div className='rdo-error-text'>
+                                                <div className='text-secondary-third'>
                                                     Could not create validation report: {(e as Error).message}
                                                 </div>
                                             );
                                         });
                                     }}
                                 />
-                                <div className='flex items-center h-full'>
+                                <div className='flex items-center h-full ml-2'>
                                     <CheckBox
                                         caption='List all dinucleotides in the report'
                                         checked={listAllDinus}
                                         onChanged={(checked) => setListAllDinus(checked)}
                                     />
                                 </div>
-                            </_Downloads.DownloadBox>
+                            </div>
                             { reportGenerationState !== 'none'
                                 ? <div>Generating report. This may take a little while...</div>
                                 : null

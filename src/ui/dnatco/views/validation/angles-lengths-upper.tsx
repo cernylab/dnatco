@@ -47,7 +47,7 @@ export function AnglesLengthsUpper(props: View.Props) {
                     </NamedListItem>
             </NamedList>
 
-            <div className='rdo-line-spacer' />
+            <div className='h-4' />
 
             {groupBy === 'residue' ? <AnglesLengthsByResidue {...props } /> : <AnglesLengthsByCompound {...props }/>}
         </div>

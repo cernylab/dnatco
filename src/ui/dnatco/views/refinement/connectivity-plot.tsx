@@ -148,7 +148,7 @@ export class ConnectivityPlot extends View<Refinement.Props> {
 
     private renderConnectivityPlot(data: PlotData, hints: [xMax: number, yMax: number], changeCustomNtC: (NtC: string) => void, uirev: string) {
         return (
-            <div className='rdo-plot-container' style={{ flex: 1, minHeight: Constants.MinimumFlexiblePlotHeight }}>
+            <div className='flex justify-center items-center' style={{ flex: 1, minHeight: Constants.MinimumFlexiblePlotHeight }}>
                 <Plot
                     data={[
                         {
@@ -364,7 +364,7 @@ export class ConnectivityPlot extends View<Refinement.Props> {
                     </NamedListItem>
                 </NamedList>
 
-                <div className='rdo-line-spacer' />
+                <div className='h-4' />
 
                 <CustomNtCSets
                     customNtCs={this.props.dnatcofication.customNtCs}
@@ -372,12 +372,12 @@ export class ConnectivityPlot extends View<Refinement.Props> {
                     onSetChanged={this.props.onCustomNtCSetChanged}
                 />
 
-                <div className='rdo-line-spacer' />
+                <div className='h-4' />
 
-                <div className='rdo-offset' style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+                <div className='rdo-offset flex flex-col flex-1'>
                     <PlotPointsLegend computed={true} />
                     <div className='rdo-secondary-caption'>Similarity plot</div>
-                    <div className='rdo-plot-container' style={{ flex: 1, minHeight: Constants.MinimumFlexiblePlotHeight }}>
+                    <div className='flex justify-center items-center' style={{ flex: 1, minHeight: Constants.MinimumFlexiblePlotHeight }}>
                         <Plot
                             data={[
                                 {

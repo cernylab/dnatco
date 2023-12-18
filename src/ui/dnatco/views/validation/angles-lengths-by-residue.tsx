@@ -303,7 +303,7 @@ function BondAngleDetails(props: {
             <td
                 onMouseEnter={doHighlight}
                 onMouseLeave={doUnhighlight}
-                className='rdo-monospace rdo-talgn-right rdo-angles-lengths'
+                className='font-din-2014 text-right rdo-angles-lengths'
             >
                 {M.r2d(ba.angle).toFixed(2)}{'\u00B0'}
             </td>
@@ -399,7 +399,7 @@ function BondLengthDetails(props: {
                 {AnglesLengthsCommon.pairBondName(bl.pair, bl.tag)}
             </td>
             <td
-                className='rdo-monospace rdo-talgn-right rdo-angles-lengths'
+                className='font-din-2014 text-right rdo-angles-lengths'
                 onMouseEnter={doHighlight}
                 onMouseLeave={doUnhighlight}
             >
@@ -517,7 +517,7 @@ class ResidueDetails extends React.Component<ResidueDetailsProps, { floatingCueY
 
     render() {
         return (
-            <div style={{ position: 'relative' }} ref={this.selfRef}>
+            <div className='relative' ref={this.selfRef}>
                 <FloatingCue
                     yOffset={this.state.floatingCueYOffset}
                     onClicked={this.props.onHideRequested}
@@ -525,20 +525,18 @@ class ResidueDetails extends React.Component<ResidueDetailsProps, { floatingCueY
                     {this.props.residueName}
                 </FloatingCue>
 
-                <table className='rdo-angles-lengths' style={{ width: '100%' }}>
+                <table className='rdo-angles-lengths w-full'>
                     <tbody>
                         <tr>
                             <td
                                 colSpan={5}
-                                className='rdo-strong'
-                                style={{ textAlign: 'center' }}
+                                className='font-700 text-center'
                             >Bond lengths</td>
                         </tr>
                         {makeLengthDetails(this.props)}
                         <tr>
                             <td colSpan={5}
-                                className='rdo-strong'
-                                style={{ textAlign: 'center' }}
+                                className='font-700 text-center'
                             >Bond angles</td>
                         </tr>
                         {makeAngleDetails(this.props)}
@@ -1325,15 +1323,15 @@ export class AnglesLengthsByResidue extends View<
 
                 <div />
 
-                <div style={{ width: '100%', maxWidth: '30em', margin: 'auto' }}>
-                    <div className='rdo-talgn-center rdo-strong'>Naval validation reports</div>
-                    <div style={{ display: 'flex', flexDirection: 'row', width: '100%', justifyContent: 'center' }}>
+                <div className='w-full m-auto max-w-[30em]'>
+                    <div className='text-center font-700'>Naval validation reports</div>
+                    <div className='flex flex-row w-full justify-center'>
                         <div
                             className='rdo-dynamic-table-download-button'
                             style={{ flex: 1, justifyContent: 'center'}}
                             onClick={() => {
                                 if (this.props.dnatcofication.data.naval.bonds.length === 0) {
-                                    Popup.create(<div className='rdo-error-text'>Naval bonds report does not contain any data</div>);
+                                    Popup.create(<div className='text-secondary-third'>Naval bonds report does not contain any data</div>);
                                 } else {
                                     Net.serveFile(
                                         FileTypes['csv'].mimeType,
@@ -1351,7 +1349,7 @@ export class AnglesLengthsByResidue extends View<
                             style={{ flex: 1, justifyContent: 'center' }}
                             onClick={() => {
                                 if (this.props.dnatcofication.data.naval.angles.length === 0) {
-                                    Popup.create(<div className='rdo-error-text'>Naval angles report does not contain any data</div>);
+                                    Popup.create(<div className='text-secondary-third'>Naval angles report does not contain any data</div>);
                                 } else {
                                     Net.serveFile(
                                         FileTypes['csv'].mimeType,
@@ -1369,7 +1367,7 @@ export class AnglesLengthsByResidue extends View<
                             style={{ flex: 1, justifyContent: 'center' }}
                             onClick={() => {
                                 if (this.props.dnatcofication.data.naval.geometry.length === 0) {
-                                    Popup.create(<div className='rdo-error-text'>Naval geometry report does not contain any data</div>);
+                                    Popup.create(<div className='text-secondary-third'>Naval geometry report does not contain any data</div>);
                                 } else {
                                     Net.serveFile(
                                         FileTypes['csv'].mimeType,

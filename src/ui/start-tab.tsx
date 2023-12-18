@@ -91,7 +91,7 @@ class Coordinates extends React.Component<Coordinates.Props> {
                     {customFile
                         ? <>
                             <div style={ CoordsItemProps }>
-                                <label htmlFor='upload-coords-file' style={{ display: 'flex', justifyContent: 'end', height: '100%' }}>
+                                <label htmlFor='upload-coords-file' className='flex justify-end h-full'>
                                     <DummyIconTextButton
                                         src={MagnifyingGlassImg}
                                         caption='Browse'
@@ -124,7 +124,7 @@ class Coordinates extends React.Component<Coordinates.Props> {
 
                     {examples.length > 0
                             ? <div className='rdo-example-structures-list' style={{ gridColumn: '1 / span 2' }}>
-                            <div className='rdo-strong'>Examples:</div>
+                            <div className='font-700'>Examples:</div>
                             <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', columnGap: '1ex' }}>
                                 {examples.map(x => makeExample(x.db, x.pdbId, x.name, this.props.onRunExample))}
                             </div>
@@ -388,7 +388,7 @@ export class StartTab extends React.Component<StartTab.Props, State> {
     private actionCustomStructure() {
         if (!this.state.coordsFile) {
             Popup.create(
-                <div className='rdo-error-text'>You have not set any coordinates file</div>
+                <div className='text-secondary-third'>You have not set any coordinates file</div>
             );
             return;
         }
@@ -402,7 +402,7 @@ export class StartTab extends React.Component<StartTab.Props, State> {
     private actionPdbId(db: string, pdbId: string) {
         if (!db) {
             Popup.create(
-                <div className='rdo-error-text'>No database is selected</div>
+                <div className='text-secondary-third'>No database is selected</div>
             );
         }
 
@@ -412,11 +412,11 @@ export class StartTab extends React.Component<StartTab.Props, State> {
         } catch (e) {
             if (pdbId.length === 0) {
                 Popup.create(
-                    <div className='rdo-error-text'>Please enter a valid PDB ID</div>
+                    <div className='text-secondary-third'>Please enter a valid PDB ID</div>
                 );
             } else {
                 Popup.create(
-                    <div className='rdo-error-text'>{`${pdbId} is not a valid PDB ID`}</div>
+                    <div className='text-secondary-third'>{`${pdbId} is not a valid PDB ID`}</div>
                 );
             }
         }
@@ -520,7 +520,7 @@ export class StartTab extends React.Component<StartTab.Props, State> {
                                             <div className='text-16px m-auto'>Please wait for {GlobalConfig.data().displayedProductName} to initialize...</div>
                                         </div>
                                         : this.props.dnatcofierState === 'failed'
-                                            ? <div className='text-16px m-auto flex rdo-error-text'>{GlobalConfig.data().displayedProductName} failed to initialize</div>
+                                            ? <div className='text-16px m-auto flex text-secondary-third'>{GlobalConfig.data().displayedProductName} failed to initialize</div>
                                             : undefined
                                     }
                                 </div>

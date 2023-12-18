@@ -31,6 +31,9 @@ import DnaRight from 'assets/imgs/home-dna-right.png'
 import Density from 'assets/imgs/density.png'
 import NavalAform from 'assets/imgs/naval-aform.png'
 import Contacts from 'assets/imgs/contacts.png'
+import arrowDown from 'assets/imgs/arrowDown.png'
+import arrowDownHover from 'assets/imgs/arrowDownHover.png'
+import searchIcon from 'assets/imgs/search.png'
 
 export {
     DnatcoLogoImg,
@@ -64,5 +67,8 @@ export {
     DnaRight,
     Density,
     NavalAform,
-    Contacts
+    Contacts,
+    arrowDown,
+    arrowDownHover,
+    searchIcon
 };

@@ -213,7 +213,7 @@ export class DynamicTable extends React.Component<_DynamicTable.Props, { sorting
             buttons.push(
                 <div
                     key={idx}
-                    className='rdo-dynamic-table-download-button'
+                    className='flex bg-primary-first ml-2 px-4 py-2 rounded-smaller items-center h-fit text-white hover:bg-secondary-second hover:text-primary-first transition-all'
                     onClick={e => {
                         e.stopPropagation();
                         dl.download(fileName, this.props.model, this.state.sorting);
@@ -226,9 +226,8 @@ export class DynamicTable extends React.Component<_DynamicTable.Props, { sorting
         });
 
         return (
-            <div className='rdo-dynamic-table-download-bar'>
+            <div className='flex flex-row gap-1'>
                 {buttons}
-                <div className='rdo-dynamic-table-download-bar-padder' />
             </div>
         );
     }
@@ -247,7 +246,7 @@ export class DynamicTable extends React.Component<_DynamicTable.Props, { sorting
 
             headers.push(
                 <th
-                    className='rdo-data-table'
+                    className='data-table'
                     style={col.headerStyle}
                     key={idx}
                 >
@@ -297,7 +296,7 @@ export class DynamicTable extends React.Component<_DynamicTable.Props, { sorting
             return <div></div>;
 
         return (
-            <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <div className='flex flex-col'>
                 {this.renderDownloadBar()}
                 <table className={`rdo-data-table ${this.props.style === 'wide' ? 'rdo-data-table-wide' : ''}`}>
                     <thead>

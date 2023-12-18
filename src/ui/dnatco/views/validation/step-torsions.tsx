@@ -504,7 +504,7 @@ export class StepTorsions extends View<View.Props> {
 
         return (
             <div>
-                <div className='font-700 mb-2 p-2 text-center border-b-[1px] border-primary-first'>Torsions and distances for selected step</div>
+                <div className='font-700 mb-2 p-2 text-center border-b border-primary-first'>Torsions and distances for selected step</div>
 
                 <NamedList sizing='min-content' rowSpacing='half'>
                 {
@@ -540,7 +540,7 @@ export class StepTorsions extends View<View.Props> {
                     </NamedListItem>
                 </NamedList>
 
-                <div className='rdo-line-spacer' />
+                <div className='h-4' />
                 <NamedList>
                     <NamedListItem name='Step NtC'>{stepInfo.empty ? '-' : stepInfo.NtC}</NamedListItem>
                     <NamedListItem name='Step confal'>{stepInfo.empty ? '-' : stepInfo.confal}</NamedListItem>
@@ -554,7 +554,7 @@ export class StepTorsions extends View<View.Props> {
                         </Tooltip>
                     </NamedListItem>
                 </NamedList>
-                <div className='rdo-line-spacer' />
+                <div className='h-4' />
 
                 <table className='rdo-data-table' ref={this.torDistTableRef}>
                     <thead>

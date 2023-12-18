@@ -26,9 +26,9 @@ export class RefmacRestraints extends View<Refinement.Props, State> {
         let ctr = 0;
         for (const r of restraints) {
             if (r.rtype === 'unavailable')
-                elems.push(<div className='rdo-error-text rdo-monospace' key={ctr}>{Refmac.restraintAsText(r)}</div>);
+                elems.push(<div className='text-secondary-third font-din-2014' key={ctr}>{Refmac.restraintAsText(r)}</div>);
             else
-                elems.push(<div className='rdo-monospace' key={ctr}>{Refmac.restraintAsText(r)}</div>);
+                elems.push(<div className='font-din-2014' key={ctr}>{Refmac.restraintAsText(r)}</div>);
 
             ctr++;
         }

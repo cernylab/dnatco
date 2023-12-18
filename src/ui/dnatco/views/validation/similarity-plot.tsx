@@ -96,7 +96,7 @@ export class SimilarityPlot extends View<View.Props> {
 
         return (
             <div>
-                <div className='font-700 mb-2 p-2 text-center border-b-[1px] border-primary-first'>
+                <div className='font-700 mb-2 p-2 text-center border-b border-primary-first'>
                     Similarity of selected steps to NtC class averages
                 </div>
 
@@ -134,7 +134,7 @@ export class SimilarityPlot extends View<View.Props> {
                     </NamedListItem>
                 </NamedList>
 
-                <div className='rdo-line-spacer' />
+                <div className='h-4' />
                 <NamedList>
                     <NamedListItem name='Step NtC'>
                         {step
@@ -145,7 +145,7 @@ export class SimilarityPlot extends View<View.Props> {
                 </NamedList>
                 <div className='rdo-offset'>
                     <PlotPointsLegend />
-                    <div className='rdo-plot-container'>
+                    <div className='flex justify-center items-center'>
                         <Plot
                             data={[
                                 {

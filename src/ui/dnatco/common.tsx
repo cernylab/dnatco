@@ -1,6 +1,6 @@
 import type { StandardLonghandProperties } from 'csstype';
 import React from 'react';
-import { DataTransferDownloadImg } from '../../assets/images';
+import { arrowDown } from '../../assets/images';
 import { BasePushButton } from '../common/push-button';
 import { Step } from '../../dnatco/step';
 
@@ -45,17 +45,51 @@ export function DownloadButton(props: { caption?: string, onClick: () => void })
             classNameDisabled='rdo-icon-text-button-disabled'
         >
             <div
-                className='items-center flex h-full justify-center p-4 bg-primary-first text-white rounded-standart'
+                className='items-center flex h-full justify-center px-4 py-2 bg-primary-first text-white rounded-standart m-2'
             >
                 <img
                     className='w-4'
-                    src={DataTransferDownloadImg}
+                    src={arrowDown}
                 />
                 {props.caption
-                    ? <span className='font-700 m-1' style={{ flex: 1, whiteSpace: 'nowrap' }}>{props.caption}</span>
+                    ? <div className='font-700 m-1'>{props.caption}</div>
                     : void 0
                 }
             </div>
         </BasePushButton>
     );
 }
+
+interface ButtonComponentProps {
+    title: string;
+    defaultImage: string;
+    hoverImage: string;
+    onClick: () => void;
+}
+
+export const DownloadButtonComponent: React.FC<ButtonComponentProps> = ({ title, defaultImage, hoverImage, onClick }) => {
+
+    const [imageSrc, setImageSrc] = React.useState(defaultImage);
+  
+    const handleMouseOver = () => {
+      setImageSrc(hoverImage);
+    };
+  
+    const handleMouseOut = () => {
+      setImageSrc(defaultImage);
+    };
+  
+    return (
+        <button 
+            onMouseOver={handleMouseOver} 
+            onMouseOut={handleMouseOut}
+            className='flex bg-primary-first ml-2 px-4 py-2 rounded-smaller items-center h-fit text-white hover:bg-secondary-second hover:text-primary-first transition-all'
+            onClick={onClick}
+        >
+            <div className="image-container">
+                <img className='w-4 h-4 mr-2' src={imageSrc} alt="Image" />
+            </div>
+            {title}
+        </button>
+    );
+};

@@ -8,7 +8,7 @@ import { CollapsibleVertical } from '../../../common/collapsible-vertical';
 import { Icon } from '../../../common/icon';
 import { Window } from '../../../common/window';
 import { colorStyle } from '../../../util';
-import { DataTransferDownloadImg, TriangleDownImg } from '../../../../assets/images';
+import { TriangleDownImg, arrowDown } from '../../../../assets/images';
 import { doDownload, Downloader } from '../../../../browser-util/downloader';
 import { ALM, ALMCompoundAngleLength } from '../../../../dnatco/alm';
 import { AnglesLengths as DAnglesLengths } from '../../../../dnatco/angles-lengths';
@@ -96,7 +96,7 @@ function DownloadButtons(props: {
     fileName: string,
 }) {
     return (
-        <div style={{ display: 'flex', flexDirection: 'column' }}>
+        <div className='flex flex-col'>
             {props.downloaders.map((dl, idx) => (
                 <div
                     key={idx}
@@ -106,7 +106,7 @@ function DownloadButtons(props: {
                         e.stopPropagation();
                         dl.download(props.fileName, props.downloadableData);
                 }}>
-                    <Icon img={DataTransferDownloadImg} size='text' />
+                    <Icon img={arrowDown} size='text' />
                     {dl.caption}
                 </div>
             ))}
@@ -157,8 +157,8 @@ function Base<T extends ALM.AngleStats | ALM.LengthStats>(props: {
         if (!metric)
             continue;
         metrics.push(
-            <div style={{ display: 'flex', flexDirection: 'row' }}>
-                <div style={{ width: '1em' }} />
+            <div className='flex flex-row'>
+                <div className='w-4' />
                 <Metric
                     base={props.base}
                     stats={metric}
@@ -337,10 +337,10 @@ function Metric<T extends ALM.AngleStats | ALM.LengthStats>(props: {
         <CollapsibleVertical
             style={{ width: '100%' }}
             header={AnglesLengthsCommon.makeCollapsibleHeader(
-                <div style={{ display: 'flex', flexDirection: 'row', gap: 'var(--h4-gap)' }}>
+                <div className='flex flex-row gap-1'>
                     {AnglesLengthsCommon.renderSubstructureStats(
                         props.winTracker,
-                        <div className='rdo-strong'>{props.base} {name}</div>,
+                        <div className='font-700'>{props.base} {name}</div>,
                         AnglesLengthsCommon.substructureBarCaption(name),
                         props.stats.overall,
                         Summarize.countsInGroups(props.stats.overall),
@@ -356,8 +356,8 @@ function Metric<T extends ALM.AngleStats | ALM.LengthStats>(props: {
             ref={collapsibleRef}
         >
             <div style={{ height: 'var(--v2-gap)' }} />
-            <div style={{ display: 'flex', flexDirection: 'row' }}>
-                <div style={{ width: '1em' }} />
+            <div className='flex flex-row'>
+                <div className='w-4' />
                 {details}
             </div>
         </CollapsibleVertical>
@@ -417,7 +417,7 @@ function AngleMetricDetails(props: {
     }, [selfRef]);
 
     return (
-        <div style={{ position: 'relative', width: '100%' }} ref={selfRef}>
+        <div className='relative w-full' ref={selfRef}>
             <FloatingCue
                 yOffset={floatingCueYOffset}
                 onClicked={props.collapseDetail}
