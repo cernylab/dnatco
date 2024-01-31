@@ -202,7 +202,7 @@ export function Downloads(props: { dnatcofication: Dnatcofication }) {
 
     return (
         <div className='rdo-offset'>
-                <div className='overflow-hidden h-[calc(100%-6rem)] flex flex-col mt-24 m-auto max-w-[1280px]'>
+                <div className='overflow-hidden h-full flex flex-col m-auto xl:max-w-[1280px] 2xl:max-w-[1440px]'>
                     <div className='font-din-2014 text-22px uppercase font-700 mb-4'>
                         Download of data computed for {structureName}
                     </div>

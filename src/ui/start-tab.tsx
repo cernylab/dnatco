@@ -4,7 +4,7 @@ import { DummyIconTextButton, IconButton, IconTextButton } from './common/push-b
 import { Popup } from './common/popup';
 import { Tooltip } from './common/tooltip';
 import { Common } from './dnatco/common';
-import { MagnifyingGlassImg, MediaPlayImg, ReloadImg, XImg, DnaLeft, DnaRight, Density, NavalAform, Contacts } from '../assets/images';
+import { MagnifyingGlassImg, MediaPlayImg, XImg, DnaLeft, DnaRight, Density, NavalAform, Contacts } from '../assets/images';
 import { DensityMap, DensityMapKinds } from '../dnatco/density-map';
 import { Logger } from '../log/logger';
 import { BuiltInRemoteDatabases, UserRemoteDatabases } from '../remote/db/register';
@@ -15,12 +15,6 @@ import { ComboBoxHome } from './common/combo-box-home';
 const AllowedDensityMapKinds = [...DensityMapKinds, 'coefficients'] as const;
 type AllowedDensityMapKinds = typeof AllowedDensityMapKinds[number];
 type DensityMapFile = { file: File, kind: AllowedDensityMapKinds };
-
-const CoordsItemProps = {
-    alignItems: 'center',
-    display: 'flex',
-    height: '32px', // This needs to be in pixels because ems are relative to font size and things then get misaligned
-};
 
 function listOfValidExamples(examples: GlobalConfigData['exampleStructures']) {
     const dbIds = UserRemoteDatabases.list().map(x => x.id);
@@ -61,8 +55,8 @@ class AnalyzeButton extends React.Component<{ ready: boolean, onClick: () => voi
                 caption='Analyze'
                 onClick={() => this.props.onClick()}
                 disabled={!this.props.ready}
-                className='items-center flex justify-center transition-all ease-in-out w-full bg-primary-first text-16px text-secondary-first rounded-standart p-2 mx-1 hover:bg-secondary-second'
-                classNameDisabled='items-center flex justify-center rounded-standart w-full p-2 mx-1 text-16px bg-primary-first-disabled text-white'
+                className='items-center flex justify-center transition-all ease-in-out w-full bg-primary-first text-16px text-secondary-first rounded-standart p-2 hover:bg-secondary-second'
+                classNameDisabled='items-center flex justify-center rounded-standart w-full p-2 text-16px bg-primary-first-disabled text-white'
             />
         );
     }
@@ -71,65 +65,82 @@ class AnalyzeButton extends React.Component<{ ready: boolean, onClick: () => voi
 class Coordinates extends React.Component<Coordinates.Props> {
     render() {
         const customFile = !this.props.database;
+        const examplesTab = !this.props.databaseOptions;
         const examples = listOfValidExamples(GlobalConfig.data().exampleStructures);
 
         return (
             <div className='mx-auto'>
-                <div className='text-38px font-din-2014 text-center mb-4'>Analyze your structure</div>
-                <div
-                    className='items-center grid gap-3'
-                >
-                    <div className='font-din-2014 text-24px text-primary-first'>Source</div>
-                    <div className='w-300px rounded-standart'>
-                        <ComboBoxHome
-                            value={this.props.database}
-                            options={this.props.databaseOptions}
-                            onChange={(db) => this.props.onDatabaseChange(db)}
-                        />
+                <div className='text-40px font-din-2014 text-center tracking-wider mb-4'>Analyze your structure</div>
+                <div className='flex flex-col w-[430px] m-auto'>
+                    <div className='flex mb-2'>
+                        <div className='font-din-2014 text-24px text-primary-first w-[155px] my-auto'>Select</div>
+                        <div className='w-300px rounded-standart'>
+                            <ComboBoxHome
+                                value={this.props.database}
+                                options={this.props.databaseOptions}
+                                onChange={(db) => this.props.onDatabaseChange(db)}
+                            />
+                        </div>
                     </div>
 
                     {customFile
                         ? <>
-                            <div style={ CoordsItemProps }>
-                                <label htmlFor='upload-coords-file' className='flex justify-end h-full'>
-                                    <DummyIconTextButton
-                                        src={MagnifyingGlassImg}
-                                        caption='Browse'
-                                    />
-                                </label>
-                                <FileInput
-                                    id='upload-coords-file'
-                                    onChange={fileList => {
-                                        const file = fileList ? fileList.item(0) : null;
-                                        if (file)
-                                            this.props.onCoordsFileChange(file);
+                            <div className='flex'>
+                                <div className='flex flex-col mb-2'>
+                                    <div className='flex'>
+                                        <div className='font-din-2014 text-24px w-[147px] my-auto'>Coordinates</div>
+                                        <label htmlFor='upload-coords-file' className='flex justify-end h-full'>
+                                            <div className='w-[8.6rem]'>
+                                                <DummyIconTextButton
+                                                    src={MagnifyingGlassImg}
+                                                    caption='Browse'
+                                                />
+                                            </div>
+                                        </label>
+                                        <FileInput
+                                            id='upload-coords-file'
+                                            onChange={fileList => {
+                                                const file = fileList ? fileList.item(0) : null;
+                                                if (file)
+                                                    this.props.onCoordsFileChange(file);
 
-                                        }}
-                                    />
+                                                }}
+                                            />
+                                        </div>
+                                    </div>
+                                    {this.props.coordsFile
+                                        ? <LongFileName name={this.props.coordsFile.name} disabled={false} />
+                                        : <></>
+                                    }
                                 </div>
-                                {this.props.coordsFile
-                                    ? <LongFileName name={this.props.coordsFile.name} disabled={false} />
-                                    : <div style={{ fontSize: 'var(--font-large)', width: '100%', overflow: 'hidden', whiteSpace: 'nowrap' }}>(Select mmCIF/PDB file)</div>
-                                }
                             </>
                             : <>
-                            <div className='font-din-2014 text-24px text-primary-first'>PDB ID</div>
-                            <PdbIdInput
-                                pdbId={this.props.pdbId}
-                                onChange={(v) => this.props.onPdbIdChange(v)}
-                                onExecute={() => this.props.onRun()}
-                            />
+                            <div className='flex'>
+                                <div className='font-din-2014 text-24px text-primary-first w-[155px] my-auto'>PDB ID</div>
+                                <div className='w-300px rounded-standart'>
+                                    <PdbIdInput
+                                        pdbId={this.props.pdbId}
+                                        onChange={(v) => this.props.onPdbIdChange(v)}
+                                        onExecute={() => this.props.onRun()}
+                                    />
+                                </div>
+                            </div>
                         </>
                     }
-
-                    {examples.length > 0
-                            ? <div className='rdo-example-structures-list' style={{ gridColumn: '1 / span 2' }}>
-                            <div className='font-700'>Examples:</div>
-                            <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', columnGap: '1ex' }}>
-                                {examples.map(x => makeExample(x.db, x.pdbId, x.name, this.props.onRunExample))}
-                            </div>
-                        </div>
-                        : <div className='rdo-example-structures-list' style={{ gridColumn: '1 / span 2' }} />
+                    {examplesTab
+                        ? 
+                        <>
+                            {examples.length > 0
+                                    ? <div className='rdo-example-structures-list' style={{ gridColumn: '1 / span 2' }}>
+                                    <div className='font-700'>Examples:</div>
+                                    <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', columnGap: '1ex' }}>
+                                        {examples.map(x => makeExample(x.db, x.pdbId, x.name, this.props.onRunExample))}
+                                    </div>
+                                </div>
+                                : <div className='rdo-example-structures-list' style={{ gridColumn: '1 / span 2' }} />
+                            }
+                        </>
+                        : null
                     }
                 </div>
             </div>
@@ -220,41 +231,50 @@ class DensityMapFiles extends React.Component<
         const addedFiles = this.addedFiles(AllowedDensityMapKinds.length);
 
         return (
-            <div className='mx-auto relative'>
-                <div className='text-40px mb-4 text-center'>Density maps</div>
-
-                <FileInput
-                    id='upload-density-map'
-                    onChange={(e) => {
-                        const file = e?.[0];
-                        if (file && opts.length > 0) {
-                            const df: DensityMapFile = { file, kind: this.state.selectedKind };
-                            this.props.onAddFile(df);
-                        }
-                    }}
-                    disabled={this.props.disabled}
-                />
-                <div className='items-center flex justify-center'>
-                    <ComboBox
-                        value={this.state.selectedKind}
-                        options={opts}
-                        onChange={(v) => this.setState({ ...this.state, selectedKind: v as AllowedDensityMapKinds })}
-                        innerStyle={{ fontSize: 'var(--font-large)' }}
-                        sizing='auto'
-                        disabled={this.props.disabled}
-                    />
-                    {addedFiles}
-                    {opts.length > 0
-                        ? <label htmlFor='upload-density-map' className='flex justify-end h-full'>
-                            <DummyIconTextButton
-                                src={MagnifyingGlassImg}
-                                caption='Browse'
+                <div className='flex'>
+                    <div className='flex'>
+                        <div className='font-din-2014 text-24px mb-4 w-[147px]'>Density maps</div>
+                        <div>
+                            <FileInput
+                                id='upload-density-map'
+                                onChange={(e) => {
+                                    const file = e?.[0];
+                                    if (file && opts.length > 0) {
+                                        const df: DensityMapFile = { file, kind: this.state.selectedKind };
+                                        this.props.onAddFile(df);
+                                    }
+                                }}
                                 disabled={this.props.disabled}
                             />
-                        </label>
-                        : <div />
-                    }
-                </div>
+                            <div className='flex'>
+                                <div className='hidden'>
+                                    {addedFiles}
+                                </div>
+                                {opts.length > 0
+                                    ? <label htmlFor='upload-density-map' className='flex justify-end h-full'>
+                                        <div className='w-[8.6rem] mr-2'>
+                                            <DummyIconTextButton
+                                                src={MagnifyingGlassImg}
+                                                caption='Browse'
+                                                disabled={this.props.disabled}
+                                            />
+                                        </div>
+                                    </label>
+                                    : <div />
+                                }
+                                <div className='w-[8.6rem]'>
+                                    <ComboBox
+                                        value={this.state.selectedKind}
+                                        options={opts}
+                                        onChange={(v) => this.setState({ ...this.state, selectedKind: v as AllowedDensityMapKinds })}
+                                        innerStyle={{ fontSize: 'var(--font-large)' }}
+                                        sizing='auto'
+                                        disabled={this.props.disabled}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
             {this.props.files.length === 0 && this.props.disabled
                 ? <div
                     className='rdo-text-disabled'
@@ -318,7 +338,7 @@ class LongFileName extends React.Component<{ name: string, disabled: boolean }> 
                                 whiteSpace: 'nowrap',
                             }}
                         >{this.props.name}</span>
-                        <div style={{ position: 'absolute', right: '0', top: '0', background: 'linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,1) 100%)', width: '4em', height: '100%' }} />
+                        <div className='w-20 h-full'/>
                     </span>
                 }
             >
@@ -435,33 +455,30 @@ export class StartTab extends React.Component<StartTab.Props, State> {
 
         return (
             <>
-                <div className='flex flex-col h-full relative'>
-                    <div className='hidden select-none xl:block xl:absolute xl:top-[-1rem] xl:left-0 xl:w-[20%] xl:z-40'>
+                <div className='flex flex-col h-full overflow-y-hidden'>
+                    <div className='hidden select-none xl:block xl:absolute xl:top-[-1rem] xl:left-0 xl:w-[20%] xl:-z-[1]'>
                         <img src={DnaLeft} alt='DNA'/>
                     </div>
-                    <div className='hidden select-none xl:block xl:absolute xl:top-14 xl:right-0 xl:w-[24%] xl:z-40'>
+                    <div className='hidden select-none xl:block xl:absolute xl:top-14 xl:right-0 xl:w-[24%] xl:-z-[1]'>
                         <img src={DnaRight} alt='DNA'/>
                     </div>
-                    {this.state.database === '' ?
-                        undefined
-                        : <>
-                            <div className='hidden floating select-none xl:block xl:absolute xl:top-0 xl:right-0 xl:z-40 xl:w-[16%] xl:mt-[24%] xl:mr-[19%]'>
-                                <img src={Density} alt='Density' />
-                            </div>
-                            <div className='hidden floating select-none xl:block xl:absolute xl:top-0 xl:left-0 xl:z-40 xl:w-[16%] xl:mt-[17%] xl:ml-[19%]'>
-                                <img src={NavalAform} alt='Naval aform' />
-                            </div>
-                            <div className='hidden floating select-none xl:block xl:absolute xl:top-0 xl:left-0 xl:z-40 xl:w-[10%] xl:mt-[32%] xl:ml-[23%]'>
-                                <img src={Contacts} alt='Contacts' />
-                            </div>
-                        </>
-                    }
+                    <div>
+                        <div className='hidden floating select-none xl:block xl:absolute xl:top-0 xl:right-0 xl:z-50 xl:w-[16%] xl:mt-[24%] xl:mr-[19%]'>
+                            <img src={Density} alt='Density' />
+                        </div>
+                        <div className='hidden floating select-none xl:block xl:absolute xl:top-0 xl:left-0 xl:z-50 xl:w-[16%] xl:mt-[17%] xl:ml-[19%]'>
+                            <img src={NavalAform} alt='Naval aform' />
+                        </div>
+                        <div className='hidden floating select-none xl:block xl:absolute xl:top-0 xl:left-0 xl:z-50 xl:w-[10%] xl:mt-[32%] xl:ml-[23%]'>
+                            <img src={Contacts} alt='Contacts' />
+                        </div>
+                    </div>
                     <div style={ Common.VScrollJail }>
                         <div className='rdo-offset'>
-                                <div className='mt-13'>
+                                <div className='mt-[7%]'>
                                     <div className='text-42px w-[720px] m-auto text-center leading-10 font-din-condensed font-regular'><span className='text-secondary-first uppercase text-42px stroke'>Dnatco</span> enables an in-depth analysis and validation of nucleic acid structures</div>
                                     <div className='mt-10 max-w-[850px] m-auto'>
-                                        <div className='flex flex-row justify-center'>
+                                        <div className='flex flex-col justify-center'>
                                             <div>
                                                 <Coordinates
                                                     coordsFile={this.state.coordsFile}
@@ -478,7 +495,7 @@ export class StartTab extends React.Component<StartTab.Props, State> {
 
                                             {this.state.database === ''
                                                 ?
-                                                    <div className='ml-4'>
+                                                    <div className='mx-auto w-[430px]'>
                                                         <DensityMapFiles
                                                             disabled={this.state.database !== ''}
                                                             files={this.state.densityMaps}
@@ -495,24 +512,18 @@ export class StartTab extends React.Component<StartTab.Props, State> {
                                                 : undefined
                                             }
                                         </div>
-                                        <div className='flex my-2 mx-auto w-400px'>
-                                            <div />
-                                            <AnalyzeButton
-                                                ready={this.props.dnatcofierState === 'ready'}
-                                                onClick={() => {
-                                                    if (this.state.database)
-                                                        this.actionPdbId(this.state.database, this.state.pdbId)
-                                                    else
-                                                        this.actionCustomStructure();
-                                                }}
-                                            />
-                                            <IconTextButton
-                                                src={ReloadImg}
-                                                caption='Reset'
-                                                onClick={() => this.setState({ ...this.defaultState() })}
-                                                className='items-center flex justify-center transition-all ease-in-out w-full bg-primary-first text-white rounded-standart mx-2 hover:bg-secondary-second hover:text-primary-first'
-                                            />
-                                            <div />
+                                        <div className='w-[430px] mx-auto'>
+                                            <div className='flex mt-2'>
+                                                <AnalyzeButton
+                                                    ready={this.props.dnatcofierState === 'ready'}
+                                                    onClick={() => {
+                                                        if (this.state.database)
+                                                            this.actionPdbId(this.state.database, this.state.pdbId)
+                                                        else
+                                                            this.actionCustomStructure();
+                                                    }}
+                                                />
+                                            </div>
                                         </div>
                                     </div>
                                     {this.props.dnatcofierState === 'initializing'

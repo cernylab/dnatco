@@ -16,7 +16,6 @@ import { IconButton } from '../../../common/push-button';
 import { NamedList, NamedListItem } from '../../../common/named-list';
 import { Tooltip } from '../../../common/tooltip';
 import { InfoImg, MagnifyingGlassImg } from '../../../../assets/images';
-import { doDownload } from '../../../../browser-util/downloader';
 import { Cif } from '../../../../cif';
 import {
     NdbStructNtcOverall, NdbStructNtcStep, NdbStructNtcStepSummary,
@@ -30,9 +29,7 @@ import { parseIntStrict } from '../../../../util';
 import { rgbToHex } from '../../../../util/colors';
 import { confalPercentile } from '../../../../util/dnatco';
 import { DynamicTable } from '../../../../util/dynamic-table';
-import { FileTypes } from '../../../../util/file-type';
 import { valueToSemaphore, GappedSemaphore } from '../../../../util/semaphore';
-import { Serialization } from '../../../../util/serialization';
 import {
     EmptyStructureSelection,
     InvalidAtom, InvalidChain, InvalidModelIndex, InvalidResidue, InvalidStepId,
@@ -380,27 +377,6 @@ export class ConfalsRmsds extends View<View.Props> {
                 highlightColor={Colors.CurrentStep()}
                 scrollTainer={this.tableTainer.current ?? void 0}
                 style='wide'
-                download={{
-                    downloaders: [
-                        {
-                            caption: 'CSV',
-                            download: function(fileNameStem, model, sorting) {
-                                const text = Serialization.dynamicTable(model, 'csv', sorting);
-                                doDownload(fileNameStem, text, this.fileType);
-                            },
-                            fileType: FileTypes.csv,
-                        },
-                        {
-                            caption: 'JSON',
-                            download: function(fileNameStem, model) {
-                                const text = Serialization.dynamicTable(model, 'json');
-                                doDownload(fileNameStem, text, this.fileType);
-                            },
-                            fileType: FileTypes.json,
-                        },
-                    ],
-                    fileName: `${this.props.dnatcofication.identifyingName}_confals_rmsds`
-                }}
             />
         );
     }

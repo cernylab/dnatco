@@ -778,7 +778,7 @@ export class AnglesLengthsByCompound extends View<View.Props> {
 
             return {
                 collapsed: (
-                    <div className='rdo-secondary-caption rdo-active' style={Style}>
+                    <div className='rdo-secondary-caption cursor-pointer' style={Style}>
                         <img
                             src={TriangleDownImg}
                             style={{ transition: 'rotate var(--anim-speed)', rotate: '0deg' }}
@@ -787,7 +787,7 @@ export class AnglesLengthsByCompound extends View<View.Props> {
                     </div>
                 ),
                 expanded: (
-                    <div className='rdo-secondary-caption rdo-active' style={Style}>
+                    <div className='rdo-secondary-caption cursor-pointer' style={Style}>
                         <img
                             src={TriangleDownImg}
                             style={{ transition: 'rotate var(--anim-speed)', rotate: '180deg' }}
@@ -808,7 +808,7 @@ export class AnglesLengthsByCompound extends View<View.Props> {
                     name={AnglesLengthsCommon.selectionName(this.props.dnatcofication, multipleModels, modelIdx, chain)}
                     style={{ height: '4em' }}
                 >
-                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    <div className='flex flex-col'>
                         <div style={{ flex: 1, display: 'flex' }}>
                             {AnglesLengthsCommon.renderSubstructureStats(this.winTracker, 'Lengths', AnglesLengthsCommon.substructureBarCaption('Lengths'), overallLengths, countsLengths, htmlColorsForStatsBar)}
                         </div>
@@ -852,7 +852,6 @@ export class AnglesLengthsByCompound extends View<View.Props> {
                 <div style={ Common.VScrollElement }>
                     <CollapsibleVertical
                         header={mkHeader('Angles by bases')}
-                        style={ Common.VScrollJail }
                     >
                         <div style={{ ...Common.VScrollElement, position: 'relative' }}>
                             <div

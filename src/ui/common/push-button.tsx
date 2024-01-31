@@ -73,7 +73,7 @@ export class DummyIconTextButton extends React.Component<Omit<IconTextButton.Pro
 
     protected clsName() {
         if (!this.props.disabled)
-            return this.props.className ?? 'items-center flex justify-center p-2 bg-primary-first rounded-standart';
+            return this.props.className ?? 'items-center flex justify-center p-2 bg-primary-first rounded-standart text-white hover:text-primary-first transition-all hover:bg-secondary-second';
         else
             return this.props.classNameDisabled ?? 'rdo-pushbutton-disabled';
     }
@@ -82,7 +82,7 @@ export class DummyIconTextButton extends React.Component<Omit<IconTextButton.Pro
         return (
             <div className={this.clsName()}>
                 <div className='rdo-pushbutton-inner-container'>
-                    <span className='font-din-2014 font-700 text-white text-16px m-1'>{this.props.caption}</span>
+                    <span className='font-din-2014 font-700 text-16px m-1'>{this.props.caption}</span>
                 </div>
             </div>
         );
@@ -128,7 +128,7 @@ export class IconTextButton extends React.Component<IconTextButton.Props> {
         return (
             <BasePushButton
                 {...this.props}
-                className={this.props.className ?? 'rdo-icon-text-button'}
+                className={this.props.className ?? 'rdo-icon-text-button bg-primary-first text-white rounded-standart hover:text-primary-first'}
                 classNameDisabled={this.props.classNameDisabled ?? 'rdo-icon-text-button-disabled'}
             >
                 <div className='rdo-pushbutton-inner-container'>

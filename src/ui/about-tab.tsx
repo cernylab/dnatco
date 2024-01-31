@@ -568,7 +568,7 @@ const AboutTab: React.FC = () => {
 
         return (
             <div className='rdo-offset'>
-                    <div className='rdo-screen-with-side-panel overflow-hidden h-[calc(100%-6rem)] flex flex-col mt-24'>
+                    <div className='rdo-screen-with-side-panel overflow-hidden h-full flex flex-col'>
                         <SideSwitchingPanel
                             items={Tabs}
                             selectedItemId={state.selected}

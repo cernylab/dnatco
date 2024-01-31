@@ -177,7 +177,7 @@ function NavigationBarStandard<TK extends string>(props: {
     selectedTab: TK,
 }) {
     return (
-        <div className='absolute top-0 w-full z-50 navigation-desktop flex justify-around items-center my-4'>
+        <div className='w-full navigation-desktop flex justify-around items-center my-4'>
             <div>
                 <a href='/'>
                     <img className='w-28' src={DnatcoLogoImg} alt='dnatco logo'/>

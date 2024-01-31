@@ -10,16 +10,13 @@ import { DynamicTable as DynamicTableComp } from '../../../common/dynamic-table'
 import { NamedList, NamedListItem } from '../../../common/named-list';
 import { Tooltip } from '../../../common/tooltip';
 import { searchIcon } from '../../../../assets/images';
-import { doDownload } from '../../../../browser-util/downloader';
 import { Cif } from '../../../../cif';
 import { NdbStructNtcStep, NdbStructNtcStepSummary } from '../../../../cif/categories/ndb-struct-ntc';
 import { Dnatcofication } from '../../../../dnatco/dnatcofication';
 import { Step } from '../../../../dnatco/step';
 import { StepsMapper } from '../../../../dnatco/steps-mapper';
 import { parseIntStrict } from '../../../../util';
-import { FileTypes } from '../../../../util/file-type';
 import { DynamicTable } from '../../../../util/dynamic-table';
-import { Serialization } from '../../../../util/serialization';
 import {
     EmptyStructureSelection,
     InvalidAtom, InvalidChain, InvalidModelIndex, InvalidResidue, InvalidStepId,
@@ -205,27 +202,6 @@ export class AssignedNtCs extends View<View.Props> {
                 highlightColor={Colors.CurrentStep()}
                 scrollTainer={this.tableTainer.current ?? void 0}
                 style='wide'
-                download={{
-                    downloaders: [
-                        {
-                            caption: 'CSV',
-                            download(fileNameStem, model, sorting) {
-                                const text = Serialization.dynamicTable(model, 'csv', sorting);
-                                doDownload(fileNameStem, text, this.fileType);
-                            },
-                            fileType: FileTypes.csv,
-                        },
-                        {
-                            caption: 'JSON',
-                            download(fileNameStem, model) {
-                                const text = Serialization.dynamicTable(model, 'json');
-                                doDownload(fileNameStem, text, this.fileType);
-                            },
-                            fileType: FileTypes.json,
-                        },
-                    ],
-                    fileName: `${this.props.dnatcofication.identifyingName}_assigned_ntcs`,
-                }}
             />
         );
     }

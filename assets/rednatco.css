@@ -160,6 +160,8 @@ html {
     font-style: normal;
     font-size: 12pt;
     line-height: 1.5;
+    height: 100vh;
+    overflow: hidden;
 }
 
 body {
@@ -296,7 +298,8 @@ tr.rdo-angles-lengths:hover {
 #rdo-app {
     display: flex;
     flex-direction: column;
-    height: 100%;
+    height: 100vh;
+    overflow-y: hidden;
 }
 
 .rdo-active {
@@ -312,17 +315,6 @@ tr.rdo-angles-lengths:hover {
     display: grid;
     grid-template-columns: auto 1fr;
     justify-content: center;
-}
-
-.rdo-collapsible-vertical-caption {
-    background-color: var(--color-f);
-    color: var(--color-c);
-    padding: calc(0.5 * var(--x-gap));
-    transition: background-color var(--anim-speed);
-}
-.rdo-collapsible-vertical-caption:hover {
-    background-color: var(--color-c);
-    color: black;
 }
 
 .rdo-combobox {
@@ -389,10 +381,9 @@ th.rdo-data-table-small {
 }
 
 .rdo-dnatco-main-screen {
-    margin-top: 6rem;
     display: grid;
     grid-template-columns: auto 1fr;
-    height: calc(100% - 5rem);
+    height: calc(100% - 0rem);
     width: 100%;
 }
 

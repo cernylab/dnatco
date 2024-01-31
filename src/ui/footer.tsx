@@ -16,7 +16,7 @@ const Footer:React.FC = () => {
     return (
         <>
             <div className='bg-primary-first text-white'>
-                <div className='max-w-[1280px] flex justify-between mx-auto my-4'>
+                <div className='flex justify-between mx-auto my-4 xl:max-w-[1280px] 2xl:max-w-[1440px]'>
                     <div className='flex'>
                         <div className='my-auto mx-1'>
                             <div className='text-18px text-center font-din-2014'>© 2023</div>

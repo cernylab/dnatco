@@ -9,7 +9,7 @@ import { Common } from '../../../../util/dnatco';
 function mkHeader(text: string) {
     return {
         collapsed: (
-            <div className='flex flex-row rdo-h2gap rdo-active'>
+            <div className='flex flex-row rdo-h2gap cursor-pointer'>
                 <img
                     src={TriangleDownImg}
                     style={{ transition: 'rotate var(--anim-speed)', rotate: '0deg' }}
@@ -18,7 +18,7 @@ function mkHeader(text: string) {
             </div>
         ),
         expanded: (
-            <div className='flex flex-row rdo-h2gap rdo-active'>
+            <div className='flex flex-row rdo-h2gap cursor-pointer'>
                 <img
                     src={TriangleDownImg}
                     style={{ transition: 'rotate var(--anim-speed)', rotate: '180deg' }}

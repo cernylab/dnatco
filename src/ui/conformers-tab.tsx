@@ -417,7 +417,7 @@ export class ConformersTab extends React.Component<ConformersTab.Props, State> {
     render() {
         return (
             <div className='rdo-offset'>
-                    <div className='rdo-screen-with-side-panel overflow-hidden h-[calc(100%-6rem)] flex flex-col mt-24'>
+                    <div className='rdo-screen-with-side-panel overflow-hidden h-full flex flex-col'>
                         <SideSwitchingPanel
                             items={Tabs}
                             selectedItemId={this.state.selected}

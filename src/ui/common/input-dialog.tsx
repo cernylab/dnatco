@@ -55,13 +55,12 @@ export class InputDialog extends React.Component<Props, State> {
 
     render() {
         return (
-            <div className='rdo-popup'>
-                <div className='rdo-popup-inner'>
-                    <div className='rdo-named-list-name'>{this.props.caption}</div>
+            <div className='rdo-popup absolute top-0 left-0 bg-test w-screen h-screen'>
+                <div className='rdo-popup-inner absolute top-[40%] left-[40%] bg-primary-first p-4 rounded-standart'>
+                    <div className='rdo-named-list-name text-secondary-second mb-2'>{this.props.caption}</div>
                     <input
                         ref={this.textInputRef}
-                        className='text-22px'
-                        style={{ width: '100%' }}
+                        className='text-22px w-full '
                         type='text'
                         value={this.state.value}
                         onChange={ev => {
@@ -73,17 +72,19 @@ export class InputDialog extends React.Component<Props, State> {
 
                     {this.state.error ? <div className='text-secondary-third'>{this.state.error}</div> : void 0}
 
-                    <div className='h-4' />
-                    <div className='rdo-popup-button-bar'>
-                        <div style={{ flex: 1 }} />
-                        <PushButton
-                            caption='OK'
-                            onClick={() => this.accept()}
-                        />
-                        <PushButton
-                            caption='Cancel'
-                            onClick={() => this.reject()}
-                        />
+                    <div className='rdo-popup-button-bar flex mt-4'>
+                        <div className='mr-2'>
+                            <PushButton
+                                caption='OK'
+                                onClick={() => this.accept()}
+                            />
+                        </div>
+                        <div>
+                            <PushButton
+                                caption='Cancel'
+                                onClick={() => this.reject()}
+                            />
+                        </div>
                     </div>
                 </div>
             </div>
