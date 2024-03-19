@@ -20,7 +20,16 @@ module.exports = {
         "secondary-second-hover": "rgba(185, 223, 234, 0.5)", // blue with 50% opacity
         "secondary-third": "#DD4B32", // red
 
-        "test": "rgba(255, 248, 234, 0.7)", //
+        "test": "rgba(255, 248, 234, 0.7)",
+        "a": "#feeba1", 
+        "b": "#c8cfff",
+        "BII": "#1459d9",
+        "miB": "#3ee9fc",
+        "Z": "#41f60d",
+        "IC": "#f95cfb",
+        "OPN": "#e90200",
+        "SYN": "#fa8223",
+        "N": "#f2f2f2",
       },
 
       fontFamily: {

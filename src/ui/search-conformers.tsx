@@ -1,5 +1,4 @@
 import * as React from 'react';
-import { CheckBox } from './common/check-box';
 import { ComboBox } from './common/combo-box';
 import { NamedList, NamedListItem } from './common/named-list';
 import { PushButton } from './common/push-button';
@@ -62,13 +61,6 @@ export class SearchConformers extends React.Component<SearchConformers.Props, St
                                 value={this.state.redundancy}
                                 onChange={v => this.setState({ ...this.state, redundancy: v as Redundacy })}
                                 sizing='maximum-available'
-                            />
-                        </NamedListItem>
-                        <NamedListItem name='Include large structures'>
-                            <CheckBox
-                                checked={this.state.largeStructures}
-                                onChanged={checked => this.setState({ ...this.state, largeStructures: checked })}
-                                caption='Include large structures'
                             />
                         </NamedListItem>
                     </NamedList>

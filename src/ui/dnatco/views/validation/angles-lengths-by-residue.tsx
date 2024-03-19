@@ -10,13 +10,11 @@ import { CollapsibleVertical } from '../../../common/collapsible-vertical';
 import { ComboBox } from '../../../common/combo-box';
 import { NamedList, NamedListItem } from '../../../common/named-list';
 import { Icon } from '../../../common/icon';
-import { Popup } from '../../../common/popup';
 import { IconButton } from '../../../common/push-button';
 import { SpinBox } from '../../../common/spin-box';
 import { Window } from '../../../common/window';
 import { DataTransferDownloadImg, MagnifyingGlassImg, TriangleDownImg } from '../../../../assets/images';
 import { doDownload, Downloader } from '../../../../browser-util/downloader';
-import { Net } from '../../../../browser-util/net';
 import { ALM } from '../../../../dnatco/alm';
 import { Dnatcofication } from '../../../../dnatco/dnatcofication';
 import { AnglesLengths as DAnglesLengths } from '../../../../dnatco/angles-lengths';
@@ -26,7 +24,6 @@ import { pairTag, Pair } from '../../../../dnatco/angles-lengths/lengths';
 import { Measurements } from '../../../../dnatco/angles-lengths/measurements';
 import { SerializeByResidue } from '../../../../dnatco/angles-lengths/serialize';
 import { Summarize } from '../../../../dnatco/angles-lengths/summarize';
-import { Naval } from '../../../../dnatco/naval';
 import { GlobalConfig } from '../../../../global-config';
 import { parseIntStrict, sequence } from '../../../../util';
 import { colorToRgb, colorToTuple, hexToRgb, rgbToHex, ColorTuple, Rgba } from '../../../../util/colors';
@@ -1193,7 +1190,6 @@ export class AnglesLengthsByResidue extends View<
                         >
                             <div
                                 className='rdo-scroll-vertically-with-scrollbar'
-                                style={AnglesLengthsCommon.BlockListStyle}
                                 ref={this.residuesTainerRef}
                                 onScroll={(ev) => {
                                     // Debounce
@@ -1321,67 +1317,6 @@ export class AnglesLengthsByResidue extends View<
                     </CollapsibleVertical>
                 </div>
 
-                <div />
-
-                <div className='w-full m-auto max-w-[30em]'>
-                    <div className='text-center font-700'>Naval validation reports</div>
-                    <div className='flex flex-row w-full justify-center'>
-                        <div
-                            className='rdo-dynamic-table-download-button'
-                            style={{ flex: 1, justifyContent: 'center'}}
-                            onClick={() => {
-                                if (this.props.dnatcofication.data.naval.bonds.length === 0) {
-                                    Popup.create(<div className='text-secondary-third'>Naval bonds report does not contain any data</div>);
-                                } else {
-                                    Net.serveFile(
-                                        FileTypes['csv'].mimeType,
-                                        Naval.bondsAsCsv(this.props.dnatcofication.data.naval.bonds, ','),
-                                        `${this.props.dnatcofication.pdbId}_naval_bonds_report.csv`
-                                    );
-                                }
-                            }}
-                        >
-                            <Icon img={DataTransferDownloadImg} size='text' />
-                            Bond lengths
-                        </div>
-                        <div
-                            className='rdo-dynamic-table-download-button'
-                            style={{ flex: 1, justifyContent: 'center' }}
-                            onClick={() => {
-                                if (this.props.dnatcofication.data.naval.angles.length === 0) {
-                                    Popup.create(<div className='text-secondary-third'>Naval angles report does not contain any data</div>);
-                                } else {
-                                    Net.serveFile(
-                                        FileTypes['csv'].mimeType,
-                                        Naval.anglesAsCsv(this.props.dnatcofication.data.naval.angles, ','),
-                                        `${this.props.dnatcofication.pdbId}_naval_angles_report.csv`
-                                    );
-                                }
-                            }}
-                        >
-                            <Icon img={DataTransferDownloadImg} size='text' />
-                            Bond angles
-                        </div>
-                        <div
-                            className='rdo-dynamic-table-download-button'
-                            style={{ flex: 1, justifyContent: 'center' }}
-                            onClick={() => {
-                                if (this.props.dnatcofication.data.naval.geometry.length === 0) {
-                                    Popup.create(<div className='text-secondary-third'>Naval geometry report does not contain any data</div>);
-                                } else {
-                                    Net.serveFile(
-                                        FileTypes['csv'].mimeType,
-                                        Naval.geometryAsCsv(this.props.dnatcofication.data.naval.geometry, ','),
-                                        `${this.props.dnatcofication.pdbId}_naval_geometry_report.csv`
-                                    );
-                                }
-                            }}
-                        >
-                            <Icon img={DataTransferDownloadImg} size='text' />
-                            Geometry
-                        </div>
-                    </div>
-                </div>
             </div>
         );
     }

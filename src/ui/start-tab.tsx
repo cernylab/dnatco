@@ -65,8 +65,6 @@ class AnalyzeButton extends React.Component<{ ready: boolean, onClick: () => voi
 class Coordinates extends React.Component<Coordinates.Props> {
     render() {
         const customFile = !this.props.database;
-        const examplesTab = !this.props.databaseOptions;
-        const examples = listOfValidExamples(GlobalConfig.data().exampleStructures);
 
         return (
             <div className='mx-auto'>
@@ -126,21 +124,6 @@ class Coordinates extends React.Component<Coordinates.Props> {
                                 </div>
                             </div>
                         </>
-                    }
-                    {examplesTab
-                        ? 
-                        <>
-                            {examples.length > 0
-                                    ? <div className='rdo-example-structures-list' style={{ gridColumn: '1 / span 2' }}>
-                                    <div className='font-700'>Examples:</div>
-                                    <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', columnGap: '1ex' }}>
-                                        {examples.map(x => makeExample(x.db, x.pdbId, x.name, this.props.onRunExample))}
-                                    </div>
-                                </div>
-                                : <div className='rdo-example-structures-list' style={{ gridColumn: '1 / span 2' }} />
-                            }
-                        </>
-                        : null
                     }
                 </div>
             </div>
@@ -452,6 +435,7 @@ export class StartTab extends React.Component<StartTab.Props, State> {
     }
       
       render() {
+        const examples = listOfValidExamples(GlobalConfig.data().exampleStructures);
 
         return (
             <>
@@ -526,6 +510,16 @@ export class StartTab extends React.Component<StartTab.Props, State> {
                                             </div>
                                         </div>
                                     </div>
+                                    {examples.length > 0
+                                        ? 
+                                        <div className='mx-auto mt-2 flex flex-row max-w-[30em] w-fit'>
+                                            <div className='font-700 m-auto mr-2'>Examples:</div>
+                                            <div className='bg-primary-first rounded-standart text-secondary-first hover:text-primary-first transition-all hover:bg-secondary-second p-3 flex flex-row flex-wrap'>
+                                                {examples.map(x => makeExample(x.db, x.pdbId, x.name, this.props.onRunExample))}
+                                            </div>
+                                        </div>
+                                        : <div className='mx-auto mt-2 flex flex-row max-w-[30em] w-fit'/>
+                                    }
                                     {this.props.dnatcofierState === 'initializing'
                                         ? <div className='flex flex-row items-center'>
                                             <div className='text-16px m-auto'>Please wait for {GlobalConfig.data().displayedProductName} to initialize...</div>
@@ -549,5 +543,6 @@ export namespace StartTab {
         onDoCustomStructure: (coordsFile: File, densityMaps: { file: File, kind: DensityMap['kind'] }[], densityMapCoeffs: File|null) => void,
         onDoRawLink: (link: string) => void,
         dnatcofierState: 'ready' | 'initializing' | 'failed';
+        onRunExample: (db: string, pdbId: string) => void;
     }
 }

@@ -34,6 +34,7 @@ import Contacts from 'assets/imgs/contacts.png'
 import arrowDown from 'assets/imgs/arrowDown.png'
 import arrowDownHover from 'assets/imgs/arrowDownHover.png'
 import searchIcon from 'assets/imgs/search.png'
+import tooltipImg from 'assets/imgs/tooltip.png'
 
 export {
     DnatcoLogoImg,
@@ -70,5 +71,6 @@ export {
     Contacts,
     arrowDown,
     arrowDownHover,
-    searchIcon
+    searchIcon,
+    tooltipImg
 };

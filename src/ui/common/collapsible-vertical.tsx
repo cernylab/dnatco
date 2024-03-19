@@ -49,7 +49,8 @@ export class CollapsibleVertical extends React.Component<CollapsibleVertical.Pro
 
     render() {
         return (
-            <div className='rdo-collapsible-vertical bg-secondary-second-hover my-2 p-2 rounded-standart text-primary-first transition-all overflow-hidden h-full flex flex-col'>
+            <div className='rdo-collapsible-vertical my-2 p-2 text-primary-first transition-all overflow-hidden flex flex-col border-b-primary-first border-b-[1px]'
+            style={this.props.style}>
                 {this.renderHeader()}
                 {this.state.collapsed ? undefined : this.props.children}
             </div>

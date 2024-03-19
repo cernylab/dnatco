@@ -30,6 +30,8 @@ import { Filters } from 'viewer-filters';
 // We are not referencing these assets anywhere in the code, we just need to pull them in
 import 'assets/molstar.js';
 import 'assets/molstar.css';
+import { Tooltip } from '../common/tooltip';
+import { tooltipImg } from '../../assets/images';
 
 const MasterMode = ['annotation', 'validation', 'refinement'] as const;
 export type MasterMode = typeof MasterMode[number];
@@ -41,10 +43,11 @@ type DnatcoMode = {
 };
 
 const AvailableViews: Record<ViewId, { caption: string }> = {
-    'assigned-ntcs': { caption: 'Assigned NtCs' },
+    'main-features': { caption: 'Main features' },
     'structure-info': { caption: 'Structure Info' },
     'change-ntcs': { caption: 'Change NtCs' },
-    'confals-rmsds':  { caption: 'Confals & RMSDs'},
+    'overall-quality':  { caption: 'Overall quality'},
+    'backbone-quality':  { caption: 'Backbone quality'},
     'similarity-plot': { caption: 'Similarity plot' },
     'downloads': { caption: 'Downloads' },
     'step-torsions': { caption: 'Step torsions' },
@@ -57,10 +60,11 @@ const AvailableViews: Record<ViewId, { caption: string }> = {
     'help-annotation': { caption: 'Help' },
     'help-refinement': { caption: 'Help' },
     'help-validation': { caption: 'Help' },
+    'downloads-validation': { caption: 'Downloads' },
 };
 const ViewsInMode: Record<MasterMode, [ViewId, Register.View<any>][]> = {
     'annotation': [
-        ['assigned-ntcs', Register.Views['assigned-ntcs']],
+        ['main-features', Register.Views['main-features']],
         ['structure-info', Register.Views['structure-info']],
         ['downloads', Register.Views['downloads']],
         ['help-annotation', Register.Views['help-annotation']],
@@ -74,11 +78,13 @@ const ViewsInMode: Record<MasterMode, [ViewId, Register.View<any>][]> = {
         ['help-refinement', Register.Views['help-refinement']],
     ],
     'validation': [
-        ['confals-rmsds', Register.Views['confals-rmsds']],
+        ['overall-quality', Register.Views['overall-quality']],
+        ['backbone-quality', Register.Views['backbone-quality']],
         ['step-torsions', Register.Views['step-torsions']],
         ['similarity-plot', Register.Views['similarity-plot']],
         ['rscc-plot', Register.Views['rscc-plot']],
         ['angles-lengths', Register.Views['angles-lengths']],
+        ['downloads-validation', Register.Views['downloads-validation']],
         ['help-validation', Register.Views['help-validation']],
     ]
 }
@@ -100,7 +106,7 @@ function locationToDnatcoMode(location: string): DnatcoMode {
     const viewId = segments[4];
 
     if (!master || !(MasterMode as Readonly<string[]>).includes(master))
-        return { master: 'annotation', viewId: 'assigned-ntcs' };
+        return { master: 'annotation', viewId: 'main-features' };
 
     const viewsInMode = ViewsInMode[master as MasterMode];
     const view = viewsInMode.find(([id, _]) => id === viewId);
@@ -136,6 +142,12 @@ function Inner(props: {
     const view = ViewsInMode[props.mode.master].find(([viewId, _]) => props.mode.viewId === viewId)![1];
     const routes = useRoutes(routeElems);
 
+
+    const handleAboutClick = (selectedTab: string) => {
+        // Pass the selectedTab prop when navigating
+        navigate('/app/about', { state: { selectedTab } });
+      };
+
     return (
         <>
             <ViewsList
@@ -150,7 +162,90 @@ function Inner(props: {
                     visible={view.visualizer ? 'both' : 'first'}
                     first={routes}
                     second={
-                        <div className='rdo-offset ml-0 overflow-hidden'>
+                        <div className='ml-0 overflow-hidden'>
+                            <div className='flex'>
+                                <div className='bg-a py-1 font-700 w-full flex justify-center'>
+                                        A
+                                    <Tooltip
+                                        tag={<div className='cursor-pointer ml-4'><img className='w-5' src={tooltipImg}/></div>}
+                                        delayMsec={300}
+                                    > 
+                                        A-like conformers, mainly found in the RNA structures. For more see Help
+                                    </Tooltip>
+                                </div>
+                                <div className='bg-b py-1 font-700 w-full flex justify-center'> 
+                                        BI
+                                    <Tooltip
+                                        tag={<div className='cursor-pointer ml-4'><img className='w-5' src={tooltipImg}/></div>}
+                                        delayMsec={300}
+                                    >
+                                        B-like conformers, mainly found in the doublehelical DNA. For more see Help
+                                    </Tooltip>
+                                </div>
+                                <div className='bg-BII py-1 text-white font-700 w-full flex justify-center'>
+                                        BII
+                                    <Tooltip
+                                        tag={<div className='cursor-pointer ml-4'><img className='w-5' src={tooltipImg}/></div>}
+                                        delayMsec={300}
+                                    >
+                                        BII form, less populated B-like form. For more see Help
+                                    </Tooltip>
+                                </div>
+                                <div className='bg-miB py-1 font-700 w-full flex justify-center'>
+                                        miB
+                                    <Tooltip
+                                        tag={<div className='cursor-pointer ml-4'><img className='w-5' src={tooltipImg}/></div>}
+                                        delayMsec={300}
+                                    >
+                                        miB - BI and less populated B-form conformers with unusual torsional values. For more see Help
+                                    </Tooltip>
+                                </div>
+                                <div className='bg-Z py-1 font-700 w-full flex justify-center'>
+                                        Z
+                                    <Tooltip
+                                        tag={<div className='cursor-pointer ml-4'><img className='w-5' src={tooltipImg}/></div>}
+                                        delayMsec={300}
+                                    >
+                                        Z-like conformers, found mainly in DNA, less frequently in RNA. For more see Help
+                                    </Tooltip>
+                                </div>
+                                <div className='bg-IC py-1 font-700 w-full flex justify-center'>
+                                        IC
+                                    <Tooltip
+                                        tag={<div className='cursor-pointer ml-4'><img className='w-5' src={tooltipImg}/></div>}
+                                        delayMsec={300}
+                                    >
+                                        Combination of A- and B-like backbone with intercalated bases. For more see Help
+                                    </Tooltip>
+                                </div>
+                                <div className='bg-OPN py-1 text-white font-700 w-full flex justify-center'>
+                                        OPN
+                                    <Tooltip
+                                        tag={<div className='cursor-pointer ml-4'><img className='w-5' src={tooltipImg}/></div>}
+                                        delayMsec={300}
+                                    >
+                                        Combination of A- and B-like backbone with distant and unusually oriented bases. For more see Help
+                                    </Tooltip>
+                                </div>
+                                <div className='bg-SYN py-1 font-700 w-full flex justify-center'>
+                                        SYN
+                                    <Tooltip
+                                        tag={<div className='cursor-pointer ml-4'><img className='w-5' src={tooltipImg}/></div>}
+                                        delayMsec={300}
+                                    >
+                                        Conformers with one of the bases in the syn orientation. For more see Help
+                                    </Tooltip>
+                                </div>
+                                <div className='bg-N py-1 font-700 w-full flex justify-center'>
+                                        N
+                                    <Tooltip
+                                        tag={<div className='cursor-pointer ml-4'><img className='w-5' src={tooltipImg}/></div>}
+                                        delayMsec={300}
+                                    >
+                                        Unassigned conformation. For more see Help
+                                    </Tooltip>
+                                </div>
+                            </div>
                             <div id='rdo-id-molstar-container' className='h-full relative' />
                         </div>
                     }

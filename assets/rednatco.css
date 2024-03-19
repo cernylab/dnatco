@@ -416,7 +416,6 @@ th.rdo-data-table-small {
 
 .rdo-example-structure {
     cursor: pointer;
-    text-decoration: underline;
 }
 
 .rdo-example-structures-list {
@@ -925,9 +924,9 @@ a.rdo-imglink:visited {
 }
 
 .rdo-tooltip-text {
-    box-shadow: 0 0 5px 2px var(--color-b);
-    background-color: var(--color-c);
-    border: 2px solid var(--color-b);
+    background-color: white;
+    border: 0.1px solid var(--color-primary-first);
+    border-radius: 5px;
     padding: 0.2em;
     position: absolute;
     transition: opacity var(--anim-speed);
@@ -949,9 +948,6 @@ a.rdo-imglink:visited {
 }
 
 .rdo-window {
-    box-shadow: 0 0 5px 2px var(--color-b);
-    background-color: var(--color-c);
-    border: 2px solid var(--color-b);
     padding: 0.2em;
     position: absolute;
 }

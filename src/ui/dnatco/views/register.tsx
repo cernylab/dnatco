@@ -1,6 +1,6 @@
 import React from 'react';
 import { View } from './view';
-import { AssignedNtCs } from './annotation/assigned-ntcs';
+import { MainFeatures } from './annotation/main-features';
 import { Downloads } from './annotation/downloads';
 import { StructureInfo } from './annotation/structure-info';
 import { Refinement } from './refinement/common';
@@ -10,7 +10,7 @@ import { PhenixRestraints } from './refinement/phenix-restraints';
 import { RefmacRestraints } from './refinement/refmac-restraints';
 import { ConnectivityPlot } from './refinement/connectivity-plot';
 import { AnglesLengthsUpper } from './validation/angles-lengths-upper';
-import { ConfalsRmsds } from './validation/confals-rmsds';
+import { BackboneQuality } from './validation/backbone-quality';
 import { RsccPlot } from './validation/rscc-plot';
 import { SimilarityPlot } from './validation/similarity-plot';
 import { StepTorsions } from './validation/step-torsions';
@@ -19,6 +19,8 @@ import { Dnatcofication } from '../../../dnatco/dnatcofication';
 import { HelpAnnotation } from './annotation/help-annotation';
 import { HelpRefinement } from './refinement/help-refinement';
 import { HelpValidation } from './validation/help-validation';
+import { OverallQuality } from './validation/overall-quality';
+import { DownloadsValidation } from './validation/downloads-validation';
 
 const NullDisplayer = async () => {};
 const NullSelectionMaker = () => ({ steps: [], residues: [], atoms: [], reconstruct: true });
@@ -44,11 +46,11 @@ export namespace Register {
     };
 
     export const Views = {
-        'assigned-ntcs': {
-            render: (props: View.Props) => <AssignedNtCs {...props} />,
-            selectionDisplayer: AssignedNtCs.SelectionDisplayer,
-            selectionMaker: AssignedNtCs.SelectionMaker,
-            unscrollableContainer: AssignedNtCs.unscrollableContainer,
+        'main-features': {
+            render: (props: View.Props) => <MainFeatures {...props} />,
+            selectionDisplayer: MainFeatures.SelectionDisplayer,
+            selectionMaker: MainFeatures.SelectionMaker,
+            unscrollableContainer: MainFeatures.unscrollableContainer,
             granularity: 'two-residues' as View<any>['granularity'],
             visualizer: true,
         },
@@ -68,11 +70,19 @@ export namespace Register {
             granularity: 'two-residues' as View<any>['granularity'],
             visualizer: true,
         },
-        'confals-rmsds': {
-            render: (props: View.Props) => <ConfalsRmsds {...props} />,
-            selectionDisplayer: ConfalsRmsds.SelectionDisplayer,
-            selectionMaker: ConfalsRmsds.SelectionMaker,
-            unscrollableContainer: ConfalsRmsds.unscrollableContainer,
+        'overall-quality': {
+            render: (props: View.Props) => <OverallQuality {...props} />,
+            selectionDisplayer: OverallQuality.SelectionDisplayer,
+            selectionMaker: OverallQuality.SelectionMaker,
+            unscrollableContainer: OverallQuality.unscrollableContainer,
+            granularity: 'two-residues' as View<any>['granularity'],
+            visualizer: true,
+        },
+        'backbone-quality': {
+            render: (props: View.Props) => <BackboneQuality {...props} />,
+            selectionDisplayer: BackboneQuality.SelectionDisplayer,
+            selectionMaker: BackboneQuality.SelectionMaker,
+            unscrollableContainer: BackboneQuality.unscrollableContainer,
             granularity: 'two-residues' as View<any>['granularity'],
             visualizer: true,
         },
@@ -172,5 +182,13 @@ export namespace Register {
            granularity: 'dont-care' as View<any>['granularity'],
            visualizer: false,
        },
+       'downloads-validation': {
+        render: (props: View.Props) => <DownloadsValidation {...props} />,
+        selectionDisplayer: NullDisplayer,
+        selectionMaker: NullSelectionMaker,
+        unscrollableContainer: false,
+        granularity: 'dont-care' as View<any>['granularity'],
+        visualizer: false,
+    },
     };
 }

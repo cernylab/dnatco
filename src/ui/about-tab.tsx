@@ -155,6 +155,16 @@ function Help() {
                 </div>
             </div>
             <div className='flex border-t-secondary-second border-t pt-3 mb-8'>
+            <div className='w-[25%]'>
+                <h3 className='font-din-2014 font-700 text-18px mb-2 uppercase'>
+                    {validation[0].sections.theCanaAlphabet.headline}
+                </h3>
+                </div>
+                <div className='w-[75%] font-din-2014 text-16px mb-2 text-justify'>
+                    {validation[0].sections.theCanaAlphabet.paragraph1}
+                </div>
+            </div>
+            <div className='flex border-t-secondary-second border-t pt-3 mb-8'>
                 <div className='w-[25%]'>
                     <h3 className='font-din-2014 font-700 text-18px mb-2 uppercase'>
                         {about[0].sections.glossaryOfAcronyms.headline}
@@ -564,7 +574,6 @@ const AboutTab: React.FC = () => {
         case 'version-history': return <VersionHistory />;
         }
     }
-
 
         return (
             <div className='rdo-offset'>

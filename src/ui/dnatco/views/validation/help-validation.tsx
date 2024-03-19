@@ -68,6 +68,7 @@ export class HelpValidation extends View {
                             {validation[0].sections.bondLengthsAngles.paragraph1}
                         </div>
                     </div>
+                    
                 </div>
             );
         }

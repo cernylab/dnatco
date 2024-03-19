@@ -81,39 +81,31 @@ function Header(props: {
     }, []);
 
     return (
-        <div
-            style={{
-                alignItems: 'center',
-                borderBottom: 'var(--thickness-border) solid black',
-                display: 'flex',
-                flexDirection: 'row',
-                gap: 'var(--h2-gap)',
-                justifyContent: 'center',
-            }}
-        >
+        <div className={`${isExpanded ? 'w-full' : 'w-max' } items-center border-b-[0.1px] border-primary-first flex flex-row justify-between`}>
             <div
                 ref={hdrRef}
-                style={{ flex: 1, cursor: 'move', whiteSpace: 'nowrap' }}
+                className='cursor-move'
             >
                 {title}
-                <div style={{ width: '1em' }} />
             </div>
-            <div onClick={() => {
-                const ce = !isExpanded;
-                setIsExpanded(ce);
-                props.onCollapsedExpanded(ce);
-            }}>
-                <img
-                    className='w-4 h-4'
-                    src={TriangleDownImg}
-                    style={{ transition: 'rotate var(--anim-speed)', rotate: isExpanded ? '180deg' : '0deg' }}
-                />
-            </div>
-            <div onClick={() => props.onClosed()}>
-                <img
-                    className='w-4 h-4'
-                    src={XImg}
-                />
+            <div className='flex'>
+                <div onClick={() => {
+                    const ce = !isExpanded;
+                    setIsExpanded(ce);
+                    props.onCollapsedExpanded(ce);
+                }}>
+                    <img
+                        className='w-4 h-4'
+                        src={TriangleDownImg}
+                        style={{ transition: 'rotate var(--anim-speed)', rotate: isExpanded ? '180deg' : '0deg' }}
+                    />
+                </div>
+                <div onClick={() => props.onClosed()}>
+                    <img
+                        className='w-4 h-4'
+                        src={XImg}
+                    />
+                </div>
             </div>
         </div>
     );
@@ -174,11 +166,9 @@ function TheWindow(props: {
 
     return (
         <div
-            className='rdo-window'
+            className='rdo-window flex flex-col bg-white border-[0.1px] border-primary-first rounded-[5px]'
             ref={tRef}
             style={{
-                display: 'flex',
-                flexDirection: 'column',
                 left: `${position.x}px`,
                 top: `${position.y}px`,
                 width: size.width > 0 ? `${size.width}px` : void 0,

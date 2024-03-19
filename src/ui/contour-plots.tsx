@@ -98,35 +98,40 @@ export class ContourPlots extends WithSubscriptions<{}, State> {
 
     render() {
         return (
-            <div className='' style={{
-                display: 'grid',
-                gridTemplateColumns: 'auto 45% 45%',
-                rowGap: '0.5em',
-                width: '100%',
-                alignItems: 'center',
-                justifyContent: 'center',
-            }}>
-                <div className='flex flex-col items-center'>
-                    <div className='font-din-2014 text-22px uppercase font-700 mb-4'>NtC conformer</div>
-                    <ComboBox
-                        options={toComboBoxOptions(NtCClassesWithNANT, cls => ({ caption: cls, value: cls}))}
-                        value={this.state.ntc}
-                        onChange={v => this.setState({ ...this.state, ntc: v })}
-                        disabled={PlotCompomentCache.size === 0}
-                        sizing='maximum-available'
-                        innerStyle={{ fontSize: 'var(--font-large)' }}
-                    />
+            <div className='w-full'>
+                <div className='flex'>
+                    <div className='flex mr-4 mb-4'>
+                        <div className='mr-2 text-24px font-bold my-auto'>
+                            NtC:
+                        </div>
+                        <ComboBox
+                            options={toComboBoxOptions(NtCClassesWithNANT, cls => ({ caption: cls, value: cls}))}
+                            value={this.state.ntc}
+                            onChange={v => this.setState({ ...this.state, ntc: v })}
+                            disabled={PlotCompomentCache.size === 0}
+                            sizing='maximum-available'
+                            innerStyle={{ fontSize: 'var(--font-large)' }}
+                        />
+                    </div>
+                    <div className='w-[50%]'>
+                        The scattergrams describe relationship between fit to the electron density (Real space correlation coefficient - RSCC) and geometrical closeness (RMSD) of the closest NtC representative and the actual measured dinucleotide.
+                    </div>
                 </div>
-                <div className='text-20px mb-2 text-center font-700'>RSCC vs. Torsion space</div>
-                <div className='text-20px mb-2 text-center font-700'>RSCC vs. Cartesian rmsd</div>
 
-                <div className='rdo-vertical-text text-20px mb-2 text-center flex items-center justify-center font-700'>{'At least 1.8\u00C5 resolution'}</div>
-                {PlotCompomentCache.get(plotTag(this.state.ntc, 'le18', 'euclid'))?.() ?? Placeholder}
-                {PlotCompomentCache.get(plotTag(this.state.ntc, 'le18', 'rmsd'))?.() ?? Placeholder}
-
-                <div className='rdo-vertical-text text-20px mb-2 text-center font-700 flex items-center justify-center'>{'Worse than 2.5\u00C5 resolution'}</div>
-                {PlotCompomentCache.get(plotTag(this.state.ntc, 'gt25', 'euclid'))?.() ?? Placeholder}
-                {PlotCompomentCache.get(plotTag(this.state.ntc, 'gt25', 'rmsd'))?.() ?? Placeholder}
+                <div className='flex justify-center'>
+                    <div className='flex flex-col'>
+                        <div className='text-20px text-center flex items-center justify-center font-700'>{'At least 1.8\u00C5 resolution'}</div>
+                        <div>
+                            {PlotCompomentCache.get(plotTag(this.state.ntc, 'le18', 'rmsd'))?.() ?? Placeholder}
+                        </div>
+                    </div>
+                    <div className='flex flex-col'>
+                        <div className='text-20px text-center font-700 flex items-center justify-center'>{'Worse than 2.5\u00C5 resolution'}</div>
+                        <div>
+                            {PlotCompomentCache.get(plotTag(this.state.ntc, 'gt25', 'rmsd'))?.() ?? Placeholder}
+                        </div>
+                    </div>
+                </div>
             </div>
         );
     }

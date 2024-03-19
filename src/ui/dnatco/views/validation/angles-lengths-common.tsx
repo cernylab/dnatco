@@ -713,6 +713,7 @@ export function Prosco( props: { bin: ALM.MaybeBin } ) {
         return renderUnavailable(bin);
     else {
         return (
+            // Remove tooltip?
             <Tooltip
                 tag=<div className='font-din-2014 text-right'>
                     {fmtDecimal(bin.prosco * 100, 1)}{'\u00A0'}%

@@ -21,10 +21,11 @@ import { browse } from '../help-tags';
 import { arrowDown, arrowDownHover } from '../assets/images';
 
 const Tabs = [
-    ['browse-conformers', { caption: 'Browse', title: 'Search PDB database for dinucleotide steps of given conformation (NtC)' }],
+    ['browse-conformers', { caption: 'Conformers', title: 'Search PDB database for dinucleotide steps of given conformation (NtC)' }],
+    ['base-pairs', { caption: 'Base pairs', title: 'Base pairs' }],
     ['table-of-conformers', { caption: 'Table of conformers', title: 'Table of conformers' }],
-    ['contour-plots', { caption: 'Contour plots', title: '' }],
-    ['help', { caption: 'help', title: 'help' }],
+    ['contour-plots', { caption: 'Contour plots', title: 'RSCC vs. Cartesian rmsd' }],
+    ['help', { caption: 'Help', title: 'Help' }],
 ] as const;
 
 function fmtInt(n: number) {
@@ -86,6 +87,10 @@ function HelpTab() {
                     </h3>
                     <div className='w-[75%] font-din-2014 text-16px mb-2 text-justify'>
                         {browse[0].sections.contourPlots.paragraph1}
+                        <div className='h-3'></div>
+                        {browse[0].sections.contourPlots.paragraph2}
+                        <div className='h-3'></div>
+                        {browse[0].sections.contourPlots.paragraph3}
                     </div>
                 </div>
             </div>
@@ -407,6 +412,17 @@ export class ConformersTab extends React.Component<ConformersTab.Props, State> {
         case 'browse-conformers':
             return (
                 <BrowseConformers />
+            );
+        case 'base-pairs':
+            return (
+                <div className='bg-primary-first text-white p-3 w-fit rounded-standart transition-all hover:bg-secondary-second hover:text-primary-first'>
+                    <a
+                        className='font-700'
+                        href='https://basepairs.datmos.org/#tWW-A-A/'
+                        target='_blank'>
+                            Open base pairs
+                    </a>
+                </div>
             );
         case 'table-of-conformers': return <TableOfConformers />;
         case 'contour-plots': return <ContourPlots />;
