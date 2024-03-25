@@ -142,11 +142,11 @@ function Inner(props: {
     const view = ViewsInMode[props.mode.master].find(([viewId, _]) => props.mode.viewId === viewId)![1];
     const routes = useRoutes(routeElems);
 
-
     const handleAboutClick = (selectedTab: string) => {
         // Pass the selectedTab prop when navigating
         navigate('/app/about', { state: { selectedTab } });
       };
+
 
     return (
         <>
@@ -164,86 +164,93 @@ function Inner(props: {
                     second={
                         <div className='ml-0 overflow-hidden'>
                             <div className='flex'>
-                                <div className='bg-a py-1 font-700 w-full flex justify-center'>
-                                        A
-                                    <Tooltip
-                                        tag={<div className='cursor-pointer ml-4'><img className='w-5' src={tooltipImg}/></div>}
-                                        delayMsec={300}
-                                    > 
-                                        A-like conformers, mainly found in the RNA structures. For more see Help
-                                    </Tooltip>
+                                <div onClick={() => handleAboutClick('help')} className='w-[33.5px] flex justify-center cursor-pointer text-white bg-gray'>
+                                    <a>
+                                        i
+                                    </a>
                                 </div>
-                                <div className='bg-b py-1 font-700 w-full flex justify-center'> 
-                                        BI
-                                    <Tooltip
-                                        tag={<div className='cursor-pointer ml-4'><img className='w-5' src={tooltipImg}/></div>}
-                                        delayMsec={300}
-                                    >
-                                        B-like conformers, mainly found in the doublehelical DNA. For more see Help
-                                    </Tooltip>
-                                </div>
-                                <div className='bg-BII py-1 text-white font-700 w-full flex justify-center'>
-                                        BII
-                                    <Tooltip
-                                        tag={<div className='cursor-pointer ml-4'><img className='w-5' src={tooltipImg}/></div>}
-                                        delayMsec={300}
-                                    >
-                                        BII form, less populated B-like form. For more see Help
-                                    </Tooltip>
-                                </div>
-                                <div className='bg-miB py-1 font-700 w-full flex justify-center'>
-                                        miB
-                                    <Tooltip
-                                        tag={<div className='cursor-pointer ml-4'><img className='w-5' src={tooltipImg}/></div>}
-                                        delayMsec={300}
-                                    >
-                                        miB - BI and less populated B-form conformers with unusual torsional values. For more see Help
-                                    </Tooltip>
-                                </div>
-                                <div className='bg-Z py-1 font-700 w-full flex justify-center'>
-                                        Z
-                                    <Tooltip
-                                        tag={<div className='cursor-pointer ml-4'><img className='w-5' src={tooltipImg}/></div>}
-                                        delayMsec={300}
-                                    >
-                                        Z-like conformers, found mainly in DNA, less frequently in RNA. For more see Help
-                                    </Tooltip>
-                                </div>
-                                <div className='bg-IC py-1 font-700 w-full flex justify-center'>
-                                        IC
-                                    <Tooltip
-                                        tag={<div className='cursor-pointer ml-4'><img className='w-5' src={tooltipImg}/></div>}
-                                        delayMsec={300}
-                                    >
-                                        Combination of A- and B-like backbone with intercalated bases. For more see Help
-                                    </Tooltip>
-                                </div>
-                                <div className='bg-OPN py-1 text-white font-700 w-full flex justify-center'>
-                                        OPN
-                                    <Tooltip
-                                        tag={<div className='cursor-pointer ml-4'><img className='w-5' src={tooltipImg}/></div>}
-                                        delayMsec={300}
-                                    >
-                                        Combination of A- and B-like backbone with distant and unusually oriented bases. For more see Help
-                                    </Tooltip>
-                                </div>
-                                <div className='bg-SYN py-1 font-700 w-full flex justify-center'>
-                                        SYN
-                                    <Tooltip
-                                        tag={<div className='cursor-pointer ml-4'><img className='w-5' src={tooltipImg}/></div>}
-                                        delayMsec={300}
-                                    >
-                                        Conformers with one of the bases in the syn orientation. For more see Help
-                                    </Tooltip>
-                                </div>
-                                <div className='bg-N py-1 font-700 w-full flex justify-center'>
-                                        N
-                                    <Tooltip
-                                        tag={<div className='cursor-pointer ml-4'><img className='w-5' src={tooltipImg}/></div>}
-                                        delayMsec={300}
-                                    >
-                                        Unassigned conformation. For more see Help
-                                    </Tooltip>
+                                <div className='flex w-full'>
+                                    <div className='bg-a py-1 font-700 w-full flex justify-center'>
+                                            A
+                                        <Tooltip
+                                            tag={<div className='cursor-pointer ml-4'><img className='w-5' src={tooltipImg}/></div>}
+                                            delayMsec={300}
+                                        > 
+                                            A-like conformers, mainly found in the RNA structures. For more see Help
+                                        </Tooltip>
+                                    </div>
+                                    <div className='bg-b py-1 font-700 w-full flex justify-center'> 
+                                            BI
+                                        <Tooltip
+                                            tag={<div className='cursor-pointer ml-4'><img className='w-5' src={tooltipImg}/></div>}
+                                            delayMsec={300}
+                                        >
+                                            B-like conformers, mainly found in the doublehelical DNA. For more see Help
+                                        </Tooltip>
+                                    </div>
+                                    <div className='bg-BII py-1 text-white font-700 w-full flex justify-center'>
+                                            BII
+                                        <Tooltip
+                                            tag={<div className='cursor-pointer ml-4'><img className='w-5' src={tooltipImg}/></div>}
+                                            delayMsec={300}
+                                        >
+                                            BII form, less populated B-like form. For more see Help
+                                        </Tooltip>
+                                    </div>
+                                    <div className='bg-miB py-1 font-700 w-full flex justify-center'>
+                                            miB
+                                        <Tooltip
+                                            tag={<div className='cursor-pointer ml-4'><img className='w-5' src={tooltipImg}/></div>}
+                                            delayMsec={300}
+                                        >
+                                            miB - BI and less populated B-form conformers with unusual torsional values. For more see Help
+                                        </Tooltip>
+                                    </div>
+                                    <div className='bg-Z py-1 font-700 w-full flex justify-center'>
+                                            Z
+                                        <Tooltip
+                                            tag={<div className='cursor-pointer ml-4'><img className='w-5' src={tooltipImg}/></div>}
+                                            delayMsec={300}
+                                        >
+                                            Z-like conformers, found mainly in DNA, less frequently in RNA. For more see Help
+                                        </Tooltip>
+                                    </div>
+                                    <div className='bg-IC py-1 font-700 w-full flex justify-center'>
+                                            IC
+                                        <Tooltip
+                                            tag={<div className='cursor-pointer ml-4'><img className='w-5' src={tooltipImg}/></div>}
+                                            delayMsec={300}
+                                        >
+                                            Combination of A- and B-like backbone with intercalated bases. For more see Help
+                                        </Tooltip>
+                                    </div>
+                                    <div className='bg-OPN py-1 text-white font-700 w-full flex justify-center'>
+                                            OPN
+                                        <Tooltip
+                                            tag={<div className='cursor-pointer ml-4'><img className='w-5' src={tooltipImg}/></div>}
+                                            delayMsec={300}
+                                        >
+                                            Combination of A- and B-like backbone with distant and unusually oriented bases. For more see Help
+                                        </Tooltip>
+                                    </div>
+                                    <div className='bg-SYN py-1 font-700 w-full flex justify-center'>
+                                            SYN
+                                        <Tooltip
+                                            tag={<div className='cursor-pointer ml-4'><img className='w-5' src={tooltipImg}/></div>}
+                                            delayMsec={300}
+                                        >
+                                            Conformers with one of the bases in the syn orientation. For more see Help
+                                        </Tooltip>
+                                    </div>
+                                    <div className='bg-N py-1 font-700 w-full flex justify-center'>
+                                            N
+                                        <Tooltip
+                                            tag={<div className='cursor-pointer ml-4'><img className='w-5' src={tooltipImg}/></div>}
+                                            delayMsec={300}
+                                        >
+                                            Unassigned conformation. For more see Help
+                                        </Tooltip>
+                                    </div>
                                 </div>
                             </div>
                             <div id='rdo-id-molstar-container' className='h-full relative' />

@@ -32,7 +32,8 @@ const Footer:React.FC = () => {
 
                     <div className='flex'>
                         <div
-                            onClick={() => handleAboutClick('help')}className='hover-animation my-auto mx-3'
+                            onClick={() => handleAboutClick('help')}
+                            className='hover-animation my-auto mx-3'
                         >
                             <a className='cursor-pointer text-18px font-din-2014'>
                                 About

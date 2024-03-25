@@ -668,8 +668,8 @@ export class PGroupSummary extends React.Component<PGroupSummaryProps, { mode: '
             <div>
                 <div style={{ height: 'calc(var(--h-gap) / 2)' }} />
 
-                <div style={{ display: 'flex' }}>
-                    <div style={{ display: 'flex' }}>
+                <div className='flex'>
+                    <div className='flex'>
                         <div style={{ flex: 1 }}>
                             {this.makeToggleButton('Chart', 'chart')}
                         </div>

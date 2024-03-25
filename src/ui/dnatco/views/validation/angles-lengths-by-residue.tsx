@@ -4,16 +4,16 @@ import { Subject, Subscription } from 'rxjs';
 import { AnglesLengthsCommon, FloatingCue, NavalItem, PGroupSummary, Prosco, ResidueName, WindowsTracker } from './angles-lengths-common';
 import { View } from '../view';
 import { SearchBox } from '../../search-box';
-import { Common } from '../../common';
+import { Common, DownloadButtonComponent } from '../../common';
+import { arrowDown, arrowDownHover } from '../../../../assets/images';
 import { colorStyle, scrollIntoViewIfNeeded } from '../../../util';
 import { CollapsibleVertical } from '../../../common/collapsible-vertical';
 import { ComboBox } from '../../../common/combo-box';
 import { NamedList, NamedListItem } from '../../../common/named-list';
-import { Icon } from '../../../common/icon';
 import { IconButton } from '../../../common/push-button';
 import { SpinBox } from '../../../common/spin-box';
 import { Window } from '../../../common/window';
-import { DataTransferDownloadImg, MagnifyingGlassImg, TriangleDownImg } from '../../../../assets/images';
+import { MagnifyingGlassImg, TriangleDownImg } from '../../../../assets/images';
 import { doDownload, Downloader } from '../../../../browser-util/downloader';
 import { ALM } from '../../../../dnatco/alm';
 import { Dnatcofication } from '../../../../dnatco/dnatcofication';
@@ -417,19 +417,18 @@ function DownloadButtons(props: {
     stats: ALM.ResidueStats[],
 }) {
     return (
-        <div style={{ display: 'flex', flexDirection: 'column' }}>
+        <div className='flex flex-col -ml-2'>
             {props.downloaders.map((dl, idx) => (
-                <div
+                <DownloadButtonComponent
                     key={idx}
-                    className='rdo-dynamic-table-download-button'
-                    style={{ flex: 1 }}
+                    defaultImage={arrowDown as string}
+                    hoverImage={arrowDownHover as string}
+                    title={dl.caption}
                     onClick={e => {
                         e.stopPropagation();
                         dl.download(props.fileName, { residues: props.residues, counts: props.counts, stats: props.stats });
-                }}>
-                    <Icon img={DataTransferDownloadImg} size='text' />
-                    {dl.caption}
-                </div>
+                    }}
+                />
             ))}
         </div>
     );
@@ -1107,7 +1106,7 @@ export class AnglesLengthsByResidue extends View<
 
             return {
                 collapsed: (
-                    <div className='rdo-secondary-caption rdo-active' style={Style}>
+                    <div className='rdo-secondary-caption cursor-pointer' style={Style}>
                         <img
                             src={TriangleDownImg}
                             style={{ transition: 'rotate var(--anim-speed)', rotate: '0deg' }}
@@ -1116,7 +1115,7 @@ export class AnglesLengthsByResidue extends View<
                     </div>
                 ),
                 expanded: (
-                    <div className='rdo-secondary-caption rdo-active' style={Style}>
+                    <div className='rdo-secondary-caption cursor-pointer' style={Style}>
                         <img
                             src={TriangleDownImg}
                             style={{ transition: 'rotate var(--anim-speed)', rotate: '180deg' }}
@@ -1149,9 +1148,8 @@ export class AnglesLengthsByResidue extends View<
                     name={AnglesLengthsCommon.selectionName(this.props.dnatcofication, multipleModels, modelIdx, chain)}
                     residues={selectedResidues}
                     stats={selectedResidueStats}
-                    style={{ height: '4em' }}
                 >
-                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    <div className='flex flex-col'>
                         <div style={{ flex: 1, display: 'flex' }}>
                             {AnglesLengthsCommon.renderSubstructureStats(
                                 this.winTracker,

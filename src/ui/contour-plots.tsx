@@ -55,7 +55,7 @@ async function populateCache() {
                 () => {
                     const base64 = 'data:image/png;base64,' + window.btoa(array.reduce((data, ch) => data + String.fromCharCode(ch), ''));
                     return (
-                        <a href={urlPrefix + '.pdf'}>
+                        <a href={urlPrefix + '.pdf'} target='_blank'>
                             <img className='rdo-autosized' src={base64} />
                         </a>
                     );

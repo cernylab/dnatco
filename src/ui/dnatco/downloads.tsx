@@ -169,7 +169,7 @@ function RsccRmsdDownload(props: { d: Dnatcofication, structureName: string }) {
                         hoverImage={arrowDownHover as string}
                         onClick={() => downloadRsccPlot('assigned', props.structureName, parseInt(modelIndex), props.d)}
                         />
-                    : <div className='flex items-center h-full' style={{ whiteSpace: 'nowrap' }}>(No assigned NtCs)</div>
+                    : <div className='flex items-center h-full whitespace-nowrap'>(No assigned NtCs)</div>
             }
             {
                 haveUnassigned
@@ -179,7 +179,7 @@ function RsccRmsdDownload(props: { d: Dnatcofication, structureName: string }) {
                         hoverImage={arrowDownHover as string}
                         onClick={() => downloadRsccPlot('unassinged', props.structureName, parseInt(modelIndex), props.d)}
                     />
-                    : <div className='flex items-center h-full' style={{ whiteSpace: 'nowrap' }}>(No unassigned NtCs)</div>
+                    : <div className='flex items-center h-full whitespace-nowrap'>(No unassigned NtCs)</div>
             }
             </_Downloads.DownloadBox>
         );

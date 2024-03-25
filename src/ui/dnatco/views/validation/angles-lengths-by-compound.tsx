@@ -3,12 +3,11 @@ import React from 'react';
 import { Subject, type Subscription } from 'rxjs';
 import { AnglesLengthsCommon, FloatingCue, PGroupSummary, Prosco, ResidueName as CommonResidueName, WindowsTracker } from './angles-lengths-common';
 import { View } from '../view';
-import { Common } from '../../common';
+import { Common, DownloadButtonComponent } from '../../common';
+import { arrowDown, arrowDownHover, TriangleDownImg } from '../../../../assets/images';
 import { CollapsibleVertical } from '../../../common/collapsible-vertical';
-import { Icon } from '../../../common/icon';
 import { Window } from '../../../common/window';
 import { colorStyle } from '../../../util';
-import { TriangleDownImg, arrowDown } from '../../../../assets/images';
 import { doDownload, Downloader } from '../../../../browser-util/downloader';
 import { ALM, ALMCompoundAngleLength } from '../../../../dnatco/alm';
 import { AnglesLengths as DAnglesLengths } from '../../../../dnatco/angles-lengths';
@@ -96,19 +95,18 @@ function DownloadButtons(props: {
     fileName: string,
 }) {
     return (
-        <div className='flex flex-col'>
+        <div className='flex flex-col -ml-2'>
             {props.downloaders.map((dl, idx) => (
-                <div
+                <DownloadButtonComponent
                     key={idx}
-                    className='rdo-dynamic-table-download-button'
-                    style={{ flex: 1 }}
+                    defaultImage={arrowDown as string}
+                    hoverImage={arrowDownHover as string}
+                    title={dl.caption}
                     onClick={e => {
                         e.stopPropagation();
                         dl.download(props.fileName, props.downloadableData);
-                }}>
-                    <Icon img={arrowDown} size='text' />
-                    {dl.caption}
-                </div>
+                    }}
+                />
             ))}
         </div>
     );
@@ -184,7 +182,7 @@ function Base<T extends ALM.AngleStats | ALM.LengthStats>(props: {
     return (
         <CollapsibleVertical
             header={AnglesLengthsCommon.makeCollapsibleHeader(
-                <div style={{ display: 'flex', flexDirection: 'row', gap: 'var(--h4-gap)' }}>
+                <div className='flex'>
                     {AnglesLengthsCommon.renderSubstructureStats(
                         props.winTracker,
                         props.base,
@@ -355,7 +353,6 @@ function Metric<T extends ALM.AngleStats | ALM.LengthStats>(props: {
             )}
             ref={collapsibleRef}
         >
-            <div style={{ height: 'var(--v2-gap)' }} />
             <div className='flex flex-row'>
                 <div className='w-4' />
                 {details}
@@ -806,7 +803,6 @@ export class AnglesLengthsByCompound extends View<View.Props> {
                     downloadableData={DownloadableData(selected.angles, countsAngles, selected.lengths, countsLengths)}
                     downloaders={StatsDownloaders}
                     name={AnglesLengthsCommon.selectionName(this.props.dnatcofication, multipleModels, modelIdx, chain)}
-                    style={{ height: '4em' }}
                 >
                     <div className='flex flex-col'>
                         <div style={{ flex: 1, display: 'flex' }}>

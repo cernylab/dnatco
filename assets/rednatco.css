@@ -302,14 +302,6 @@ tr.rdo-angles-lengths:hover {
     overflow-y: hidden;
 }
 
-.rdo-active {
-    transition: background-color var(--anim-speed);
-}
-
-.rdo-active:hover {
-    background-color: var(--color-b);
-}
-
 .rdo-big-logo-container {
     background-color: var(--color-f);
     display: grid;
@@ -341,12 +333,12 @@ tr.rdo-angles-lengths:hover {
 }
 
 td.rdo-data-table {
-    border: var(--thickness-border) solid var(--color-a);
+    border: 0.1px solid #30595C;
     padding: 0.2em;
 }
 
 td.rdo-data-table-small {
-    border: var(--thickness-border) solid var(--color-a);
+    border: 0.1px solid #30595C;
     padding: 0.1em;
 }
 
@@ -355,14 +347,14 @@ td.rdo-data-table-selected {
 }
 
 td.rdo-numeric-table {
-    border: var(--thickness-border) solid var(--color-a);
+    border: 0.1px solid #30595C;
     font-family: pt-mono;
     padding: 0.2em;
     text-align: right;
 }
 
 td.rdo-numeric-table-small {
-    border: var(--thickness-border) solid var(--color-a);
+    border: 0.1px solid #30595C;
     font-family: pt-mono;
     padding: 0.1em;
     text-align: right;
@@ -370,13 +362,13 @@ td.rdo-numeric-table-small {
 
 th.rdo-data-table {
     background-color: var(--color-a);
-    border: var(--thickness-border) solid var(--color-a);
+    border: 0.1px solid #30595C;
     padding: 0.2em;
 }
 
 th.rdo-data-table-small {
     background-color: var(--color-a);
-    border: var(--thickness-border) solid var(--color-a);
+    border: 0.1px solid #30595C;
     padding: 0.1em;
 }
 

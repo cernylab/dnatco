@@ -107,7 +107,7 @@ class DynamicTableRow extends React.Component<{
     }
 
     render() {
-        return <tr>{...this.props.children}</tr>
+        return <tr className=''>{...this.props.children}</tr>
     }
 }
 

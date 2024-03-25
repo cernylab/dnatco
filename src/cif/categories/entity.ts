@@ -33,7 +33,7 @@ export const EntityPoly_Schema = {
     type: Schema.Enum<'polypeptide(d)'|'polypeptide(l)'|'polydeoxyribonucleotide'|'polyribonucleotide'|'polydeoxyribonucleotide/polyribonucleotide hybrid'|'cyclic-pseudo-peptide'|'peptide nucleic acid'|'other'|null>(['polypeptide(d)', 'polypeptide(l)', 'polydeoxyribonucleotide', 'polyribonucleotide', 'polydeoxyribonucleotide/polyribonucleotide hybrid', 'cyclic-pseudo-peptide', 'peptide nucleic acid', 'other', null]),
     type_details: Schema.str,
     pdbx_strand_id: Schema.str,
-    pdbx_seq_one_letter_code: Schema.str,
+    pdbx_seq_one_letter_code: Schema.str, // important 
     pdbx_seq_one_letter_code_can: Schema.str,
     pdbx_target_identifier: Schema.str,
     pdbx_seq_one_letter_code_sample: Schema.str,

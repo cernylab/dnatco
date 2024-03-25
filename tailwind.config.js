@@ -21,6 +21,7 @@ module.exports = {
         "secondary-third": "#DD4B32", // red
 
         "test": "rgba(255, 248, 234, 0.7)",
+        "gray": "#808080",
         "a": "#feeba1", 
         "b": "#c8cfff",
         "BII": "#1459d9",

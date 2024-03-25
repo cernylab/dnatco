@@ -64,7 +64,7 @@ interface ButtonComponentProps {
     title: string;
     defaultImage: string;
     hoverImage: string;
-    onClick: () => void;
+    onClick: (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void;
 }
 
 export const DownloadButtonComponent: React.FC<ButtonComponentProps> = ({ title, defaultImage, hoverImage, onClick }) => {

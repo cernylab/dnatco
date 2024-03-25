@@ -13,6 +13,12 @@ const RedundancyOptions = [
     { value: 'non-redundant', caption: 'Non-redundant' },
     { value: 'all', caption: 'All' },
 ];
+
+const TypeOfNAOptions = [
+    { value: 'DNA', caption: 'DNA' },
+    { value: 'RNA', caption: 'RNA' },
+    { value: 'DNA / RNA', caption: 'DNA / RNA' },
+];
 const NtCOptions = NtC.Classes.map(cls => { return { value: cls, caption: cls } });
 
 interface State {
@@ -58,6 +64,14 @@ export class SearchConformers extends React.Component<SearchConformers.Props, St
                         <NamedListItem name='PDB structure'>
                             <ComboBox
                                 options={RedundancyOptions}
+                                value={this.state.redundancy}
+                                onChange={v => this.setState({ ...this.state, redundancy: v as Redundacy })}
+                                sizing='maximum-available'
+                            />
+                        </NamedListItem>
+                        <NamedListItem name='Type of NA'>
+                            <ComboBox
+                                options={TypeOfNAOptions}
                                 value={this.state.redundancy}
                                 onChange={v => this.setState({ ...this.state, redundancy: v as Redundacy })}
                                 sizing='maximum-available'

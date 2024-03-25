@@ -146,7 +146,7 @@ export class PushButton extends BasePushButton<PushButton.Props> {
 
     protected clsName() {
         if (!this.props.disabled)
-            return this.props.className ?? 'rdo-pushbutton'
+            return this.props.className ?? 'bg-primary-first items-center flex justify-center px-4 py-1 cursor-pointer w-fit rounded-smaller hover:bg-secondary-second text-white hover:text-primary-first transition-all'
         else
             return this.props.classNameDisabled ?? 'rdo-pushbutton-disabled';
     }
