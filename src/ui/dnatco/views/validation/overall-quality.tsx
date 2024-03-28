@@ -19,7 +19,7 @@ import { doDownload, Downloader } from '../../../../browser-util/downloader';
 import { SerializeByCompound } from '../../../../dnatco/angles-lengths/serialize';
 import { FileTypes } from '../../../../util/file-type';
 import { objKeys } from '../../../../util';
-import { Window } from '../../../common/window';
+import { WindowsTracker } from './angles-lengths-common';
 import { colorToRgb, rgbToHex } from '../../../../util/colors';
 import { Tooltip } from '../../../common/tooltip';
 import { tooltipImg } from '../../../../assets/images';
@@ -110,31 +110,6 @@ export function displayedSelectionName(modelIdx: number, chain: string, hasMulti
         const m = dnatcofication.data.structures[0].models[0];
         const ch = chain === InvalidChain ? null : m.chains.find(x => x.name === chain)!;
         return `${ch === null ? 'Entire structure' : `Chain ${ch.authName} (Cif ${ch.name})`}`;
-    }
-}
-
-export class WindowsTracker {
-    private windows: Window.Handle[] = [];
-
-    add(hwnd: Window.Handle) {
-        this.windows.push(hwnd);
-    }
-
-    close(hwnd: Window.Handle) {
-        hwnd.close();
-        this.remove(hwnd);
-    }
-
-    closeAll() {
-        this.windows.forEach(hwnd => hwnd.close());
-        this.windows = [];
-    }
-
-    remove(hwnd: Window.Handle) {
-        const idx = this.windows.findIndex((h) => h === hwnd);
-
-        if (idx !== -1)
-            this.windows.splice(idx, 1);
     }
 }
 

@@ -231,7 +231,7 @@ function mkViolationDetailsToolip(details: string|null) {
     return elems.length;
 }
 
-function numOrNA(n: number, decimals = 2, padding = 7) {
+function numOrNA(n: number, decimals = 0, padding = 7) {
     return isNaN(n) ? C.NA : toFixed(n, decimals, { char: '\u00A0', length: padding });
 }
 
@@ -573,15 +573,15 @@ export class StepTorsions extends View<View.Props> {
                                 <td className='rdo-numeric-table'>{numOrNA(torsionInfo.actual[tor])}</td>
                                 <td className='rdo-numeric-table'>{numOrNA(torsionInfo.reference[tor])}</td>
                                 <td className='rdo-numeric-table'>{numOrNA(torsionInfo.diff[tor])}</td>
-                                <td className='rdo-numeric-table'>{numOrNA(torsionInfo.confal[tor], 0)}</td>
+                                <td className='rdo-numeric-table'>{numOrNA(torsionInfo.confal[tor])}</td>
                             </tr>
                         ))}
                         {DistancesDisplayOrder.map((dist, idx) => (
                             <tr key={idx} className='rdo-data-table'>
                                 <td className='rdo-numeric-table'>{DistancesCaptions[dist]}</td>
-                                <td className='rdo-numeric-table'>{numOrNA(distanceInfo.actual[dist])}</td>
-                                <td className='rdo-numeric-table'>{numOrNA(distanceInfo.reference[dist])}</td>
-                                <td className='rdo-numeric-table'>{numOrNA(distanceInfo.diff[dist])}</td>
+                                <td className='rdo-numeric-table'>{numOrNA(distanceInfo.actual[dist], 1)}</td>
+                                <td className='rdo-numeric-table'>{numOrNA(distanceInfo.reference[dist], 1)}</td>
+                                <td className='rdo-numeric-table'>{numOrNA(distanceInfo.diff[dist], 1)}</td>
                                 <td className='rdo-numeric-table'>{numOrNA(distanceInfo.confal[dist], 0)}</td>
                             </tr>
                         ))}

@@ -53,7 +53,7 @@ export class NamedListItem extends React.Component<{ name: string, children?: Re
     render() {
         return (
             <>
-                <div className='rdo-named-list-name'>
+                <div className='rdo-named-list-name my-auto'>
                     {this.props.name}
                     {this.props.tooltip
                         ? <Tooltip tag='[?]'>{this.props.tooltip}</Tooltip>
