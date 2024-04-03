@@ -37,7 +37,7 @@ function listOfValidExamples(examples: GlobalConfigData['exampleStructures']) {
 function makeExample(db: string, pdbId: string, name: string | undefined, handler: (db: string, pdbId: string) => void) {
     const _db = copyString(db);
     const _pdbId = copyString(pdbId);
-    return <div key={`${_db}${_pdbId}`} className='rdo-example-structure' onClick={() => handler(_db, _pdbId)}>{name ?? _pdbId}</div>
+    return <div key={`${_db}${_pdbId}`} className='rdo-example-structure text-14px mx-1 p-3 bg-primary-first rounded-standart text-secondary-first hover:text-primary-first transition-all hover:bg-secondary-second' onClick={() => handler(_db, _pdbId)}>{name ?? _pdbId}</div>
 }
 
 const NiceMapKinds: Record<AllowedDensityMapKinds, string> = {
@@ -512,13 +512,13 @@ export class StartTab extends React.Component<StartTab.Props, State> {
                                     </div>
                                     {examples.length > 0
                                         ? 
-                                        <div className='mx-auto mt-2 flex flex-row max-w-[30em] w-fit'>
+                                        <div className='mx-auto mt-2 flex flex-row w-fit'>
                                             <div className='font-700 m-auto mr-2'>Examples:</div>
-                                            <div className='bg-primary-first rounded-standart text-secondary-first hover:text-primary-first transition-all hover:bg-secondary-second p-3 flex flex-row flex-wrap'>
+                                            <div className='flex flex-row flex-wrap'>
                                                 {examples.map(x => makeExample(x.db, x.pdbId, x.name, this.props.onRunExample))}
                                             </div>
                                         </div>
-                                        : <div className='mx-auto mt-2 flex flex-row max-w-[30em] w-fit'/>
+                                        : <div className='mx-auto mt-2 flex flex-row w-fit'/>
                                     }
                                     {this.props.dnatcofierState === 'initializing'
                                         ? <div className='flex flex-row items-center'>
