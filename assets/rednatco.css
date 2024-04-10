@@ -502,12 +502,6 @@ a.rdo-imglink:visited {
     color: #777
 }
 
-.rdo-info-icon-white {
-    filter: invert();
-    height: 0.75em;
-    width: 0.75em;
-}
-
 .rdo-init-error-container {
     align-items: center;
     display: flex;
@@ -778,21 +772,6 @@ a.rdo-imglink:visited {
     border-radius: 15px;
     margin-bottom: 0.5rem;
     cursor: pointer;
-}
-
-.rdo-side-switching-panel-item-deselected {
-    color: var(--color-primary-second);
-}
-.rdo-side-switching-panel-item-deselected:hover {
-    background-color: var(--color-secondary-second-hover);
-}
-
-.rdo-side-switching-panel-item-selected {
-    background-color: var(--color-secondary-second);
-}
-
-.rdo-side-switching-panel-item-selected-compact {
-    background-color: var(--color-secondary-second);
 }
 
 .rdo-side-switching-panel-item-text {
