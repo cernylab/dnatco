@@ -65,10 +65,21 @@ class AnalyzeButton extends React.Component<{ ready: boolean, onClick: () => voi
 class Coordinates extends React.Component<Coordinates.Props> {
     render() {
         const customFile = !this.props.database;
+        const examples = listOfValidExamples(GlobalConfig.data().exampleStructures);
 
         return (
             <div className='mx-auto'>
-                <div className='text-40px font-din-2014 text-center tracking-wider mb-4'>Analyze your structure</div>
+                <div className='text-40px font-din-2014 text-center tracking-wider mb-2'>Analyze your structure</div>
+                {examples.length > 0
+                    ? 
+                    <div className='mx-auto mb-4 flex flex-row w-fit'>
+                        <div className='font-700 m-auto mr-2'>Examples:</div>
+                        <div className='flex flex-row flex-wrap'>
+                            {examples.map(x => makeExample(x.db, x.pdbId, x.name, this.props.onRunExample))}
+                        </div>
+                    </div>
+                    : <div className='mx-auto mt-2 flex flex-row w-fit'/>
+                }
                 <div className='flex flex-col w-[430px] m-auto'>
                     <div className='flex mb-2'>
                         <div className='font-din-2014 text-24px text-primary-first w-[155px] my-auto'>Select</div>
@@ -435,7 +446,6 @@ export class StartTab extends React.Component<StartTab.Props, State> {
     }
       
       render() {
-        const examples = listOfValidExamples(GlobalConfig.data().exampleStructures);
 
         return (
             <>
@@ -447,10 +457,10 @@ export class StartTab extends React.Component<StartTab.Props, State> {
                         <img src={DnaRight} alt='DNA'/>
                     </div>
                     <div>
-                        <div className='hidden floating select-none xl:block xl:absolute xl:top-0 xl:right-0 xl:z-50 xl:w-[16%] xl:mt-[24%] xl:mr-[19%]'>
+                        <div className='hidden floating select-none xl:block xl:absolute xl:top-0 xl:right-0 xl:z-50 xl:w-[15%] xl:mt-[24%] xl:mr-[19%]'>
                             <img src={Density} alt='Density' />
                         </div>
-                        <div className='hidden floating select-none xl:block xl:absolute xl:top-0 xl:left-0 xl:z-50 xl:w-[16%] xl:mt-[17%] xl:ml-[19%]'>
+                        <div className='hidden floating select-none xl:block xl:absolute xl:top-0 xl:left-0 xl:z-50 xl:w-[15%] xl:mt-[17%] xl:ml-[19%]'>
                             <img src={NavalAform} alt='Naval aform' />
                         </div>
                         <div className='hidden floating select-none xl:block xl:absolute xl:top-0 xl:left-0 xl:z-50 xl:w-[10%] xl:mt-[32%] xl:ml-[23%]'>
@@ -476,7 +486,6 @@ export class StartTab extends React.Component<StartTab.Props, State> {
                                                     onRunExample={(db, pdbId) => this.actionPdbId(db, pdbId)}
                                                 />
                                             </div>
-
                                             {this.state.database === ''
                                                 ?
                                                     <div className='mx-auto w-[430px]'>
@@ -510,16 +519,6 @@ export class StartTab extends React.Component<StartTab.Props, State> {
                                             </div>
                                         </div>
                                     </div>
-                                    {examples.length > 0
-                                        ? 
-                                        <div className='mx-auto mt-2 flex flex-row w-fit'>
-                                            <div className='font-700 m-auto mr-2'>Examples:</div>
-                                            <div className='flex flex-row flex-wrap'>
-                                                {examples.map(x => makeExample(x.db, x.pdbId, x.name, this.props.onRunExample))}
-                                            </div>
-                                        </div>
-                                        : <div className='mx-auto mt-2 flex flex-row w-fit'/>
-                                    }
                                     {this.props.dnatcofierState === 'initializing'
                                         ? <div className='flex flex-row items-center'>
                                             <div className='text-16px m-auto'>Please wait for {GlobalConfig.data().displayedProductName} to initialize...</div>
@@ -543,6 +542,5 @@ export namespace StartTab {
         onDoCustomStructure: (coordsFile: File, densityMaps: { file: File, kind: DensityMap['kind'] }[], densityMapCoeffs: File|null) => void,
         onDoRawLink: (link: string) => void,
         dnatcofierState: 'ready' | 'initializing' | 'failed';
-        onRunExample: (db: string, pdbId: string) => void;
     }
 }

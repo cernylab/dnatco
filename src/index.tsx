@@ -512,7 +512,6 @@ function App(props: { initial: Initial }) {
                                     )
                                 }}
                                 dnatcofierState={dnatcofierState}
-                                onRunExample={(db, pdbId) => this.actionPdbId(db, pdbId)}
                             />}
                         />
                         <Route
