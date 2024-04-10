@@ -12,7 +12,7 @@ const Tabs = [
     ['how-to-cite', { caption: 'How to cite' }],
     ['help', { caption: 'Help' }],
     ['version-history', { caption: 'Version history' }],
-    ['downloads', { caption: 'Downloads' }],
+    ['resources', { caption: 'Resources' }],
     ['contact', { caption: 'Contact' }],
 ] as const;
 
@@ -380,6 +380,10 @@ function Help() {
                 </h3>
                 <div className='w-[75%] font-din-2014 text-16px mb-2 text-justify'>
                     {browse[0].sections.contourPlots.paragraph1}
+                    <div className='h-3'></div>
+                    {browse[0].sections.contourPlots.paragraph2}
+                    <div className='h-3'></div>
+                    {browse[0].sections.contourPlots.paragraph3}
                 </div>
             </div>
         </div>
@@ -414,7 +418,23 @@ function VersionHistory() {
             <div className='flex border-t-secondary-second border-t mt-4 pt-3 mb-8'>
                 <div className='w-[25%]'>
                     <h3 className='font-din-2014 font-700 text-18px mb-2 uppercase'>
-                        v3.2
+                        <a href='' target='_blank'>
+                            v4.0
+                        </a>
+                    </h3>
+                </div>
+                <div className='w-[75%] mb-2'>
+                    <div className='font-din-2014 text-16px text-justify'>
+                        Mol* viewer was implemented instead of Jsmol
+                    </div>
+                </div>
+            </div>
+            <div className='flex border-t-secondary-second border-t mt-4 pt-3 mb-8'>
+                <div className='w-[25%]'>
+                    <h3 className='font-din-2014 font-700 text-18px mb-2 uppercase'>
+                        <a href='https://dnatco.datmos.org/v3.2/' target='_blank'>
+                            v3.2
+                        </a>
                     </h3>
                 </div>
                 <div className='w-[75%] mb-2'>
@@ -440,6 +460,9 @@ function VersionHistory() {
                     </div>
                     <div className='font-din-2014 text-16px text-justify'>
                         Output of assignment can be downloaded as a JSON file.
+                    </div>
+                    <div className='font-din-2014 text-16px text-justify '>
+                        <a className='underline cursor-pointer' href='https://dnatco.datmos.org/v3.2/' target='_blank'>https://dnatco.datmos.org/v3.2/</a>
                     </div>
                 </div>
             </div>
@@ -479,7 +502,9 @@ function VersionHistory() {
             <div className='flex border-t-secondary-second border-t mt-4 pt-3 mb-8'>
                 <div className='w-[25%]'>
                     <h3 className='font-din-2014 font-700 text-18px mb-2 uppercase'>
-                        v2.3
+                        <a href='https://dnatco.datmos.org/v2.3'target='_blank'>
+                            v2.3
+                        </a>
                     </h3>
                 </div>
                 <div className='w-[75%] mb-2'>
@@ -500,7 +525,9 @@ function VersionHistory() {
             <div className='flex border-t-secondary-second border-t mt-4 pt-3 mb-8'>
                 <div className='w-[25%]'>
                     <h3 className='font-din-2014 font-700 text-18px mb-2 uppercase'>
-                        v2.2
+                        <a href='https://dnatco.datmos.org/v2.2/' target='_blank'>
+                            v2.2
+                        </a>
                     </h3>
                 </div>
                 <div className='w-[75%] mb-2'>
@@ -518,7 +545,9 @@ function VersionHistory() {
             <div className='flex border-t-secondary-second border-t mt-4 pt-3 mb-8'>
                 <div className='w-[25%]'>
                     <h3 className='font-din-2014 font-700 text-18px mb-2 uppercase'>
-                        v2
+                        <a href='https://dnatco.datmos.org/v2/' target='_blank'>
+                            v2
+                        </a>
                     </h3>
                 </div>
                 <div className='w-[75%] mb-2'>
@@ -536,7 +565,9 @@ function VersionHistory() {
             <div className='flex border-t-secondary-second border-t mt-4 pt-3 mb-8'>
                 <div className='w-[25%]'>
                     <h3 className='font-din-2014 font-700 text-18px mb-2 uppercase'>
-                        v1
+                        <a href='https://dnatco.datmos.org/v1/' target='_blank'>
+                            v1
+                        </a>
                     </h3>
                 </div>
                 <div className='w-[75%] mb-2'>
@@ -568,7 +599,7 @@ const AboutTab: React.FC = () => {
     const renderTab = () => {
         switch (state.selected) {
         case 'contact': return <Contact />;
-        case 'downloads': return <Downloads />;
+        case 'resources': return <Downloads />;
         case 'help': return <Help />;
         case 'how-to-cite': return <HowToCite />;
         case 'version-history': return <VersionHistory />;
