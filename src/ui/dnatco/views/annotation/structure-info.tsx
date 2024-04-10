@@ -46,7 +46,7 @@ export function structureId(d: Dnatcofication) {
         <div>
             {id.toUpperCase()}
             {'\u00A0'}
-            <Link url={rcsbLink(id)} newTab={true}>(RCSB)</Link>
+            <Link className='text-primary-first' url={rcsbLink(id)} newTab={true}>(Link to PDB)</Link>
         </div>
     );
 }
@@ -66,7 +66,7 @@ export class StructureInfo extends View {
                 </NamedList>
                 <div className='h-4' />
                 <CollapsibleVertical
-                    header={mkHeader('Entities and Molecules')}
+                    header={mkHeader('Entities')}
                 >
                     <div className='rdo-offset'>
                         <EntitiesAndMolecules d={this.props.dnatcofication} />

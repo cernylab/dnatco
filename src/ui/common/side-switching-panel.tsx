@@ -17,7 +17,7 @@ function makeList<K extends string>(items: readonly (readonly [id: K, item: Item
         const last = idx === items.length - 1;
         list.push(
             <div key={id}
-                className={`rdo-side-switching-panel-item rdo-side-switching-panel-item-standard ${selectedItemId === id ? 'rdo-side-switching-panel-item-selected' : 'rdo-side-switching-panel-item-deselected'} ${!last ? 'rdo-side-switching-panel-item-not-last' : ''}`}
+                className={`rdo-side-switching-panel-item rdo-side-switching-panel-item-standard ${selectedItemId === id ? 'bg-secondary-second selected' : 'hover:bg-secondary-second-hover deselected'} ${!last ? 'rdo-side-switching-panel-item-not-last' : ''}`}
                 onClick={(ev) =>{
                     ev.preventDefault();
                     ev.stopPropagation();
@@ -136,7 +136,7 @@ export function SideSwitchingPanel<K extends string>(props: {
                         src={GridThreeUpImg}
                     />
                 </div>
-                <div className='rdo-side-switching-panel-item rdo-side-switching-panel-item-compact rdo-side-switching-panel-item-selected-compact'>
+                <div className='rdo-side-switching-panel-item rdo-side-switching-panel-item-compact selected bg-secondary-second'>
                     <div className='rdo-side-switching-panel-item-text rdo-side-switching-panel-item-text-compact'>
                         {props.items.find((item) => item[0] === props.selectedItemId)![1].caption}
                     </div>

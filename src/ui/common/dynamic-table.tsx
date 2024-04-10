@@ -246,20 +246,22 @@ export class DynamicTable extends React.Component<_DynamicTable.Props, { sorting
 
             headers.push(
                 <th
-                    className='data-table'
+                    className='data-table border-primary-first border-[.1px]'
                     style={col.headerStyle}
                     key={idx}
                 >
-                    {this.renderColumnCaption(col)}
-                    {'\u00A0'}
-                    {col.notSortable
-                        ? undefined
-                        : <img
-                            className='column-sort-button'
-                            src={imgSrc}
-                            onClick={() => this.changeSort(idx)}
-                        />
-                    }
+                    <div>
+                        {this.renderColumnCaption(col)}
+                        {'\u00A0'}
+                        {col.notSortable
+                            ? undefined
+                            : <img
+                                className='column-sort-button'
+                                src={imgSrc}
+                                onClick={() => this.changeSort(idx)}
+                            />
+                        }
+                    </div>
                 </th>
             );
         }

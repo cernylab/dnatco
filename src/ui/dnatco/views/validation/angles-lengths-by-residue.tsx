@@ -565,11 +565,11 @@ function ResidueHeader(props: {
             id={props.residueIdentifyingName}
         >
             <div
+                className='text-white font-bold'
                 style={{
                     ...AnglesLengthsCommon.StayAboveStyle,
                     top: 0,
                     left: 'var(--h2-gap)',
-                    ...AnglesLengthsCommon.BarCaptionStyle,
                 }}
             >
                 {props.caption}

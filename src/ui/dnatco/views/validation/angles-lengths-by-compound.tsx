@@ -274,9 +274,8 @@ function FloatingCueText(props: { base: string, metricName: React.ReactElement }
     return (
         <div>
             <span
-                className='rdo-nice-step-base'
-                style={{ fontWeight: AnglesLengthsCommon.BarCaptionStyle.fontWeight }}>{props.base}
-            </span>
+                className='rdo-nice-step-base font-bold'
+            >{props.base}</span>
             {'\u00A0'}
             {props.metricName}
         </div>

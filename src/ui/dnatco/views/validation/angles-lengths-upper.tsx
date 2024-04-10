@@ -16,11 +16,11 @@ export function AnglesLengthsUpper(props: View.Props) {
     return (
         <div style={ Common.VScrollJail }>
             <NamedList sizing='min-content' rowSpacing='half'>
-                <NamedListItem name='Group by'>
+                <NamedListItem name='List by'>
                     <ComboBox
                         options={[
-                            { caption: 'Residue', value: 'residue' },
-                            { caption: 'Base', value: 'compound' }
+                            { caption: 'Individual residue', value: 'residue' },
+                            { caption: 'Nucleotide type', value: 'compound' }
                         ]}
                         value={groupBy}
                         onChange={(v) => setGroupBy(v)}

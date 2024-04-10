@@ -43,7 +43,7 @@ export function primaryPublication(d: Dnatcofication) {
 export function resolution(d: Dnatcofication) {
     const method = getCifValue(d, Exptl, 'method');
     if (Common.MethodsWithCommonResolution.includes(method)) {
-        return `Low: ${getCifValue(d, Refine, 'ls_d_res_low')?.toFixed(3) ?? Common.NA}, High: ${getCifValue(d, Refine, 'ls_d_res_high')?.toFixed(3) ?? Common.NA}`;
+        return `High: ${getCifValue(d, Refine, 'ls_d_res_high')?.toFixed(1) ?? Common.NA} Å, Low: (${getCifValue(d, Refine, 'ls_d_res_low')?.toFixed(1) ?? Common.NA})`;
     } else if (method === 'electron microscopy') {
         return `${getCifValue(d, Em3dReconstruction, 'resolution')?.toFixed(3) ?? Common.NA} (${getCifValue(d, Em3dReconstruction, 'resolution_method')})`;
     } else

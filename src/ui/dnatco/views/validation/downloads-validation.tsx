@@ -257,9 +257,9 @@ export function DownloadsValidation(props: { dnatcofication: Dnatcofication }) {
 
                         <div className='flex justify-between border-t-secondary-second border-t pt-3 mb-8'>
                             <div>
-                                <_Downloads.Title title='List of bond lengths and angles (grouped by residues)' />
+                                <_Downloads.Title title='List of bond lengths and angles (individual residues)' />
                                 <div className='font-din-2014 text-16px mb-2'>
-                                    A list of measured bond lengths and bond angles measured for nucleic acid backbone and base atoms. Grouped by residue. Only residues with standard bases are measured.
+                                    A list of measured bond lengths and bond angles measured for nucleic acid backbone and base atoms. Listed by individual residues. Only residues with standard bases are measured.
                                 </div>
                             </div>
                             <div className='flex'>
@@ -280,9 +280,9 @@ export function DownloadsValidation(props: { dnatcofication: Dnatcofication }) {
 
                         <div className='flex justify-between border-t-secondary-second border-t pt-3 mb-8'>
                             <div>
-                                <_Downloads.Title title='List of bond lengths and angles (grouped by bases)' />
+                                <_Downloads.Title title='List of bond lengths and angles (Nucleotide type)' />
                                 <div className='font-din-2014 text-16px mb-2'>
-                                    A list of measured bond lengths and bond angles measured for nucleic acid backbone and base atoms. Grouped by bases. Only residues with standard bases are measured.
+                                    A list of measured bond lengths and bond angles measured for nucleic acid backbone and base atoms. Listed by nucleotide type. Only residues with standard bases are measured.
                                 </div>
                             </div>
                             <div className='flex'>

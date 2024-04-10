@@ -12,7 +12,7 @@ import { ToggleButton } from '../../../common/push-button';
 import { Tooltip } from '../../../common/tooltip';
 import { Window } from '../../../common/window';
 import { colorStyle } from '../../../util';
-import { DataTransferDownloadImg, InfoInverseImg } from '../../../../assets/images';
+import { DataTransferDownloadImg, tooltipImg } from '../../../../assets/images';
 import { doDownload, Downloader } from '../../../../browser-util/downloader';
 import { ALM } from '../../../../dnatco/alm';
 import { Dnatcofication } from '../../../../dnatco/dnatcofication';
@@ -310,7 +310,7 @@ export function AnglesLengthsBar(props: { caption?: string | React.ReactNode, co
             return void 0;
 
         if (typeof props.caption === 'string') {
-            return <div style={{ top: 0, left: 'var(--h-gap)', ...AnglesLengthsCommon.StayAboveStyle, ...AnglesLengthsCommon.BarCaptionStyle }}>{props.caption}</div>
+            return <div className='text-white font-bold' style={{ top: 0, left: 'var(--h-gap)', ...AnglesLengthsCommon.StayAboveStyle }}>{props.caption}</div>
         } else {
             return props.caption;
         }
@@ -741,7 +741,7 @@ export function ResidueName(props: { r: Measurements.Residue, multipleModels: bo
 
     inner.push(<span>{props.r.authChain}</span>);
     inner.push(<span>{'\u00A0'}</span>);
-    inner.push(<span className='rdo-nice-step-base' style={{ fontWeight: AnglesLengthsCommon.BarCaptionStyle.fontWeight }}>{props.r.compound}</span>);
+    inner.push(<span className='rdo-nice-step-base font-bold'>{props.r.compound}</span>);
     inner.push(<span>{props.r.authSeqId}</span>);
     if (props.r.insCode)
         inner.push(<span>{props.r.insCode}</span>);
@@ -845,11 +845,6 @@ export namespace AnglesLengthsCommon {
 
     export const BlockListStyle = { display: 'flex', flexDirection: 'column', gap: 'calc(var(--h2-gap) / 2)' } as StandardLonghandProperties;
     export const StayAboveStyle = { position: 'absolute', zIndex: 1 } as StandardLonghandProperties;
-    export const BarCaptionStyle = {
-        color: 'white',
-        fontWeight: 'bold',
-        textShadow: '0px 0px 3px #000',
-    };
     export const StatsBarCaptionStyle = {
         height: '100%',
         width: '100%',
@@ -857,7 +852,8 @@ export namespace AnglesLengthsCommon {
         fontSize: 'var(--font-small)',
         top: 0,
         right: 'calc(var(--h-gap) / 2)',
-        ...AnglesLengthsCommon.BarCaptionStyle,
+        color: 'white',
+        fontWeight: 'bold',
         ...AnglesLengthsCommon.StayAboveStyle,
     } as StandardLonghandProperties;
 
@@ -1214,8 +1210,8 @@ export namespace AnglesLengthsCommon {
     export function substructureBarCaption(text: string | JSX.Element) {
         return (
             <div className='flex items-center h-full' style={{ gap: 'var(--h2-gap)', paddingLeft: 'var(--h2-gap)' }}>
-                <div style={ AnglesLengthsCommon.BarCaptionStyle }>{text}</div>
-                <img className='rdo-info-icon-white' style={{ filter: 'invert() drop-shadow(0 0 3px black)' }} src={InfoInverseImg} />
+                <div className='font-bold'>{text}</div>
+                <img className='image h-4 w-4' src={tooltipImg} />
             </div>
         );
     }

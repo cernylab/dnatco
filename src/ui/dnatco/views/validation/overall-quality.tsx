@@ -117,21 +117,12 @@ class ConfalPercentileStatsBar extends React.Component<{ percentile: number }> {
     render() {
         return (
             <div
-                style={{
-                    alignItems: 'center',
-                    background: 'linear-gradient(90deg, rgba(255,0,0,1) 0%, rgba(255,255,255,1) 50%, rgba(0,0,255,1) 100%)',
-                        height: `${Common.BarHeightEm}em`,
-                        position: 'relative',
-                }}
+                className='items-center relative bg-gradient-to-r from-secondary-third via-white to-secondary-second'
+                style={{ height: `${Common.BarHeightEm}em` }}
             >
-                <div style={{
-                        backgroundColor: 'black',
-                        left: `${this.props.percentile}%`,
-                        height: '133%',
-                        position: 'absolute',
-                        width: '8px',
-                        top: '-16%',
-                    }}
+                <div
+                    className='bg-primary-first h-[133%] absolute w-2 -top-[16%]'
+                    style={{ left: `${this.props.percentile}%` }}
                 />
             </div>
         );
@@ -175,7 +166,7 @@ class Stats extends React.Component<{
                             tag={<div className='cursor-pointer ml-2'><img className='w-5' src={tooltipImg}/></div>}
                             delayMsec={300}
                         >
-                            100 indicates a perfect alignment with a reference, 0 a significant departure (0 - 100). For more see Help
+                            100 indicates a perfect alignment with a reference, 0 a significant departure. For more see Help
                         </Tooltip>
                     </div>
                     <div>{`Average value:\u00A0${this.props.confalAverage.toFixed(0)}`}</div>
@@ -189,7 +180,7 @@ class Stats extends React.Component<{
                         tag={<div className='cursor-pointer ml-2'><img className='w-5' src={tooltipImg}/></div>}
                         delayMsec={300}
                     >
-                        Comparing reference NtC and actual geometry. For more see Help
+                        RMSD between the reference NtC and actual geometry. For more see Help
                     </Tooltip>
                 </div>
                 <div>
@@ -211,7 +202,7 @@ class Stats extends React.Component<{
                                     color: rgbToHex(clr),
                                     }}
                                     >
-                                    {`\u00A0${s.rmsdThreshold.toFixed(1)}:\u00A0${s.count}`}
+                                    {`\u00A0${s.rmsdThreshold.toFixed(1)} Å :\u00A0${s.count}`}
                                 </div>
                             </div>
                         );
@@ -223,7 +214,7 @@ class Stats extends React.Component<{
                         <div
                             style={{ color: rgbToHex({ r: 255, g: 0, b: 0}),}}
                         >
-                            {`\u00A0${this.props.rmsdStats[this.props.rmsdStats.length - 2].rmsdThreshold.toFixed(1)}:\u00A0${this.props.rmsdStats[this.props.rmsdStats.length - 1].count}`}
+                            {`\u00A0${this.props.rmsdStats[this.props.rmsdStats.length - 2].rmsdThreshold.toFixed(1)} Å :\u00A0${this.props.rmsdStats[this.props.rmsdStats.length - 1].count}`}
                         </div>
                     </div>
                 </div>

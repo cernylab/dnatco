@@ -44,6 +44,7 @@ type DnatcoMode = {
 
 const AvailableViews: Record<ViewId, { caption: string }> = {
     'main-features': { caption: 'Main features' },
+    'assigned-ntcs': { caption: 'Assigned NtCs' },
     'structure-info': { caption: 'Structure Info' },
     'change-ntcs': { caption: 'Change NtCs' },
     'overall-quality':  { caption: 'Overall quality'},
@@ -65,6 +66,7 @@ const AvailableViews: Record<ViewId, { caption: string }> = {
 const ViewsInMode: Record<MasterMode, [ViewId, Register.View<any>][]> = {
     'annotation': [
         ['main-features', Register.Views['main-features']],
+        ['assigned-ntcs', Register.Views['assigned-ntcs']],
         ['structure-info', Register.Views['structure-info']],
         ['downloads', Register.Views['downloads']],
         ['help-annotation', Register.Views['help-annotation']],
@@ -156,7 +158,6 @@ function Inner(props: {
                 selected={props.mode.viewId}
             />
             <div className='flex flex-col overflow-hidden'>
-                <StructureCaption d={props.dnatcofication} />
                 <DynamicSplitView
                     containerClass='rdo-view-visualizer-container'
                     visible={view.visualizer ? 'both' : 'first'}
@@ -165,8 +166,8 @@ function Inner(props: {
                         <div className='ml-0 overflow-hidden'>
                             <div className='flex'>
                                 <div onClick={() => handleAboutClick('help')} className='w-[33.5px] flex justify-center cursor-pointer text-white bg-gray'>
-                                    <a>
-                                        i
+                                    <a className='my-auto'>
+                                        <img className='w-5' src={tooltipImg}/>
                                     </a>
                                 </div>
                                 <div className='flex w-full'>
@@ -176,7 +177,7 @@ function Inner(props: {
                                             tag={<div className='cursor-pointer ml-4'><img className='w-5' src={tooltipImg}/></div>}
                                             delayMsec={300}
                                         > 
-                                            A-like conformers, mainly found in the RNA structures. For more see Help
+                                            A-form, mainly found in the RNA structures. For more see Help
                                         </Tooltip>
                                     </div>
                                     <div className='bg-b py-1 font-700 w-full flex justify-center'> 
@@ -185,7 +186,7 @@ function Inner(props: {
                                             tag={<div className='cursor-pointer ml-4'><img className='w-5' src={tooltipImg}/></div>}
                                             delayMsec={300}
                                         >
-                                            B-like conformers, mainly found in the doublehelical DNA. For more see Help
+                                            B-form, mainly found in the doublehelical DNA. For more see Help
                                         </Tooltip>
                                     </div>
                                     <div className='bg-BII py-1 text-white font-700 w-full flex justify-center'>
@@ -194,7 +195,7 @@ function Inner(props: {
                                             tag={<div className='cursor-pointer ml-4'><img className='w-5' src={tooltipImg}/></div>}
                                             delayMsec={300}
                                         >
-                                            BII form, less populated B-like form. For more see Help
+                                            BII-form, important for duplex banding. For more see Help
                                         </Tooltip>
                                     </div>
                                     <div className='bg-miB py-1 font-700 w-full flex justify-center'>
@@ -203,7 +204,7 @@ function Inner(props: {
                                             tag={<div className='cursor-pointer ml-4'><img className='w-5' src={tooltipImg}/></div>}
                                             delayMsec={300}
                                         >
-                                            miB - BI and less populated B-form conformers with unusual torsional values. For more see Help
+                                            miB - B-form like conformers with unusual torsional values. For more see Help
                                         </Tooltip>
                                     </div>
                                     <div className='bg-Z py-1 font-700 w-full flex justify-center'>
@@ -212,7 +213,7 @@ function Inner(props: {
                                             tag={<div className='cursor-pointer ml-4'><img className='w-5' src={tooltipImg}/></div>}
                                             delayMsec={300}
                                         >
-                                            Z-like conformers, found mainly in DNA, less frequently in RNA. For more see Help
+                                            Z-form, found mainly in DNA, less frequently in RNA. For more see Help
                                         </Tooltip>
                                     </div>
                                     <div className='bg-IC py-1 font-700 w-full flex justify-center'>
@@ -221,7 +222,7 @@ function Inner(props: {
                                             tag={<div className='cursor-pointer ml-4'><img className='w-5' src={tooltipImg}/></div>}
                                             delayMsec={300}
                                         >
-                                            Combination of A- and B-like backbone with intercalated bases. For more see Help
+                                            Paraller distant bases, can be intercalated. For more see Help
                                         </Tooltip>
                                     </div>
                                     <div className='bg-OPN py-1 text-white font-700 w-full flex justify-center'>
@@ -230,7 +231,7 @@ function Inner(props: {
                                             tag={<div className='cursor-pointer ml-4'><img className='w-5' src={tooltipImg}/></div>}
                                             delayMsec={300}
                                         >
-                                            Combination of A- and B-like backbone with distant and unusually oriented bases. For more see Help
+                                            Conformers with distant and unusually oriented bases. For more see Help
                                         </Tooltip>
                                     </div>
                                     <div className='bg-SYN py-1 font-700 w-full flex justify-center'>
@@ -248,7 +249,7 @@ function Inner(props: {
                                             tag={<div className='cursor-pointer ml-4'><img className='w-5' src={tooltipImg}/></div>}
                                             delayMsec={300}
                                         >
-                                            Unassigned conformation. For more see Help
+                                            Unassigned conformations. For more see Help
                                         </Tooltip>
                                     </div>
                                 </div>
@@ -286,10 +287,12 @@ function Resolution(props: { d: Dnatcofication }) {
     const method = getCifValue(props.d, Exptl, 'method');
     if (Common.MethodsWithCommonResolution.includes(method)) {
         return (
-            <div>
-                <span className='font-din-2014'>Low:{'\u00A0'}</span><span>{getCifValue(props.d, Refine, 'ls_d_res_low')?.toFixed(3) ?? 'N/A'}</span>
-                {',\u00A0'}
-                <span className='font-din-2014'>High:{'\u00A0'}</span><span>{getCifValue(props.d, Refine, 'ls_d_res_high')?.toFixed(3) ?? 'N/A'}</span>
+            <div className='flex my-auto'>
+                <div className='mr-1'>{getCifValue(props.d, Refine, 'ls_d_res_high')?.toFixed(1) ?? 'N/A'} Å</div>
+                <div className='flex'>
+                    <div className='font-din-2014'>(Low:{'\u00A0'}</div>
+                    <div>{getCifValue(props.d, Refine, 'ls_d_res_low')?.toFixed(1) ?? 'N/A'})</div>
+                </div>
             </div>
         );
     } else if (method === 'electron microscopy') {
@@ -310,7 +313,7 @@ function Resolution(props: { d: Dnatcofication }) {
 function StructureCaption(props: { d: Dnatcofication }) {
     return (
         <div className='structure-caption flex flex-col justify-center mb-2 ml-4'>
-            <div className='flex items-center'>
+            <div className='flex'>
                 <div className='font-din-2014 text-18px font-700 mr-2'>
                     {props.d.identifyingName}
                 </div>
@@ -349,12 +352,16 @@ function ViewWrapper<T extends keyof Register.PropsType>(props: {
 
     if (props.view.unscrollableContainer) {
         return (
-            <div className='rdo-side-offset overflow-hidden'>
-                {rendered}
+            <div className='flex flex-col overflow-scroll'>
+                <StructureCaption d={props.dnatcofication} />
+                <div className='rdo-side-offset overflow-hidden'>
+                    {rendered}
+                </div>
             </div>
         );
     } else {
         return (
+
             <div className='rdo-side-offset overflow-hidden'>
                 <div className='rdo-scroll-vertically' ref={scrollableElemRef}>
                     {rendered}
