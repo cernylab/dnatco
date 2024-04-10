@@ -6,13 +6,19 @@ import { niceStepName, Common } from '../../common';
 import { Colors } from '../../colors';
 import { Constants } from '../../constants';
 import { SearchBox } from '../../search-box';
+import { SingleStepInfo } from '../../single-step-info';
 import { setDynamicTableModelColumns } from '../../util';
+import { Icon } from '../../../common/icon';
 import { DynamicTable as DynamicTableComp } from '../../../common/dynamic-table';
 import { IconButton } from '../../../common/push-button';
 import { NamedList, NamedListItem } from '../../../common/named-list';
-import { MagnifyingGlassImg } from '../../../../assets/images';
+import { Tooltip } from '../../../common/tooltip';
+import { InfoImg, MagnifyingGlassImg } from '../../../../assets/images';
 import { Cif } from '../../../../cif';
-import { NdbStructNtcStep, NdbStructNtcStepSummary } from '../../../../cif/categories/ndb-struct-ntc';
+import {
+    NdbStructNtcStep, NdbStructNtcStepSummary,
+    NdbStructNtcStepParameters
+} from '../../../../cif/categories/ndb-struct-ntc';
 import { Dnatcofication } from '../../../../dnatco/dnatcofication';
 import { NtC } from '../../../../dnatco/ntc';
 import { Step } from '../../../../dnatco/step';
@@ -98,11 +104,19 @@ export class BackboneQuality extends View<View.Props> {
     private makeTableModel(selectedModelNum: number, selectedChain?: string) {
         const steps = this.props.dnatcofication.table(NdbStructNtcStep);
         const summary = this.props.dnatcofication.table(NdbStructNtcStepSummary);
+        const params = this.props.dnatcofication.table(NdbStructNtcStepParameters);
 
         const { PDB_model_number, label_asym_id_1, auth_asym_id_1, name } = steps;
         const {
-            assigned_NtC, assigned_CANA, confal_score, cartesian_rmsd_closest_NtC_representative
+            assigned_NtC, assigned_CANA, closest_NtC, closest_CANA,
+            confal_score, cartesian_rmsd_closest_NtC_representative
         } = summary;
+        const {
+            tor_delta_1, tor_epsilon_1, tor_zeta_1,
+            tor_alpha_2, tor_beta_2, tor_gamma_2,
+            tor_delta_2, tor_chi_1, tor_chi_2,
+            tor_NCCN, dist_CC, dist_NN
+        } = params;
 
         const chainColumn: DynamicTable.Column<string> = {
             name: 'Chain', cells: new Array<DynamicTable.Cell<string>>(), alignment: 'center',
@@ -145,6 +159,7 @@ export class BackboneQuality extends View<View.Props> {
             const confalScore = Cif.Column.value(confal_score, row)!;
             const assignedNtC = (Cif.Column.value(assigned_NtC, row) ?? 'NANT') as NtC.Class;
             const assignedCANA = Cif.Column.value(assigned_CANA, row)!;
+            const _step = StepsMapper.byName(this.props.dnatcofication, tag)!; // tag is the internal step name
 
             setDynamicTableModelColumns(
                 this.tableModel,
@@ -162,6 +177,55 @@ export class BackboneQuality extends View<View.Props> {
                 ],
                 [
                     void 0,
+                    () => niceStepName(_step, selectedModelNum === InvalidModelIndex),
+                    () => (
+                        assignedNtC === 'NANT'
+                            ?
+                                <Tooltip
+                                    tag={<span className='rdo-unassigned-ntc'>{Cif.Column.value(closest_NtC, row)!}</span>}
+                                    delayMsec={300}
+                                >
+                                    This step is unassigned. Closest NtC is shown instead.
+                                </Tooltip>
+                            : <span>{assignedNtC}</span>
+                    ),
+                    () => (
+                        assignedCANA === 'NAN'
+                            ?
+                                <Tooltip
+                                    tag={<span className='rdo-unassigned-ntc'>{Cif.Column.value(closest_CANA, row)!}</span>}
+                                    delayMsec={300}
+                                >
+                                    This step is unassigned. Closest CANA is shown instead.
+                                </Tooltip>
+                            : <span>{assignedCANA}</span>
+                    ),
+                    () => <span>{confalScore.toFixed(0)}</span>,
+                    () => <span>{Cif.Column.value(cartesian_rmsd_closest_NtC_representative, row)!.toFixed(3)}</span>,
+                    () => (
+                        <Tooltip
+                            tag={
+                                <Icon img={InfoImg} size='0.75em' />
+                            }
+                            delayMsec={300}
+                        >
+                            <SingleStepInfo
+                                NtC={assignedNtC}
+                                delta1={Cif.Column.value(tor_delta_1, row)!}
+                                epsilon1={Cif.Column.value(tor_epsilon_1, row)!}
+                                zeta1={Cif.Column.value(tor_zeta_1, row)!}
+                                alpha2={Cif.Column.value(tor_alpha_2, row)!}
+                                beta2={Cif.Column.value(tor_beta_2, row)!}
+                                gamma2={Cif.Column.value(tor_gamma_2, row)!}
+                                delta2={Cif.Column.value(tor_delta_2, row)!}
+                                chi1={Cif.Column.value(tor_chi_1, row)!}
+                                chi2={Cif.Column.value(tor_chi_2, row)!}
+                                mu={Cif.Column.value(tor_NCCN, row)!}
+                                CC={Cif.Column.value(dist_CC, row)!}
+                                NN={Cif.Column.value(dist_NN, row)!}
+                            />
+                        </Tooltip>
+                    )
                 ]
             );
         }
@@ -182,7 +246,7 @@ export class BackboneQuality extends View<View.Props> {
             <DynamicTableComp
                 model={this.tableModel}
                 onCellClicked={(data, row, colName) => {
-                    const cIdx = this.tableModel.columnNames.findIndex(cn => cn === 'Step');
+                    const cIdx = this.tableModel.columnNames.findIndex(cn => cn === 'Dinucleotide');
                     if (cIdx === -1)
                         return;
 
@@ -232,10 +296,8 @@ export class BackboneQuality extends View<View.Props> {
 
         return (
             <div style={{ ...Common.VScrollJail, position: 'relative' }} ref={selfRef}>
-                <div className='font-700 mb-2 p-2 text-center border-b border-primary-first'>Backbone quality</div>
 
-
-                <div className='h-4' />
+                <div className='font-700 mb-2 p-2 text-center border-b border-primary-first'>Backbone conformational quality</div>
                 <NamedList sizing='min-content' rowSpacing='half'>
                 {
                     numModels > 1
@@ -257,8 +319,7 @@ export class BackboneQuality extends View<View.Props> {
                     </NamedListItem>
                 </NamedList>
 
-                <div className='h-4' />
-                <div className='rdo-secondary-caption'>Table of assigned dinucleotide NtC conformers</div>
+                <div className='rdo-secondary-caption'>Table of assigned dinucleotide NtC classes</div>
                 <div style={ Common.VScrollElement } ref={this.tableTainer}>
                     <div className='rdo-scroll-vertically-with-scrollbar'>
                         {this.renderStepsTable()}
@@ -268,7 +329,7 @@ export class BackboneQuality extends View<View.Props> {
                 <div className='rdo-floating-search-icon-tainer' style={{ bottom: 'var(--x-gap)', right: 'var(--x-gap)' }}>
                     <IconButton
                         src={MagnifyingGlassImg}
-                        className='rdo-floating-search-icon'
+                        className='rdo-floating-search-icon rdo-pushbutton-border'
                         onClick={() => {
                             const tainer = selfRef.current;
                             if (!tainer || this.searchBoxOpen)
