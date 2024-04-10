@@ -177,10 +177,10 @@ function NavigationBarStandard<TK extends string>(props: {
     selectedTab: TK,
 }) {
     return (
-        <div className='w-full navigation-desktop flex justify-around items-center my-4'>
+        <div className='w-full navigation-desktop flex justify-around items-center my-2'>
             <div>
                 <a href='/'>
-                    <img className='w-28' src={DnatcoLogoImg} alt='dnatco logo'/>
+                    <img className='w-24' src={DnatcoLogoImg} alt='dnatco logo'/>
                 </a>
             </div>
             <EquiBox
