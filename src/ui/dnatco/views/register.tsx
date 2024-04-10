@@ -21,6 +21,7 @@ import { HelpRefinement } from './refinement/help-refinement';
 import { HelpValidation } from './validation/help-validation';
 import { OverallQuality } from './validation/overall-quality';
 import { DownloadsValidation } from './validation/downloads-validation';
+import { AssignedNtCs } from './annotation/assigned-ntcs';
 
 const NullDisplayer = async () => {};
 const NullSelectionMaker = () => ({ steps: [], residues: [], atoms: [], reconstruct: true });
@@ -54,6 +55,15 @@ export namespace Register {
             granularity: 'two-residues' as View<any>['granularity'],
             visualizer: true,
         },
+        'assigned-ntcs': {
+            render: (props: View.Props) => <AssignedNtCs {...props} />,
+            selectionDisplayer: AssignedNtCs.SelectionDisplayer,
+            selectionMaker: AssignedNtCs.SelectionMaker,
+            unscrollableContainer: AssignedNtCs.unscrollableContainer,
+            granularity: 'two-residues' as View<any>['granularity'],
+            visualizer: true,
+        },
+
         'angles-lengths': {
             render:(props: View.Props) => <AnglesLengthsUpper {...props} />,
             selectionDisplayer: AnglesLengthsUpper.SelectionDisplayer,
