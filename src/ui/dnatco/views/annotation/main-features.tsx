@@ -22,7 +22,7 @@ export function BasePairing({ d }: { d: Dnatcofication }) {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const url = `http://localhost:3005/data/${character}/${pdbId}`
+                const url = `https://rednatco.datmos.org/pairing/${character}/${pdbId}_basepairs.json`
                 const response = await fetch(url);
                 if (!response.ok) {
                     throw new Error('Network response was not ok');
