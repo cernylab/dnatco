@@ -12,17 +12,15 @@ import { tooltipImg } from '../../../../assets/images';
 
 export function BasePairing({ d }: { d: Dnatcofication }) {
     const pdbId = getCifValue(d, Struct, 'entry_id').toLowerCase();
-    const secondCharacter = pdbId[1];
-    const thirdCharacter = pdbId[2];
-    const character = secondCharacter + thirdCharacter;
+    const pdbMid = pdbId.slice(1,3);
 
     const [data, setData] = useState<any>(null);
     const [loading, setLoading] = useState(true);
-    
+
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const url = `https://rednatco.datmos.org/pairing/${character}/${pdbId}_basepairs.json`
+                const url = `/pairing/${pdbMid}/${pdbId}_basepairs.json`
                 const response = await fetch(url);
                 if (!response.ok) {
                     throw new Error('Network response was not ok');

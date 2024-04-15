@@ -186,7 +186,7 @@ function Inner(props: {
                                             tag={<div className='cursor-pointer ml-4'><img className='w-5' src={tooltipImg}/></div>}
                                             delayMsec={300}
                                         >
-                                            B-form, mainly found in the doublehelical DNA. For more see Help
+                                            B-form, mainly found in the double-helical DNA. For more see Help
                                         </Tooltip>
                                     </div>
                                     <div className='bg-BII py-1 text-white font-700 w-full flex justify-center'>
@@ -195,7 +195,7 @@ function Inner(props: {
                                             tag={<div className='cursor-pointer ml-4'><img className='w-5' src={tooltipImg}/></div>}
                                             delayMsec={300}
                                         >
-                                            BII-form, important for duplex banding. For more see Help
+                                            BII-form, important for duplex bending. For more see Help
                                         </Tooltip>
                                     </div>
                                     <div className='bg-miB py-1 font-700 w-full flex justify-center'>
@@ -222,7 +222,7 @@ function Inner(props: {
                                             tag={<div className='cursor-pointer ml-4'><img className='w-5' src={tooltipImg}/></div>}
                                             delayMsec={300}
                                         >
-                                            Paraller distant bases, can be intercalated. For more see Help
+                                            Parallel distant bases, can be intercalated. For more see Help
                                         </Tooltip>
                                     </div>
                                     <div className='bg-OPN py-1 text-white font-700 w-full flex justify-center'>

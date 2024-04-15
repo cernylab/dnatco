@@ -4,8 +4,7 @@ import { useLocation, useNavigate, BrowserRouter, HashRouter, Navigate, Routes, 
 import { Subject } from 'rxjs';
 import {
     DataTransferDownloadImg, DocumentImg, HomeImg,
-    
-     ListImg, LoopImg,
+    ListImg, LoopImg,
     TaskImg
 } from './assets/images';
 import { ConformersFile } from './assets/misc';
