@@ -4,54 +4,56 @@ import { refinement } from '../../../../help-tags';
 
 export class HelpRefinement extends View {
         render() {
+
+            const displayRefinement = refinement.map(page => ({
+                headline: page.headline,
+                subHeadlineText: page.subHeadlineText,
+                sections: page.sections.map(section => ({
+                    headline: section.headline,
+                    paragraphs: section.paragraphs
+                }))
+            }))
+
             return (
                 <div>
-                    <div className='flex border-t-secondary-second border-t mt-4 pt-3 mb-8'>
-                        <div className='w-[25%]'>
-                            <h2 className='font-din-2014 font-700 text-18px mb-2 uppercase'>
-                                {refinement[0].headline}
-                            </h2>
-                        </div>
-                        <div className='w-[75%] font-din-2014 text-16px mb-2 text-justify'>
-                            {refinement[0].subHeadlineText}
-                        </div>
-                    </div>
-                    <div className='flex border-t-secondary-second border-t pt-3 mb-8'>
-                        <div className='w-[25%]'>
-                            <h3 className='font-din-2014 font-700 text-18px mb-2 uppercase'>
-                                {refinement[0].sections.connectivityPlot.headline}
-                            </h3>
-                        </div>
-                        <div className='w-[75%] font-din-2014 text-16px mb-2 text-justify'>
-                            {refinement[0].sections.connectivityPlot.paragraph1}
-                            <div className='h-3'></div>
-                            {refinement[0].sections.connectivityPlot.paragraph2}
-                        </div>
-                    </div>
-                    <div className='flex border-t-secondary-second border-t pt-3 mb-8'>
-                        <div className='w-[25%]'>
-                            <h3 className='font-din-2014 font-700 text-18px mb-2 uppercase'>
-                                {refinement[0].sections.restraints.headline}
-                            </h3>
-                        </div>
-                        <div className='w-[75%] font-din-2014 text-16px mb-2 text-justify'>
-                            {refinement[0].sections.restraints.paragraph1}
-                            <div className='h-3'></div>
-                            {refinement[0].sections.restraints.paragraph2}
-                            <div className='h-3'></div>
-                            {refinement[0].sections.restraints.paragraph3}
-                        </div>
-                    </div>
-                    <div className='flex border-t-secondary-second border-t pt-3 mb-8'>
-                        <div className='w-[25%]'>
-                            <h3 className='font-din-2014 font-700 text-18px mb-2 uppercase'>
-                                {refinement[0].sections.changeNtCs.headline}
-                            </h3>
-                        </div>
-                        <div className='w-[75%] font-din-2014 text-16px mb-2 text-justify'>
-                            {refinement[0].sections.changeNtCs.paragraph1}
-                        </div>
-                    </div>
+                    {displayRefinement.map((page:any, index:any) => (
+                        <>
+                            <div key={index} className='flex border-t-secondary-second border-t pt-3 mb-8'>
+                                <div className='w-[25%]'>
+                                    <h3 className='font-700 text-18px mb-2 uppercase'>
+                                        {page.headline}
+                                    </h3>
+                                </div>
+                                <div className='w-[75%] text-16px mb-2 text-justify'>
+                                    {page.subHeadlineText}
+                                </div>
+                            </div>
+                            {page.sections.map((section:any, idx:any) => (
+                                <div key={index + '-' + idx} className='flex border-t-secondary-second border-t pt-3 mb-8'>
+                                    <div className='w-[25%]'>
+                                        <h3 className='font-700 text-18px mb-2 uppercase'>
+                                            {section.headline}
+                                        </h3>
+                                    </div>
+                                    <div className='w-[75%] text-16px mb-2 text-justify'>
+                                        {section.paragraphs.map((item: any, itemIdx: any) => (
+                                            <div key={itemIdx}>
+                                                {item.type === 'paragraph' && (
+                                                    <>
+                                                        <p>{item.text}</p>
+                                                        <div className='h-3'></div>
+                                                    </>
+                                                )}
+                                                {item.type === 'image' && (
+                                                    <img src={item.url} alt={`Image ${itemIdx}`} className={`${item.width} my-4`} />
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            ))}
+                        </>
+                    ))}
                 </div>
             );
         }

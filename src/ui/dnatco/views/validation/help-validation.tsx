@@ -4,81 +4,56 @@ import { validation } from '../../../../help-tags';
 
 export class HelpValidation extends View {
         render() {
+
+            const displayValidation = validation.map(page => ({
+                headline: page.headline,
+                subHeadlineText: page.subHeadlineText,
+                sections: page.sections.map(section => ({
+                    headline: section.headline,
+                    paragraphs: section.paragraphs
+                }))
+            }))
+
             return (
                 <div>
-                    <div className='flex border-t-secondary-second border-t mt-4 pt-3 mb-8'>
-                        <div className='w-[25%]'>
-                            <h2 className='font-din-2014 font-700 text-18px mb-2 uppercase'>
-                                {validation[0].headline}
-                            </h2>
-                        </div>
-                        <div className='w-[75%] font-din-2014 text-16px mb-2 text-justify'>
-                            {validation[0].subHeadlineText}
-                        </div>
-                    </div>
-                    <div className='flex border-t-secondary-second border-t pt-3 mb-8'>
-                        <div className='w-[25%]'>
-                            <h3 className='font-din-2014 font-700 text-18px mb-2 uppercase'>
-                                {validation[0].sections.confalsRMSD.headline}
-                            </h3>
-                        </div>
-                        <div className='w-[75%] font-din-2014 text-16px mb-2 text-justify'>
-                            {validation[0].sections.confalsRMSD.paragraph1}
-                            <div className='h-3'></div>
-                            {validation[0].sections.confalsRMSD.paragraph2}
-                        </div>
-                    </div>
-                    <div className='flex border-t-secondary-second border-t pt-3 mb-8'>
-                        <div className='w-[25%]'>
-                            <h3 className='font-din-2014 font-700 text-18px mb-2 uppercase'>
-                                {validation[0].sections.stepTorsions.headline}
-                            </h3>
-                        </div>
-                        <div className='w-[75%] font-din-2014 text-16px mb-2 text-justify'>
-                            {validation[0].sections.stepTorsions.paragraph1}
-                        </div>
-                    </div>
-                    <div className='flex border-t-secondary-second border-t pt-3 mb-8'>
-                        <div className='w-[25%]'>
-                            <h3 className='font-din-2014 font-700 text-18px mb-2 uppercase'>
-                                {validation[0].sections.similarityPlot.headline}
-                            </h3>
-                        </div>
-                        <div className='w-[75%] font-din-2014 text-16px mb-2 text-justify'>
-                            {validation[0].sections.similarityPlot.paragraph1}
-                        </div>
-                    </div>
-                    <div className='flex border-t-secondary-second border-t pt-3 mb-8'>
-                        <div className='w-[25%]'>
-                            <h3 className='font-din-2014 font-700 text-18px mb-2 uppercase'>
-                                {validation[0].sections.rsccRmsdPlot.headline}
-                            </h3>
-                        </div>
-                        <div className='w-[75%] font-din-2014 text-16px mb-2 text-justify'>
-                            {validation[0].sections.rsccRmsdPlot.paragraph1}
-                        </div>
-                    </div>
-                    <div className='flex border-t-secondary-second border-t pt-3 mb-8'>
-                        <div className='w-[25%]'>
-                            <h3 className='font-din-2014 font-700 text-18px mb-2 uppercase'>
-                                {validation[0].sections.bondLengthsAngles.headline}
-                            </h3>
-                        </div>
-                        <div className='w-[75%] font-din-2014 text-16px mb-2 text-justify'>
-                            {validation[0].sections.bondLengthsAngles.paragraph1}
-                        </div>
-                    </div>
-                    <div className='flex border-t-secondary-second border-t pt-3 mb-8'>
-                        <div className='w-[25%]'>
-                            <h3 className='font-din-2014 font-700 text-18px mb-2 uppercase'>
-                                {validation[0].sections.theCanaAlphabet.headline}
-                            </h3>
-                        </div>
-                        <div className='w-[75%] font-din-2014 text-16px mb-2 text-justify'>
-                            {validation[0].sections.theCanaAlphabet.paragraph1}
-                        </div>
-                    </div>
-                    
+                    {displayValidation.map((page:any, index:any) => (
+                        <>
+                            <div key={index} className='flex border-t-secondary-second border-t pt-3 mb-8'>
+                                <div className='w-[25%]'>
+                                    <h3 className='font-700 text-18px mb-2 uppercase'>
+                                        {page.headline}
+                                    </h3>
+                                </div>
+                                <div className='w-[75%] text-16px mb-2 text-justify'>
+                                    {page.subHeadlineText}
+                                </div>
+                            </div>
+                            {page.sections.map((section:any, idx:any) => (
+                                <div key={index + '-' + idx} className='flex border-t-secondary-second border-t pt-3 mb-8'>
+                                    <div className='w-[25%]'>
+                                        <h3 className='font-700 text-18px mb-2 uppercase'>
+                                            {section.headline}
+                                        </h3>
+                                    </div>
+                                    <div className='w-[75%] text-16px mb-2 text-justify'>
+                                        {section.paragraphs.map((item: any, itemIdx: any) => (
+                                            <div key={itemIdx}>
+                                                {item.type === 'paragraph' && (
+                                                    <>
+                                                        <p>{item.text}</p>
+                                                        <div className='h-3'></div>
+                                                    </>
+                                                )}
+                                                {item.type === 'image' && (
+                                                    <img src={item.url} alt={`Image ${itemIdx}`} className={`${item.width} my-4`} />
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            ))}
+                        </>
+                    ))}
                 </div>
             );
         }

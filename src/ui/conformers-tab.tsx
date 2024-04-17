@@ -50,50 +50,56 @@ function fmtFlt(f: number, n = 1) {
 }
 
 function HelpTab() {
+
+    const displayBrowse = browse.map(page => ({
+        headline: page.headline,
+        subHeadlineText: page.subHeadlineText,
+        sections: page.sections.map(section => ({
+            headline: section.headline,
+            paragraphs: section.paragraphs
+        }))
+    }))
+
     return (
         <Help.Container>
-            <div>
-                <div className='flex border-t-secondary-second border-t mt-4 pt-3 mb-8'>
-                    <div className='w-[25%]'>
-                        <h2 className='font-din-2014 font-700 text-18px mb-2 uppercase'>
-                            {browse[0].headline}
-                        </h2>
+            {displayBrowse.map((page:any, index:any) => (
+                <>
+                    <div key={index} className='flex border-t-secondary-second border-t pt-3 mb-8'>
+                        <div className='w-[25%]'>
+                            <h3 className='font-700 text-18px mb-2 uppercase'>
+                                {page.headline}
+                            </h3>
+                        </div>
+                        <div className='w-[75%] text-16px mb-2 text-justify'>
+                            {page.subHeadlineText}
+                        </div>
                     </div>
-                    <div className='w-[75%] font-din-2014 text-16px mb-2 text-justify'>
-                        {browse[0].subHeadlineText}
-                    </div>
-                </div>
-                <div className='flex border-t-secondary-second border-t pt-3 mb-8'>
-                    <div className='w-[25%]'>
-                        <h3 className='font-din-2014 font-700 text-18px mb-2 uppercase'>
-                            {browse[0].sections.browse.headline}
-                        </h3>
-                    </div>
-                    <div className='w-[75%] font-din-2014 text-16px mb-2 text-justify'>
-                        {browse[0].sections.browse.paragraph1}
-                    </div>
-                </div>
-                <div className='flex border-t-secondary-second border-t pt-3 mb-8'>
-                    <h3 className='w-[25%] font-din-2014 font-700 text-18px mb-2 uppercase'>
-                        {browse[0].sections.tableOfConformers.headline}
-                    </h3>
-                    <div className='w-[75%] font-din-2014 text-16px mb-2 text-justify'>
-                        {browse[0].sections.tableOfConformers.paragraph1}
-                    </div>
-                </div>
-                <div className='flex border-t-secondary-second border-t pt-3 mb-8'>
-                    <h3 className='w-[25%] font-din-2014 font-700 text-18px mb-2 uppercase'>
-                        {browse[0].sections.contourPlots.headline}
-                    </h3>
-                    <div className='w-[75%] font-din-2014 text-16px mb-2 text-justify'>
-                        {browse[0].sections.contourPlots.paragraph1}
-                        <div className='h-3'></div>
-                        {browse[0].sections.contourPlots.paragraph2}
-                        <div className='h-3'></div>
-                        {browse[0].sections.contourPlots.paragraph3}
-                    </div>
-                </div>
-            </div>
+                    {page.sections.map((section:any, idx:any) => (
+                        <div key={index + '-' + idx} className='flex border-t-secondary-second border-t pt-3 mb-8'>
+                            <div className='w-[25%]'>
+                                <h3 className='font-700 text-18px mb-2 uppercase'>
+                                    {section.headline}
+                                </h3>
+                            </div>
+                            <div className='w-[75%] text-16px mb-2 text-justify'>
+                                {section.paragraphs.map((item: any, itemIdx: any) => (
+                                    <div key={itemIdx}>
+                                        {item.type === 'paragraph' && (
+                                            <>
+                                                <p>{item.text}</p>
+                                                <div className='h-3'></div>
+                                            </>
+                                        )}
+                                        {item.type === 'image' && (
+                                            <img src={item.url} alt={`Image ${itemIdx}`} className={`${item.width} my-4`} />
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    ))}
+                </>
+            ))}
         </Help.Container>
     )
 
@@ -440,7 +446,7 @@ export class ConformersTab extends React.Component<ConformersTab.Props, State> {
                             onSwitched={id => this.setState({ ...this.state, selected: id })}
                         />
                         <div className='flex flex-col overflow-hidden mx-4 mb-4'>
-                            <div className='font-din-2014 text-22px uppercase font-700 mb-4'>
+                            <div className=' text-22px uppercase font-700 mb-4'>
                                 {Tabs.find((tab) => tab[0] === this.state.selected)![1].title}
                             </div>
                             <div className='overflow-scroll'>
