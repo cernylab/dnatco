@@ -1,3 +1,5 @@
+import { DefinitionNewTrans2Img, basePairs, basePairsTable, cisBasepairs,  } from "./assets/images"
+
 export const about = [
     {
         headline: "User's guide",
@@ -13,7 +15,7 @@ export const about = [
                     },
                     {
                         type: 'image',
-                        url: '/assets/imgs/definition_new_trans2.png',
+                        url: {DefinitionNewTrans2Img},
                         width: 'w-[10rem]'
                     },
                     {
@@ -92,11 +94,11 @@ export const annotation = [
                     },
                     {
                         type: 'image',
-                        url: '/assets/imgs/base-pairs-table.png',
+                        url: {basePairsTable},
                     },
                     {
                         type: 'image',
-                        url: '/assets/imgs/base-pairs.png',
+                        url: {basePairs},
                     },
                     {
                         type: 'paragraph',
@@ -104,7 +106,7 @@ export const annotation = [
                     },
                     {
                         type: 'image',
-                        url: '/assets/imgs/cis-basepairs.png',
+                        url: {cisBasepairs},
                     },
                     {
                         type: 'paragraph',
