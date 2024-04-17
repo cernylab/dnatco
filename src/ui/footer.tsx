@@ -16,26 +16,26 @@ const Footer:React.FC = () => {
     return (
         <>
             <div className='bg-primary-first text-white'>
-                <div className='flex justify-between mx-auto my-4 xl:max-w-[1280px] 2xl:max-w-[1440px]'>
-                    <div className='flex'>
+                <div className='items-center lg:flex lg:justify-between mx-auto my-4 xl:max-w-[1280px] 2xl:max-w-[1440px]'>
+                    <div className='flex justify-center'>
                         <div className='my-auto mx-1'>
-                            <div className='text-18px text-center font-din-2014'>© 2023</div>
+                            <div className='text-18px text-center'>© 2024</div>
                         </div>
                         {Globals.PrimaryContacts.map((c, idx) => (
                             <div className='my-auto mx-1' key={idx}>
-                                <div className='text-18px text-center font-din-2014'>
-                                    <Email email={c.email} subject='DNATCO'><span style={{ color: 'var(--color-c)' }}>{c.name}</span></Email>
+                                <div className='text-18px text-center'>
+                                    <Email email={c.email} subject='DNATCO'><span>{c.name}</span></Email>
                                 </div>
                             </div>
                         ))}
                     </div>
 
-                    <div className='flex'>
+                    <div className='flex justify-center'>
                         <div
                             onClick={() => handleAboutClick('how-to-cite')}
                             className='hover-animation my-auto mx-3'
                         >
-                            <a className='cursor-pointer text-18px font-din-2014'>
+                            <a className='cursor-pointer text-18px'>
                                 How to cite
                             </a>
                         </div>
@@ -43,22 +43,22 @@ const Footer:React.FC = () => {
                             onClick={() => handleAboutClick('help')}
                             className='hover-animation my-auto mx-3'
                         >
-                            <a className='cursor-pointer text-18px font-din-2014'>
+                            <a className='cursor-pointer text-18px'>
                                 Help
                             </a>
                         </div>
                         <div
                             onClick={() => handleAboutClick('contact')} 
                             className='hover-animation my-auto mx-3'>
-                            <a className='cursor-pointer text-18px font-din-2014'>
+                            <a className='cursor-pointer text-18px'>
                                 Contact
                             </a>
                         </div>
                     </div>
 
-                    <div className='flex'>
+                    <div className='flex justify-center'>
                         <div className='my-auto mx-2'>
-                            <div className='text-18px text-center font-din-2014'>
+                            <div className='text-18px text-center'>
                                 <div>Supported by Institute of Biotechnology & Elixir CZ</div>
                             </div>
                         </div>
