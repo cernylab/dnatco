@@ -33,7 +33,7 @@ export namespace Downloads {
     export function Title(props: { title: string }) {
         return (
             <div className='flex flex-row gap-4'>
-                <div className='font-din-2014 font-700 text-18px mb-2 uppercase'>{props.title}</div>
+                <div className='font-700 text-18px mb-2 uppercase'>{props.title}</div>
             </div>
         );
     }

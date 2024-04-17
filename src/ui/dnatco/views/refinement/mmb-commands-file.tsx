@@ -59,7 +59,7 @@ export class MmbCommandsFile extends View<Refinement.Props, State> {
                     </div>
                 </div>
                 <div className='rdo-scroll-vertically-with-scrollbar'>
-                    {lines.map((l, idx) => <div className='font-din-2014' key={idx}>{l}</div>)}
+                    {lines.map((l, idx) => <div key={idx}>{l}</div>)}
                 </div>
             </div>
         );

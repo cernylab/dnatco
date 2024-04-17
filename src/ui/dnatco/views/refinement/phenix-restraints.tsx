@@ -16,9 +16,9 @@ function renderLines(lines: Phenix.Line[]) {
     return lines.map((line, idx) => {
         const text = replaceAll(line.text, LeadingWS, '\u00A0');
         if (line.isOk)
-            return <div className='font-din-2014' key={idx}>{text}</div>;
+            return <div key={idx}>{text}</div>;
         else
-            return <div className='font-din-2014 text-secondary-third' key={idx}>{text}</div>;
+            return <div className='text-secondary-third' key={idx}>{text}</div>;
     });
 }
 
@@ -48,7 +48,7 @@ export class PhenixRestraints extends View<Refinement.Props, State> {
         const lines = Phenix.restraintsAsLines(restraints);
 
         return (
-            <div style={{ overflow: 'hidden', height: '100%', display: 'flex', flexDirection: 'column' }}>
+            <div className='overflow-hidden h-full flex flex-col'>
                 <div>
                     <div className='rdo-secondary-caption'>Restraints for NtC-aware Phenix</div>
                     <div style={{

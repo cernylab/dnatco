@@ -165,7 +165,7 @@ function Inner(props: {
                     second={
                         <div className='ml-0 overflow-hidden'>
                             <div className='flex'>
-                                <div onClick={() => handleAboutClick('help')} className='w-[33.5px] flex justify-center cursor-pointer text-white bg-gray'>
+                                <div onClick={() => handleAboutClick('help')} className='w-[33.5px] flex justify-center cursor-pointer'>
                                     <a className='my-auto'>
                                         <img className='w-5' src={tooltipImg}/>
                                     </a>
@@ -290,7 +290,7 @@ function Resolution(props: { d: Dnatcofication }) {
             <div className='flex my-auto'>
                 <div className='mr-1'>{getCifValue(props.d, Refine, 'ls_d_res_high')?.toFixed(1) ?? 'N/A'} Å</div>
                 <div className='flex'>
-                    <div className='font-din-2014'>(Low:{'\u00A0'}</div>
+                    <div>(Low:{'\u00A0'}</div>
                     <div>{getCifValue(props.d, Refine, 'ls_d_res_low')?.toFixed(1) ?? 'N/A'})</div>
                 </div>
             </div>
@@ -298,13 +298,13 @@ function Resolution(props: { d: Dnatcofication }) {
     } else if (method === 'electron microscopy') {
         return (
             <div>
-                <span className='font-din-2014'>EM:{'\u00A0'}</span><span>{getCifValue(props.d, Em3dReconstruction, 'resolution')?.toFixed(3) ?? 'N/A'}</span>
+                <span>EM:{'\u00A0'}</span><span>{getCifValue(props.d, Em3dReconstruction, 'resolution')?.toFixed(3) ?? 'N/A'}</span>
             </div>
         );
     } else {
         return (
             <div>
-                <span className='font-din-2014'>N/A</span>
+                <span>N/A</span>
             </div>
         );
     }
@@ -314,15 +314,15 @@ function StructureCaption(props: { d: Dnatcofication }) {
     return (
         <div className='structure-caption flex flex-col justify-center mb-2 ml-4'>
             <div className='flex'>
-                <div className='font-din-2014 text-18px font-700 mr-2'>
+                <div className='text-18px font-700 mr-2'>
                     {props.d.identifyingName}
                 </div>
-                <div className='font-din-2014 text-18px font-700'>
+                <div className='text-18px font-700'>
                    {props.d.identifyingTitle}
                 </div>
             </div>
             <div className='flex'>
-                <div className='font-din-2014 text-18px font-700 mr-2'>Resolution</div>
+                <div className='text-18px font-700 mr-2'>Resolution</div>
                 <Resolution d={props.d} />
             </div>
         </div>

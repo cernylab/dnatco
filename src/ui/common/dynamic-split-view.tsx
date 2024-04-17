@@ -89,11 +89,11 @@ export class DynamicSplitView extends React.Component<DynamicSplitView.Props, St
 
     private renderBoth() {
         const splitterStyle = this.props.orientation === 'horizontal'
-            ? { width: '10px', height: '100%', cursor: 'ew-resize' }
-            : { height: '10px', width: '100%', cursor: 'ns-resize' };
+            ? { width: '3px', height: '100%', cursor: 'ew-resize' }
+            : { height: '3px', width: '100%', cursor: 'ns-resize' };
         const splitterBarStyle = this.props.orientation === 'horizontal'
-            ? { width: '50%', height: '100%', backgroundColor: 'var(--color-b)', marginLeft: 'auto', marginRight: 'auto' }
-            : { height: '100%', width: '50%', backgroundColor: 'var(--color-b)', marginLeft: 'auto', marginRight: 'auto' };
+            ? { width: '50%', height: '100%', backgroundColor: '#30595c', marginLeft: 'auto', marginRight: 'auto' }
+            : { height: '100%', width: '50%', backgroundColor: '#30595c', marginLeft: 'auto', marginRight: 'auto' };
 
         const blockStyle = this.getBlockStyle();
 

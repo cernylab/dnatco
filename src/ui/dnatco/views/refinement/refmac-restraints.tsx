@@ -26,15 +26,15 @@ export class RefmacRestraints extends View<Refinement.Props, State> {
         let ctr = 0;
         for (const r of restraints) {
             if (r.rtype === 'unavailable')
-                elems.push(<div className='text-secondary-third font-din-2014' key={ctr}>{Refmac.restraintAsText(r)}</div>);
+                elems.push(<div className='text-secondary-third' key={ctr}>{Refmac.restraintAsText(r)}</div>);
             else
-                elems.push(<div className='font-din-2014' key={ctr}>{Refmac.restraintAsText(r)}</div>);
+                elems.push(<div key={ctr}>{Refmac.restraintAsText(r)}</div>);
 
             ctr++;
         }
 
         return (
-            <div style={{ overflow: 'hidden', height: '100%', display: 'flex', flexDirection: 'column' }}>
+            <div className='overflow-hidden h-full flex flex-col'>
                 <div>
                     <div className='rdo-secondary-caption'>Restraints for REFMAC</div>
                     <div style={{

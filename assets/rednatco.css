@@ -154,8 +154,31 @@
     src: url("fonts/woff2/pt-mono_regular.woff2") format("woff2");
 }
 
+/* Roboto Condensed */
+
+@font-face {
+    font-family: "roboto-black";
+    src: url("fonts/ttf/RobotoCondensed-Black.ttf") format("truetype");
+}
+@font-face {
+    font-family: "roboto-bold";
+    src: url("fonts/ttf/RobotoCondensed-Bold.ttf") format("truetype");
+}
+@font-face {
+    font-family: "roboto-medium";
+    src: url("fonts/ttf/RobotoCondensed-Medium.ttf") format("truetype");
+}
+@font-face {
+    font-family: "roboto-regular";
+    src: url("fonts/ttf/RobotoCondensed-Regular.ttf") format("truetype");
+}
+@font-face {
+    font-family: "roboto-light";
+    src: url("fonts/ttf/RobotoCondensed-Light.ttf") format("truetype");
+}
+
 html {
-    font-family: "din-2014", sans-serif;
+    font-family: "roboto-regular";
     font-weight: 400;
     font-style: normal;
     font-size: 12pt;
@@ -189,7 +212,6 @@ input {
     -webkit-appearance: none;
     border-radius: 0;
     box-sizing: border-box;
-    font-family: pt-sans;
 }
 
 input.rdo-input-checkbox {
@@ -260,7 +282,6 @@ select {
     appearance: none;
     background: none;
     box-sizing: border-box;
-    font-family: pt-sans;
     padding-left: 0.25em;
 }
 
@@ -348,14 +369,12 @@ td.rdo-data-table-selected {
 
 td.rdo-numeric-table {
     border: 0.1px solid #30595C;
-    font-family: pt-mono;
     padding: 0.2em;
     text-align: right;
 }
 
 td.rdo-numeric-table-small {
     border: 0.1px solid #30595C;
-    font-family: pt-mono;
     padding: 0.1em;
     text-align: right;
 }
@@ -657,7 +676,6 @@ a.rdo-imglink:visited {
 .rdo-pushbutton-text-disabled {
     color: var(--color-a);
     font-weight: bold;
-    font-family: pt-sans;
 }
 
 .rdo-remove-icon-button {
@@ -853,7 +871,7 @@ a.rdo-imglink:visited {
 
 .rdo-tab-button-selected {
     color: #E89E33;
-    -webkit-text-stroke: 1px #30595C;
+    -webkit-text-stroke: 1.5px #30595C;
 }
 
 .rdo-tab-content-container {

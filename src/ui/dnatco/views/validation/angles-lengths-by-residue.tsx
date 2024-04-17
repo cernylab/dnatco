@@ -300,7 +300,7 @@ function BondAngleDetails(props: {
             <td
                 onMouseEnter={doHighlight}
                 onMouseLeave={doUnhighlight}
-                className='font-din-2014 text-right rdo-angles-lengths'
+                className='text-right rdo-angles-lengths'
             >
                 {M.r2d(ba.angle).toFixed(2)}{'\u00B0'}
             </td>
@@ -396,7 +396,7 @@ function BondLengthDetails(props: {
                 {AnglesLengthsCommon.pairBondName(bl.pair, bl.tag)}
             </td>
             <td
-                className='font-din-2014 text-right rdo-angles-lengths'
+                className='text-right rdo-angles-lengths'
                 onMouseEnter={doHighlight}
                 onMouseLeave={doUnhighlight}
             >

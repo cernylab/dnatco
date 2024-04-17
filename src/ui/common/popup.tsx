@@ -1,6 +1,5 @@
 import * as React from 'react';
 import * as RDC from 'react-dom/client';
-import { PushButton } from './push-button';
 
 export class Popup extends React.Component<Popup.Props> {
     private selfRef = React.createRef<HTMLDivElement>();
@@ -26,16 +25,16 @@ export class Popup extends React.Component<Popup.Props> {
                 className='absolute top-0 left-0 h-full w-full z-[999] m-auto bg-test'
                 tabIndex={0}
             >
-                <div className='bg-primary-first flex mx-auto p-4 relative top-[45%] rounded-standart max-w-[33%] text-white'>
+                <div className='bg-primary-first flex flex-col mx-auto p-4 relative top-[45%] rounded-standart max-w-[33%] text-white'>
                     <div>
                         {this.props.children}
                     </div>
-                    <div className=''>
-                        <PushButton
-                            caption='Dismiss'
-                            onClick={() => this.dismiss()}
-                        />
-                    </div>
+                    <button
+                        onClick={() => this.dismiss()}
+                        className='bg-secondary-second text-primary-first items-center flex justify-center px-4 py-1 cursor-pointer w-fit rounded-smaller hover:bg-secondary-second-hover transition-all'
+                    >
+                        Dismiss
+                    </button>
                 </div>
             </div>
         );

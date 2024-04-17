@@ -79,7 +79,7 @@ function TabButton(props: {
             classNameDisabled='rdo-tab-button rdo-tab-button-disabled'
             onClick={props.onClick}
         >
-            <div className={`${props.noCaps ? '' : 'font-din-condensed text-28px'} ${props.enabled && !props.selected ? 'hover-animation' : ''} ${props.selected ? 'text-secondary-first stroke' : ''}`}>{props.caption}</div>
+            <div className={`${props.noCaps ? '' : 'font-roboto-bold text-24px'} ${props.enabled && !props.selected ? 'hover-animation' : ''} ${props.selected ? 'text-secondary-first stroke' : ''}`}>{props.caption}</div>
         </BasePushButton>
     );
 }
@@ -107,6 +107,9 @@ export function Menu<TK extends string>(props: {
     return (
         <div className='h-full w-full absolute left-0 top-0 bg-full-white p-8'>
             {makeTabs(props.onTabSwitched, props.tabs, props.selectedTab)}
+            <div className='absolute top-4 right-4'>
+                &#x2715;
+            </div>
         </div>
     );
 }

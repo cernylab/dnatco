@@ -623,9 +623,9 @@ export class PGroupSummary extends React.Component<PGroupSummaryProps, { mode: '
 
                     return (
                         <React.Fragment key={idx}>
-                            <div className={`font-din-2014 text-right ${strg}`}>{`${from}${this.props.suffix ?? ''}`}</div>
-                            <div className={`font-din-2014 text-right ${strg}`}>{`${to}${this.props.suffix ?? ''}`}</div>
-                            <div className={`font-din-2014 text-right ${strg}`}>{(x.probability * 100).toFixed(2)}</div>
+                            <div className={`text-right ${strg}`}>{`${from}${this.props.suffix ?? ''}`}</div>
+                            <div className={`text-right ${strg}`}>{`${to}${this.props.suffix ?? ''}`}</div>
+                            <div className={`text-right ${strg}`}>{(x.probability * 100).toFixed(2)}</div>
                         </React.Fragment>
                     );
                 })}
@@ -654,7 +654,7 @@ export class PGroupSummary extends React.Component<PGroupSummaryProps, { mode: '
         return (
             <div style={{ display: 'grid', gridTemplateColumns: '1em 1fr' }}>
                 <div style={{ backgroundColor: colorStyle(clr) }} />
-                <div className='font-din-2014 text-right'>{text}</div>
+                <div className='text-right'>{text}</div>
             </div>
         );
     }
@@ -678,7 +678,7 @@ export class PGroupSummary extends React.Component<PGroupSummaryProps, { mode: '
                         </div>
                     </div>
                     <div style={{ flex: 1 }} />
-                    <div className='font-din-2014 rdo-text-large'>
+                    <div className='rdo-text-large'>
                         {this.props.valueFormatter(this.props.value)}{this.props.suffix}
                     </div>
                 </div>
@@ -694,7 +694,7 @@ export function Prosco( props: { bin: ALM.MaybeBin } ) {
     const renderUnavailable = (belowAbove: 'below'|'above') => {
         return (
             <Tooltip
-                tag=<div className='font-din-2014 text-right'>
+                tag=<div className='text-right'>
                     {belowAbove === 'below' ? 'N/A (<)' : 'N/A (>)'}
                 </div>
             >
@@ -708,14 +708,14 @@ export function Prosco( props: { bin: ALM.MaybeBin } ) {
     const bin = props.bin;
 
     if (bin === 'no-data') {
-        return <div className='font-din-2014 text-right'>No data</div>
+        return <div className='text-right'>No data</div>
     } else if (bin === 'below' || bin === 'above')
         return renderUnavailable(bin);
     else {
         return (
             // Remove tooltip?
             <Tooltip
-                tag=<div className='font-din-2014 text-right'>
+                tag=<div className='text-right'>
                     {fmtDecimal(bin.prosco * 100, 1)}{'\u00A0'}%
                 </div>
             >
@@ -781,9 +781,9 @@ export function SubstructureSummary(props: { countsInGroups: Summarize.CountsInG
                 return (
                     <React.Fragment key={idx}>
                         <div style={{ backgroundColor: colorStyle(colorToTuple(clr)) }} />
-                        <div className='font-din-2014 text-right'>{thr}</div>
-                        <div className='font-din-2014 text-right'>{x.exclusive}</div>
-                        <div className='font-din-2014 text-right'>{`${x.cumulative}\u00A0(${perc.toFixed(2).padStart(6)}\u00A0%)`}</div>
+                        <div className='text-right'>{thr}</div>
+                        <div className='text-right'>{x.exclusive}</div>
+                        <div className='text-right'>{`${x.cumulative}\u00A0(${perc.toFixed(2).padStart(6)}\u00A0%)`}</div>
                     </React.Fragment>
                 );
             })}

@@ -69,7 +69,7 @@ class Coordinates extends React.Component<Coordinates.Props> {
 
         return (
             <div className='mx-auto'>
-                <div className='text-40px font-din-2014 text-center tracking-wider mb-2'>Analyze your structure</div>
+                <div className='text-39px text-center tracking-wider mb-2'>Analyze your structure</div>
                 {examples.length > 0
                     ? 
                     <div className='mx-auto mb-4 flex flex-row w-fit'>
@@ -82,7 +82,7 @@ class Coordinates extends React.Component<Coordinates.Props> {
                 }
                 <div className='flex flex-col w-[430px] m-auto'>
                     <div className='flex mb-2'>
-                        <div className='font-din-2014 text-24px text-primary-first w-[155px] my-auto'>Select</div>
+                        <div className='text-22px text-primary-first w-[155px] my-auto'>Select</div>
                         <div className='w-300px rounded-standart'>
                             <ComboBoxHome
                                 value={this.props.database}
@@ -97,7 +97,7 @@ class Coordinates extends React.Component<Coordinates.Props> {
                             <div className='flex'>
                                 <div className='flex flex-col mb-2'>
                                     <div className='flex'>
-                                        <div className='font-din-2014 text-24px w-[147px] my-auto'>Coordinates</div>
+                                        <div className='text-22px w-[147px] my-auto'>Coordinates</div>
                                         <label htmlFor='upload-coords-file' className='flex justify-end h-full'>
                                             <div className='w-[8.6rem]'>
                                                 <DummyIconTextButton
@@ -125,7 +125,7 @@ class Coordinates extends React.Component<Coordinates.Props> {
                             </>
                             : <>
                             <div className='flex'>
-                                <div className='font-din-2014 text-24px text-primary-first w-[155px] my-auto'>PDB ID</div>
+                                <div className='text-22px text-primary-first w-[155px] my-auto'>PDB ID</div>
                                 <div className='w-300px rounded-standart'>
                                     <PdbIdInput
                                         pdbId={this.props.pdbId}
@@ -227,7 +227,7 @@ class DensityMapFiles extends React.Component<
         return (
                 <div className='flex'>
                     <div className='flex'>
-                        <div className='font-din-2014 text-24px mb-4 w-[147px]'>Density maps</div>
+                        <div className='text-22px mb-4 w-[147px]'>Density maps</div>
                         <div>
                             <FileInput
                                 id='upload-density-map'
@@ -323,16 +323,15 @@ class LongFileName extends React.Component<{ name: string, disabled: boolean }> 
                 display='block'
                 overflow='hidden'
                 tag={
-                    <span>
-                        <span
-                            className={this.props.disabled ? 'rdo-text-disabled' : '' }
-                            style={{
-                                fontSize: 'var(--font-large)',
-                                overflow: 'hidden',
-                                whiteSpace: 'nowrap',
-                            }}
-                        >{this.props.name}</span>
-                        <div className='w-20 h-full'/>
+                    <span
+                        className={`${this.props.disabled ? 'rdo-text-disabled' : '' } ml-2 `}
+                        style={{
+                            fontSize: 'var(--font-large)',
+                            overflow: 'hidden',
+                            whiteSpace: 'nowrap',
+                        }}
+                    >
+                        {this.props.name}
                     </span>
                 }
             >
@@ -457,20 +456,20 @@ export class StartTab extends React.Component<StartTab.Props, State> {
                         <img src={DnaRight} alt='DNA'/>
                     </div>
                     <div>
-                        <div className='hidden floating select-none xl:block xl:absolute xl:top-0 xl:right-0 xl:z-50 xl:w-[15%] xl:mt-[24%] xl:mr-[19%]'>
+                        <div className='hidden floating select-none xl:block xl:absolute xl:top-0 xl:right-0 xl:z-50 xl:w-[11%] xl:mt-[24%] xl:mr-[19%]'>
                             <img src={Density} alt='Density' />
                         </div>
-                        <div className='hidden floating select-none xl:block xl:absolute xl:top-0 xl:left-0 xl:z-50 xl:w-[15%] xl:mt-[17%] xl:ml-[19%]'>
+                        <div className='hidden floating select-none xl:block xl:absolute xl:top-0 xl:left-0 xl:z-50 xl:w-[11%] xl:mt-[20%] xl:ml-[19%]'>
                             <img src={NavalAform} alt='Naval aform' />
                         </div>
-                        <div className='hidden floating select-none xl:block xl:absolute xl:top-0 xl:left-0 xl:z-50 xl:w-[10%] xl:mt-[32%] xl:ml-[23%]'>
+                        <div className='hidden floating select-none xl:block xl:absolute xl:top-0 xl:left-0 xl:z-50 xl:w-[9%] xl:mt-[32%] xl:ml-[23%]'>
                             <img src={Contacts} alt='Contacts' />
                         </div>
                     </div>
                     <div style={ Common.VScrollJail }>
                         <div className='rdo-offset'>
                                 <div className='mt-[7%]'>
-                                    <div className='text-42px w-[720px] m-auto text-center leading-10 font-din-condensed font-regular'><span className='text-secondary-first uppercase text-42px stroke'>Dnatco</span> enables an in-depth analysis and validation of nucleic acid structures</div>
+                                    <div className='text-34px w-[720px] m-auto text-center leading-10 font-roboto-bold'><span className='text-secondary-first uppercase text-34px stroke'>Dnatco</span> enables an in-depth analysis and validation of nucleic acid structures</div>
                                     <div className='mt-10 max-w-[850px] m-auto'>
                                         <div className='flex flex-col justify-center'>
                                             <div>

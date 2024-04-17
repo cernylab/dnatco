@@ -201,7 +201,7 @@ export function DownloadsValidation(props: { dnatcofication: Dnatcofication }) {
                         <div className='flex justify-between border-t-secondary-second border-t mt-4 pt-3 mb-8'>
                             <div>
                                 <_Downloads.Title title='Extended mmCIF file' />
-                                <div className='font-din-2014 text-16px mb-2'>
+                                <div className='text-16px mb-2'>
                                     mmCIF file extended with additional DNATCO categories.
                                 </div>
                             </div>
@@ -211,7 +211,7 @@ export function DownloadsValidation(props: { dnatcofication: Dnatcofication }) {
                         <div className='flex justify-between border-t-secondary-second border-t pt-3 mb-8'>
                             <div>
                                 <_Downloads.Title title='Table of assigned NtCs' />
-                                <div className='font-din-2014 text-16px mb-2'>
+                                <div className='text-16px mb-2'>
                                     Table of assigned NtCs.
                                 </div>
                             </div>
@@ -258,7 +258,7 @@ export function DownloadsValidation(props: { dnatcofication: Dnatcofication }) {
                         <div className='flex justify-between border-t-secondary-second border-t pt-3 mb-8'>
                             <div>
                                 <_Downloads.Title title='List of bond lengths and angles (individual residues)' />
-                                <div className='font-din-2014 text-16px mb-2'>
+                                <div className='text-16px mb-2'>
                                     A list of measured bond lengths and bond angles measured for nucleic acid backbone and base atoms. Listed by individual residues. Only residues with standard bases are measured.
                                 </div>
                             </div>
@@ -281,7 +281,7 @@ export function DownloadsValidation(props: { dnatcofication: Dnatcofication }) {
                         <div className='flex justify-between border-t-secondary-second border-t pt-3 mb-8'>
                             <div>
                                 <_Downloads.Title title='List of bond lengths and angles (Nucleotide type)' />
-                                <div className='font-din-2014 text-16px mb-2'>
+                                <div className='text-16px mb-2'>
                                     A list of measured bond lengths and bond angles measured for nucleic acid backbone and base atoms. Listed by nucleotide type. Only residues with standard bases are measured.
                                 </div>
                             </div>
@@ -304,7 +304,7 @@ export function DownloadsValidation(props: { dnatcofication: Dnatcofication }) {
                         <div className='flex justify-between border-t-secondary-second border-t pt-3 mb-8'>
                             <div>
                                 <_Downloads.Title title='Naval validation reports' />
-                                <div className='font-din-2014 text-16px mb-2'>
+                                <div className='text-16px mb-2'>
                                     Naval validation reports of nucleic acid structure quality.
                                 </div>
                             </div>
@@ -353,7 +353,7 @@ export function DownloadsValidation(props: { dnatcofication: Dnatcofication }) {
                         <div className='flex justify-between border-t-secondary-second border-t pt-3 mb-8'>
                             <div>
                                 <_Downloads.Title title={`${GlobalConfig.data().displayedProductName} structure validation report`} />
-                                <div className='font-din-2014 text-16px mb-2'>
+                                <div className='text-16px mb-2'>
                                     Comprehensive structure validation report.
                                 </div>
                             </div>

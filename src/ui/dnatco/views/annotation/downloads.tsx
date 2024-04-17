@@ -14,7 +14,7 @@ export function Downloads(props: View.Props) {
                 <div className='flex justify-between border-t-secondary-second border-t mt-4 pt-3 mb-8'>
                     <div>
                         <_Downloads.Title title='Extended mmCIF file' />
-                        <div className='mb-4 font-din-2014'>
+                        <div className='mb-4'>
                             mmCIF file extended with additional DNATCO categories.
                         </div>
                     </div>
@@ -28,7 +28,7 @@ export function Downloads(props: View.Props) {
                 <div className='flex justify-between border-t-secondary-second border-t pt-3 mb-8'>
                     <div>
                         <_Downloads.Title title='Table of assigned NtCs' />
-                        <div className='mb-4 font-din-2014'>
+                        <div className='mb-4'>
                             Table of assigned NtCs.
                         </div>
                     </div>

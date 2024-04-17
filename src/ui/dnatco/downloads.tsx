@@ -203,7 +203,7 @@ export function Downloads(props: { dnatcofication: Dnatcofication }) {
     return (
         <div className='rdo-offset'>
                 <div className='overflow-hidden h-full flex flex-col m-auto xl:max-w-[1280px] 2xl:max-w-[1440px]'>
-                    <div className='font-din-2014 text-22px uppercase font-700 mb-4'>
+                    <div className='text-22px uppercase font-700 mb-4'>
                         Download of data computed for {structureName}
                     </div>
                     <div className='rdo-scroll-vertically'>
@@ -211,7 +211,7 @@ export function Downloads(props: { dnatcofication: Dnatcofication }) {
                         <div className='flex justify-between border-t-secondary-second border-t mt-4 pt-3 mb-8'>
                             <div>
                                 <_Downloads.Title title='Extended mmCIF file' />
-                                <div className='font-din-2014 text-16px mb-2'>
+                                <div className='text-16px mb-2'>
                                     mmCIF file extended with additional DNATCO categories.
                                 </div>
                             </div>
@@ -221,7 +221,7 @@ export function Downloads(props: { dnatcofication: Dnatcofication }) {
                         <div className='flex justify-between border-t-secondary-second border-t pt-3 mb-8'>
                             <div>
                                 <_Downloads.Title title='Table of assigned NtCs' />
-                                <div className='font-din-2014 text-16px mb-2'>
+                                <div className='text-16px mb-2'>
                                     Table of assigned NtCs.
                                 </div>
                             </div>
@@ -268,7 +268,7 @@ export function Downloads(props: { dnatcofication: Dnatcofication }) {
                         <div className='flex justify-between border-t-secondary-second border-t pt-3 mb-8'>
                             <div>
                                 <_Downloads.Title title='List of bond lengths and angles (Individual residues)' />
-                                <div className='font-din-2014 text-16px mb-2'>
+                                <div className='text-16px mb-2'>
                                     A list of measured bond lengths and bond angles measured for nucleic acid backbone and base atoms. Listed by individual residues. Only residues with standard bases are measured.
                                 </div>
                             </div>
@@ -291,7 +291,7 @@ export function Downloads(props: { dnatcofication: Dnatcofication }) {
                         <div className='flex justify-between border-t-secondary-second border-t pt-3 mb-8'>
                             <div>
                                 <_Downloads.Title title='List of bond lengths and angles (Nucleotide type)' />
-                                <div className='font-din-2014 text-16px mb-2'>
+                                <div className='text-16px mb-2'>
                                     A list of measured bond lengths and bond angles measured for nucleic acid backbone and base atoms. Listed by nucleotide type. Only residues with standard bases are measured.
                                 </div>
                             </div>
@@ -314,7 +314,7 @@ export function Downloads(props: { dnatcofication: Dnatcofication }) {
                         <div className='flex justify-between border-t-secondary-second border-t pt-3 mb-8'>
                             <div>
                                 <_Downloads.Title title='Naval validation reports' />
-                                <div className='font-din-2014 text-16px mb-2'>
+                                <div className='text-16px mb-2'>
                                     Naval validation reports of nucleic acid structure quality.
                                 </div>
                             </div>
@@ -363,7 +363,7 @@ export function Downloads(props: { dnatcofication: Dnatcofication }) {
                         <div className='flex justify-between border-t-secondary-second border-t pt-3 mb-8'>
                             <div>
                                 <_Downloads.Title title={`${GlobalConfig.data().displayedProductName} structure validation report`} />
-                                <div className='font-din-2014 text-16px mb-2'>
+                                <div className='text-16px mb-2'>
                                     Comprehensive structure validation report.
                                 </div>
                             </div>

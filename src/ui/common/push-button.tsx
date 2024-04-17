@@ -60,7 +60,7 @@ export class DummyButton extends React.Component<Omit<PushButton.Props, 'onClick
     render() {
         return (
             <div className={this.clsName()}>
-                <div className='font-din-2014 font-700 text-16px m-1'>{this.props.caption}</div>
+                <div className='font-700 text-16px m-1'>{this.props.caption}</div>
             </div>
         );
     }
@@ -82,7 +82,7 @@ export class DummyIconTextButton extends React.Component<Omit<IconTextButton.Pro
         return (
             <div className={this.clsName()}>
                 <div className='rdo-pushbutton-inner-container'>
-                    <span className='font-din-2014 font-700 text-16px m-1'>{this.props.caption}</span>
+                    <span className='font-700 text-16px m-1'>{this.props.caption}</span>
                 </div>
             </div>
         );
@@ -132,7 +132,7 @@ export class IconTextButton extends React.Component<IconTextButton.Props> {
                 classNameDisabled={this.props.classNameDisabled ?? 'rdo-icon-text-button-disabled'}
             >
                 <div className='rdo-pushbutton-inner-container'>
-                    <span className='font-din-2014 font-700 text-16px m-1'>{this.props.caption}</span>
+                    <span className='font-700 text-16px m-1'>{this.props.caption}</span>
                 </div>
             </BasePushButton>
         );
@@ -176,7 +176,7 @@ export class PushButton extends BasePushButton<PushButton.Props> {
                         this.props.onMouseLeave(e);
                 }}
             >
-                <div className='font-din-2014 font-700 text-16px m-1'>{this.props.caption}</div>
+                <div className='font-700 text-16px m-1'>{this.props.caption}</div>
             </div>
         );
     }
@@ -219,7 +219,7 @@ export class ToggleButton extends BasePushButton<ToggleButton.Props> {
                         this.props.onMouseLeave(e);
                 }}
             >
-                <div className='font-din-2014 font-700 text-16px m-1'>{this.props.caption}</div>
+                <div className='font-700 text-16px m-1'>{this.props.caption}</div>
             </div>
         );
     }

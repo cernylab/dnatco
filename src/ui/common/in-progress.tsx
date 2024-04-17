@@ -7,7 +7,7 @@ export namespace InProgress {
     function makeAbortButton() {
         return `
             <div class="rdo-pushbutton">
-                <div class="font-din-2014 font-700 text-16px m-1">Abort</div>
+                <div class="font-700 text-16px m-1">Abort</div>
             </div>
         `;
     }
@@ -16,7 +16,7 @@ export namespace InProgress {
             <div class="absolute top-0 left-0 h-full w-full z-[999] m-auto bg-test">
                 <div class="bg-primary-first flex flex-col mx-auto p-4 relative top-[45%] rounded-standart max-w-[33%] text-white">
                     <div class="flex justify-between">
-                        <div class="font-din-2014">
+                        <div>
                             ${makeText(title, status)}
                         </div>
                         <img
