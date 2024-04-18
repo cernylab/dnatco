@@ -280,7 +280,7 @@ function VersionHistory() {
                 <div className='w-[25%]'>
                     <h3 className=' font-700 text-18px mb-2 uppercase'>
                         <a href='' target='_blank'>
-                            v4.0
+                            v4.1
                         </a>
                     </h3>
                 </div>

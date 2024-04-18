@@ -15,8 +15,8 @@ export const about = [
                     },
                     {
                         type: 'image',
-                        url: {DefinitionNewTrans2Img},
-                        width: 'w-[10rem]'
+                        url: DefinitionNewTrans2Img,
+                        width: 'w-[20rem]'
                     },
                     {
                         type: 'paragraph',
@@ -94,11 +94,11 @@ export const annotation = [
                     },
                     {
                         type: 'image',
-                        url: {basePairsTable},
+                        url: basePairsTable,
                     },
                     {
                         type: 'image',
-                        url: {basePairs},
+                        url: basePairs,
                     },
                     {
                         type: 'paragraph',
@@ -106,7 +106,7 @@ export const annotation = [
                     },
                     {
                         type: 'image',
-                        url: {cisBasepairs},
+                        url: cisBasepairs,
                     },
                     {
                         type: 'paragraph',
