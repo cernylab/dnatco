@@ -52,7 +52,8 @@ export function BasePairing({ d }: { d: Dnatcofication }) {
             <thead>
                 <tr>
                     <th colSpan={2} className='mb-4 p-4 text-20px border-primary-first border-[.1px]'>
-                        Number of paired bases
+                        <div>Number of paired bases</div>
+                        <div className='text-14px'>Data provided by FR3D</div>
                     </th>
                 </tr>
                 <tr>
@@ -94,7 +95,7 @@ export class MainFeatures extends View<View.Props> {
         const nucleotideCounts: { [key: string]: number } = {};
 
         const stepsArray = name.values;
-        console.log(stepsArray);
+        //console.log(stepsArray);
 
         let lastSteps: { [key: string]: string } = {};
         
@@ -104,36 +105,29 @@ export class MainFeatures extends View<View.Props> {
             for (let i = stepsArray.length - 1; i >= 0; i--) {
                 const step = stepsArray[i];
                 const parts = step.split("_");
-                const letter = parts[1]; // Extract the letter
+                const letter = parts[1];
         
-                // Check if the letter is not already found and store the last occurrence
                 if (!lastOccurrences[letter]) {
                     lastOccurrences[letter] = step;
                 }
         
-                // Check if we found the last occurrence for all unique letters
-                if (Object.keys(lastOccurrences).length === 26) { // Assuming there are 26 letters in the alphabet
+                if (Object.keys(lastOccurrences).length === 26) {
                     break;
                 }
             }
-        
-            // Log the last occurrences for each letter
-            Object.entries(lastOccurrences).forEach(([letter, lastStep]) => {
-                console.log(`Last ${letter}: ${lastStep}`);
-            });
 
             Object.entries(lastOccurrences).forEach(([letter, lastStep]) => {
                 lastSteps[letter] = lastStep;
             });
         }
 
-        console.log(lastSteps)
+        // console.log('last step',lastSteps)
 
         let text: string[] = [];
 
-        const lastRow = steps._rowCount - 1;
-        const lastNucleotide:string = Cif.Column.value(name, lastRow)!;
-        console.log('last nucleotide',lastNucleotide);
+        // const lastRow = steps._rowCount - 1;
+        // const lastNucleotide:string = Cif.Column.value(name, lastRow)!;
+        // console.log('last nucleotide',lastNucleotide);
 
         const lastNucleotideSplit: string[] = [];
         for (const value of Object.values(lastSteps)) {
@@ -141,8 +135,6 @@ export class MainFeatures extends View<View.Props> {
             const lastElement = parts[4];
             lastNucleotideSplit.push(lastElement);
         }
-
-        console.log('Helloooooo',lastNucleotideSplit);
 
         text.push(...lastNucleotideSplit);
 
@@ -152,7 +144,14 @@ export class MainFeatures extends View<View.Props> {
             const parts = nucleotide.split("_");
             if (parts.length >= 3) {
                 const part = parts.slice(2, 3).join("_");
-                text.push(part);
+
+                const dotIndex = part.indexOf(".");
+                if (dotIndex !== -1) {
+
+                    text.push(part.substring(0, dotIndex));
+                } else {
+                    text.push(part);
+                }
             }
         }
 
@@ -204,7 +203,9 @@ export class MainFeatures extends View<View.Props> {
                 <table className='mb-2'>
                     <thead>
                         <tr>
-                            <th colSpan={2} className='mb-4 p-4 text-20px border-primary-first border-[.1px]'>Counts of CANA</th>
+                            <th colSpan={2} className='mb-4 p-4 text-20px border-primary-first border-[.1px]'>
+                                Counts of CANA
+                            </th>
                         </tr>
                         <tr>
                             <th className='py-2 border-primary-first border-[.1px]'>CANA</th>

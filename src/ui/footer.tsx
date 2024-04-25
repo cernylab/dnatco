@@ -63,11 +63,11 @@ const Footer:React.FC = () => {
                             </div>
                         </div>
                         <div className='flex my-auto mx-2'>
-                            <a href='https://www.ibt.cas.cz/en' target='_blank'>
-                                <img className='h-12 hover-animation' src={IbtLogoImg} alt='Ibt logo'/>
+                            <a className='bg-white p-2 rounded-standart mr-2' href='https://www.ibt.cas.cz/en' target='_blank'>
+                                <img className='h-8 hover-animation' src={IbtLogoImg} alt='Ibt logo'/>
                             </a>
-                            <a href='https://www.elixir-czech.cz/' target='_blank'>
-                                <img className='h-12 hover-animation' src={ElixirLogoImg} alt='Elixir logo'/>
+                            <a className='bg-white p-2 rounded-standart' href='https://www.elixir-czech.cz/' target='_blank'>
+                                <img className='h-8 hover-animation' src={ElixirLogoImg} alt='Elixir logo'/>
                             </a>
                         </div>
                     </div>

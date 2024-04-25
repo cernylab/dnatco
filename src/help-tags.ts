@@ -112,6 +112,10 @@ export const annotation = [
                         type: 'paragraph',
                         text: 'Basepairs geometric families and their annotation. Upper panel: Twelve geometric basepair families resulting from all combinations of edge-to-edge interactions of two bases with cis or trans orientation of the glycosidic bonds. Circles represent W-C edges, squares Hoogsteen edges, and triangles Sugar edges. Basepair symbols are composed by combining edge symbols, with solid symbols indicating cis basepairs and open symbol, trans basepairs. Lower Left: Symbols for other pairwise interactions (Leontis NB, Stombaugh J, Westhof E. (2002) The non-W-C base pairs and their associated isostericity matrices. Nucleic Acids Res 30:3497-3531).'
                     },
+                    {
+                        type: 'paragraph',
+                        text: 'FR3D: Finding Local and Composite Recurrent Structural Motifs in RNA 3D Structures, Michael Sarver; Craig L. Zirbel; Jesse Stombaugh; Ali Mokdad; Neocles B. Leontis. Journal of Mathematical Biology (2008) 56:215–252.'
+                    },
                 ],
             },
             {
