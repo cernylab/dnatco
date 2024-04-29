@@ -95,7 +95,6 @@ export class MainFeatures extends View<View.Props> {
         const nucleotideCounts: { [key: string]: number } = {};
 
         const stepsArray = name.values;
-        //console.log(stepsArray);
 
         let lastSteps: { [key: string]: string } = {};
         
@@ -121,13 +120,7 @@ export class MainFeatures extends View<View.Props> {
             });
         }
 
-        // console.log('last step',lastSteps)
-
         let text: string[] = [];
-
-        // const lastRow = steps._rowCount - 1;
-        // const lastNucleotide:string = Cif.Column.value(name, lastRow)!;
-        // console.log('last nucleotide',lastNucleotide);
 
         const lastNucleotideSplit: string[] = [];
         for (const value of Object.values(lastSteps)) {
@@ -138,24 +131,41 @@ export class MainFeatures extends View<View.Props> {
 
         text.push(...lastNucleotideSplit);
 
+        let dotString: string[] = [];
+
         for (let row = 0; row < steps._rowCount; row++) {
             const nucleotide:string = Cif.Column.value(name, row)!;
 
             const parts = nucleotide.split("_");
+            
             if (parts.length >= 3) {
+                
                 const part = parts.slice(2, 3).join("_");
 
-                const dotIndex = part.indexOf(".");
-                if (dotIndex !== -1) {
+                const dotIndex = parts[2].indexOf(".");
 
-                    text.push(part.substring(0, dotIndex));
-                } else {
+                if (dotIndex !== -1 && parts.length >= 6 && row < steps._rowCount - 1) {
+
+                    const nextNucleotide: string = Cif.Column.value(name, row + 1)!;
+                    const nextParts = nextNucleotide.split("_");
+        
+                    if (parts[3] === nextParts[3] && parts[5] === nextParts[5]) {
+                        dotString.push(parts[2]);
+                    }
+                }
+
+                if(dotIndex === -1) {
                     text.push(part);
+                }
+
+                if(dotString) {
+                    console.log(text, 'text before pushing the cleanedDotString')
+                    const cleanedDotString = dotString.map(item => item.split('.')[0]);
+                    text.push(...cleanedDotString);
+                    dotString = [];
                 }
             }
         }
-
-        console.log('teeeeeeext', text)
 
          text.forEach(element => {
             nucleotideCounts[element] = (nucleotideCounts[element] || 0) + 1;
