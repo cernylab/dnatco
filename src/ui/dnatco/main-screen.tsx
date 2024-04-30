@@ -144,11 +144,6 @@ function Inner(props: {
     const view = ViewsInMode[props.mode.master].find(([viewId, _]) => props.mode.viewId === viewId)![1];
     const routes = useRoutes(routeElems);
 
-    const handleAboutClick = (selectedTab: string) => {
-        // Pass the selectedTab prop when navigating
-        navigate('/app/about', { state: { selectedTab } });
-      };
-
 
     return (
         <>
@@ -165,11 +160,6 @@ function Inner(props: {
                     second={
                         <div className='ml-0 overflow-hidden'>
                             <div className='flex'>
-                                <div onClick={() => handleAboutClick('help')} className='w-[33.5px] flex justify-center cursor-pointer'>
-                                    <a className='my-auto'>
-                                        <img className='w-5' src={tooltipImg}/>
-                                    </a>
-                                </div>
                                 <div className='flex w-full'>
                                     <div className='bg-a py-1 font-700 w-full flex justify-center'>
                                             A
@@ -177,7 +167,7 @@ function Inner(props: {
                                             tag={<div className='cursor-pointer ml-4'><img className='w-5' src={tooltipImg}/></div>}
                                             delayMsec={300}
                                         > 
-                                            A-form, mainly found in the RNA structures. For more see Help
+                                            A-form, mainly found in the RNA structures. For more see Help (Link in footer)
                                         </Tooltip>
                                     </div>
                                     <div className='bg-b py-1 font-700 w-full flex justify-center'> 
@@ -186,7 +176,7 @@ function Inner(props: {
                                             tag={<div className='cursor-pointer ml-4'><img className='w-5' src={tooltipImg}/></div>}
                                             delayMsec={300}
                                         >
-                                            B-form, mainly found in the double-helical DNA. For more see Help
+                                            B-form, mainly found in the double-helical DNA. For more see Help (Link in footer)
                                         </Tooltip>
                                     </div>
                                     <div className='bg-BII py-1 text-white font-700 w-full flex justify-center'>
@@ -195,7 +185,7 @@ function Inner(props: {
                                             tag={<div className='cursor-pointer ml-4'><img className='w-5' src={tooltipImg}/></div>}
                                             delayMsec={300}
                                         >
-                                            BII-form, important for duplex bending. For more see Help
+                                            BII-form, important for duplex bending. For more see Help (Link in footer)
                                         </Tooltip>
                                     </div>
                                     <div className='bg-miB py-1 font-700 w-full flex justify-center'>
@@ -204,7 +194,7 @@ function Inner(props: {
                                             tag={<div className='cursor-pointer ml-4'><img className='w-5' src={tooltipImg}/></div>}
                                             delayMsec={300}
                                         >
-                                            miB - B-form like conformers with unusual torsional values. For more see Help
+                                            miB - B-form like conformers with unusual torsional values. For more see Help (Link in footer)
                                         </Tooltip>
                                     </div>
                                     <div className='bg-Z py-1 font-700 w-full flex justify-center'>
@@ -213,7 +203,7 @@ function Inner(props: {
                                             tag={<div className='cursor-pointer ml-4'><img className='w-5' src={tooltipImg}/></div>}
                                             delayMsec={300}
                                         >
-                                            Z-form, found mainly in DNA, less frequently in RNA. For more see Help
+                                            Z-form, found mainly in DNA, less frequently in RNA. For more see Help (Link in footer)
                                         </Tooltip>
                                     </div>
                                     <div className='bg-IC py-1 font-700 w-full flex justify-center'>
@@ -222,7 +212,7 @@ function Inner(props: {
                                             tag={<div className='cursor-pointer ml-4'><img className='w-5' src={tooltipImg}/></div>}
                                             delayMsec={300}
                                         >
-                                            Parallel distant bases, can be intercalated. For more see Help
+                                            Parallel distant bases, can be intercalated. For more see Help (Link in footer)
                                         </Tooltip>
                                     </div>
                                     <div className='bg-OPN py-1 text-white font-700 w-full flex justify-center'>
@@ -231,7 +221,7 @@ function Inner(props: {
                                             tag={<div className='cursor-pointer ml-4'><img className='w-5' src={tooltipImg}/></div>}
                                             delayMsec={300}
                                         >
-                                            Conformers with distant and unusually oriented bases. For more see Help
+                                            Conformers with distant and unusually oriented bases. For more see Help (Link in footer)
                                         </Tooltip>
                                     </div>
                                     <div className='bg-SYN py-1 font-700 w-full flex justify-center'>
@@ -240,7 +230,7 @@ function Inner(props: {
                                             tag={<div className='cursor-pointer ml-4'><img className='w-5' src={tooltipImg}/></div>}
                                             delayMsec={300}
                                         >
-                                            Conformers with one of the bases in the syn orientation. For more see Help
+                                            Conformers with one of the bases in the syn orientation. For more see Help (Link in footer)
                                         </Tooltip>
                                     </div>
                                     <div className='bg-N py-1 font-700 w-full flex justify-center'>
@@ -249,7 +239,7 @@ function Inner(props: {
                                             tag={<div className='cursor-pointer ml-4'><img className='w-5' src={tooltipImg}/></div>}
                                             delayMsec={300}
                                         >
-                                            Unassigned conformations. For more see Help
+                                            Unassigned conformations. For more see Help (Link in footer)
                                         </Tooltip>
                                     </div>
                                 </div>

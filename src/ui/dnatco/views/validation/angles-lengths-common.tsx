@@ -1209,9 +1209,14 @@ export namespace AnglesLengthsCommon {
 
     export function substructureBarCaption(text: string | JSX.Element) {
         return (
-            <div className='flex items-center h-full' style={{ gap: 'var(--h2-gap)', paddingLeft: 'var(--h2-gap)' }}>
-                <div className='font-bold'>{text}</div>
-                <img className='image h-4 w-4' src={tooltipImg} />
+            <div className='flex items-center h-full cursor-pointer p-1'>
+                <div className='font-bold mr-2'>{text}</div>
+                <Tooltip
+                    tag={<div className='cursor-pointer'><img className='w-4' src={tooltipImg}/></div>}
+                    delayMsec={300}
+                > 
+                    Click to see details
+                </Tooltip>
             </div>
         );
     }

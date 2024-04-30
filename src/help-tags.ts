@@ -197,7 +197,7 @@ export const validation = [
             },
             {
                 id: 'rsccRmsdPlot',
-                headline: 'RSSCC/RMSD plot tab',
+                headline: 'RSCC/RMSD plot tab',
                 paragraphs: [
                     {
                         type: 'paragraph',

@@ -9,6 +9,52 @@ import { getCifValue } from '../../../../util/dnatco';
 import { Struct } from '../../../../cif/categories/struct';
 import { Tooltip } from '../../../common/tooltip';
 import { tooltipImg } from '../../../../assets/images';
+import { EntityPoly } from '../../../../cif/categories/entity';
+
+function mmCifName(d: Dnatcofication) {
+    if (!d.hasTable(EntityPoly))
+        return 'dnatco_structure.cif';
+    const col = d.table(EntityPoly).pdbx_seq_one_letter_code;
+    const sequence = Cif.Column.value(col, 0);
+    return `${sequence}`;
+}
+
+export function NucleotideCounts({ d }: { d: Dnatcofication }) {
+
+    const sequence = mmCifName(d);
+    console.log(sequence);
+
+    let string_without_parentheses = sequence.split(/\(|\)/g).filter(Boolean);
+
+    const nucleotideCounts: { [ntc: string]: number } = {};
+
+    for (let i = 0; i < string_without_parentheses.length; i++) {
+        const substring = string_without_parentheses[i]; 
+        nucleotideCounts[substring] = (nucleotideCounts[substring] || 0) + 1;
+    }
+
+    return (
+        <table className='mb-2'>
+            <thead>
+                <tr>
+                    <th colSpan={2} className='mb-4 p-4 text-20px border-primary-first border-[.1px]'>Counts of Nucleotide in polymer entity</th>
+                </tr>
+                <tr>
+                    <th className='py-2 border-primary-first border-[.1px]'>Nucleotide</th>
+                    <th className='py-2 border-primary-first border-[.1px]'>Count</th>
+                </tr>
+            </thead>
+            <tbody>
+                {Object.entries(nucleotideCounts).map(([ntc, count]) => (
+                    <tr key={ntc}>
+                        <td className='font-bold py-1 px-7 w-[7rem] text-center border-primary-first border-[.1px]'>{ntc}</td>
+                        <td className='font-bold py-1 px-7 w-[7rem] text-center border-primary-first border-[.1px]'>{count}</td>
+                    </tr>
+                ))}
+            </tbody>
+        </table>
+    );
+}
 
 export function BasePairing({ d }: { d: Dnatcofication }) {
     const pdbId = getCifValue(d, Struct, 'entry_id').toLowerCase();
@@ -64,7 +110,7 @@ export function BasePairing({ d }: { d: Dnatcofication }) {
                                 tag={<div className='cursor-pointer ml-4'><img className='w-5' src={tooltipImg}/></div>}
                                 delayMsec={300}
                             >
-                                The Leontis-Westhof nomenclature, for more see help
+                                The Leontis-Westhof nomenclature, for more see help (Link in footer)
                             </Tooltip>
                         </div>
                     </th>
@@ -79,101 +125,19 @@ export function BasePairing({ d }: { d: Dnatcofication }) {
                     </tr>
                 ))}
             </tbody>
-        </table>
+        </table>        
     );
 }
 
 export class MainFeatures extends View<View.Props> {
     static readonly unscrollableContainer = true;
+
     
     render() {
-
+        
         const summary = this.props.dnatcofication.table(NdbStructNtcStepSummary);
         const { assigned_NtC, assigned_CANA } = summary;
         const steps = this.props.dnatcofication.table(NdbStructNtcStep);
-        const { name } = steps;
-        const nucleotideCounts: { [key: string]: number } = {};
-
-        const stepsArray = name.values;
-
-        let lastSteps: { [key: string]: string } = {};
-        
-        if (stepsArray) {
-            const lastOccurrences: { [key: string]: string } = {};
-        
-            for (let i = stepsArray.length - 1; i >= 0; i--) {
-                const step = stepsArray[i];
-                const parts = step.split("_");
-                const letter = parts[1];
-        
-                if (!lastOccurrences[letter]) {
-                    lastOccurrences[letter] = step;
-                }
-        
-                if (Object.keys(lastOccurrences).length === 26) {
-                    break;
-                }
-            }
-
-            Object.entries(lastOccurrences).forEach(([letter, lastStep]) => {
-                lastSteps[letter] = lastStep;
-            });
-        }
-
-        let text: string[] = [];
-
-        const lastNucleotideSplit: string[] = [];
-        for (const value of Object.values(lastSteps)) {
-            const parts = value.split("_");
-            const lastElement = parts[4];
-            
-            if (lastElement.includes(".")) {
-                const lastElementSplit = lastElement.split(".");
-                const modifiedElement = lastElementSplit[0]
-                lastNucleotideSplit.push(modifiedElement);
-            } else {
-                lastNucleotideSplit.push(lastElement);
-            }
-        }
-
-        text.push(...lastNucleotideSplit);
-
-        let result: string[] = [];
-
-        for (let row = 0; row < steps._rowCount; row++) {
-            const nucleotide:string = Cif.Column.value(name, row)!;
-
-            const nucleotideSplit = nucleotide.split("_");
-            //console.log(nucleotide, 'nucleotide')
-            //console.log(nucleotideSplit[2], 'nucleotideeeee split[2]')
-
-            if (nucleotideSplit[2].includes(".")) {
-                //console.log(nucleotide, 'nucleotideee')
-                const secondElement = nucleotideSplit.slice(2, 4).join("_");
-                const secondElementSplit = secondElement.split(/[\._]/);
-                const modifiedElement = secondElementSplit[0] + "_" + secondElementSplit[2];
-                result.push(modifiedElement);
-
-            } else {
-                if (nucleotideSplit.length >= 3 && !nucleotideSplit[2].includes(".")) {
-                    const part = nucleotideSplit.slice(2, 3).join("_");
-                    text.push(part);
-                }
-
-            }
-        }
-
-        const uniqueResults = [...new Set(result)];
-
-        uniqueResults.forEach(element => {
-            const elementSplit = element.split('_');
-            text.push(elementSplit[0]);
-            console.log(elementSplit[0], 'element[00]')
-        })
-
-         text.forEach(element => {
-            nucleotideCounts[element] = (nucleotideCounts[element] || 0) + 1;
-        });
 
         const ntCCounts: { [ntc: string]: number } = {};
         const canaCounts: { [ntc: string]: number } = {};
@@ -195,7 +159,17 @@ export class MainFeatures extends View<View.Props> {
                 <table className='mb-2'>
                     <thead>
                         <tr>
-                            <th colSpan={2} className='mb-4 p-4 text-20px border-primary-first border-[.1px]'>Counts of NtC</th>
+                            <th colSpan={2} className='mb-4 p-4 text-20px border-primary-first border-[.1px]'>
+                                <div className='flex justify-center'>
+                                    <span>Counts of NtC</span>
+                                    <Tooltip
+                                        tag={<div className='cursor-pointer ml-3'><img className='w-5 my-auto' src={tooltipImg}/></div>}
+                                        delayMsec={300}
+                                    >
+                                        diNucleotide Conformational classes, for more see help (Link in footer)
+                                    </Tooltip>
+                                </div>
+                            </th>
                         </tr>
                         <tr>
                             <th className='py-2 border-primary-first border-[.1px]'>NtC</th>
@@ -212,13 +186,19 @@ export class MainFeatures extends View<View.Props> {
                     </tbody>
                 </table>
 
-                <BasePairing d={this.props.dnatcofication} />
-
                 <table className='mb-2'>
                     <thead>
                         <tr>
                             <th colSpan={2} className='mb-4 p-4 text-20px border-primary-first border-[.1px]'>
-                                Counts of CANA
+                                <div className='flex justify-center'>
+                                    <span>Counts of CANA</span>
+                                    <Tooltip
+                                        tag={<div className='cursor-pointer ml-3'><img className='w-5 my-auto' src={tooltipImg}/></div>}
+                                        delayMsec={300}
+                                    >
+                                        Conformational Alphabet of Nucleic Acids, for more see help (Link in footer)
+                                    </Tooltip>
+                                </div>
                             </th>
                         </tr>
                         <tr>
@@ -235,25 +215,11 @@ export class MainFeatures extends View<View.Props> {
                         ))}
                     </tbody>
                 </table>
-                <table className='mb-2'>
-                    <thead>
-                        <tr>
-                            <th colSpan={2} className='mb-4 p-4 text-20px border-primary-first border-[.1px]'>Counts of nucleotide</th>
-                        </tr>
-                        <tr>
-                            <th className='py-2 border-primary-first border-[.1px]'>Base</th>
-                            <th className='py-2 border-primary-first border-[.1px]'>Count</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {Object.entries(nucleotideCounts).map(([nucleotide, count], index, array) => (
-                            <tr key={nucleotide}>
-                                <td className='font-bold py-1 px-7 border-primary-first w-[7rem] text-center border-[.1px]'>{nucleotide}</td>
-                                <td className='font-bold py-1 px-7 border-primary-first border-[.1px] w-[7rem] text-center'>{count}</td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
+                
+                <BasePairing d={this.props.dnatcofication} />
+
+                <NucleotideCounts d={this.props.dnatcofication} />
+
             </div>
         );
     }

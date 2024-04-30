@@ -83,7 +83,7 @@ export class ComboBox extends React.Component<ComboBox.Props> {
                             <option
                                 key={o.value}
                                 value={o.value}
-                            >{o.caption}{'\u00A0\u00A0'}</option>
+                            >{o.caption === '-' ? 'Select' : o.caption}{'\u00A0\u00A0'}</option>
                         );
                     })}
                 </select>
