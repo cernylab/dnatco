@@ -22,14 +22,34 @@ function mmCifName(d: Dnatcofication) {
 export function NucleotideCounts({ d }: { d: Dnatcofication }) {
 
     const sequence = mmCifName(d);
-    console.log(sequence);
+    const result = [];
+    const regex = /\((.*?)\)/g;
 
-    let string_without_parentheses = sequence.split(/\(|\)/g).filter(Boolean);
+    let match;
+    while ((match = regex.exec(sequence)) !== null) {
+        result.push(match[1]);
+    }
+
+    console.log(sequence)
+    
+    let lastIndex = 0;
+    let match2;
+    while ((match2 = regex.exec(sequence)) !== null) {
+        const nonParenthesized = sequence.substring(lastIndex, match2.index);
+        if (nonParenthesized.length > 0) {
+            result.push(...nonParenthesized.split(''));
+        }
+        lastIndex = regex.lastIndex;
+    }
+    
+    if (lastIndex < sequence.length) {
+        result.push(...sequence.substring(lastIndex).split(''));
+    }
 
     const nucleotideCounts: { [ntc: string]: number } = {};
 
-    for (let i = 0; i < string_without_parentheses.length; i++) {
-        const substring = string_without_parentheses[i]; 
+    for (let i = 0; i < result.length; i++) {
+        const substring = result[i]; 
         nucleotideCounts[substring] = (nucleotideCounts[substring] || 0) + 1;
     }
 
