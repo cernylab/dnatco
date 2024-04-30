@@ -126,46 +126,50 @@ export class MainFeatures extends View<View.Props> {
         for (const value of Object.values(lastSteps)) {
             const parts = value.split("_");
             const lastElement = parts[4];
-            lastNucleotideSplit.push(lastElement);
+            
+            if (lastElement.includes(".")) {
+                const lastElementSplit = lastElement.split(".");
+                const modifiedElement = lastElementSplit[0]
+                lastNucleotideSplit.push(modifiedElement);
+            } else {
+                lastNucleotideSplit.push(lastElement);
+            }
         }
 
         text.push(...lastNucleotideSplit);
 
-        let dotString: string[] = [];
+        let result: string[] = [];
 
         for (let row = 0; row < steps._rowCount; row++) {
             const nucleotide:string = Cif.Column.value(name, row)!;
 
-            const parts = nucleotide.split("_");
-            
-            if (parts.length >= 3) {
-                
-                const part = parts.slice(2, 3).join("_");
+            const nucleotideSplit = nucleotide.split("_");
+            //console.log(nucleotide, 'nucleotide')
+            //console.log(nucleotideSplit[2], 'nucleotideeeee split[2]')
 
-                const dotIndex = parts[2].indexOf(".");
+            if (nucleotideSplit[2].includes(".")) {
+                //console.log(nucleotide, 'nucleotideee')
+                const secondElement = nucleotideSplit.slice(2, 4).join("_");
+                const secondElementSplit = secondElement.split(/[\._]/);
+                const modifiedElement = secondElementSplit[0] + "_" + secondElementSplit[2];
+                result.push(modifiedElement);
 
-                if (dotIndex !== -1 && parts.length >= 6 && row < steps._rowCount - 1) {
-
-                    const nextNucleotide: string = Cif.Column.value(name, row + 1)!;
-                    const nextParts = nextNucleotide.split("_");
-        
-                    if (parts[3] === nextParts[3] && parts[5] === nextParts[5]) {
-                        dotString.push(parts[2]);
-                    }
-                }
-
-                if(dotIndex === -1) {
+            } else {
+                if (nucleotideSplit.length >= 3 && !nucleotideSplit[2].includes(".")) {
+                    const part = nucleotideSplit.slice(2, 3).join("_");
                     text.push(part);
                 }
 
-                if(dotString) {
-                    console.log(text, 'text before pushing the cleanedDotString')
-                    const cleanedDotString = dotString.map(item => item.split('.')[0]);
-                    text.push(...cleanedDotString);
-                    dotString = [];
-                }
             }
         }
+
+        const uniqueResults = [...new Set(result)];
+
+        uniqueResults.forEach(element => {
+            const elementSplit = element.split('_');
+            text.push(elementSplit[0]);
+            console.log(elementSplit[0], 'element[00]')
+        })
 
          text.forEach(element => {
             nucleotideCounts[element] = (nucleotideCounts[element] || 0) + 1;

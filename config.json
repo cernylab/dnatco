@@ -41,7 +41,7 @@
     "anglesLengths": {
         "chartMarkerColor": "#000000",
         "outlierColor": "#ff0000",
-        "navalMarkerColor": "#00ff00",
+        "navalMarkerColor": "#03b900",
         "pGroups": [
             { "threshold": 98, "color": "#6D74FF" },
             { "threshold": 99.9, "color": "#ffff00" }
