@@ -311,6 +311,10 @@ tr.rdo-angles-lengths:hover {
     background-color: var(--color-c);
 }
 
+.rdo-unassigned-ntc {
+    color: #DD4B32;
+}
+
 #app {
     height: 100%;
     margin: 0;

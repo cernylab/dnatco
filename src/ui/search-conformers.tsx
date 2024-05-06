@@ -69,14 +69,16 @@ export class SearchConformers extends React.Component<SearchConformers.Props, St
                                 sizing='maximum-available'
                             />
                         </NamedListItem>
-                        <NamedListItem name='Type of NA'>
-                            <ComboBox
-                                options={TypeOfNAOptions}
-                                value={this.state.redundancy}
-                                onChange={v => this.setState({ ...this.state, redundancy: v as Redundacy })}
-                                sizing='maximum-available'
-                            />
-                        </NamedListItem>
+                        <div className='hidden'>
+                            <NamedListItem name='Type of NA'>
+                                <ComboBox
+                                    options={TypeOfNAOptions}
+                                    value={this.state.redundancy}
+                                    onChange={v => this.setState({ ...this.state, redundancy: v as Redundacy })}
+                                    sizing='maximum-available'
+                                />
+                            </NamedListItem>
+                        </div>
                     </NamedList>
                     <PushButton
                         caption='Search'
