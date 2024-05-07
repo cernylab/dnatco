@@ -14,66 +14,89 @@ import { EntityPoly } from '../../../../cif/categories/entity';
 function mmCifName(d: Dnatcofication) {
     if (!d.hasTable(EntityPoly))
         return 'dnatco_structure.cif';
-    const col = d.table(EntityPoly).pdbx_seq_one_letter_code;
-    const sequence = Cif.Column.value(col, 0);
-    return `${sequence}`;
+    const values = d.table(EntityPoly).pdbx_seq_one_letter_code.values;
+    const type = d.table(EntityPoly).type.values;
+    if (values && type) {
+        const combinedArray = values.map((value, index) => ({
+            type: type[index],
+            sequence: value
+        }));
+
+        console.log(combinedArray, 'Combined array');
+
+        const selectedSequences = combinedArray
+        .filter(item => item.type === 'polyribonucleotide' || 
+                        item.type === 'polydeoxyribonucleotide' || 
+                        item.type === 'polydeoxyribonucleotide/polyribonucleotide hybrid')
+        .map(item => item.sequence.replace(/,/g, ''));
+
+        console.log(selectedSequences, 'only polyribonuclotide sequences');
+        
+        return selectedSequences.join('');
+
+    } else {
+        console.log('Either col or identifier is null');
+    }
 }
 
 export function NucleotideCounts({ d }: { d: Dnatcofication }) {
 
     const sequence = mmCifName(d);
-    const result = [];
-    const regex = /\((.*?)\)/g;
 
-    let match;
-    while ((match = regex.exec(sequence)) !== null) {
-        result.push(match[1]);
-    }
+    if (sequence) {
+        const result = [];
+        const regex = /\((.*?)\)/g;
 
-    console.log(sequence)
-    
-    let lastIndex = 0;
-    let match2;
-    while ((match2 = regex.exec(sequence)) !== null) {
-        const nonParenthesized = sequence.substring(lastIndex, match2.index);
-        if (nonParenthesized.length > 0) {
-            result.push(...nonParenthesized.split(''));
+        let match;
+        while ((match = regex.exec(sequence)) !== null) {
+            result.push(match[1]);
         }
-        lastIndex = regex.lastIndex;
-    }
+
+        console.log(sequence)
+        
+        let lastIndex = 0;
+        let match2;
+        while ((match2 = regex.exec(sequence)) !== null) {
+            const nonParenthesized = sequence.substring(lastIndex, match2.index);
+            if (nonParenthesized.length > 0) {
+                result.push(...nonParenthesized.split(''));
+            }
+            lastIndex = regex.lastIndex;
+        }
+        
+        if (lastIndex < sequence.length) {
+            result.push(...sequence.substring(lastIndex).split(''));
+        }
     
-    if (lastIndex < sequence.length) {
-        result.push(...sequence.substring(lastIndex).split(''));
-    }
+        const nucleotideCounts: { [ntc: string]: number } = {};
+    
+        for (let i = 0; i < result.length; i++) {
+            const substring = result[i]; 
+            nucleotideCounts[substring] = (nucleotideCounts[substring] || 0) + 1;
+        }
 
-    const nucleotideCounts: { [ntc: string]: number } = {};
-
-    for (let i = 0; i < result.length; i++) {
-        const substring = result[i]; 
-        nucleotideCounts[substring] = (nucleotideCounts[substring] || 0) + 1;
-    }
-
-    return (
-        <table className='mb-2'>
-            <thead>
-                <tr>
-                    <th colSpan={2} className='mb-4 p-4 text-20px border-primary-first border-[.1px]'>Counts of Nucleotide in polymer entity</th>
-                </tr>
-                <tr>
-                    <th className='py-2 border-primary-first border-[.1px]'>Nucleotide</th>
-                    <th className='py-2 border-primary-first border-[.1px]'>Count</th>
-                </tr>
-            </thead>
-            <tbody>
-                {Object.entries(nucleotideCounts).map(([ntc, count]) => (
-                    <tr key={ntc}>
-                        <td className='font-bold py-1 px-7 w-[7rem] text-center border-primary-first border-[.1px]'>{ntc}</td>
-                        <td className='font-bold py-1 px-7 w-[7rem] text-center border-primary-first border-[.1px]'>{count}</td>
+        return (
+            <table className='mb-2'>
+                <thead>
+                    <tr>
+                        <th colSpan={2} className='mb-4 p-4 text-20px border-primary-first border-[.1px]'>Counts of Nucleotide in polymer entity</th>
                     </tr>
-                ))}
-            </tbody>
-        </table>
-    );
+                    <tr>
+                        <th className='py-2 border-primary-first border-[.1px]'>Nucleotide</th>
+                        <th className='py-2 border-primary-first border-[.1px]'>Count</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {Object.entries(nucleotideCounts).map(([ntc, count]) => (
+                        <tr key={ntc}>
+                            <td className='font-bold py-1 px-7 w-[7rem] text-center border-primary-first border-[.1px]'>{ntc}</td>
+                            <td className='font-bold py-1 px-7 w-[7rem] text-center border-primary-first border-[.1px]'>{count}</td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+        );
+    }
 }
 
 export function BasePairing({ d }: { d: Dnatcofication }) {
