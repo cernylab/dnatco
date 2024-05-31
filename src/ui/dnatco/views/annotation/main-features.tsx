@@ -100,76 +100,82 @@ export function NucleotideCounts({ d }: { d: Dnatcofication }) {
 }
 
 export function BasePairing({ d }: { d: Dnatcofication }) {
-    const pdbId = getCifValue(d, Struct, 'entry_id').toLowerCase();
-    const pdbMid = pdbId.slice(1,3);
+    const pdbId = getCifValue(d, Struct, 'entry_id');
+    
+    if(!pdbId === undefined) {
 
-    const [data, setData] = useState<any>(null);
-    const [loading, setLoading] = useState(true);
+        pdbId.toLowerCase();
 
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const url = `/pairing/${pdbMid}/${pdbId}_basepairs.json`
-                const response = await fetch(url);
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
+        const pdbMid = pdbId.slice(1,3);
+    
+        const [data, setData] = useState<any>(null);
+        const [loading, setLoading] = useState(true);
+    
+        useEffect(() => {
+            const fetchData = async () => {
+                try {
+                    const url = `/pairing/${pdbMid}/${pdbId}_basepairs.json`
+                    const response = await fetch(url);
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    const jsonData = await response.json();
+                    setData(jsonData);
+                    setLoading(false);
+                } catch (error) {
+                    console.error('Error fetching data:', error);
+                    setLoading(false);
                 }
-                const jsonData = await response.json();
-                setData(jsonData);
-                setLoading(false);
-            } catch (error) {
-                console.error('Error fetching data:', error);
-                setLoading(false);
-            }
-        };
-
-        fetchData();
-    }, []);
-
-    if (loading) {
-        return <div>Loading...</div>;
-    }
-
-    if (!data || !data.summary || Object.keys(data.summary).length === 0) {
-        return;
-    }
-
-    const summaryData = data.summary;
-
-    return (
-        <table className='mb-2'>
-            <thead>
-                <tr>
-                    <th colSpan={2} className='mb-4 p-4 text-20px border-primary-first border-[.1px]'>
-                        <div>Number of paired bases</div>
-                        <div className='text-14px'>Data provided by FR3D</div>
-                    </th>
-                </tr>
-                <tr>
-                    <th className='py-2 border-primary-first border-[.1px]'>
-                        <div className='flex justify-center'>
-                            <span>Type of BP</span>
-                            <Tooltip
-                                tag={<div className='cursor-pointer ml-4'><img className='w-5' src={tooltipImg}/></div>}
-                                delayMsec={300}
-                            >
-                                The Leontis-Westhof nomenclature, for more see help (Link in footer)
-                            </Tooltip>
-                        </div>
-                    </th>
-                    <th className='py-2 border-primary-first border-[.1px]'>Count</th>
-                </tr>
-            </thead>
-            <tbody>
-                {Object.entries(summaryData).map(([key, value]: [string, any]) => (
-                    <tr key={key}>
-                        <td className='font-bold py-1 px-7 w-[7rem] text-center border-primary-first border-[.1px]'>{key}</td>
-                        <td className='font-bold py-1 px-7 w-[7rem] text-center border-primary-first border-[.1px]'>{value}</td>
+            };
+    
+            fetchData();
+        }, []);
+    
+        if (loading) {
+            return <div>Loading...</div>;
+        }
+    
+        if (!data || !data.summary || Object.keys(data.summary).length === 0) {
+            return;
+        }
+    
+        const summaryData = data.summary;
+    
+        return (
+            <table className='mb-2'>
+                <thead>
+                    <tr>
+                        <th colSpan={2} className='mb-4 p-4 text-20px border-primary-first border-[.1px]'>
+                            <div>Number of paired bases</div>
+                            <div className='text-14px'>Data provided by FR3D</div>
+                        </th>
                     </tr>
-                ))}
-            </tbody>
-        </table>        
-    );
+                    <tr>
+                        <th className='py-2 border-primary-first border-[.1px]'>
+                            <div className='flex justify-center'>
+                                <span>Type of BP</span>
+                                <Tooltip
+                                    tag={<div className='cursor-pointer ml-4'><img className='w-5' src={tooltipImg}/></div>}
+                                    delayMsec={300}
+                                >
+                                    The Leontis-Westhof nomenclature, for more see help (Link in footer)
+                                </Tooltip>
+                            </div>
+                        </th>
+                        <th className='py-2 border-primary-first border-[.1px]'>Count</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {Object.entries(summaryData).map(([key, value]: [string, any]) => (
+                        <tr key={key}>
+                            <td className='font-bold py-1 px-7 w-[7rem] text-center border-primary-first border-[.1px]'>{key}</td>
+                            <td className='font-bold py-1 px-7 w-[7rem] text-center border-primary-first border-[.1px]'>{value}</td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>        
+        );
+    }
 }
 
 export class MainFeatures extends View<View.Props> {
