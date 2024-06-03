@@ -213,11 +213,13 @@ class BrowseConformers extends React.Component {
                             ? <div className='rdo-secondary-caption'>{`Steps with NtC class ${this.search.criteria.NtC} (randomly selected ${this.search.results.length} steps from PDB database)`}</div>
                             : undefined
                         }
-                        <div className='overflow-hidden'>
-                            <div className='rdo-scroll-vertically'>
-                                {this.renderStepsTable()}
+                        {this.search.results.length > 0 &&
+                            <div className='overflow-hidden'>
+                                <div className='rdo-scroll-vertically'>
+                                    {this.renderStepsTable()}
+                                </div>
                             </div>
-                        </div>
+                        }
                     </div>
                 </div>
             </div>
@@ -421,14 +423,17 @@ export class ConformersTab extends React.Component<ConformersTab.Props, State> {
             );
         case 'base-pairs':
             return (
-                <div className='bg-primary-first text-white p-3 w-fit rounded-standart transition-all hover:bg-secondary-second hover:text-primary-first'>
-                    <a
-                        className='font-700'
-                        href='https://basepairs.datmos.org/#tWW-A-A/'
-                        target='_blank'>
-                            Open base pairs
-                    </a>
-                </div>
+                <>
+                    <div className='bg-primary-first text-white p-3 mb-3 w-fit rounded-standart transition-all hover:bg-secondary-second hover:text-primary-first'>
+                        <a
+                            className='font-700'
+                            href='https://basepairs.datmos.org/#tWW-A-A/'
+                            target='_blank'>
+                                Open base pairs
+                        </a>
+                    </div>
+                    <div>You will be redirected to a new page by clicking on this button, and none of your work will be lost</div>
+                </>
             );
         case 'table-of-conformers': return <TableOfConformers />;
         case 'contour-plots': return <ContourPlots />;
