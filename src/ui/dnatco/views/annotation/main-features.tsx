@@ -22,7 +22,7 @@ function mmCifName(d: Dnatcofication) {
             sequence: value
         }));
 
-        console.log(combinedArray, 'Combined array');
+        // console.log(combinedArray, 'Combined array');
 
         const selectedSequences = combinedArray
         .filter(item => item.type === 'polyribonucleotide' || 
@@ -30,7 +30,7 @@ function mmCifName(d: Dnatcofication) {
                         item.type === 'polydeoxyribonucleotide/polyribonucleotide hybrid')
         .map(item => item.sequence.replace(/,/g, ''));
 
-        console.log(selectedSequences, 'only polyribonuclotide sequences');
+        // console.log(selectedSequences, 'only polyribonuclotide sequences');
         
         return selectedSequences.join('');
 
@@ -52,7 +52,7 @@ export function NucleotideCounts({ d }: { d: Dnatcofication }) {
             result.push(match[1]);
         }
 
-        console.log(sequence)
+        // console.log(sequence)
         
         let lastIndex = 0;
         let match2;
@@ -102,7 +102,7 @@ export function NucleotideCounts({ d }: { d: Dnatcofication }) {
 export function BasePairing({ d }: { d: Dnatcofication }) {
     const pdbId = getCifValue(d, Struct, 'entry_id');
     
-    if(!pdbId === undefined) {
+    if(pdbId !== undefined) {
 
         pdbId.toLowerCase();
 
