@@ -112,7 +112,9 @@ async function downloadDensityMap(pdbId: string, type: 'x-ray'|'em') {
 }
 
 async function fetchCoordinates(pdbId: string): Promise<Result<Coordinates>> {
-    const url = `https://models.rcsb.org/v1/${pdbId}/full?encoding=cif&copy_all_categories=true`;
+//    models server had performance issues lately (PDB suggested going back to files)
+//    const url = `https://models.rcsb.org/v1/${pdbId}/full?encoding=cif&copy_all_categories=true`;
+    const url = `https://files.rcsb.org/download/${pdbId}.cif`;
     const req = await fetch(url);
     if (!req.ok)
         return ErrorResult(`Download failed: ${req.statusText}`);
