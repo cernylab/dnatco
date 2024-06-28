@@ -64,7 +64,7 @@
         "@types/uuid": "^8.3.4",
         "assert": "^2.0.0",
         "autoprefixer": "^10.4.16",
-        "browser-env": "^3.3.0",
+        "browser-env": "^2.0.21",
         "buffer": "^6.0.3",
         "bufferutil": "^4.0.7",
         "canvas": "^2.11.2",
