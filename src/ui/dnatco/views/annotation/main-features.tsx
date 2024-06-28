@@ -31,7 +31,7 @@ function mmCifName(d: Dnatcofication) {
         .map(item => item.sequence.replace(/,/g, ''));
 
         // console.log(selectedSequences, 'only polyribonuclotide sequences');
-        
+
         return selectedSequences.join('');
 
     } else {
@@ -53,7 +53,7 @@ export function NucleotideCounts({ d }: { d: Dnatcofication }) {
         }
 
         // console.log(sequence)
-        
+
         let lastIndex = 0;
         let match2;
         while ((match2 = regex.exec(sequence)) !== null) {
@@ -63,13 +63,13 @@ export function NucleotideCounts({ d }: { d: Dnatcofication }) {
             }
             lastIndex = regex.lastIndex;
         }
-        
+
         if (lastIndex < sequence.length) {
             result.push(...sequence.substring(lastIndex).split(''));
         }
-    
+
         const nucleotideCounts: { [ntc: string]: number } = {};
-    
+
         for (let i = 0; i < result.length; i++) {
             const substring = result[i]; 
             nucleotideCounts[substring] = (nucleotideCounts[substring] || 0) + 1;
@@ -101,20 +101,21 @@ export function NucleotideCounts({ d }: { d: Dnatcofication }) {
 
 export function BasePairing({ d }: { d: Dnatcofication }) {
     const pdbId = getCifValue(d, Struct, 'entry_id');
-    
+
     if(pdbId !== undefined) {
 
-        pdbId.toLowerCase();
+        const pdbLc = pdbId.toLowerCase();
 
-        const pdbMid = pdbId.slice(1,3);
-    
+        const pdbMid = pdbLc.slice(1,3);
+
         const [data, setData] = useState<any>(null);
         const [loading, setLoading] = useState(true);
-    
+
         useEffect(() => {
             const fetchData = async () => {
                 try {
-                    const url = `/pairing/${pdbMid}/${pdbId}_basepairs.json`
+                    const url = `/pairing/${pdbMid}/${pdbLc}_basepairs.json`
+                    //console.log('trying url:', url)
                     const response = await fetch(url);
                     if (!response.ok) {
                         throw new Error('Network response was not ok');
@@ -127,20 +128,20 @@ export function BasePairing({ d }: { d: Dnatcofication }) {
                     setLoading(false);
                 }
             };
-    
+
             fetchData();
         }, []);
-    
+
         if (loading) {
             return <div>Loading...</div>;
         }
-    
+
         if (!data || !data.summary || Object.keys(data.summary).length === 0) {
             return;
         }
-    
+
         const summaryData = data.summary;
-    
+
         return (
             <table className='mb-2'>
                 <thead>
@@ -173,7 +174,7 @@ export function BasePairing({ d }: { d: Dnatcofication }) {
                         </tr>
                     ))}
                 </tbody>
-            </table>        
+            </table>
         );
     }
 }
@@ -181,9 +182,9 @@ export function BasePairing({ d }: { d: Dnatcofication }) {
 export class MainFeatures extends View<View.Props> {
     static readonly unscrollableContainer = true;
 
-    
+
     render() {
-        
+
         const summary = this.props.dnatcofication.table(NdbStructNtcStepSummary);
         const { assigned_NtC, assigned_CANA } = summary;
         const steps = this.props.dnatcofication.table(NdbStructNtcStep);
@@ -264,7 +265,7 @@ export class MainFeatures extends View<View.Props> {
                         ))}
                     </tbody>
                 </table>
-                
+
                 <BasePairing d={this.props.dnatcofication} />
 
                 <NucleotideCounts d={this.props.dnatcofication} />
