@@ -10,6 +10,7 @@ import {
   Route,
 } from "react-router-dom";
 import { Subject } from "rxjs";
+import { OkResult } from "./dnatco";
 import {
   DataTransferDownloadImg,
   DocumentImg,
@@ -49,6 +50,7 @@ import { StartTab } from "./ui/start-tab";
 import { Email } from "./ui/common/email";
 import { InProgress } from "./ui/common/in-progress";
 import { Popup } from "./ui/common/popup";
+import { PopupCustomFile } from "./ui/common/popup-custom-file";
 import { QuestionDialog } from "./ui/common/question-dialog";
 import { formatErrorText } from "./ui/util";
 import { BackgroundWorker, WorkerMessage } from "./tasks/worker";
@@ -135,6 +137,9 @@ const TabsForModes = {
   },
 };
 
+let jsonData: any;
+let fileName: string;
+
 function goToStep(stepName: string, outsideControl: OutsideControl) {
   // Use an arbitrary delay to give Molstar some time to settle
   // Not doing this may result in broken rendering
@@ -169,6 +174,24 @@ class DnatcoficationHandler {
     onSuccess: () => void
   ) {
     const coordsType = Coordinates.guessType(coordsFile);
+    fileName = coordsFile.name;
+    async function processCoordinatesFile(coordsFile: File, coordsType: any) {
+      try {
+        const result = await Coordinates.fromFile(coordsFile, coordsType);
+        if (result.success === "ok") {
+          // Handle OkResult
+          const okResult: OkResult<{ data: string; type: "cif" | "pdb" }> = {
+            success: "ok",
+            data: { data: result.data.data, type: result.data.type },
+          };
+          const textData = okResult.data.data;
+          jsonData = textData;
+        }
+      } catch (error) {
+        console.error("Error processing coordinates file:", error);
+      }
+    }
+    processCoordinatesFile(coordsFile, coordsType);
     if (coordsType === "unknown") {
       Popup.create(
         <>
@@ -272,7 +295,11 @@ class DnatcoficationHandler {
     this.loadStructure(task, onSuccess);
   }
 
-  private async loadStructure<P>(task: Task<P>, onSuccess: () => void) {
+  private async loadStructure<P>(
+    task: Task<P>,
+    onSuccess: () => void,
+    message?: any
+  ) {
     if (this.ingestionInProgress) return void 0;
 
     this.ingestionInProgress = true;
@@ -293,8 +320,13 @@ class DnatcoficationHandler {
       Popup.create(
         <>
           {formatErrorText("Cannot process structure")}
+
           {formatErrorText(
-            `Internal error: ${ev.error?.message ?? "Unspecified error"}`
+            `${
+              message
+                ? message
+                : `Internal error: ${ev.error?.message ?? "Unspecified error"}`
+            }`
           )}
         </>
       );
@@ -337,11 +369,25 @@ class DnatcoficationHandler {
             errorMessage = "PDB ID is not found in PDB-REDO, try again";
           }
 
-          Popup.create(
-            <>
-              {formatErrorText("Cannot process structure")}
-              {formatErrorText(errorMessage)}
-            </>
+          PopupCustomFile.create(
+            (repairedData) => {
+              const cifFileName = fileName.replace(/\.[^.]+$/, ".cif");
+              if (repairedData) {
+                const fileContent = repairedData;
+                const fileBlob = new Blob([fileContent], {
+                  type: "chemical/x-cif",
+                });
+                const file = new File([fileBlob], cifFileName, {
+                  type: "chemical/x-cif",
+                });
+
+                this.fromCustomStructure(file, [], null, () => {
+                  onSuccess();
+                });
+              }
+            },
+            errorMessage,
+            jsonData
           );
         } else if (data.finished.state === "succeeded") {
           this.dnatcofication.setData(data.finished.data!);

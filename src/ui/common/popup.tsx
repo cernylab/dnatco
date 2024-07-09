@@ -24,11 +24,11 @@ export class Popup extends React.Component<Popup.Props> {
         className="absolute top-0 left-0 h-full w-full z-[999] m-auto bg-test"
         tabIndex={0}
       >
-        <div className="bg-primary-first flex flex-col mx-auto p-4 relative top-[45%] rounded-standart max-w-[33%] max-h-[20%] overflow-y-scroll text-white">
-          <div>{this.props.children}</div>
+        <div className="bg-primary-first flex justify-between mx-auto p-4 relative top-[45%] rounded-standart max-w-[33%] max-h-[20%] overflow-y-scroll text-white">
+          <div className="mb-4">{this.props.children}</div>
           <button
             onClick={() => this.dismiss()}
-            className="bg-secondary-second text-primary-first items-center flex justify-center px-4 py-1 cursor-pointer w-fit rounded-smaller hover:bg-secondary-second-hover transition-all"
+            className="bg-secondary-second text-primary-first items-center flex justify-center px-4 py-1 cursor-pointer w-fit max-h-10 rounded-smaller hover:bg-secondary-second-hover transition-all"
           >
             Dismiss
           </button>
