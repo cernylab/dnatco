@@ -63,7 +63,7 @@ function makeExample(
   return (
     <div
       key={`${_db}${_pdbId}`}
-      className="rdo-example-structure text-14px mx-1 p-3 bg-primary-first rounded-standart text-secondary-first hover:text-primary-first transition-all hover:bg-secondary-second"
+      className="rdo-example-structure cursor-pointer text-14px mx-1 p-3 bg-primary-first rounded-standart text-secondary-first hover:text-primary-first transition-all hover:bg-secondary-second"
       onClick={() => handler(_db, _pdbId)}
     >
       {name ?? _pdbId}
@@ -344,7 +344,7 @@ class DensityMapFiles extends React.Component<
             className="rdo-text-disabled"
             style={{
               fontSize: "var(--font-large)",
-              padding: "0 var(--h-gap) 0 var(--h-gap)",
+              padding: "0 1em",
               position: "absolute",
               width: "100%",
               textAlign: "center",
@@ -575,7 +575,7 @@ export class StartTab extends React.Component<StartTab.Props, State> {
               <img src={Contacts} alt="Contacts" />
             </div>
           </div>
-          <div style={Common.VScrollJail}>
+          <div className="overflow-hidden h-full flex flex-col">
             <div className="rdo-offset">
               <div className="mt-[7%]">
                 <div className="text-34px w-[720px] m-auto text-center leading-10 font-roboto-bold">

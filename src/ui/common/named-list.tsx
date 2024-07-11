@@ -1,77 +1,101 @@
-import * as React from 'react';
-import { Tooltip } from './tooltip';
+import * as React from "react";
+import { Tooltip } from "./tooltip";
 
 const SizingPolicy = {
-    'min-content': 'min-content',
-    'maximum-available': '100%',
+  "min-content": "min-content",
+  "maximum-available": "100%",
 };
 
 const RowSpacingPolicy = {
-    default: 0,
-    half: 'calc(var(--v-gap) / 2)',
-    one: 'var(--v-gap)',
+  default: 0,
+  half: "calc(var(--v-gap) / 2)",
+  one: "var(--v-gap)",
 };
 
 export class NamedList extends React.Component<NamedList.Props> {
-    static defaultProps = {
-        horizontalPosition: 'left',
-        verticalPosition: 'top',
-    }
+  static defaultProps = {
+    horizontalPosition: "left",
+    verticalPosition: "top",
+  };
 
-    private renderCentered() {
-        const children = this.props.children;
-        return (
-            <div className='rdo-named-list-centered'>
-                {Array.isArray(children)
-                    ? children.map(e => <><div />{e}<div /></>)
-                    : <><div />{children}<div /></>
-                }
-            </div>
-        )
-    }
+  private renderCentered() {
+    const children = this.props.children;
+    return (
+      <div className="rdo-named-list-centered">
+        {Array.isArray(children) ? (
+          children.map((e) => (
+            <>
+              <div />
+              {e}
+              <div />
+            </>
+          ))
+        ) : (
+          <>
+            <div />
+            {children}
+            <div />
+          </>
+        )}
+      </div>
+    );
+  }
 
-    private renderLeft() {
-        return (
-            <div
-                className={`rdo-named-list ${this.props.verticalPosition === 'center' ? 'rdo-named-list-vcentered' : ''}`}
-                style={{
-                    width: this.props.sizing ? SizingPolicy[this.props.sizing] : SizingPolicy['maximum-available'],
-                    rowGap: this.props.rowSpacing ? RowSpacingPolicy[this.props.rowSpacing] : RowSpacingPolicy.default,
-                }}
-            >
-                {this.props.children}
-            </div>
-        )
-    }
+  private renderLeft() {
+    return (
+      <div
+        className={`rdo-named-list ${
+          this.props.verticalPosition === "center"
+            ? "rdo-named-list-vcentered items-center"
+            : ""
+        }`}
+        style={{
+          width: this.props.sizing
+            ? SizingPolicy[this.props.sizing]
+            : SizingPolicy["maximum-available"],
+          rowGap: this.props.rowSpacing
+            ? RowSpacingPolicy[this.props.rowSpacing]
+            : RowSpacingPolicy.default,
+        }}
+      >
+        {this.props.children}
+      </div>
+    );
+  }
 
-    render() {
-        return this.props.horizontalPosition === 'center' ? this.renderCentered() : this.renderLeft();
-    }
+  render() {
+    return this.props.horizontalPosition === "center"
+      ? this.renderCentered()
+      : this.renderLeft();
+  }
 }
 
-export class NamedListItem extends React.Component<{ name: string, children?: React.ReactNode|React.ReactNode[], tooltip?: React.ReactNode }> {
-    render() {
-        return (
-            <>
-                <div className='rdo-named-list-name my-auto'>
-                    {this.props.name}
-                    {this.props.tooltip
-                        ? <Tooltip tag='[?]'>{this.props.tooltip}</Tooltip>
-                        : undefined
-                    }
-                </div>
-                <div className='rdo-named-list-value'>{this.props.children}</div>
-            </>
-        );
-    }
+export class NamedListItem extends React.Component<{
+  name: string;
+  children?: React.ReactNode | React.ReactNode[];
+  tooltip?: React.ReactNode;
+}> {
+  render() {
+    return (
+      <>
+        <div className="rdo-named-list-name my-auto">
+          {this.props.name}
+          {this.props.tooltip ? (
+            <Tooltip tag="[?]">{this.props.tooltip}</Tooltip>
+          ) : undefined}
+        </div>
+        <div className="rdo-named-list-value">{this.props.children}</div>
+      </>
+    );
+  }
 }
 
 export namespace NamedList {
-    export interface Props {
-        horizontalPosition: 'center' | 'left';
-        verticalPosition: 'center' | 'top';
-        children?: React.ReactNode|React.ReactNode[];
-        sizing?: keyof typeof SizingPolicy;
-        rowSpacing?: keyof typeof RowSpacingPolicy;
-    }
+  export interface Props {
+    horizontalPosition: "center" | "left";
+    verticalPosition: "center" | "top";
+    children?: React.ReactNode | React.ReactNode[];
+    sizing?: keyof typeof SizingPolicy;
+    rowSpacing?: keyof typeof RowSpacingPolicy;
+  }
 }

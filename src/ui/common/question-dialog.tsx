@@ -1,65 +1,62 @@
-import React from 'react';
-import * as RDC from 'react-dom/client';
-import { PushButton } from './push-button';
+import React from "react";
+import * as RDC from "react-dom/client";
+import { PushButton } from "./push-button";
 
-interface Props extends QuestionDialog.Props{
-    parentElement: HTMLElement;
+interface Props extends QuestionDialog.Props {
+  parentElement: HTMLElement;
 }
 export class QuestionDialog extends React.Component<Props> {
-    private dismiss() {
-        document.body.removeChild(this.props.parentElement);
-    }
+  private dismiss() {
+    document.body.removeChild(this.props.parentElement);
+  }
 
-    render() {
-        return (
-            <div className='rdo-popup'>
-                <div className='rdo-popup-inner'>
-                    <div className='rdo-named-list-name'>{this.props.caption}</div>
-                    <div className='h-4' />
+  render() {
+    return (
+      <div className="rdo-popup">
+        <div className="rdo-popup-inner">
+          <div className="rdo-named-list-name">{this.props.caption}</div>
+          <div className="h-4" />
 
-                    { typeof this.props.text === 'string'
-                        ? <div>{this.props.text}</div>
-                        : this.props.text
-                    }
+          {typeof this.props.text === "string" ? (
+            <div>{this.props.text}</div>
+          ) : (
+            this.props.text
+          )}
 
-                    <div className='h-4' />
-                    <div className='rdo-popup-button-bar'>
-                        <div style={{ flex: 1 }} />
-                        {
-                            this.props.answers.map(x => {
-                                return (
-                                    <PushButton
-                                        caption={x.text}
-                                        onClick={() => {
-                                            this.dismiss();
-                                            this.props.onAnswered(x.code);
-                                        }}
-                                    />
-                                )
-                            })
-                        }
-                    </div>
-                </div>
-            </div>
-        );
-    }
+          <div className="h-4" />
+          <div className="rdo-popup-button-bar">
+            <div className="flex-1" />
+            {this.props.answers.map((x) => {
+              return (
+                <PushButton
+                  caption={x.text}
+                  onClick={() => {
+                    this.dismiss();
+                    this.props.onAnswered(x.code);
+                  }}
+                />
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    );
+  }
 }
 
 export namespace QuestionDialog {
-    export interface Props {
-        caption: string,
-        text: string|JSX.Element,
-        answers: { text: string, code: number }[],
-        onAnswered: (code: number) => void,
-    }
+  export interface Props {
+    caption: string;
+    text: string | JSX.Element;
+    answers: { text: string; code: number }[];
+    onAnswered: (code: number) => void;
+  }
 
-    export function create(props: Props) {
-        const tainer = document.createElement('div');
-        document.body.appendChild(tainer);
+  export function create(props: Props) {
+    const tainer = document.createElement("div");
+    document.body.appendChild(tainer);
 
-        const reactRoot = RDC.createRoot(tainer!)
-        reactRoot.render(
-            <QuestionDialog {...props} parentElement={tainer} />
-        );
-    }
+    const reactRoot = RDC.createRoot(tainer!);
+    reactRoot.render(<QuestionDialog {...props} parentElement={tainer} />);
+  }
 }

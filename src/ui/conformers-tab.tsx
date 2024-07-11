@@ -240,7 +240,7 @@ class TableOfConformers extends React.Component {
         let totalGSCount = 0;
 
         return (
-            <table className='rdo-list-of-conformers rdo-data-table-wide'>
+            <table className='rdo-list-of-conformers rdo-data-table-wide w-full'>
                 <thead>
                     <tr>
                         <th className='border-b border-solid border-primary-first' rowSpan={2}>NtC</th>

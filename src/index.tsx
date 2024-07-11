@@ -587,7 +587,7 @@ function App(props: { initial: Initial }) {
   }, [dnatcofierState]);
 
   return (
-    <div id="rdo-app">
+    <div id="rdo-app" className="flex flex-col h-screen overflow-y-hidden">
       <NavigationBar
         onTabSwitched={(tk) => {
           if (tk === "start") navigate("/app");
