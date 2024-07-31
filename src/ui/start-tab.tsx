@@ -7,7 +7,6 @@ import {
 } from "./common/push-button";
 import { Popup } from "./common/popup";
 import { Tooltip } from "./common/tooltip";
-import { Common } from "./dnatco/common";
 import {
   MagnifyingGlassImg,
   MediaPlayImg,

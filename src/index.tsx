@@ -369,6 +369,13 @@ class DnatcoficationHandler {
             errorMessage = "PDB ID is not found in PDB-REDO, try again";
           }
 
+          if (
+            errorMessage ===
+            "Error: Failed to classify steps: LLKA_E_NOTHING_TO_CLASSIFY"
+          ) {
+            errorMessage = "PDB ID does not contain nucleic acid";
+          }
+
           PopupCustomFile.create(
             (repairedData) => {
               const cifFileName = fileName.replace(/\.[^.]+$/, ".cif");
@@ -385,6 +392,7 @@ class DnatcoficationHandler {
                   onSuccess();
                 });
               }
+              jsonData = null;
             },
             errorMessage,
             jsonData

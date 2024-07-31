@@ -12,13 +12,16 @@ export class PopupCustomFile extends React.Component<PopupCustomFile.Props> {
 
   private async postToDatabase(coordsData: any) {
     try {
+      const userAgent = "dnatco.datmos.org internal 0.0.1";
       const response = await fetch("https://maxit.datmos.org/convert.php", {
         method: "POST",
         headers: {
-          "User-Agent": "dnatco.datmos.org internal 0.0.1",
           "Content-Type": "application/x-www-form-urlencoded",
         },
-        body: new URLSearchParams({ coordsdata: coordsData }),
+        body: new URLSearchParams({
+          coordsdata: coordsData,
+          userAgent: userAgent,
+        }),
       });
 
       if (!response.ok) {
@@ -62,7 +65,8 @@ export class PopupCustomFile extends React.Component<PopupCustomFile.Props> {
         <div className="bg-primary-first flex flex-col mx-auto p-4 relative top-[45%] rounded-standart max-w-[33%] max-h-[20%] overflow-y-scroll text-white">
           {this.props.errorMessage === "PDB ID does not exist, try again" ||
           this.props.errorMessage ===
-            "PDB ID is not found in PDB-REDO, try again" ? (
+            "PDB ID is not found in PDB-REDO, try again" ||
+          this.props.errorMessage === "PDB ID does not contain nucleic acid" ? (
             <div className="text-red-500">{this.props.errorMessage}</div>
           ) : (
             <div>
@@ -75,7 +79,9 @@ export class PopupCustomFile extends React.Component<PopupCustomFile.Props> {
           <div className="flex justify-between mt-4">
             {this.props.errorMessage !== "PDB ID does not exist, try again" &&
               this.props.errorMessage !==
-                "PDB ID is not found in PDB-REDO, try again" && (
+                "PDB ID is not found in PDB-REDO, try again" &&
+              this.props.errorMessage !==
+                "PDB ID does not contain nucleic acid" && (
                 <button
                   onClick={() => this.postToDatabase(this.props.jsonData)}
                   className="bg-secondary-second text-primary-first items-center flex justify-center px-4 py-1 cursor-pointer w-fit rounded-smaller hover:bg-secondary-second-hover transition-all"
