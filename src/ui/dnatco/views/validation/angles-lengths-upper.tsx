@@ -4,7 +4,6 @@ import { AnglesLengthsByResidue } from "./angles-lengths-by-residue";
 import { AnglesLengthsCommon } from "./angles-lengths-common";
 import { ChainSelect, ModelSelect } from "../structure-selectors";
 import { View } from "../view";
-import { Common } from "../../common";
 import { ComboBox } from "../../../common/combo-box";
 import { NamedList, NamedListItem } from "../../../common/named-list";
 import { Dnatcofication } from "../../../../dnatco/dnatcofication";

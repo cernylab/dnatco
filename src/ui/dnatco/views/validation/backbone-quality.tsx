@@ -2,7 +2,7 @@ import React from "react";
 import { Validation } from "./common";
 import { ChainSelect, ModelSelect } from "../structure-selectors";
 import { View } from "../view";
-import { niceStepName, Common } from "../../common";
+import { niceStepName } from "../../common";
 import { Colors } from "../../colors";
 import { Constants } from "../../constants";
 import { SearchBox } from "../../search-box";

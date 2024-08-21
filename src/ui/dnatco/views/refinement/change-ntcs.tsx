@@ -4,7 +4,7 @@ import { CustomNtCSets } from "./custom-ntc-sets";
 import { ChainSelect, ModelSelect } from "../structure-selectors";
 import { View } from "../view";
 import { Colors } from "../../colors";
-import { Common, niceStepName } from "../../common";
+import { niceStepName } from "../../common";
 import { setDynamicTableModelColumns } from "../../util";
 import { DynamicTable as DynamicTableComp } from "../../../common/dynamic-table";
 import { NamedList, NamedListItem } from "../../../common/named-list";
