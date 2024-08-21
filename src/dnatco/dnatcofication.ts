@@ -178,7 +178,7 @@ export class Dnatcofication {
         if (this.data.sourceFileName)
             return this.data.sourceFileName;
 
-        if (!this.data.cifData)
+        if (!this.data.cifData || !this.hasTable(Struct))
             return void 0;
 
         const struct = Cif.File.table(this.data.cifData, Struct);
@@ -234,7 +234,7 @@ export class Dnatcofication {
     }
 
     get pdbId() {
-        if (!this.data.cifData)
+        if (!this.data.cifData) || !this.hasTable(Struct))
             return '';
 
         const struct = Cif.File.table(this.data.cifData, Struct);
