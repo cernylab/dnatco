@@ -116,7 +116,7 @@ export function NucleotideCounts({ d }: { d: Dnatcofication }) {
 export function BasePairing({ d }: { d: Dnatcofication }) {
   const pdbId = getCifValue(d, Struct, "entry_id");
 
-  if (pdbId !== undefined || pdbId !== "") {
+  if (pdbId !== undefined && pdbId !== "") {
     const pdbLc = pdbId.toLowerCase();
 
     const pdbMid = pdbLc.slice(1, 3);
