@@ -72,8 +72,8 @@ export class PopupCustomFile extends React.Component<PopupCustomFile.Props> {
             <div>
               Cannot process structure. Your file is not formatted according to
               PDB standards. If you will, we can try to repair the file by
-              providing it to the external server, which will fix it. Do you
-              want to repair your file?
+              providing it to the external server, which will attempt to fix it.
+              Do you want to repair your file?
             </div>
           )}
           <div className="flex justify-between mt-4">

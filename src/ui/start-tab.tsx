@@ -133,6 +133,9 @@ class Coordinates extends React.Component<Coordinates.Props> {
 
           {customFile ? (
             <>
+              <div className="text-center w-full p-2 bg-secondary-second text-primary-first rounded-standart mb-2">
+                We advise to check your file by MAXIT before uploading
+              </div>
               <div className="flex">
                 <div className="flex flex-col mb-2">
                   <div className="flex">
@@ -576,7 +579,7 @@ export class StartTab extends React.Component<StartTab.Props, State> {
           </div>
           <div className="overflow-hidden h-full flex flex-col">
             <div className="rdo-offset">
-              <div className="mt-[7%]">
+              <div className="mt-[5%]">
                 <div className="text-34px w-[720px] m-auto text-center leading-10 font-roboto-bold">
                   <span className="text-secondary-first uppercase text-34px stroke">
                     Dnatco
