@@ -234,7 +234,7 @@ export class Dnatcofication {
     }
 
     get pdbId() {
-        if (!this.data.cifData) || !this.hasTable(Struct))
+        if (!this.data.cifData || !this.hasTable(Struct))
             return '';
 
         const struct = Cif.File.table(this.data.cifData, Struct);

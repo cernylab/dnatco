@@ -8,8 +8,6 @@ import {
   NdbStructNtcStepSummary,
 } from "../../../../cif/categories/ndb-struct-ntc";
 import { Dnatcofication } from "../../../../dnatco/dnatcofication";
-import { getCifValue } from "../../../../util/dnatco";
-import { Struct } from "../../../../cif/categories/struct";
 import { Tooltip } from "../../../common/tooltip";
 import { tooltipImg } from "../../../../assets/images";
 import { EntityPoly } from "../../../../cif/categories/entity";
