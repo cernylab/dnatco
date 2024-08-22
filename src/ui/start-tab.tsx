@@ -133,8 +133,16 @@ class Coordinates extends React.Component<Coordinates.Props> {
 
           {customFile ? (
             <>
-              <div className="text-center w-full p-2 bg-secondary-second text-primary-first rounded-standart mb-2">
-                We advise to check your file by MAXIT before uploading
+              <div className="text-center w-full p-1 text-14px font-roboto-bold bg-secondary-second text-primary-first rounded-standart mb-2">
+                We advise to check your file by{" "}
+                <a
+                  className="hover:text-secondary-third"
+                  href="https://sw-tools.rcsb.org/apps/MAXIT/index.html"
+                  target="_blank"
+                >
+                  MAXIT
+                </a>{" "}
+                before uploading
               </div>
               <div className="flex">
                 <div className="flex flex-col mb-2">
@@ -508,9 +516,9 @@ export class StartTab extends React.Component<StartTab.Props, State> {
       this.state.densityMaps.find((x) => x.kind === "coefficients")?.file ??
       null;
 
-    console.log(densityMaps, "Densityyy mapsss");
-    console.log(densityMapCoeffs, "Densityyyy cosiii");
-    console.log(this.state.coordsFile!, "Fileeeeee");
+    //console.log(densityMaps, "Densityyy mapsss");
+    //console.log(densityMapCoeffs, "Densityyyy cosiii");
+    //console.log(this.state.coordsFile!, "Fileeeeee");
 
     this.props.onDoCustomStructure(
       this.state.coordsFile!,

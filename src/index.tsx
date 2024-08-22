@@ -139,6 +139,7 @@ const TabsForModes = {
 
 let jsonData: any;
 let fileName: string;
+let densityMapFile: any;
 
 function goToStep(stepName: string, outsideControl: OutsideControl) {
   // Use an arbitrary delay to give Molstar some time to settle
@@ -173,6 +174,7 @@ class DnatcoficationHandler {
     densityMapCoeffs: File | null,
     onSuccess: () => void
   ) {
+    densityMapFile = densityMaps;
     const coordsType = Coordinates.guessType(coordsFile);
     fileName = coordsFile.name;
     async function processCoordinatesFile(coordsFile: File, coordsType: any) {
@@ -376,6 +378,13 @@ class DnatcoficationHandler {
             errorMessage = "PDB ID does not contain nucleic acid";
           }
 
+          if (
+            errorMessage ===
+            "Problem with density map - Error: Density map file has unknown type. Only CCP4 and DSN6 maps are currently supported."
+          ) {
+            errorMessage =
+              "Problem with density map. Only CCP4 and DSN6 maps are currently supported";
+          }
           PopupCustomFile.create(
             (repairedData) => {
               const cifFileName = fileName.replace(/\.[^.]+$/, ".cif");
@@ -388,7 +397,7 @@ class DnatcoficationHandler {
                   type: "chemical/x-cif",
                 });
 
-                this.fromCustomStructure(file, [], null, () => {
+                this.fromCustomStructure(file, densityMapFile, null, () => {
                   onSuccess();
                 });
               }
