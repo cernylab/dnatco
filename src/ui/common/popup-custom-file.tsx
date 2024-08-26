@@ -68,7 +68,7 @@ export class PopupCustomFile extends React.Component<PopupCustomFile.Props> {
             "PDB ID is not found in PDB-REDO, try again" ||
           this.props.errorMessage === "PDB ID does not contain nucleic acid" ||
           this.props.errorMessage ===
-            "Problem with density map. Only CCP4 and DSN6 maps are currently supported" ? (
+            "Problem with density file. Only CCP4 and DSN6 maps are currently supported" ? (
             <div className="text-red-500">{this.props.errorMessage}</div>
           ) : (
             <div>
@@ -85,7 +85,7 @@ export class PopupCustomFile extends React.Component<PopupCustomFile.Props> {
               this.props.errorMessage !==
                 "PDB ID does not contain nucleic acid" &&
               this.props.errorMessage !==
-                "Problem with density map. Only CCP4 and DSN6 maps are currently supported" && (
+                "Problem with density file. Only CCP4 and DSN6 maps are currently supported" && (
                 <button
                   onClick={() => this.postToDatabase(this.props.jsonData)}
                   className="bg-secondary-second text-primary-first items-center flex justify-center px-4 py-1 cursor-pointer w-fit rounded-smaller hover:bg-secondary-second-hover transition-all"

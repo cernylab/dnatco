@@ -133,16 +133,17 @@ class Coordinates extends React.Component<Coordinates.Props> {
 
           {customFile ? (
             <>
-              <div className="text-center w-full p-1 text-14px font-roboto-bold bg-secondary-second text-primary-first rounded-standart mb-2">
+              <div className="text-center w-full p-1 px-3 text-14px font-roboto-bold bg-secondary-second text-primary-first rounded-standart mb-2">
                 We advise to check your file by{" "}
                 <a
-                  className="hover:text-secondary-third"
+                  className="hover:text-secondary-third underline"
                   href="https://sw-tools.rcsb.org/apps/MAXIT/index.html"
                   target="_blank"
                 >
                   MAXIT
                 </a>{" "}
-                before uploading
+                before uploading. Only CCP4 and DSN6 files are currently
+                supported.
               </div>
               <div className="flex">
                 <div className="flex flex-col mb-2">

@@ -383,8 +383,9 @@ class DnatcoficationHandler {
             "Problem with density map - Error: Density map file has unknown type. Only CCP4 and DSN6 maps are currently supported."
           ) {
             errorMessage =
-              "Problem with density map. Only CCP4 and DSN6 maps are currently supported";
+              "Problem with density file. Only CCP4 and DSN6 maps are currently supported";
           }
+
           PopupCustomFile.create(
             (repairedData) => {
               const cifFileName = fileName.replace(/\.[^.]+$/, ".cif");
