@@ -119,7 +119,7 @@ class Coordinates extends React.Component<Coordinates.Props> {
         )}
         <div className="flex flex-col w-[430px] m-auto">
           <div className="flex mb-2">
-            <div className="text-22px text-primary-first w-[155px] my-auto">
+            <div className="text-20px text-primary-first w-[155px] my-auto">
               Select
             </div>
             <div className="w-300px rounded-standart">
@@ -133,7 +133,7 @@ class Coordinates extends React.Component<Coordinates.Props> {
 
           {customFile ? (
             <>
-              <div className="text-center w-full p-1 px-3 text-14px font-roboto-bold bg-secondary-second text-primary-first rounded-standart mb-2">
+              <div className="text-center w-full p-1 px-3 text-13px font-roboto-bold bg-secondary-second text-primary-first rounded-standart mb-2">
                 We advise to check your file by{" "}
                 <a
                   className="hover:text-secondary-third underline"
@@ -148,7 +148,7 @@ class Coordinates extends React.Component<Coordinates.Props> {
               <div className="flex">
                 <div className="flex flex-col mb-2">
                   <div className="flex">
-                    <div className="text-22px w-[147px] my-auto">
+                    <div className="text-20px w-[147px] my-auto">
                       Coordinates
                     </div>
                     <label
@@ -184,7 +184,7 @@ class Coordinates extends React.Component<Coordinates.Props> {
           ) : (
             <>
               <div className="flex">
-                <div className="text-22px text-primary-first w-[155px] my-auto">
+                <div className="text-20px text-primary-first w-[155px] my-auto">
                   PDB ID
                 </div>
                 <div className="w-300px rounded-standart">
@@ -298,7 +298,7 @@ class DensityMapFiles extends React.Component<
     return (
       <div className="flex">
         <div className="flex">
-          <div className="text-22px mb-4 w-[147px]">Density maps</div>
+          <div className="text-20px my-auto w-[147px]">Density maps</div>
           <div>
             <FileInput
               id="upload-density-map"

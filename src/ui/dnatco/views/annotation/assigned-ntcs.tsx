@@ -186,14 +186,11 @@ export class AssignedNtCs extends View<View.Props> {
           () =>
             assignedNtC === "NANT" ? (
               <Tooltip
-                tag={
-                  <span className="rdo-unassigned-ntc">
-                    {Cif.Column.value(closest_NtC, row)!}
-                  </span>
-                }
+                tag={<span className="rdo-unassigned-ntc">NANT</span>}
                 delayMsec={300}
               >
-                This step is unassigned. Closest NtC is shown instead.
+                This step is unassigned. Closest NtC is{" "}
+                {Cif.Column.value(closest_NtC, row)!}.
               </Tooltip>
             ) : (
               <span>{assignedNtC}</span>
@@ -201,14 +198,11 @@ export class AssignedNtCs extends View<View.Props> {
           () =>
             assignedCANA === "NAN" ? (
               <Tooltip
-                tag={
-                  <span className="rdo-unassigned-ntc">
-                    {Cif.Column.value(closest_CANA, row)!}
-                  </span>
-                }
+                tag={<span className="rdo-unassigned-ntc">NAN</span>}
                 delayMsec={300}
               >
-                This step is unassigned. Closest CANA is shown instead.
+                This step is unassigned. Closest CANA is{" "}
+                {Cif.Column.value(closest_CANA, row)!}.
               </Tooltip>
             ) : (
               <span>{assignedCANA}</span>

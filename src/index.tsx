@@ -403,6 +403,7 @@ class DnatcoficationHandler {
                 });
               }
               jsonData = null;
+              densityMapFile = null;
             },
             errorMessage,
             jsonData
