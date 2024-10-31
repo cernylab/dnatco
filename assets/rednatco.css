@@ -288,7 +288,6 @@ tr.rdo-angles-lengths:hover {
     -webkit-appearance: none;
     appearance: none;
     border: none;
-    color: var(--color-primary-third);
     flex: 1;
     transition: background-color var(--anim-speed);
 }

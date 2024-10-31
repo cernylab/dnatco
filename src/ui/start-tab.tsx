@@ -1,16 +1,11 @@
 import React from "react";
 import { ComboBox } from "./common/combo-box";
-import {
-  DummyIconTextButton,
-  IconButton,
-  IconTextButton,
-} from "./common/push-button";
+import { DummyIconTextButton, IconTextButton } from "./common/push-button";
 import { Popup } from "./common/popup";
 import { Tooltip } from "./common/tooltip";
 import {
   MagnifyingGlassImg,
   MediaPlayImg,
-  XImg,
   DnaLeft,
   DnaRight,
   Density,
@@ -220,155 +215,211 @@ namespace Coordinates {
 
 class DensityMapFiles extends React.Component<
   DensityMapFiles.Props,
-  { selectedKind: AllowedDensityMapKinds }
+  {
+    inputs: {
+      selectedKind: AllowedDensityMapKinds;
+      selectedFile: File | null;
+    }[];
+    openModal: boolean;
+    selectedFileNames: Set<string>;
+    showMessage: boolean;
+    message: string;
+  }
 > {
   constructor(props: DensityMapFiles.Props) {
     super(props);
 
     this.state = {
-      selectedKind: "fo-fc",
+      inputs: [{ selectedKind: "2fo-fc", selectedFile: null }],
+      openModal: false,
+      selectedFileNames: new Set(),
+      showMessage: false,
+      message: "",
     };
   }
 
-  private addedFiles(fillToRows: number) {
-    const elems = new Array<JSX.Element>();
-    const textCls = this.props.disabled ? "rdo-text-disabled" : "";
-
-    let idx = 0;
-    for (; idx < this.props.files.length; idx++) {
-      const f = this.props.files[idx];
-      const _idx = idx;
-
-      elems.push(
-        <React.Fragment key={idx}>
-          <LongFileName name={f.file.name} disabled={this.props.disabled} />
-          <div className="flex w-full">
-            <div
-              className={textCls}
-              style={{ flex: 1, fontSize: "var(--font-large)" }}
-            >
-              {NiceMapKinds[f.kind]}
-            </div>
-            <div style={{ width: "2em" }}>
-              <IconButton
-                src={XImg}
-                onClick={() => this.props.onRemoveFile(_idx)}
-                className="rdo-remove-icon-button"
-                classNameDisabled="rdo-remove-icon-button-disabled"
-                disabled={this.props.disabled}
-              />
-            </div>
-          </div>
-        </React.Fragment>
-      );
-    }
-
-    for (; idx < fillToRows; idx++) {
-      elems.push(
-        <React.Fragment key={idx}>
-          <div style={{ fontSize: "var(--font-large)" }}>{"\u00A0"}</div>
-          <div style={{ fontSize: "var(--font-large)" }}>{"\u00A0"}</div>
-        </React.Fragment>
-      );
-    }
-
-    return elems;
-  }
-
   private fileTypeOptions() {
-    const remaining = AllowedDensityMapKinds.filter(
-      (x) => !this.props.files.find((f) => f.kind === x)
-    );
-    return remaining.map((x) => ({ caption: NiceMapKinds[x], value: x }));
+    return AllowedDensityMapKinds.map((x) => ({
+      caption: NiceMapKinds[x],
+      value: x,
+    }));
   }
 
-  componentDidUpdate() {
-    const opts = this.fileTypeOptions();
-    if (
-      opts.length > 0 &&
-      !opts.find((x) => x.value === this.state.selectedKind)
-    )
-      this.setState({ ...this.state, selectedKind: opts[0].value });
+  public handleAddFile() {
+    console.log("handleAddFile was called");
+    const { inputs } = this.state;
+    inputs.forEach(({ selectedFile, selectedKind }) => {
+      if (selectedFile) {
+        const df: DensityMapFile = { file: selectedFile, kind: selectedKind };
+        this.props.onAddFile(df);
+      }
+    });
   }
+
+  private addInput = () => {
+    this.setState((prevState) => ({
+      inputs: [
+        ...prevState.inputs,
+        { selectedKind: "2fo-fc", selectedFile: null },
+      ],
+    }));
+  };
+
+  private handleInputChange = (
+    index: number,
+    file: File | null,
+    kind: AllowedDensityMapKinds
+  ) => {
+    const inputs = [...this.state.inputs];
+    const { selectedFileNames } = this.state;
+
+    if (file && file !== inputs[index].selectedFile) {
+      if (selectedFileNames.has(file.name)) {
+        console.log(`File ${file.name} has already been selected.`);
+        this.setState({
+          showMessage: true,
+          message: `File ${file.name} has already been selected.`,
+        });
+        setTimeout(() => {
+          this.setState({ showMessage: false, message: "" });
+        }, 3000);
+        return;
+      } else {
+        selectedFileNames.add(file.name);
+      }
+    }
+
+    inputs[index] = { selectedKind: kind, selectedFile: file };
+    this.setState({ inputs, selectedFileNames });
+  };
+
+  private removeInput = (index: number) => {
+    const inputs = [...this.state.inputs];
+    const fileName = inputs[index].selectedFile?.name;
+
+    if (fileName) {
+      const selectedFileNames = new Set(this.state.selectedFileNames);
+      selectedFileNames.delete(fileName);
+      this.setState({ selectedFileNames });
+    }
+
+    inputs.splice(index, 1);
+    this.setState({ inputs });
+  };
 
   render() {
     const opts = this.fileTypeOptions();
-    const addedFiles = this.addedFiles(AllowedDensityMapKinds.length);
+    const { inputs, openModal, showMessage, message } = this.state;
 
     return (
       <div className="flex">
         <div className="flex">
           <div className="text-20px my-auto w-[147px]">Density maps</div>
-          <div>
-            <FileInput
-              id="upload-density-map"
-              onChange={(e) => {
-                const file = e?.[0];
-                if (file && opts.length > 0) {
-                  const df: DensityMapFile = {
-                    file,
-                    kind: this.state.selectedKind,
-                  };
-                  this.props.onAddFile(df);
-                }
-              }}
-              disabled={this.props.disabled}
-            />
-            <div className="flex">
-              <div className="hidden">{addedFiles}</div>
-              {opts.length > 0 ? (
-                <label
-                  htmlFor="upload-density-map"
-                  className="flex justify-end h-full"
-                >
-                  <div className="w-[8.6rem] mr-2">
-                    <DummyIconTextButton
-                      src={MagnifyingGlassImg}
-                      caption="Browse"
-                      disabled={this.props.disabled}
-                    />
-                  </div>
-                </label>
-              ) : (
-                <div />
-              )}
-              <div className="w-[8.6rem]">
-                <ComboBox
-                  value={this.state.selectedKind}
-                  options={opts}
-                  onChange={(v) =>
-                    this.setState({
-                      ...this.state,
-                      selectedKind: v as AllowedDensityMapKinds,
-                    })
-                  }
-                  innerStyle={{ fontSize: "var(--font-large)" }}
-                  sizing="auto"
-                  disabled={this.props.disabled}
-                />
+          <button
+            className="items-center flex justify-center p-3 font-700 w-[137px] text-16px bg-primary-first rounded-standart text-white hover:text-primary-first transition-all hover:bg-secondary-second"
+            onClick={() => this.setState({ openModal: true })}
+          >
+            Add Files
+          </button>
+          {openModal && (
+            <div className="absolute top-0 left-0 z-50 w-full h-full bg-test">
+              <div className="relative p-6 mt-[10%] bg-primary-first rounded-standart text-white w-[625px] h-[400px] overflow-y-scroll m-auto">
+                <div>
+                  {inputs.map((input, index) => (
+                    <div key={index} className="mb-2">
+                      <FileInput
+                        id={`upload-density-map-${index}`}
+                        onChange={(e) => {
+                          const file = e?.[0] ?? null;
+                          this.handleInputChange(
+                            index,
+                            file,
+                            input.selectedKind
+                          );
+                        }}
+                        disabled={this.props.disabled}
+                      />
+                      <div className="flex">
+                        {opts.length > 0 && (
+                          <label
+                            htmlFor={`upload-density-map-${index}`}
+                            className="flex justify-end h-full"
+                          >
+                            <div className="min-w-[8.6rem] mr-2">
+                              <button
+                                disabled={this.props.disabled}
+                                className="inline-block p-3 font-700 min-w-[137px] max-w-[290px] overflow-hidden whitespace-nowrap text-ellipsis text-16px bg-secondary-second rounded-standart text-primary-first hover:text-primary-first transition-all hover:bg-secondary-second"
+                                onClick={() => {
+                                  document
+                                    .getElementById(
+                                      `upload-density-map-${index}`
+                                    )
+                                    ?.click();
+                                }}
+                              >
+                                {input.selectedFile
+                                  ? `${input.selectedFile?.name}`
+                                  : "Browse"}
+                              </button>
+                            </div>
+                          </label>
+                        )}
+                        <div className="w-[8.6rem]">
+                          <ComboBox
+                            value={input.selectedKind}
+                            options={opts}
+                            onChange={(v) => {
+                              this.handleInputChange(
+                                index,
+                                input.selectedFile,
+                                v as AllowedDensityMapKinds
+                              );
+                            }}
+                            sizing="auto"
+                            theme="light"
+                            disabled={this.props.disabled}
+                          />
+                        </div>
+                        <button
+                          className="ml-2 items-center flex justify-center p-2 font-700 w-[100px] text-16px bg-red-500 rounded-standart text-white hover:bg-red-600 transition-all"
+                          onClick={() => this.removeInput(index)}
+                          disabled={this.props.disabled}
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                {showMessage && (
+                  <p className="text-secondary-third mb-2">{message}</p>
+                )}
+                <div className="flex">
+                  <button
+                    className="items-center flex justify-center p-3 font-700 text-16px bg-white rounded-standart text-primary-first hover:text-primary-first transition-all hover:bg-secondary-second mr-2"
+                    onClick={this.addInput}
+                  >
+                    + Add file
+                  </button>
+
+                  <button
+                    className="items-center flex justify-center px-4 py-1 font-700 text-16px bg-white rounded-standart text-primary-first hover:text-primary-first transition-all hover:bg-secondary-second"
+                    onClick={() => {
+                      this.setState({ openModal: false });
+                    }}
+                  >
+                    Done
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
+          )}
         </div>
-        {this.props.files.length === 0 && this.props.disabled ? (
-          <div
-            className="rdo-text-disabled"
-            style={{
-              fontSize: "var(--font-large)",
-              padding: "0 1em",
-              position: "absolute",
-              width: "100%",
-              textAlign: "center",
-              top: "50%",
-            }}
-          >
-            Density maps can be used only with structures from custom files
-          </div>
-        ) : undefined}
       </div>
     );
   }
 }
+
 namespace DensityMapFiles {
   export interface Props {
     disabled: boolean;
@@ -377,7 +428,6 @@ namespace DensityMapFiles {
     onRemoveFile: (idx: number) => void;
   }
 }
-
 class FileInput extends React.Component<{
   id: string;
   onChange: (f: FileList | null) => void;
@@ -413,12 +463,7 @@ class LongFileName extends React.Component<{
           <span
             className={`${
               this.props.disabled ? "rdo-text-disabled" : ""
-            } ml-2 `}
-            style={{
-              fontSize: "var(--font-large)",
-              overflow: "hidden",
-              whiteSpace: "nowrap",
-            }}
+            } ml-2 overflow-hidden whitespace-nowrap`}
           >
             {this.props.name}
           </span>
@@ -472,6 +517,8 @@ interface State {
   pdbId: string;
 }
 export class StartTab extends React.Component<StartTab.Props, State> {
+  private densityMapFilesRef = React.createRef<DensityMapFiles>();
+
   private readonly DatabaseOptions = (() => {
     const opts = UserRemoteDatabases.list().map((x) => ({
       caption: x.name,
@@ -517,10 +564,6 @@ export class StartTab extends React.Component<StartTab.Props, State> {
       this.state.densityMaps.find((x) => x.kind === "coefficients")?.file ??
       null;
 
-    //console.log(densityMaps, "Densityyy mapsss");
-    //console.log(densityMapCoeffs, "Densityyyy cosiii");
-    //console.log(this.state.coordsFile!, "Fileeeeee");
-
     this.props.onDoCustomStructure(
       this.state.coordsFile!,
       densityMaps,
@@ -564,6 +607,15 @@ export class StartTab extends React.Component<StartTab.Props, State> {
       pdbId: "",
     };
   }
+
+  private handleAnalyzeClick = () => {
+    if (this.state.database) {
+      this.actionPdbId(this.state.database, this.state.pdbId);
+    } else {
+      this.densityMapFilesRef.current?.handleAddFile();
+      this.actionCustomStructure();
+    }
+  };
 
   render() {
     return (
@@ -628,6 +680,7 @@ export class StartTab extends React.Component<StartTab.Props, State> {
                       <div className="mx-auto w-[430px]">
                         <DensityMapFiles
                           disabled={this.state.database !== ""}
+                          ref={this.densityMapFilesRef}
                           files={this.state.densityMaps}
                           onAddFile={(file) => {
                             this.state.densityMaps.push(file);
@@ -645,14 +698,7 @@ export class StartTab extends React.Component<StartTab.Props, State> {
                     <div className="flex mt-2">
                       <AnalyzeButton
                         ready={this.props.dnatcofierState === "ready"}
-                        onClick={() => {
-                          if (this.state.database)
-                            this.actionPdbId(
-                              this.state.database,
-                              this.state.pdbId
-                            );
-                          else this.actionCustomStructure();
-                        }}
+                        onClick={this.handleAnalyzeClick}
                       />
                     </div>
                   </div>

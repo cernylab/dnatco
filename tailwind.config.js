@@ -42,8 +42,8 @@ module.exports = {
       },
 
       borderRadius: {
-        standart: "15px",
-        smaller: "10px",
+        standart: "8px",
+        smaller: "6px",
       },
 
       gridTemplateColumns: {
