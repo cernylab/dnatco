@@ -133,13 +133,13 @@ export class IconTextButton extends React.Component<IconTextButton.Props> {
         {...this.props}
         className={
           this.props.className ??
-          "rdo-icon-text-button bg-primary-first text-white rounded-standart hover:text-primary-first"
+          "rdo-icon-text-button bg-primary-first text-white rounded-standart hover:text-primary-first cursor-pointer"
         }
         classNameDisabled={
           this.props.classNameDisabled ?? "rdo-icon-text-button-disabled"
         }
       >
-        <div className="rdo-pushbutton-inner-container flex items-center gap-1 h-full justify-center m-auto mx-1">
+        <div className="rdo-pushbutton-inner-container flex items-center gap-1 h-full justify-center m-auto mx-1 p-1">
           <span className="font-700 text-16px m-1">{this.props.caption}</span>
         </div>
       </BasePushButton>
@@ -156,7 +156,7 @@ export class PushButton extends BasePushButton<PushButton.Props> {
     if (!this.props.disabled)
       return (
         this.props.className ??
-        "bg-primary-first items-center flex justify-center px-4 py-1 cursor-pointer w-fit rounded-smaller hover:bg-secondary-second text-white hover:text-primary-first transition-all"
+        "bg-primary-first items-center flex justify-center px-4 py-1 cursor-pointer w-fit rounded-standart hover:bg-secondary-second text-white hover:text-primary-first transition-all"
       );
     else return this.props.classNameDisabled ?? "rdo-pushbutton-disabled";
   }

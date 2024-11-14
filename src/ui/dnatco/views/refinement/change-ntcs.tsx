@@ -98,7 +98,7 @@ export class ChangeNtCs extends View<Refinement.Props> {
               step
             );
             return (
-              <div className="grid gap-2 h-6 [grid-template-columns:auto_2em_1fr]">
+              <div className="grid gap-2 [grid-template-columns:auto_2em_1fr]">
                 <Refinement.NtCSelector
                   value={customNtC ?? computedNtC}
                   onChanged={(v) => {

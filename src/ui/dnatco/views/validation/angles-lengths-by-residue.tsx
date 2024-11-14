@@ -1536,43 +1536,45 @@ export class AnglesLengthsByResidue extends View<
             header={mkHeader("Most untypical lengths")}
             style={Common.VScrollJail}
           >
-            <NamedList sizing="min-content" rowSpacing="half">
-              <NamedListItem name="Percentile">
-                <ComboBox
-                  options={percentileOptions}
-                  value={this.state.worstLengthsThreshold}
-                  onChange={(v) =>
-                    this.setState({ ...this.state, worstLengthsThreshold: v })
-                  }
-                />
-              </NamedListItem>
-              <NamedListItem name="Max. count">
-                <SpinBox
-                  min={1}
-                  max={100}
-                  step={1}
-                  value={this.state.maxWorstLengths}
-                  onChange={(v) =>
-                    this.setState({ ...this.state, maxWorstLengths: v })
-                  }
-                />
-              </NamedListItem>
-            </NamedList>
-            <div className="overflow-hidden flex-1">
-              <div className="rdo-scroll-vertically-with-scrollbar">
-                {this.renderWorstLengths(
-                  selectedResidues,
-                  selectedResidueStats,
-                  this.state.maxWorstLengths,
-                  this.state.worstLengthsThreshold
-                    ? parseFloat(this.state.worstLengthsThreshold)
-                    : "outlier",
-                  AnglesLengthsCommon.structureIdentifyingName(
-                    this.props.dnatcofication
-                  ),
-                  multipleModels,
-                  this.winTracker
-                )}
+            <div className="overflow-scroll">
+              <NamedList sizing="min-content" rowSpacing="half">
+                <NamedListItem name="Percentile">
+                  <ComboBox
+                    options={percentileOptions}
+                    value={this.state.worstLengthsThreshold}
+                    onChange={(v) =>
+                      this.setState({ ...this.state, worstLengthsThreshold: v })
+                    }
+                  />
+                </NamedListItem>
+                <NamedListItem name="Max. count">
+                  <SpinBox
+                    min={1}
+                    max={100}
+                    step={1}
+                    value={this.state.maxWorstLengths}
+                    onChange={(v) =>
+                      this.setState({ ...this.state, maxWorstLengths: v })
+                    }
+                  />
+                </NamedListItem>
+              </NamedList>
+              <div className="overflow-hidden flex-1">
+                <div className="rdo-scroll-vertically-with-scrollbar">
+                  {this.renderWorstLengths(
+                    selectedResidues,
+                    selectedResidueStats,
+                    this.state.maxWorstLengths,
+                    this.state.worstLengthsThreshold
+                      ? parseFloat(this.state.worstLengthsThreshold)
+                      : "outlier",
+                    AnglesLengthsCommon.structureIdentifyingName(
+                      this.props.dnatcofication
+                    ),
+                    multipleModels,
+                    this.winTracker
+                  )}
+                </div>
               </div>
             </div>
           </CollapsibleVertical>
@@ -1583,43 +1585,45 @@ export class AnglesLengthsByResidue extends View<
             header={mkHeader("Most untypical angles")}
             style={Common.VScrollJail}
           >
-            <NamedList sizing="min-content" rowSpacing="half">
-              <NamedListItem name="Percentile">
-                <ComboBox
-                  options={percentileOptions}
-                  value={this.state.worstAnglesThreshold}
-                  onChange={(v) =>
-                    this.setState({ ...this.state, worstAnglesThreshold: v })
-                  }
-                />
-              </NamedListItem>
-              <NamedListItem name="Max. count">
-                <SpinBox
-                  min={1}
-                  max={100}
-                  step={1}
-                  value={this.state.maxWorstAngles}
-                  onChange={(v) =>
-                    this.setState({ ...this.state, maxWorstAngles: v })
-                  }
-                />
-              </NamedListItem>
-            </NamedList>
-            <div className="overflow-hidden flex-1">
-              <div className="rdo-scroll-vertically-with-scrollbar">
-                {this.renderWorstAngles(
-                  selectedResidues,
-                  selectedResidueStats,
-                  this.state.maxWorstAngles,
-                  this.state.worstAnglesThreshold
-                    ? parseFloat(this.state.worstAnglesThreshold)
-                    : "outlier",
-                  AnglesLengthsCommon.structureIdentifyingName(
-                    this.props.dnatcofication
-                  ),
-                  multipleModels,
-                  this.winTracker
-                )}
+            <div className="overflow-scroll">
+              <NamedList sizing="min-content" rowSpacing="half">
+                <NamedListItem name="Percentile">
+                  <ComboBox
+                    options={percentileOptions}
+                    value={this.state.worstAnglesThreshold}
+                    onChange={(v) =>
+                      this.setState({ ...this.state, worstAnglesThreshold: v })
+                    }
+                  />
+                </NamedListItem>
+                <NamedListItem name="Max. count">
+                  <SpinBox
+                    min={1}
+                    max={100}
+                    step={1}
+                    value={this.state.maxWorstAngles}
+                    onChange={(v) =>
+                      this.setState({ ...this.state, maxWorstAngles: v })
+                    }
+                  />
+                </NamedListItem>
+              </NamedList>
+              <div className="overflow-hidden flex-1">
+                <div className="rdo-scroll-vertically-with-scrollbar">
+                  {this.renderWorstAngles(
+                    selectedResidues,
+                    selectedResidueStats,
+                    this.state.maxWorstAngles,
+                    this.state.worstAnglesThreshold
+                      ? parseFloat(this.state.worstAnglesThreshold)
+                      : "outlier",
+                    AnglesLengthsCommon.structureIdentifyingName(
+                      this.props.dnatcofication
+                    ),
+                    multipleModels,
+                    this.winTracker
+                  )}
+                </div>
               </div>
             </div>
           </CollapsibleVertical>

@@ -69,7 +69,7 @@ export class ComboBox extends React.Component<ComboBox.Props> {
             : "bg-primary-first"
         } ${
           this.props.disabled && " text-secondary-third"
-        } flex justify-center relative rounded-standart p-3 font-roboto-bold`}
+        } flex justify-center relative rounded-standart px-4 py-2 font-roboto-bold min-w-[4rem]`}
       >
         <select
           ref={this.selRef}

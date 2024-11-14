@@ -1073,14 +1073,14 @@ export class AnglesLengthsByCompound extends View<View.Props> {
           </div>
         </OverallStatsBar>
 
-        <div className="overflow-hidden flex-1">
+        <div className="overflow-hidden">
           <CollapsibleVertical
             header={mkHeader("Lenghts by bases")}
             style={Common.VScrollJail}
           >
-            <div className="overflow-hidden flex-1 relative">
+            <div className="overflow-scroll relative">
               <div
-                className="rdo-scroll-vertically-with-scrollbar flex flex-col gap-[calc(0.5em/2)]"
+                className="flex flex-col gap-[calc(0.5em/2)]"
                 ref={this.lengthsTainerRef}
               >
                 <Bases
@@ -1103,11 +1103,14 @@ export class AnglesLengthsByCompound extends View<View.Props> {
             </div>
           </CollapsibleVertical>
         </div>
-        <div className="overflow-hidden flex-1">
-          <CollapsibleVertical header={mkHeader("Angles by bases")}>
-            <div className="overflow-hidden flex-1 relative">
+        <div className="overflow-hidden">
+          <CollapsibleVertical
+            header={mkHeader("Angles by bases")}
+            style={Common.VScrollJail}
+          >
+            <div className="overflow-scroll relative">
               <div
-                className="rdo-scroll-vertically-with-scrollbar flex flex-col gap-[calc(0.5em/2)]"
+                className="flex flex-col gap-[calc(0.5em/2)]"
                 ref={this.anglesTainerRef}
               >
                 <Bases
