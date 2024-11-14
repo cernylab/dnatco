@@ -108,8 +108,8 @@ export namespace Phenix {
                     lines.push(ln(`atom_selection_2 = $${aliasB} and name ${r.atomB.name}`, 2));
                     lines.push(ln(`atom_selection_3 = $${aliasC} and name ${r.atomC.name}`, 2));
                     lines.push(ln(`atom_selection_4 = $${aliasD} and name ${r.atomD.name}`, 2));
-                    lines.push(ln(`angle_ideal = ${angle(r.angle).toFixed(2)}`, 2));
-                    lines.push(ln(`sigma = ${r.sigma.toFixed(2)}`, 2));
+                    lines.push(ln(`angle_ideal = ${angle(r.angle).toFixed(1)}`, 2));
+                    lines.push(ln(`sigma = ${r.sigma.toFixed(3)}`, 2));
                     lines.push(ln(`periodicity = ${-r.period}`, 2)); // This probably works only when periodicity is 1
 
                     // To account for the fact that most torsions are part of two steps, we need to specify
@@ -118,8 +118,8 @@ export namespace Phenix {
                     const torKey = torsionKey(r);
                     const previousTorsion = usedTorsions.get(torKey);
                     if (previousTorsion) {
-                        lines.push(ln(`alt_angle_ideals = ${angle(previousTorsion.angle).toFixed(2)}`, 2));
-                        lines.push(ln(`alt_sigmas = ${previousTorsion.sigma.toFixed(2)}`, 2));
+                        lines.push(ln(`alt_angle_ideals = ${angle(previousTorsion.angle).toFixed(1)}`, 2));
+                        lines.push(ln(`alt_sigmas = ${previousTorsion.sigma.toFixed(3)}`, 2));
                     } else
                         usedTorsions.set(torKey, r);
 
@@ -149,8 +149,8 @@ export namespace Phenix {
                 lines.push(ln('action = *add', 2));
                 lines.push(ln(`atom_selection_1 = $${aliasA} and name ${r.atomA.name}`, 2));
                 lines.push(ln(`atom_selection_2 = $${aliasB} and name ${r.atomB.name}`, 2));
-                lines.push(ln(`distance_ideal = ${r.length}`, 2));
-                lines.push(ln(`sigma = ${r.sigma.toFixed(2)}`, 2));
+                lines.push(ln(`distance_ideal = ${r.length.toFixed(3)}`, 2));
+                lines.push(ln(`sigma = ${r.sigma.toFixed(3)}`, 2));
                 lines.push(ln('}', 1));
             } else if (Restraints.isUnavailable(r))
                 lines.push(ln(`# Restraint that would be a part of step ${r.stepName} is unavailable: ${r.reason}`, 2, false));

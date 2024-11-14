@@ -324,10 +324,10 @@ export namespace Restraints {
                     restraints.push(
                         Restraints.Torsion(
                             (metricId === jsLLKA.DinucleotideTorsion.CHI_1 || metricId == jsLLKA.DinucleotideTorsion.CHI_2) ? 'base' : 'backbone',
-                            Restraints.Atom(atoms[0], chain, resToUse[0] ? base1 : base2, resToUse[0] ? resNo1 : resNo1, resToUse[0] ? altId1 : altId2, resToUse[0] ? insCode1 : insCode2),
-                            Restraints.Atom(atoms[1], chain, resToUse[1] ? base1 : base2, resToUse[1] ? resNo1 : resNo1, resToUse[1] ? altId1 : altId2, resToUse[1] ? insCode1 : insCode2),
-                            Restraints.Atom(atoms[2], chain, resToUse[2] ? base1 : base2, resToUse[2] ? resNo1 : resNo1, resToUse[2] ? altId1 : altId2, resToUse[2] ? insCode1 : insCode2),
-                            Restraints.Atom(atoms[3], chain, resToUse[3] ? base1 : base2, resToUse[3] ? resNo1 : resNo1, resToUse[3] ? altId1 : altId2, resToUse[3] ? insCode1 : insCode2),
+                            Restraints.Atom(atoms[0], chain, resToUse[0] ? base2 : base1, resToUse[0] ? resNo2 : resNo1, resToUse[0] ? altId1 : altId2, resToUse[0] ? insCode1 : insCode2),
+                            Restraints.Atom(atoms[1], chain, resToUse[1] ? base2 : base1, resToUse[1] ? resNo2 : resNo1, resToUse[1] ? altId1 : altId2, resToUse[1] ? insCode1 : insCode2),
+                            Restraints.Atom(atoms[2], chain, resToUse[2] ? base2 : base1, resToUse[2] ? resNo2 : resNo1, resToUse[2] ? altId1 : altId2, resToUse[2] ? insCode1 : insCode2),
+                            Restraints.Atom(atoms[3], chain, resToUse[3] ? base2 : base1, resToUse[3] ? resNo2 : resNo1, resToUse[3] ? altId1 : altId2, resToUse[3] ? insCode1 : insCode2),
                             M.r2d(met.meanValue),
                             sigma(confal, metricId, sigmaFactor),
                             1

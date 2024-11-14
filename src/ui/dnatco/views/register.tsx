@@ -8,6 +8,7 @@ import { ChangeNtCs } from './refinement/change-ntcs';
 import { MmbCommandsFile } from './refinement/mmb-commands-file';
 import { PhenixRestraints } from './refinement/phenix-restraints';
 import { RefmacRestraints } from './refinement/refmac-restraints';
+import { BusterRestraints } from './refinement/buster-restraints';
 import { ConnectivityPlot } from './refinement/connectivity-plot';
 import { AnglesLengthsUpper } from './validation/angles-lengths-upper';
 import { BackboneQuality } from './validation/backbone-quality';
@@ -130,6 +131,14 @@ export namespace Register {
         },
         'refmac-restraints': {
             render: (props: Refinement.Props) => <RefmacRestraints {...props} />,
+            selectionDisplayer: NullDisplayer,
+            selectionMaker: NullSelectionMaker,
+            unscrollableContainer: false,
+            granularity: 'dont-care' as View<any>['granularity'],
+            visualizer: false,
+        },
+        'buster-restraints': {
+            render: (props: Refinement.Props) => <BusterRestraints {...props} />,
             selectionDisplayer: NullDisplayer,
             selectionMaker: NullSelectionMaker,
             unscrollableContainer: false,
