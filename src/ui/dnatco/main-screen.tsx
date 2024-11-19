@@ -592,10 +592,9 @@ export function MainScreen(props: {
      * Hook value gets stuck at its initial value in the event handlers.
      * We also need to use the "navPath()" helper to get the correct path because react-router abstracts away
      * the difference between "pathname" and "hash".
-     * Sigh...
      */
 
-    // There is no reasonable way how to force an update on functional components. Let's hope this hack works. Sigh...
+    // There is no reasonable way how to force an update on functional components.
     subs.push(
       props.dnatcofication.events.structureChanged.subscribe(() =>
         navigate(location)

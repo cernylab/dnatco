@@ -144,8 +144,7 @@ function TheWindow(props: {
 
   const resW = !!props.resizeOptions?.resizeableWidth;
   const resH = !!props.resizeOptions?.resizeableHeight;
-  // These would be better calculated dynamically from the Header geometry but it is too much of a pain in the ass
-  // to do that. Maybe later...
+  // These would be better calculated dynamically from the Header geometry.
   const MinimumHeight = 32;
   const MininumWidth = 64;
 

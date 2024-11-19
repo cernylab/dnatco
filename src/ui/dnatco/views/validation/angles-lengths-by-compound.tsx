@@ -465,8 +465,7 @@ function AngleMetricDetails(props: {
   collapseDetail: () => void;
   winTracker: WindowsTracker;
 }) {
-  // Do not look at this code. This code is a major workaround
-  // of CSS being fucking stupid.
+  // This code implements a workaround to address limitations in CSS behavior.
   const [cueHeight, setCueHeight] = React.useState(0);
   const cueRef = React.useRef<HTMLTableCellElement>(null);
   React.useLayoutEffect(() => {
@@ -660,8 +659,7 @@ function LengthMetricDetails(props: {
   collapseDetail: () => void;
   winTracker: WindowsTracker;
 }) {
-  // Do not look at this code. This code is a major workaround
-  // of CSS being fucking stupid.
+  // This code implements a workaround to address limitations in CSS behavior.
   const [cueHeight, setCueHeight] = React.useState(0);
   const cueRef = React.useRef<HTMLTableCellElement>(null);
   React.useLayoutEffect(() => {

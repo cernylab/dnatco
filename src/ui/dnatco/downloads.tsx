@@ -283,8 +283,8 @@ function RsccRmsdDownload(props: { d: Dnatcofication; structureName: string }) {
 export function Downloads(props: { dnatcofication: Dnatcofication }) {
   if (props.dnatcofication.isEmpty()) return <Navigate to="/app" />;
 
-  // We need this shinanegan because unhiding a scrollbar with default appearance
-  // in Chrome is a topic for two Ph.D. theses.
+  // We need this because unhiding a scrollbar with default appearance
+  // in Chrome is impossible.
   const [listAllDinus, setListAllDinus] = React.useState(false);
 
   // Report generation may take a little while and the user needs to know

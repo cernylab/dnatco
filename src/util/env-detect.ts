@@ -1,7 +1,6 @@
 export namespace EnvDetect {
     export function isNode() {
-        // Mirror, mirror, tell me, tell me who is the prettiest JS runtime in my kingdom?
-
+        
         if (typeof require === 'function') {
             const process = require('process');
 
