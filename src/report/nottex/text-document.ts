@@ -203,7 +203,7 @@ export class NTTextDocument extends NTDocument<string> {
     }
 
     static async create(characterWidth: number, pageBreakSkip: number, fonts: Fonts) {
-        // Super sad, we do not have sufficient abstraction for this now
+        // We do not have sufficient abstraction for this now
         const pdfDoc = await PDFDocument.create();
         const embeddedFonts = await Fonts.embedToPdfDoc(pdfDoc, fonts);
 

@@ -24,7 +24,7 @@ namespace NTBoundary {
     }
 }
 
-// Trivial dummy-ish render target to use inside the NTBox rendering loop
+// Trivial render target to use inside the NTBox rendering loop
 class NTDummyRenderTarget<ImgPayload, T> {
     references = new Map<string, NTReference>();
     renderables: NTR.NTRenderables<ImgPayload, T>[] = [];

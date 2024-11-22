@@ -115,6 +115,7 @@ function assignIds(phxAtoms: PhxAtom[], stru: Structure): Phenix.Rscc {
                     for (const aa of r.atoms) {
                         if (phxAtom.altId === aa.altId && phxAtom.name === aa.name) {
                             results.push([ aa.id, phxAtom.rscc ]);
+                            // Please check this, is this okay?
                             // Here is what happens when a genius with a blog declares gotos "harmful" and programming languages adopt id
                             skipToNextAtom = true;
                             break;
@@ -244,16 +245,13 @@ function isSpace(cc: number) {
 }
 
 function parseChainAndAltId(str: string): { chain: string, altId: string } {
-    // Now this is funny. Phenix output is not definitely parseable because not all fields
+    // Phenix output is not definitely parseable because not all fields
     // are present at all lines and the format does not indicate which fields are missing.
-    // mmCif people, being morons, decided to care for empty values by introducing *two*
+    // mmCif people decided to care for empty values by introducing *two*
     // characters that denote "there is nothing here" because some values are empty
     // but some others are even emptier.
-    // Phenix people, being morons++, decided to use the same character for empty value
+    // Phenix people decided to use the same character for empty value
     // and field separator, turning this into a "import 'crystal_ball'" kind of code.
-    // One day, I will get an AK-47, put all people responsible for this mess in a room
-    // and ask them to implement a fully conformant parser of this table in less than 7 minutes.
-    // Whoever fails to do so within that deadline will meet the other kind of dead line...
 
     const len = str.length;
 

@@ -20,8 +20,7 @@ async function imageToPngBrowser(layout: PlotLayout, data: PlotData[] ) {
 
 const SvgXmlPrefix = 'data:image/svg+xml,';
 async function imageToPngNode(layout: PlotLayout, data: PlotData[]) {
-    // All right, what the heck is up with this and why does just looking at this
-    // give me a sour taste of stale beer in my mouth?
+    // All right, what is going on here and why is this so frustrating to work with?
     //
     // We are using Plotly to draw the charts. To make the charts look the same in
     // the interactive UI and the report, we need to use Plotly everywhere. This is
@@ -30,7 +29,7 @@ async function imageToPngNode(layout: PlotLayout, data: PlotData[]) {
     // things fall apart very quicky.
     //
     // Thie first hurdle is to get past the module resolution stage. Standard Plotly
-    // package comes with a Scheißeton (= metric analog of a Shitton) of dependencies that
+    // package comes with a huge number of dependencies that
     // just will not initialize correctly inside NodeJS environment regardless of how much
     // we stuff it with "browser-env" etc. The solution is to use a reduced Plotly package,
     // the "plotly.js-cartesian-dist".
@@ -44,7 +43,7 @@ async function imageToPngNode(layout: PlotLayout, data: PlotData[]) {
     // will eventually fail anyway because it does not recognize the "blob:nodedata" URL scheme prefix
     // that NodeJS puts on all its object URLs. Now what...?
     //
-    // If we make Plotly render the chart just to SVG, we can avoid the createObjectURL shinanegans
+    // If we make Plotly render the chart just to SVG, we can avoid the createObjectURL issues
     // but we then have to handle to conversion to PNG ourselves. "node-canvas" comes to our rescue,
     // but we have to nudge it a little bit.
 

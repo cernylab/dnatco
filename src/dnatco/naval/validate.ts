@@ -127,7 +127,7 @@ function measureStructure(pdbcode: string, segs: any) {
                 const bunches = makeBunches(before, current, after);
                 for (const bunch of bunches) {
                     // Structures with creatively assigned altIds may yield "empty" residues after we
-                    // do the split by altIds. Just sigh and move on...
+                    // do the split by altIds.
                     if (bunch.current.size() === 0)
                         continue;
 
@@ -162,7 +162,7 @@ function measureStructure(pdbcode: string, segs: any) {
 
 function residuesAsVector(residues: any) {
     const vec = new Array<jsLLKA.LLKAStructure>(residues.size());
-    const keys = residues.keys(); // We hope that Emscripten is not stupid and will return the keys in the correct order
+    const keys = residues.keys(); // We hope that Emscripten return the keys in the correct order
     for (let idx = 0; idx < keys.size(); idx++) {
         const key = keys.get(idx);
         const r = residues.get(key);

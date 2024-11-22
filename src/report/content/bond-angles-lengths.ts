@@ -60,7 +60,7 @@ function drawCountsBar<Output>(inset: NTInset, counts: Summarize.CountsInGroup[]
     let _inset = inset.inset(
         NTXYWH.create(
             ctx.tDims.characterWidth,
-            ctx.mode === 'textual' ? ctx.tDims.characterHeight : NTUnit.multiply(0, ctx.tDims.characterHeight), // Keep the zero there, might need adjustment if the font changes (yuck...)
+            ctx.mode === 'textual' ? ctx.tDims.characterHeight : NTUnit.multiply(0, ctx.tDims.characterHeight), // Keep the zero there, might need adjustment if the font changes
             inset.xywh.width
         ),
         {},

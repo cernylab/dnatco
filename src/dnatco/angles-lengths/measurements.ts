@@ -116,6 +116,7 @@ export namespace Measurements {
             }
 
             if (shift === -1) {
+                // Please check it. Keep it? Or delete it?
                 // Yes, this is awkward but then again the problem itself is awkward
                 residue.prevSeqId = a.label_seq_id;
                 residue.prevInsCode = a.pdbx_PDB_ins_code;

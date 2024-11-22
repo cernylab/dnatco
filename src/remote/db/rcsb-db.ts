@@ -74,7 +74,7 @@ async function downloadDensityMapXRay(pdbId: string): Promise<_Ok<{ data: Uint8A
     // Try 2Fo-Fc first
     let req = await fetch(`https://edmaps.rcsb.org/maps/${id}_2fofc.dsn6`);
     if (req.status === 404)
-        return _TryAnother(); // No joy, fall back to EM map
+        return _TryAnother(); // Fall back to EM map
     if (!req.ok)
         return _Fail(req.statusText);
 

@@ -234,7 +234,6 @@ export namespace ALM {
          * We need to do this in multiple passes.
          * First we need to aggregate data by individual bond angles and lengths.
          * Once we have the data aggregated like this, we can calculate summary stats.
-         * Sigh...
          */
 
         for (const r of residues) {

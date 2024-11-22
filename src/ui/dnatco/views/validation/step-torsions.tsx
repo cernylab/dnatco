@@ -375,7 +375,7 @@ export class StepTorsions extends View<View.Props> {
     private stepParamsTable: Cif.Table<NdbStructNtcStepParameters_Schema>|null;
     private stepSumTable: Cif.Table<NdbStructNtcStepSummary_Schema>|null;
     private sugarStepParamsTable: Cif.Table<NdbStructSugarStepParameters_Schema>|null;
-    private torDistTableRef = React.createRef<HTMLTableElement>(); // Nasty hack to limit the width of the violin plot to the tor/dist table
+    private torDistTableRef = React.createRef<HTMLTableElement>(); // Simple hack to limit the width of the violin plot to the tor/dist table
 
     constructor(props: View.Props) {
         super(props);

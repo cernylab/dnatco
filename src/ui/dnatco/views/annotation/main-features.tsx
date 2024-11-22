@@ -115,7 +115,12 @@ export function BasePairing({ d }: { d: Dnatcofication }) {
   const pdbId = d.pdbId; // is '' if not found in _struct, otherwise should be non-empty string
   //console.log('dnatcofication.pdbId "' + pdbId + '"');
 
-  // TODO test that the structure came from known database (PDB or PDB-REDO) so we have the pairing precomputed for it, not from custom file. Also better use the db in the url, now it shows pairing data for the PDB deposited structure even for (potentially different) re-refined structure from other source, if the same pdbId exists on dnatco.
+  // TODO test that the structure came from known database (PDB or PDB-REDO) 
+  // so we have the pairing precomputed for it, not from custom file. 
+  // Also better use the db in the url, now it shows pairing data 
+  // for the PDB deposited structure even for (potentially different)
+  // re-refined structure from other source, if the same pdbId exists on dnatco.
+  
   if(pdbId !== '') {
     const pdbLc = pdbId.toLowerCase();
 
