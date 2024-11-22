@@ -1,5 +1,6 @@
 import * as jsLLKA from 'jsllka';
 import { NdbStructNtcStep, NdbStructNtcStepSummary } from '../cif/categories/ndb-struct-ntc';
+import { AtomSite } from '../cif/categories/atom-site';
 import { Cif } from '../cif'
 import { ClassificationContext } from '../dnatco/classification-context';
 import { Dnatcofication } from '../dnatco/dnatcofication';
@@ -188,10 +189,11 @@ export namespace Restraints {
         compound: string,
         authNum: number,
         altId: string|undefined,
+        atomAltId: string|undefined,
         insCode: string|undefined,
     }
-    export function Atom(name: string, chain: string, compound: string, authNum: number, altId: string|undefined, insCode: string|undefined): Atom {
-        return { name, chain, compound, authNum, altId, insCode };
+    export function Atom(name: string, chain: string, compound: string, authNum: number, altId: string|undefined, atomAltId: string|undefined, insCode: string|undefined): Atom {
+        return { name, chain, compound, authNum, altId, atomAltId, insCode };
     }
 
     export type Distance = {
@@ -252,6 +254,48 @@ export namespace Restraints {
 
     export type Restraint = Distance | Torsion | Unavailable;
 
+    export function perAtomAltId(
+        d: Dnatcofication,
+        target_pdbx_PDB_model_num: number,
+        target_auth_asym_id: string,
+        target_label_comp_id: string,
+        target_auth_seq_id: number,
+        target_pdbx_PDB_ins_code: (string | undefined),
+        target_label_atom_id: string,
+        target_label_alt_id: (string | undefined)
+    ): string | undefined {
+        // target_label_alt_id is null, no altIds needed, skipping
+        if (target_label_alt_id === null) {
+            return undefined;
+        }
+
+        // get relevant _atom_site data
+        const AtomSiteAtoms = d.table(AtomSite);
+        const {
+            pdbx_PDB_model_num, auth_asym_id, label_comp_id, auth_seq_id, pdbx_PDB_ins_code, label_atom_id, label_alt_id
+        } = AtomSiteAtoms;
+
+        // search for the atom through the AtomSite
+        for (let i = 0; i < (pdbx_PDB_model_num ? (pdbx_PDB_model_num.values ? pdbx_PDB_model_num.values.length : 0) : 0); i++) {
+            if (
+                (label_alt_id.values?.[i] ?? undefined) === target_label_alt_id &&
+                (label_atom_id.values?.[i] ?? '') === target_label_atom_id &&
+                (pdbx_PDB_model_num.values?.[i] ?? 1) === target_pdbx_PDB_model_num &&
+                (label_comp_id.values?.[i] ?? '') === target_label_comp_id &&
+                (auth_asym_id.values?.[i] ?? '') === target_auth_asym_id &&
+                (auth_seq_id.values?.[i] ?? -1) === target_auth_seq_id &&
+                ((pdbx_PDB_ins_code.values?.[i] ?? undefined) === target_pdbx_PDB_ins_code || target_pdbx_PDB_ins_code === null)
+            ) {
+                // atom with the wanted altId was found, return the altId
+                //console.log("restraints.ts: target atom", target_pdbx_PDB_model_num, target_auth_asym_id, target_label_comp_id, target_auth_seq_id, target_pdbx_PDB_ins_code, target_label_atom_id, target_label_alt_id, "found, using altId", label_alt_id.values?.[i] ?? undefined);
+                return label_alt_id.values?.[i] ?? undefined;
+            }
+        }
+
+    // target atom altId not found (it should mean the atom has altId ' ')
+    return undefined;
+    }
+
     export function make(d: Dnatcofication, NtCSet: string, maxRmsd: number, sigmaFactor: number) {
         const steps = d.table(NdbStructNtcStep);
         const summary = d.table(NdbStructNtcStepSummary);
@@ -311,6 +355,10 @@ export namespace Restraints {
             // This is wrong because altId is a property of an atom. At this point it is unclear what kind of a problem
             // this could cause. At the moment we assume that refinement tools will cope with that.
 
+            // NOTE: well, for Phenix it kind of worked (using its altid ${altId} or altid ' ' notation.
+            // REFMAC and (maybe BUSTER) need real per atom values to find atoms, so perAtomAltId() was introduced
+            // and "atomAltId" added to Atom().
+
             // Restraints for dinucleotide torsions
             for (let idx = 0; idx < DinuTorsions.length; idx++) {
                 const { atoms } = restraintAtoms[idx];
@@ -318,16 +366,30 @@ export namespace Restraints {
                 const met = metric(cluster, metricId);
                 const resToUse = residueToUse(metricId);
 
+                const altIds = [];
+                for (let atIdx = 0; atIdx < 4; atIdx++) {
+                    altIds.push(perAtomAltId(d,
+                        modelNo,
+                        chain,
+                        resToUse[atIdx] ? base2 : base1,
+                        resToUse[atIdx] ? resNo2 : resNo1,
+                        resToUse[atIdx] ? insCode2 : insCode1,
+                        atoms[atIdx],
+                        resToUse[atIdx] ? altId2 : altId1
+                        )
+                    );
+                }
+
                 if (atoms.length === 0)
                     restraints.push(Restraints.Unavailable(stepName, `Data for ${metricName(DinuTorsions[idx])} is not available. The step was most likely classified as NANT.`));
                 else {
                     restraints.push(
                         Restraints.Torsion(
                             (metricId === jsLLKA.DinucleotideTorsion.CHI_1 || metricId == jsLLKA.DinucleotideTorsion.CHI_2) ? 'base' : 'backbone',
-                            Restraints.Atom(atoms[0], chain, resToUse[0] ? base2 : base1, resToUse[0] ? resNo2 : resNo1, resToUse[0] ? altId1 : altId2, resToUse[0] ? insCode1 : insCode2),
-                            Restraints.Atom(atoms[1], chain, resToUse[1] ? base2 : base1, resToUse[1] ? resNo2 : resNo1, resToUse[1] ? altId1 : altId2, resToUse[1] ? insCode1 : insCode2),
-                            Restraints.Atom(atoms[2], chain, resToUse[2] ? base2 : base1, resToUse[2] ? resNo2 : resNo1, resToUse[2] ? altId1 : altId2, resToUse[2] ? insCode1 : insCode2),
-                            Restraints.Atom(atoms[3], chain, resToUse[3] ? base2 : base1, resToUse[3] ? resNo2 : resNo1, resToUse[3] ? altId1 : altId2, resToUse[3] ? insCode1 : insCode2),
+                            Restraints.Atom(atoms[0], chain, resToUse[0] ? base2 : base1, resToUse[0] ? resNo2 : resNo1, resToUse[0] ? altId2 : altId1, altIds[0], resToUse[0] ? insCode2 : insCode1),
+                            Restraints.Atom(atoms[1], chain, resToUse[1] ? base2 : base1, resToUse[1] ? resNo2 : resNo1, resToUse[1] ? altId2 : altId1, altIds[1], resToUse[1] ? insCode2 : insCode1),
+                            Restraints.Atom(atoms[2], chain, resToUse[2] ? base2 : base1, resToUse[2] ? resNo2 : resNo1, resToUse[2] ? altId2 : altId1, altIds[2], resToUse[2] ? insCode2 : insCode1),
+                            Restraints.Atom(atoms[3], chain, resToUse[3] ? base2 : base1, resToUse[3] ? resNo2 : resNo1, resToUse[3] ? altId2 : altId1, altIds[3], resToUse[3] ? insCode2 : insCode1),
                             M.r2d(met.meanValue),
                             sigma(confal, metricId, sigmaFactor),
                             1
@@ -353,10 +415,10 @@ export namespace Restraints {
                         restraints.push(
                             Restraints.Torsion(
                                 'cross-residue',
-                                Restraints.Atom(atoms[0], chain, base1, resNo1, altId1, insCode1),
-                                Restraints.Atom(atoms[1], chain, base1, resNo1, altId1, insCode1),
-                                Restraints.Atom(atoms[2], chain, base2, resNo2, altId2, insCode2),
-                                Restraints.Atom(atoms[3], chain, base2, resNo2, altId2, insCode2),
+                                Restraints.Atom(atoms[0], chain, base1, resNo1, altId1, perAtomAltId(d, modelNo, chain, base1, resNo1, insCode1, atoms[0], altId1), insCode1),
+                                Restraints.Atom(atoms[1], chain, base1, resNo1, altId1, perAtomAltId(d, modelNo, chain, base1, resNo1, insCode1, atoms[1], altId1), insCode1),
+                                Restraints.Atom(atoms[2], chain, base2, resNo2, altId2, perAtomAltId(d, modelNo, chain, base2, resNo2, insCode2, atoms[2], altId2), insCode2),
+                                Restraints.Atom(atoms[3], chain, base2, resNo2, altId2, perAtomAltId(d, modelNo, chain, base2, resNo2, insCode2, atoms[3], altId2), insCode2),
                                 M.r2d(met.meanValue),
                                 sigma(confal, metricId, sigmaFactor),
                                 1
@@ -365,8 +427,8 @@ export namespace Restraints {
                     } else {
                         restraints.push(
                             Restraints.Distance(
-                                Restraints.Atom(atoms[0], chain, base1, resNo1, altId1, insCode1),
-                                Restraints.Atom(atoms[1], chain, base2, resNo2, altId2, insCode2),
+                                Restraints.Atom(atoms[0], chain, base1, resNo1, altId1, perAtomAltId(d, modelNo, chain, base1, resNo1, insCode1, atoms[0], altId1), insCode1),
+                                Restraints.Atom(atoms[1], chain, base2, resNo2, altId2, perAtomAltId(d, modelNo, chain, base2, resNo2, insCode2, atoms[1], altId2), insCode2),
                                 met.meanValue,
                                 sigma(confal, metricId,sigmaFactor)
                             )
@@ -384,10 +446,10 @@ export namespace Restraints {
                 restraints.push(
                     Restraints.Torsion(
                         'sugar',
-                        Restraints.Atom(atoms[0], chain, base1, resNo1, altId1, insCode1),
-                        Restraints.Atom(atoms[1], chain, base1, resNo1, altId1, insCode1),
-                        Restraints.Atom(atoms[2], chain, base1, resNo1, altId1, insCode1),
-                        Restraints.Atom(atoms[3], chain, base1, resNo1, altId1, insCode1),
+                        Restraints.Atom(atoms[0], chain, base1, resNo1, altId1, perAtomAltId(d, modelNo, chain, base1, resNo1, insCode1, atoms[0], altId1), insCode1),
+                        Restraints.Atom(atoms[1], chain, base1, resNo1, altId1, perAtomAltId(d, modelNo, chain, base1, resNo1, insCode1, atoms[1], altId1), insCode1),
+                        Restraints.Atom(atoms[2], chain, base1, resNo1, altId1, perAtomAltId(d, modelNo, chain, base1, resNo1, insCode1, atoms[2], altId1), insCode1),
+                        Restraints.Atom(atoms[3], chain, base1, resNo1, altId1, perAtomAltId(d, modelNo, chain, base1, resNo1, insCode1, atoms[3], altId1), insCode1),
                         M.r2d(metric.meanValue),
                         confal.nusFirst[nuKey] * sigmaFactor,
                         1,
@@ -402,10 +464,10 @@ export namespace Restraints {
                 restraints.push(
                     Restraints.Torsion(
                         'sugar',
-                        Restraints.Atom(atoms[0], chain, base2, resNo2, altId2, insCode2),
-                        Restraints.Atom(atoms[1], chain, base2, resNo2, altId2, insCode2),
-                        Restraints.Atom(atoms[2], chain, base2, resNo2, altId2, insCode2),
-                        Restraints.Atom(atoms[3], chain, base2, resNo2, altId2, insCode2),
+                        Restraints.Atom(atoms[0], chain, base2, resNo2, altId2, perAtomAltId(d, modelNo, chain, base2, resNo2, insCode2, atoms[0], altId2), insCode2),
+                        Restraints.Atom(atoms[1], chain, base2, resNo2, altId2, perAtomAltId(d, modelNo, chain, base2, resNo2, insCode2, atoms[1], altId2), insCode2),
+                        Restraints.Atom(atoms[2], chain, base2, resNo2, altId2, perAtomAltId(d, modelNo, chain, base2, resNo2, insCode2, atoms[2], altId2), insCode2),
+                        Restraints.Atom(atoms[3], chain, base2, resNo2, altId2, perAtomAltId(d, modelNo, chain, base2, resNo2, insCode2, atoms[3], altId2), insCode2),
                         M.r2d(metric.meanValue),
                         confal.nusSecond[nuKey] * sigmaFactor,
                         1

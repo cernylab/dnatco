@@ -16,8 +16,8 @@ export namespace Buster {
             else
                 s += `${a.chain}|${a.authNum}:${a.name}`;
 
-            if (a.altId)
-                s += `.${a.altId}`;
+            if (a.atomAltId)
+                s += `.${a.atomAltId}`;
 
             return s;
         };

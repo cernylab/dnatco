@@ -32,6 +32,19 @@ export namespace Phenix {
         restraints: Restraints.Restraint[];
     }
 
+    // NOTE: for Phenix, we were using the (per residue) "altId" value, not the per atom "atomAltId" value, because Phenix supports the (altid ${altId} or altid ' ') notation
+    // but, it was changed here as well, and we are using definitions like:
+    // """
+    //  A_DCA_5 = chain A and resname DC and altid A and resid 5
+    //  A_DC_5 = chain A and resname DC and resid 5
+    //
+    //  atom_selection_1 = $A_1AP_4 and name C3'
+    //  atom_selection_2 = $A_1AP_4 and name O3'
+    //  atom_selection_3 = $A_DCA_5 and name P
+    //  atom_selection_4 = $A_DC_5 and name O5'
+    // """
+    //  here only the P atom has altId 'A', O5' is common
+
     function makeResidueAlias(chain: string, compound: string, authNum: number, altId: string|undefined, insCode: string|undefined) {
         return `${chain}_${compound}${altId ?? ''}_${authNum}${insCode ?? ''}`
     }
@@ -55,14 +68,18 @@ export namespace Phenix {
                     if (a.altId && !altIds.includes(a.altId))
                         altIds.push(a.altId);
                 }
-                if (altIds.length === 0) // When there are no altIds
+                // add the "empty" altId also when there are altIds, this will generate alias also for the "common" part of the residue
+                //if (altIds.length === 0) // When there are no altIds
                     altIds.push(void 0);
 
                 for (const altId of altIds) {
                     const alias = makeResidueAlias(chain.name, res.compound, res.authNum, altId, res.insCode ?? undefined);
                     let definition = `chain ${chain.name} and resname ${res.compound}`;
                     if (altId)
-                        definition += ` and (altid ${altId} or altid ' ')`;
+                        // not needed now
+                        //definition += ` and (altid ${altId} or altid ' ')`;
+                        // the atomAltId is enough
+                        definition += ` and altid ${altId}`;
                     definition += ` and resid ${res.authNum}${res.insCode ?? ''}`;
 
                     aliases.push({ alias, definition });
@@ -96,10 +113,10 @@ export namespace Phenix {
         for (const r of restraints) {
             if (Restraints.isTorsion(r)) {
                 // First, the original restraint has to be deleted and then the new restraint can be set
-                const aliasA = makeResidueAlias(r.atomA.chain, r.atomA.compound, r.atomA.authNum,r.atomA.altId, r.atomA.insCode);
-                const aliasB = makeResidueAlias(r.atomB.chain, r.atomB.compound, r.atomB.authNum,r.atomB.altId, r.atomB.insCode);
-                const aliasC = makeResidueAlias(r.atomC.chain, r.atomC.compound, r.atomC.authNum,r.atomC.altId, r.atomC.insCode);
-                const aliasD = makeResidueAlias(r.atomD.chain, r.atomD.compound, r.atomD.authNum,r.atomD.altId, r.atomD.insCode);
+                const aliasA = makeResidueAlias(r.atomA.chain, r.atomA.compound, r.atomA.authNum, r.atomA.atomAltId, r.atomA.insCode);
+                const aliasB = makeResidueAlias(r.atomB.chain, r.atomB.compound, r.atomB.authNum, r.atomB.atomAltId, r.atomB.insCode);
+                const aliasC = makeResidueAlias(r.atomC.chain, r.atomC.compound, r.atomC.authNum, r.atomC.atomAltId, r.atomC.insCode);
+                const aliasD = makeResidueAlias(r.atomD.chain, r.atomD.compound, r.atomD.authNum, r.atomD.atomAltId, r.atomD.insCode);
 
                 const addTorsion = (r: Restraints.Torsion) => {
                     lines.push(ln('dihedral {', 1));
@@ -126,6 +143,7 @@ export namespace Phenix {
                     lines.push(ln('}', 1));
                 }
 
+                // TODO: this is more complicated, Phenix defines some conflicting torsions using different atoms than we are
                 if (r.kind === 'backbone' || r.kind === 'base') {
                     // "Backbone" and "base" torsions require two actions.
                     lines.push(ln('dihedral {', 1));
@@ -142,8 +160,8 @@ export namespace Phenix {
                     addTorsion(r);
                 }
             } else if (Restraints.isDistance(r)) {
-                const aliasA = makeResidueAlias(r.atomA.chain, r.atomA.compound, r.atomA.authNum,r.atomA.altId, r.atomA.insCode);
-                const aliasB = makeResidueAlias(r.atomB.chain, r.atomB.compound, r.atomB.authNum,r.atomB.altId, r.atomB.insCode);
+                const aliasA = makeResidueAlias(r.atomA.chain, r.atomA.compound, r.atomA.authNum,r.atomA.atomAltId, r.atomA.insCode);
+                const aliasB = makeResidueAlias(r.atomB.chain, r.atomB.compound, r.atomB.authNum,r.atomB.atomAltId, r.atomB.insCode);
 
                 lines.push(ln('bond {', 1));
                 lines.push(ln('action = *add', 2));
