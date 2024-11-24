@@ -41,7 +41,7 @@ export namespace Coordinates {
     }
 
     export async function fromLink(link: string, type: Coordinates['type']) {
-        // Not really a hack
+        
 
         try {
             const req = await fetch(link);
