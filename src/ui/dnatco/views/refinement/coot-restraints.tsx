@@ -5,12 +5,12 @@ import { ComboBox } from "../../../common/combo-box";
 import { PushButton } from "../../../common/push-button";
 import { SpinBox } from "../../../common/spin-box";
 import { Net } from "../../../../browser-util/net";
-import { Refmac } from "../../../../refine/refmac";
+import { Coot } from "../../../../refine/coot";
 
 interface State {
   maxRmsd: number;
 }
-export class RefmacRestraints extends View<Refinement.Props, State> {
+export class CootRestraints extends View<Refinement.Props, State> {
   constructor(props: Refinement.Props) {
     super(props);
 
@@ -20,7 +20,7 @@ export class RefmacRestraints extends View<Refinement.Props, State> {
   }
 
   render() {
-    const restraints = Refmac.restraints(
+    const restraints = Coot.restraints(
       this.props.dnatcofication,
       this.props.selectedCustomNtCSet,
       this.state.maxRmsd
@@ -32,10 +32,10 @@ export class RefmacRestraints extends View<Refinement.Props, State> {
       if (r.rtype === "unavailable")
         elems.push(
           <div className="text-secondary-third" key={ctr}>
-            {Refmac.restraintAsText(r)}
+            {Coot.restraintAsText(r)}
           </div>
         );
-      else elems.push(<div key={ctr}>{Refmac.restraintAsText(r)}</div>);
+      else elems.push(<div key={ctr}>{Coot.restraintAsText(r)}</div>);
 
       ctr++;
     }
@@ -43,7 +43,7 @@ export class RefmacRestraints extends View<Refinement.Props, State> {
     return (
       <div className="overflow-hidden h-full flex flex-col">
         <div>
-          <div className="rdo-secondary-caption">Restraints for REFMAC and Servalcat</div>
+          <div className="rdo-secondary-caption">Restraints for COOT</div>
           <div className="items-center grid gap-4 [grid-template-columns:auto_auto_auto_auto_auto] justify-center">
             <div>NtC set:</div>
             <ComboBox
@@ -65,11 +65,11 @@ export class RefmacRestraints extends View<Refinement.Props, State> {
             <PushButton
               caption="Download"
               onClick={() => {
-                const text = Refmac.restraintsAsText(restraints);
+                const text = Coot.restraintsAsText(restraints);
                 Net.serveFile(
                   "text/plain",
                   text,
-                  `${this.props.dnatcofication.identifyingName}_REFMAC_geometry_restraints.txt`
+                  `${this.props.dnatcofication.identifyingName}_COOT_geometry_restraints.txt`
                 );
               }}
             />
@@ -81,6 +81,6 @@ export class RefmacRestraints extends View<Refinement.Props, State> {
   }
 }
 
-export namespace RefmacRestraints {
+export namespace CootRestraints {
   export const StepSwitcher = () => {};
 }

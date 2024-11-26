@@ -59,6 +59,7 @@ const AvailableViews: Record<ViewId, { caption: string }> = {
   downloads: { caption: "Downloads" },
   "step-torsions": { caption: "Step torsions" },
   "refmac-restraints": { caption: "REFMAC restraints" },
+  "coot-restraints": { caption: "Coot restraints" },
   "phenix-restraints": { caption: "Phenix restraints" },
   "buster-restraints": { caption: "Buster restraints" },
   "mmb-commands-file": { caption: "MMB commands file" },
@@ -81,6 +82,7 @@ const ViewsInMode: Record<MasterMode, [ViewId, Register.View<any>][]> = {
   refinement: [
     ["connectivity-plot", Register.Views["connectivity-plot"]],
     ["refmac-restraints", Register.Views["refmac-restraints"]],
+    ["coot-restraints", Register.Views["coot-restraints"]],
     ["phenix-restraints", Register.Views["phenix-restraints"]],
     ["buster-restraints", Register.Views["buster-restraints"]],
     ["mmb-commands-file", Register.Views["mmb-commands-file"]],
