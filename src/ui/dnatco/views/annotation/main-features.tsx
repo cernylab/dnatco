@@ -19,6 +19,12 @@ export function NucleotideCounts({ d }: { d: Dnatcofication }) {
       ? 'Read from entity_poly mmCif category'
       : 'Counted from model';
 
+    const sortedCounts = Array.from(counts.counts.entries()).sort(([nA, _], [nB, __]) => {
+      return (nA.length !== nB.length)
+        ? nA.length - nB.length
+        : nA.localeCompare(nB);
+    });
+
     return (
       <table className="mb-2">
         <thead>
@@ -39,7 +45,7 @@ export function NucleotideCounts({ d }: { d: Dnatcofication }) {
           </tr>
         </thead>
         <tbody>
-          {[...counts.counts.entries()].map((x) => (
+          {sortedCounts.map((x) => (
             <tr key={x[0]}>
               <td className="font-bold py-1 px-7 w-[7rem] text-center border-primary-first border-[.1px]">
                 {x[0]}
