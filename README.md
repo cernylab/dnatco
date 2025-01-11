@@ -9,6 +9,8 @@ ReDNATCO is a Single Page Application written in [Typescript](https://www.typesc
 
 Some additional functionality requires support from the [ReDNATCO server]() tool. It is recommended that you set up ReDNATCO server first before you set up ReDNATCO itself.
 
+ReDNATCO requires [Node.js](https://nodejs.org) __version 18__ or above to build and run.
+
 Build instructions
 ---
 As the very first step, use `git clone` to clone this repository. Once done, `cd` into the project's directory. Unless you told `git` otherwise, the project will be cloned into directory `rednatco`.
@@ -48,54 +50,70 @@ If the code build successfully, you may also run
 npm run watch
 ```
 
-This will start a watcher that will rebuild ReDNATCO incrementally whenever a project file gets changed. Note that some more invasive changes or changes to the Webpack configuration may require a full rebuild.
+This will start a watcher that will rebuild ReDNATCO incrementally whenever a project file gets changed. Note that some more invasive changes or changes to the Webpack configuration may require a full rebuild with `npm run build-dev`.
 
 #### Development with internal web server
 
-As a last option, you may use the `webpack-dev-server` plugin for local development. Webpack will start its own web server that will serve ReDNATCO and incrementally rebuild ReDNATCO in the same fashion as `npm run watch`.
+You may also use the `webpack-dev-server` plugin for local development. Webpack will start its own web server that will serve ReDNATCO and incrementally rebuild ReDNATCO in the same fashion as `npm run watch`.
 To use Webpack internal server, run
 ```
 npm run serve-dev
 ```
 
-and navigate to [http://localhost:8118](http://localhost:8118) in your browser.
+and navigate to [http://localhost:8118](http://localhost:8118) in your browser. Webpack internal server provides additional development conveniences such as hot reloading and nicer error reporting. Please see the notes below if you wish to use Webpack internal server for development.
 
 
 **NOTE:** Make sure that you have `useHashRouter` set to `true` in ReDNATCO configuration if you use Webpack internal server. Otherwise the navigation will not work correctly.
 
 **NOTE 2:** Webpack server does not provide the full functionality of ReDNATCO server. It is intended for development purposes only.
 
-### NodeJS binaries for offline use
+### Tool for offline use
 
-ReDNATCO provides binaries for NodeJS that can be run as standalone applications. Unless you are building on a Windows machine, make sure that the `node-canvas` module is compiled correctly
-by executing
+ReDNATCO provides a standalone tool that can be run with Node.js. Since ReDNATCO is primarily intended to run in a browser, it relies on additional modules that emulate functionality that is available in a browser but not in Node.js environment to make the standalone tool work.
+
+Note that the offline tool is __not__ a complete offline replacement for ReDNATCO. It does not have any graphical user interface and its purpose is to produce the structural analysis report from the given coordinates and density map files.
+
+#### Setting up `node-canvas` module
+
+The [node-canvas](https://www.npmjs.com/package/canvas) module may require additional setup steps. While the `node-canvas` module provides pre-built native binaries for all major platforms, there is no guarantee that they will work on your particular system. Especially on Linux-based systems, this might be a problem. If you are unable to build or run the standalone tool, you can try to fix the problem by building the `node-canvas` binary manually:
+
 
 ```
 rm -rf node_modules/canvas
 npm install --build-from-source canvas
 ```
 
-For the build from source to succeed it is necessary to have a series of `development` packages installed. The approximate list of packages is:
+On a Linux system, the approximate list of packages necessary to build the binary is:
 - gcc-c++
 - cairo-devel
 - pango-devel
 - libjpeg8-devel
 - librsvg-devel
-- nodejs20-devel
+- nodejs22-devel
 
-Keep in mind that the names of these packages will likely be different on your Linux distribution of choice. If in doubt, refer to [node-canvas README](https://github.com/Automattic/node-canvas) for more information.
+Keep in mind that the precise names of these packages will likely be different on your Linux distribution of choice and the version of Node.js. If in doubt, consult [node-canvas README](https://github.com/Automattic/node-canvas) for more information.
 
 Once the `node-canvas` module is set up, execute
 ```
 npm run build-lib
 ```
 
-NodeJS binaries and the corresponding assets will be built into the `bin` subdirectory. Note that some binaries must be launched in a specific way to work correctly. To make it easy, ReDNATCO provides launcher scripts in the `scripts` subdirectory.
-To use these scripts, simply run `./scripts/<name_of_the_script.sh>` from ReDNATCO's directory.
+
+#### Running the tool
+
+The standalone tool and the corresponding assets are copied into the `bin` subdirectory once they are built. Since the standalone tool must be launched in a specific way to work correctly, we provide a `rednatco.sh` script. To use the script, execute `./scripts/rednatco.sh` from ReDNATCO's root directory.
+
+The helper script expects to be run with the following parameters:
+
+```
+./scripts/rednatco.sh <output_directory> <coordinates_file> <density_map (optional)>
+```
+
+The tool will produce a mmCIF file with additional categories and a validation report as a PDF file.
 
 Configuration
 ---
-ReDNATCO can be configured through a JSON configuration file. The file must be named `config.json` and it must be placed in the site's root directory. Annotated configuration file is listed below
+ReDNATCO can be configured with a JSON configuration file. The file must be named `config.json` and it must be placed in the site's root directory. Annotated configuration file is listed below
 
 ```
 {
@@ -251,7 +269,7 @@ ReDNATCO can be configured through a JSON configuration file. The file must be n
     "useHashRouter": true
 
     //
-    // Options used only by the NodeJS binaries
+    // Options used only by the Node.js binaries
     //
 
     // URL to use in places where the value for "window.location" would have been used in browser environment
