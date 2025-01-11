@@ -178,7 +178,7 @@ function Inner(props: {
           visible={view.visualizer ? "both" : "first"}
           first={routes}
           second={
-            <div className="ml-0 overflow-hidden">
+            <div className="flex flex-col ml-0 overflow-hidden">
               <div className="flex">
                 <div className="flex w-full">
                   <div className="bg-a py-1 font-700 w-full flex justify-center overflow-hidden">
@@ -309,7 +309,7 @@ function Inner(props: {
                   </div>
                 </div>
               </div>
-              <div id="rdo-id-molstar-container" className="h-full relative" />
+              <div id="rdo-id-molstar-container" className="flex-1 relative" />
             </div>
           }
           orientation="horizontal"
