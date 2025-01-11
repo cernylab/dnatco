@@ -5,7 +5,7 @@ import { SideSwitchingPanel } from './common/side-switching-panel';
 import { CasLogoImg, IbtLogoImg } from '../assets/images';
 import { ConformersFile } from '../assets/misc';
 import { about, annotation, browse, home, refinement, validation } from '../help-tags';
-import { useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router';
 import { useState, useEffect } from 'react';
 import { ReactNode } from 'react';
 

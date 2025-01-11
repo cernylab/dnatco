@@ -21,7 +21,7 @@ export namespace InProgress {
             <div class="absolute top-0 left-0 h-full w-full z-[999] m-auto bg-test">
                 <div class="bg-primary-first flex flex-col mx-auto p-4 relative top-[45%] rounded-standart max-w-[33%] text-white">
                     <div class="flex justify-between">
-                        <div>
+                        <div id='rdo-current-operation'>
                             ${makeText(title, status)}
                         </div>
                         <img
@@ -121,7 +121,7 @@ export namespace InProgress {
   }
 
   export function update(tainer: HTMLElement, title: string, status: string) {
-    tainer.getElementsByClassName("rdo-popup-text")[0].innerHTML = makeText(
+    tainer.querySelector('#rdo-current-operation')!.innerHTML = makeText(
       title,
       status
     );

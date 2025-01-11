@@ -4,19 +4,19 @@ const MinimumWidth = 0.05;
 
 const StyleFullFirstHorizontal = {
   display: "grid",
-  gridTemplateColumns: `100% 20px 0%`,
+  gridTemplateColumns: `auto 20px 0%`,
 };
 const StyleFullSecondHorizontal = {
   display: "grid",
-  gridTemplateColumns: `0% 20px 100%`,
+  gridTemplateColumns: `0% 20px auto`,
 };
 const StyleFullFirstVertical = {
   display: "grid",
-  gridTemplateRows: `100% 20px 0%`,
+  gridTemplateRows: `auto 20px 0%`,
 };
 const StyleFullSecondVertical = {
   display: "grid",
-  gridTemplateRows: `0% 20px 100%`,
+  gridTemplateRows: `0% 20px auto`,
 };
 
 interface State {
@@ -75,16 +75,12 @@ export class DynamicSplitView extends React.Component<
     if (this.props.orientation === "horizontal") {
       return {
         display: "grid",
-        gridTemplateColumns: `${this.state.splitPosition * 100.0}% 20px ${
-          (1.0 - this.state.splitPosition) * 100.0
-        }%`,
+        gridTemplateColumns: `${this.state.splitPosition * 100.0}% 20px auto`,
       };
     } else {
       return {
         display: "grid",
-        gridTemplateRows: `${this.state.splitPosition * 100.0}% 20px ${
-          (1.0 - this.state.splitPosition) * 100.0
-        }%`,
+        gridTemplateRows: `${this.state.splitPosition * 100.0}% 20px auto`,
       };
     }
   }
