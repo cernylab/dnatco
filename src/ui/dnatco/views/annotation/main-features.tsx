@@ -10,71 +10,14 @@ import {
 import { Dnatcofication } from "../../../../dnatco/dnatcofication";
 import { Tooltip } from "../../../common/tooltip";
 import { tooltipImg } from "../../../../assets/images";
-import { EntityPoly } from "../../../../cif/categories/entity";
-
-function mmCifName(d: Dnatcofication) {
-  if (!d.hasTable(EntityPoly)) return "dnatco_structure.cif";
-  const values = d.table(EntityPoly).pdbx_seq_one_letter_code.values;
-  const type = d.table(EntityPoly).type.values;
-  if (values && type) {
-    const combinedArray = values.map((value, index) => ({
-      type: type[index],
-      sequence: value,
-    }));
-
-    // console.log(combinedArray, 'Combined array');
-
-    const selectedSequences = combinedArray
-      .filter(
-        (item) =>
-          item.type === "polyribonucleotide" ||
-          item.type === "polydeoxyribonucleotide" ||
-          item.type === "polydeoxyribonucleotide/polyribonucleotide hybrid"
-      )
-      .map((item) => item.sequence.replace(/,/g, ""));
-
-    // console.log(selectedSequences, 'only polyribonuclotide sequences');
-
-    return selectedSequences.join("");
-  } else {
-    console.log("Either col or identifier is null");
-  }
-}
 
 export function NucleotideCounts({ d }: { d: Dnatcofication }) {
-  const sequence = mmCifName(d);
+  const counts = d.data.nucleotideCounts;
 
-  if (sequence) {
-    const result = [];
-    const regex = /\((.*?)\)/g;
-
-    let match;
-    while ((match = regex.exec(sequence)) !== null) {
-      result.push(match[1]);
-    }
-
-    // console.log(sequence)
-
-    let lastIndex = 0;
-    let match2;
-    while ((match2 = regex.exec(sequence)) !== null) {
-      const nonParenthesized = sequence.substring(lastIndex, match2.index);
-      if (nonParenthesized.length > 0) {
-        result.push(...nonParenthesized.split(""));
-      }
-      lastIndex = regex.lastIndex;
-    }
-
-    if (lastIndex < sequence.length) {
-      result.push(...sequence.substring(lastIndex).split(""));
-    }
-
-    const nucleotideCounts: { [ntc: string]: number } = {};
-
-    for (let i = 0; i < result.length; i++) {
-      const substring = result[i];
-      nucleotideCounts[substring] = (nucleotideCounts[substring] || 0) + 1;
-    }
+  if (counts.source !== 'unavailable') {
+    const sourceInfo = counts.source === 'entity-poly'
+      ? 'Read from entity_poly mmCif category'
+      : 'Counted from model';
 
     return (
       <table className="mb-2">
@@ -85,6 +28,7 @@ export function NucleotideCounts({ d }: { d: Dnatcofication }) {
               className="mb-4 p-4 text-20px border-primary-first border-[.1px]"
             >
               Counts of Nucleotide in polymer entity
+              <div style={{ fontSize: '0.85rem', filter: 'saturate(66%)'}}>{sourceInfo}</div>
             </th>
           </tr>
           <tr>
@@ -95,13 +39,13 @@ export function NucleotideCounts({ d }: { d: Dnatcofication }) {
           </tr>
         </thead>
         <tbody>
-          {Object.entries(nucleotideCounts).map(([ntc, count]) => (
-            <tr key={ntc}>
+          {[...counts.counts.entries()].map((x) => (
+            <tr key={x[0]}>
               <td className="font-bold py-1 px-7 w-[7rem] text-center border-primary-first border-[.1px]">
-                {ntc}
+                {x[0]}
               </td>
               <td className="font-bold py-1 px-7 w-[7rem] text-center border-primary-first border-[.1px]">
-                {count}
+                {x[1]}
               </td>
             </tr>
           ))}

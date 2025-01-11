@@ -116,6 +116,11 @@ export const DnatcoficationData = {
     almByCompound: { models: new Map(), chains: new Map() } as ALMCompoundAngleLength,
     naval: { angles: [], bonds: [], geometry: [], anglesMapping: new Map(), bondsMapping: new Map() } as MappedNaval,
     rscc: new Array<Rscc.Rscc>(),
+
+    nucleotideCounts: {
+        counts: new Map<string, number>(),
+        source: 'unavailable' as 'entity-poly' | 'model' | 'unavailable'
+    },
 };
 export type DnatcoficationData = typeof DnatcoficationData;
 
@@ -415,6 +420,8 @@ export namespace Dnatcofication {
                 similarities = new Array(steps.steps.length);
             }
 
+            const nucleotideCounts = Dnatcofier.countNucleotides(structures[0].models[0], entityKinds[0], cifData, ctx);
+
             const tEnd = performance.now();
 
             Logger.log(Logger.Severity.Info, (`Dnatcofication process took ${((tEnd - tStart) / 1000.0).toFixed(3)} sec`));
@@ -437,6 +444,7 @@ export namespace Dnatcofication {
                 almByCompound: ALM.mapByCompoundAngleLength(anglesLengths),
                 naval: mapNaval(naval),
                 rscc: [],
+                nucleotideCounts,
             };
 
             const tEnd2 = performance.now();

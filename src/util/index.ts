@@ -229,6 +229,10 @@ export async function sleep(msec: number) {
     await new Promise(() => setTimeout(() => {}, msec));
 }
 
+export function stringAsCharArray(s: string): string[] {
+    return s.length === 0 ? [] : s.split('');
+}
+
 export function toFixed(num: number, decimals: number, prefix?: { char: string, length: number }) {
     if (!prefix)
         return num.toFixed(decimals);
