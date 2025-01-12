@@ -131,10 +131,15 @@ function writeCif(d: Dnatcofication, outputDirPath: string) {
 }
 
 async function writeValidationReport(d: Dnatcofication, url: string, outputDirPath: string) {
-    const report = await Report.pdf(d, {
-        href: url,
-        assetLoaderFunc: readBinaryFile
-    });
+    const report = await Report.pdf(
+        d,
+        {
+            href: url,
+            assetLoaderFunc: readBinaryFile,
+            completeStepsTable: true,
+        },
+        'offline'
+    );
 
     const outPath = path.resolve(outputDirPath, `${d.pdbId}_report.pdf`);
     writeBinaryFile(outPath, report);

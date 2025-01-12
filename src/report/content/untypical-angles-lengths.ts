@@ -113,9 +113,11 @@ export namespace UntypicalAnglesLengths {
             drawWorst('angles', residues, residueStats, 'outlier', ctx.ntDoc, ctx);
         }
 
-        root.paragraphText('Detailed validation of valence geometry (bond lengths and angles) is available at:', { dontSeparate: true });
-        const url = `${ctx.href}/app/dnatco/validation/angles-lengths?cifcode=${ctx.dnatcofication.pdbId.toLowerCase()}`;
-        root.hyperlink(url, url);
+        if (ctx.generator === 'web') {
+            root.paragraphText('Detailed validation of valence geometry (bond lengths and angles) is available at:', { dontSeparate: true });
+            const url = `${ctx.href}/app/dnatco/validation/angles-lengths?cifcode=${ctx.dnatcofication.pdbId.toLowerCase()}`;
+            root.hyperlink(url, url);
+        }
 
         root.breakPage();
     }
