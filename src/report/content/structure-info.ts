@@ -61,22 +61,31 @@ export namespace StructureInfo {
             NTTable.Cell.lineText('Entity name', tbl, { font: Tables.HeaderFont }),
             NTTable.Cell.lineText('Count', tbl, { font: Tables.HeaderFont, hAlign: 'right' }),
         ]);
-        const { id, pdbx_description, pdbx_number_of_molecules, type, _rowCount } = ctx.dnatcofication.table(Entity);
-        for (let row = 0; row < _rowCount; row++) {
-            const _id = id.values?.at(row);
-            if (_id === undefined)
-                continue;
-
-            const desc = pdbx_description.values?.at(row) ?? Common.NA;
-            const _type = type.values?.at(row) ?? Common.NA;
-            const nMolecules = pdbx_number_of_molecules.values?.at(row) ?? -1;
-
+        if (!ctx.dnatcofication.hasTable(Entity)) {
             tbl.addRow([
-                NTTable.Cell.lineText(_id, tbl, {}, Tables.TextCell),
-                NTTable.Cell.lineText(_type, tbl, {}, Tables.TextCell),
-                NTTable.Cell.paragraphText(desc, tbl, { maxWidth: NTUnit.multiply(40, ctx.tDims.characterWidth), breakWords: true }, Tables.TextCell),
-                NTTable.Cell.lineText(nMolecules.toString(), tbl, { hAlign: 'right' }, Tables.NumCell),
+                NTTable.Cell.lineText(Common.NA, tbl, {}, Tables.TextCell),
+                NTTable.Cell.lineText(Common.NA, tbl, {}, Tables.TextCell),
+                NTTable.Cell.paragraphText(Common.NA, tbl, { maxWidth: NTUnit.multiply(40, ctx.tDims.characterWidth), breakWords: true }, Tables.TextCell),
+                NTTable.Cell.lineText(Common.NA, tbl, { hAlign: 'right' }, Tables.NumCell),
             ]);
+        } else {
+            const { id, pdbx_description, pdbx_number_of_molecules, type, _rowCount } = ctx.dnatcofication.table(Entity);
+            for (let row = 0; row < _rowCount; row++) {
+                const _id = id.values?.at(row);
+                if (_id === undefined)
+                    continue;
+
+                const desc = pdbx_description.values?.at(row) ?? Common.NA;
+                const _type = type.values?.at(row) ?? Common.NA;
+                const nMolecules = pdbx_number_of_molecules.values?.at(row) ?? -1;
+
+                tbl.addRow([
+                    NTTable.Cell.lineText(_id, tbl, {}, Tables.TextCell),
+                    NTTable.Cell.lineText(_type, tbl, {}, Tables.TextCell),
+                    NTTable.Cell.paragraphText(desc, tbl, { maxWidth: NTUnit.multiply(40, ctx.tDims.characterWidth), breakWords: true }, Tables.TextCell),
+                    NTTable.Cell.lineText(nMolecules.toString(), tbl, { hAlign: 'right' }, Tables.NumCell),
+                ]);
+            }
         }
         root.breakLine();
 
