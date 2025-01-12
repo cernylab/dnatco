@@ -78,7 +78,7 @@ export namespace Title {
         const tbl = root.table(2, Tables.EnumTable(ctx.tDims.characterWidth, ctx.tDims.characterHeight, ctx.mode));
         tbl.addRow([
             NTTable.Cell.lineText('Date:', tbl, { font: Tables.EnumTableName.font }, Tables.EnumTableName.cell),
-            NTTable.Cell.lineText(niceDate(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()), tbl, { font: Tables.EnumTableValue.font }, Tables.EnumTableValue.cell)
+            NTTable.Cell.lineText(niceDate(now.getUTCFullYear(), now.getUTCMonth() + 1, now.getUTCDate()), tbl, { font: Tables.EnumTableValue.font }, Tables.EnumTableValue.cell)
         ]);
         tbl.addRow([
             NTTable.Cell.lineText('Structure ID:', tbl, { font: Tables.EnumTableName.font }, Tables.EnumTableName.cell),
