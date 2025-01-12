@@ -1,6 +1,7 @@
 import { Fonts as _Fonts } from './fonts';
 import { Fonts, OutputMode } from './styling';
 import { BondAnglesLengths } from './content/bond-angles-lengths';
+import { CompleteAnglesLengths } from './content/complete-angles-lengths';
 import { CompleteStepsTable } from './content/complete-steps-table';
 import { DinucleotideOutliers } from './content/dinucleotide-outliers';
 import { Title } from './content/title';
@@ -52,6 +53,8 @@ export namespace Report {
         DinucleotideOutliers.add(ctx);
         await RsccRmsd.add(ctx);
         BondAnglesLengths.add(ctx);
+        if (!!options.completeAnglesLengths)
+            CompleteAnglesLengths.add(ctx);
         UntypicalAnglesLengths.add(ctx);
     }
 
@@ -70,6 +73,7 @@ export namespace Report {
     export type Options = {
         assetLoaderFunc: (subpath: string) => Uint8Array,
         completeStepsTable: boolean,
+        completeAnglesLengths: boolean,
     }
 
     export async function pdf(dnatcofication: Dnatcofication, options: Partial<Options> & { href: string }, generator: Generator) {

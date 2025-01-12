@@ -137,6 +137,7 @@ async function writeValidationReport(d: Dnatcofication, url: string, outputDirPa
             href: url,
             assetLoaderFunc: readBinaryFile,
             completeStepsTable: true,
+            completeAnglesLengths: true,
         },
         'offline'
     );

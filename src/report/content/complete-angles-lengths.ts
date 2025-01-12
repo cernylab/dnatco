@@ -1,4 +1,4 @@
-import { drawWorstAnglesLengths } from './util/angles-lengths';
+import { drawAllAnglesLengths } from './util/angles-lengths';
 import { Report } from '../';
 import { Layout } from '../layout';
 import { Fonts } from '../styling';
@@ -6,12 +6,11 @@ import { ByResidueHelpers } from '../../dnatco/angles-lengths/helpers';
 import { Dnatcofication } from '../../dnatco/dnatcofication';
 import { InvalidChain } from '../../util/structure-selection';
 
-export namespace UntypicalAnglesLengths {
+export namespace CompleteAnglesLengths {
     export function add<Output>(ctx: Report.Context<Output>) {
         const root = ctx.ntDoc;
 
-        Layout.sectionHeader('Most untypical bond Lengths & Angles', ctx);
-        root.paragraphText('List of bond lengths and angles within the outlier probability category', { hAlign: ctx.mode === 'textual' ? 'left' : 'center' });
+        Layout.sectionHeader('Lengths & Angles', ctx);
 
         const numModels = Dnatcofication.Structure.numberOfModels(ctx.dnatcofication);
         const alm = ctx.dnatcofication.data.almByResidue;
@@ -26,11 +25,11 @@ export namespace UntypicalAnglesLengths {
 
             // --- LENGTHS ---
             root.lineText('Lengths', { font: { style: 'bold' }, hAlign: ctx.mode === 'textual' ? 'left' : 'center' });
-            drawWorstAnglesLengths('lengths', residues, residueStats, 'outlier', ctx.ntDoc, ctx);
+            drawAllAnglesLengths('lengths', residues, residueStats, ctx.ntDoc, ctx);
 
             // --- ANGLES ---
             root.lineText('Angles', { font: { style: 'bold' }, hAlign: ctx.mode === 'textual' ? 'left' : 'center' });
-            drawWorstAnglesLengths('angles', residues, residueStats, 'outlier', ctx.ntDoc, ctx);
+            drawAllAnglesLengths('angles', residues, residueStats, ctx.ntDoc, ctx);
         }
 
         if (ctx.generator === 'web') {
