@@ -38,7 +38,7 @@ function getAppName() {
 
 async function getCoordinates(filePath: string): Promise<Coordinates> {
     const data = readTextFile(filePath);
-    const ext = path.extname(filePath);
+    const ext = path.extname(filePath).toLowerCase();
 
     if (ext === '.cif')
         return { data, type: 'cif' };
