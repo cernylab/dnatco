@@ -116,8 +116,13 @@ async function fetchCoordinates(pdbId: string): Promise<Result<Coordinates>> {
 //    const url = `https://models.rcsb.org/v1/${pdbId}/full?encoding=cif&copy_all_categories=true`;
     const url = `https://files.rcsb.org/download/${pdbId}.cif`;
     const req = await fetch(url);
-    if (!req.ok)
-        return ErrorResult(`Download failed: ${req.statusText}`);
+    if (!req.ok) {
+        let errorMessage = req.statusText;
+        if (req.status === 404) {
+            errorMessage += `. Structure ${pdbId} might not be present in the database`;
+        }
+        return ErrorResult(`Download failed: ${errorMessage}`);
+    }
 
     try {
         const text = await req.text();
