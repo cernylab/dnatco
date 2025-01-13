@@ -132,23 +132,23 @@
 
 @font-face {
   font-family: "roboto-black";
-  src: url("fonts/ttf/RobotoCondensed-Black.ttf") format("truetype");
+  src: url("fonts/woff2/RobotoCondensed-Black.woff2") format("woff2");
 }
 @font-face {
   font-family: "roboto-bold";
-  src: url("fonts/ttf/RobotoCondensed-Bold.ttf") format("truetype");
+  src: url("fonts/woff2/RobotoCondensed-Bold.woff2") format("woff2");
 }
 @font-face {
   font-family: "roboto-medium";
-  src: url("fonts/ttf/RobotoCondensed-Medium.ttf") format("truetype");
+  src: url("fonts/woff2/RobotoCondensed-Medium.woff2") format("woff2");
 }
 @font-face {
   font-family: "roboto-regular";
-  src: url("fonts/ttf/RobotoCondensed-Regular.ttf") format("truetype");
+  src: url("fonts/woff2/RobotoCondensed-Regular.woff2") format("woff2");
 }
 @font-face {
   font-family: "roboto-light";
-  src: url("fonts/ttf/RobotoCondensed-Light.ttf") format("truetype");
+  src: url("fonts/woff2/RobotoCondensed-Light.woff2") format("woff2");
 }
 
 html {
