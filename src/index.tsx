@@ -8,7 +8,7 @@ import {
   Navigate,
   Routes,
   Route,
-} from "react-router";
+} from "react-router-dom";
 import { Subject } from "rxjs";
 import { OkResult } from "./dnatco";
 import {
