@@ -15,18 +15,16 @@ import { DataTransferDownloadImg, tooltipImg } from "../../../../assets/images";
 import { doDownload, Downloader } from "../../../../browser-util/downloader";
 import { ALM } from "../../../../dnatco/alm";
 import { Dnatcofication } from "../../../../dnatco/dnatcofication";
-import { shiftedName } from "../../../../dnatco/angles-lengths/atoms";
 import {
   AnglesLengths as DAnglesLengths,
-  ElementaryResidue,
 } from "../../../../dnatco/angles-lengths";
-import { tripletTag, Triplet } from "../../../../dnatco/angles-lengths/angles";
+import { Triplet } from "../../../../dnatco/angles-lengths/angles";
 import {
   isShiftedName,
   unshiftName,
 } from "../../../../dnatco/angles-lengths/atoms";
 import { Bins } from "../../../../dnatco/angles-lengths/bin";
-import { pairTag, Pair } from "../../../../dnatco/angles-lengths/lengths";
+import {  Pair } from "../../../../dnatco/angles-lengths/lengths";
 import { Measurements } from "../../../../dnatco/angles-lengths/measurements";
 import { Naval } from "../../../../dnatco/naval";
 import { Validation } from "../../../../dnatco/naval/validation";
@@ -49,218 +47,6 @@ import { ViewerApi, ViewerInterop } from "../../../../viewer/viewer-interop";
 
 const PairBondNameCache: Map<string, React.ReactElement> = new Map();
 const TripletBondNameCache: Map<string, React.ReactElement> = new Map();
-
-const BackboneAnglesOrder = [
-  tripletTag([shiftedName("C3'", -1), shiftedName("O3'", -1), "P"]),
-  tripletTag([shiftedName("O3'", -1), "P", "OP1"]),
-  tripletTag([shiftedName("O3'", -1), "P", "OP2"]),
-  tripletTag(["OP1", "P", "OP2"]),
-  tripletTag([shiftedName("O3'", -1), "P", "O5'"]),
-  tripletTag(["P", "O5'", "C5'"]),
-  tripletTag(["O5'", "C5'", "C4'"]),
-  tripletTag(["C5'", "C4'", "C3'"]),
-  tripletTag(["C4'", "C3'", "O3'"]),
-];
-
-const RiboseRingAnglesOrder = [
-  tripletTag(["C4'", "O4'", "C1'"]),
-  tripletTag(["O4'", "C1'", "C2'"]),
-  tripletTag(["C1'", "C2'", "C3'"]),
-  tripletTag(["C2'", "C3'", "C4'"]),
-  tripletTag(["C3'", "C4'", "O4'"]),
-];
-
-const AdenineAnglesOrder = [
-  ...BackboneAnglesOrder,
-  ...RiboseRingAnglesOrder,
-  tripletTag(["O4'", "C1'", "N9"]),
-  tripletTag(["C1'", "N9", "C8"]),
-  tripletTag(["N7", "C8", "N9"]),
-  tripletTag(["C5", "N7", "C8"]),
-  tripletTag(["C4", "C5", "N7"]),
-  tripletTag(["N1", "C6", "C5"]),
-  tripletTag(["N1", "C6", "N6"]),
-  tripletTag(["N6", "C6", "C5"]),
-  tripletTag(["C2", "N1", "C6"]),
-  tripletTag(["N3", "C2", "N1"]),
-  tripletTag(["N3", "C4", "C5"]),
-  tripletTag(["N9", "C4", "C5"]),
-  tripletTag(["C8", "N9", "C4"]),
-  tripletTag(["C1'", "N9", "C4"]),
-  tripletTag(["C2'", "C1'", "N9"]),
-];
-
-const CytidineAnglesOrder = [
-  ...BackboneAnglesOrder,
-  ...RiboseRingAnglesOrder,
-  tripletTag(["O4'", "C1'", "N1"]),
-  tripletTag(["C1'", "N1", "C6"]),
-  tripletTag(["C5", "C6", "N1"]),
-  tripletTag(["C4", "C5", "C6"]),
-  tripletTag(["N3", "C4", "C5"]),
-  tripletTag(["N4", "C4", "C5"]),
-  tripletTag(["N3", "C4", "N4"]),
-  tripletTag(["C2", "N3", "C4"]),
-  tripletTag(["N1", "C2", "N3"]),
-  tripletTag(["O2", "C2", "N3"]),
-  tripletTag(["N1", "C2", "O2"]),
-  tripletTag(["C1'", "N1", "C2"]),
-  tripletTag(["C2'", "C1'", "N1"]),
-];
-
-const GuanosineAnglesOrder = [
-  ...BackboneAnglesOrder,
-  ...RiboseRingAnglesOrder,
-  tripletTag(["O4'", "C1'", "N9"]),
-  tripletTag(["C1'", "N9", "C8"]),
-  tripletTag(["N7", "C8", "N9"]),
-  tripletTag(["C5", "N7", "C8"]),
-  tripletTag(["C4", "C5", "N7"]),
-  tripletTag(["N1", "C6", "C5"]),
-  tripletTag(["O6", "C6", "C5"]),
-  tripletTag(["N1", "C6", "O6"]),
-  tripletTag(["C2", "N1", "C6"]),
-  tripletTag(["N3", "C2", "N1"]),
-  tripletTag(["N2", "C2", "N1"]),
-  tripletTag(["N3", "C2", "N2"]),
-  tripletTag(["N3", "C4", "C5"]),
-  tripletTag(["N9", "C4", "C5"]),
-  tripletTag(["C8", "N9", "C4"]),
-  tripletTag(["C1'", "N9", "C4"]),
-  tripletTag(["C2'", "C1'", "N9"]),
-];
-
-const ThymineAnglesOrder = [
-  ...BackboneAnglesOrder,
-  ...RiboseRingAnglesOrder,
-  tripletTag(["O4'", "C1'", "N1"]),
-  tripletTag(["C1'", "N1", "C6"]),
-  tripletTag(["C5", "C6", "N1"]),
-  tripletTag(["C4", "C5", "C6"]),
-  tripletTag(["C7", "C5", "C6"]),
-  tripletTag(["C4", "C5", "C7"]),
-  tripletTag(["N3", "C4", "C5"]),
-  tripletTag(["O4", "C4", "C5"]),
-  tripletTag(["N3", "C4", "O4"]),
-  tripletTag(["C2", "N3", "C4"]),
-  tripletTag(["N1", "C2", "N3"]),
-  tripletTag(["O2", "C2", "N3"]),
-  tripletTag(["N1", "C2", "O2"]),
-  tripletTag(["C1'", "N1", "C2"]),
-  tripletTag(["C2'", "C1'", "N1"]),
-];
-
-const UracilAnglesOrder = [
-  ...BackboneAnglesOrder,
-  ...RiboseRingAnglesOrder,
-  tripletTag(["O4'", "C1'", "N1"]),
-  tripletTag(["C1'", "N1", "C6"]),
-  tripletTag(["C5", "C6", "N1"]),
-  tripletTag(["C4", "C5", "C6"]),
-  tripletTag(["N3", "C4", "C5"]),
-  tripletTag(["O4", "C4", "C5"]),
-  tripletTag(["N3", "C4", "O4"]),
-  tripletTag(["C2", "N3", "C4"]),
-  tripletTag(["N1", "C2", "N3"]),
-  tripletTag(["O2", "C2", "N3"]),
-  tripletTag(["N1", "C2", "O2"]),
-  tripletTag(["C1'", "N1", "C2"]),
-  tripletTag(["C2'", "C1'", "N1"]),
-];
-
-const BackboneLengthsOrder = [
-  pairTag([shiftedName("O3'", -1), "P"]),
-  pairTag(["P", "OP1"]),
-  pairTag(["P", "OP2"]),
-  pairTag(["P", "O5'"]),
-  pairTag(["O5'", "C5'"]),
-  pairTag(["C5'", "C4'"]),
-  pairTag(["C4'", "C3'"]),
-  pairTag(["C3'", "O3'"]),
-];
-
-const RiboseRingLengthsOrder = [
-  pairTag(["C4'", "O4'"]),
-  pairTag(["O4'", "C1'"]),
-  pairTag(["C1'", "C2'"]),
-  pairTag(["C2'", "C3'"]),
-];
-
-const AdenineLengthsOrder = [
-  ...BackboneLengthsOrder,
-  ...RiboseRingLengthsOrder,
-  pairTag(["C1'", "N9"]),
-  pairTag(["C8", "N9"]),
-  pairTag(["N7", "C8"]),
-  pairTag(["C5", "N7"]),
-  pairTag(["C4", "C5"]),
-  pairTag(["C6", "C5"]),
-  pairTag(["C6", "N6"]),
-  pairTag(["N1", "C6"]),
-  pairTag(["C2", "N1"]),
-  pairTag(["N3", "C2"]),
-  pairTag(["C4", "N3"]),
-];
-
-const CytidineLengthsOrder = [
-  ...BackboneLengthsOrder,
-  ...RiboseRingLengthsOrder,
-  pairTag(["C1'", "N1"]),
-  pairTag(["C6", "N1"]),
-  pairTag(["C5", "C6"]),
-  pairTag(["C4", "C5"]),
-  pairTag(["C4", "N4"]),
-  pairTag(["N3", "C4"]),
-  pairTag(["C2", "N3"]),
-  pairTag(["C2", "O2"]),
-  pairTag(["N1", "C2"]),
-];
-
-const GuanosineLengthsOrder = [
-  ...BackboneLengthsOrder,
-  ...RiboseRingLengthsOrder,
-  pairTag(["C1'", "N9"]),
-  pairTag(["C8", "N9"]),
-  pairTag(["N7", "C8"]),
-  pairTag(["C5", "N7"]),
-  pairTag(["C4", "C5"]),
-  pairTag(["C6", "C5"]),
-  pairTag(["C6", "O6"]),
-  pairTag(["N1", "C6"]),
-  pairTag(["C2", "N1"]),
-  pairTag(["C2", "N2"]),
-  pairTag(["N3", "C2"]),
-  pairTag(["C4", "N3"]),
-];
-
-const UracilLengthsOrder = [
-  ...BackboneLengthsOrder,
-  ...RiboseRingLengthsOrder,
-  pairTag(["C1'", "N1"]),
-  pairTag(["C6", "N1"]),
-  pairTag(["C5", "C6"]),
-  pairTag(["C4", "C5"]),
-  pairTag(["C4", "O4"]),
-  pairTag(["N3", "C4"]),
-  pairTag(["C2", "N3"]),
-  pairTag(["C2", "O2"]),
-  pairTag(["N1", "C2"]),
-];
-
-const ThymineLengthsOrder = [
-  ...BackboneLengthsOrder,
-  ...RiboseRingLengthsOrder,
-  pairTag(["C1'", "N1"]),
-  pairTag(["C6", "N1"]),
-  pairTag(["C5", "C6"]),
-  pairTag(["C5", "C7"]),
-  pairTag(["C4", "C5"]),
-  pairTag(["C4", "O4"]),
-  pairTag(["N3", "C4"]),
-  pairTag(["C2", "N3"]),
-  pairTag(["C2", "O2"]),
-  pairTag(["N1", "C2"]),
-];
 
 const EmptyPlotPoints = new Array<number>();
 
@@ -926,30 +712,6 @@ export namespace AnglesLengthsCommon {
     residue: Measurements.Residue;
     transition: "selected" | "deselected";
   }>;
-
-  export const AnglesDisplayOrder: Record<ElementaryResidue, string[]> = {
-    A: AdenineAnglesOrder,
-    C: CytidineAnglesOrder,
-    G: GuanosineAnglesOrder,
-    U: UracilAnglesOrder,
-    DA: AdenineAnglesOrder,
-    DC: CytidineAnglesOrder,
-    DG: GuanosineAnglesOrder,
-    DT: ThymineAnglesOrder,
-    DU: UracilAnglesOrder,
-  } as const;
-
-  export const LengthsDisplayOrder: Record<ElementaryResidue, string[]> = {
-    A: AdenineLengthsOrder,
-    C: CytidineLengthsOrder,
-    G: GuanosineLengthsOrder,
-    U: UracilLengthsOrder,
-    DA: AdenineLengthsOrder,
-    DC: CytidineLengthsOrder,
-    DG: GuanosineLengthsOrder,
-    DT: ThymineLengthsOrder,
-    DU: UracilLengthsOrder,
-  } as const;
 
   function amendStructureSelection(
     selection: StructureSelection,

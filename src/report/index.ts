@@ -1,6 +1,7 @@
 import { Fonts as _Fonts } from './fonts';
 import { Fonts, OutputMode } from './styling';
 import { BondAnglesLengths } from './content/bond-angles-lengths';
+import { CompleteAnglesLengths } from './content/complete-angles-lengths';
 import { CompleteStepsTable } from './content/complete-steps-table';
 import { DinucleotideOutliers } from './content/dinucleotide-outliers';
 import { Title } from './content/title';
@@ -14,6 +15,8 @@ import { NTTextDocument } from './nottex/text-document';
 import { NTMm, NTUnit } from './nottex/space';
 import { Dnatcofication } from '../dnatco/dnatcofication';
 
+export type Generator = 'web' | 'offline'
+
 const TDims = NTTextDocument.typesettingDimensions();
 const Margins = {
     top: NTUnit.toMm(NTUnit.multiply(5, TDims.lineHeight)),
@@ -26,7 +29,7 @@ const PageSize = {
     height: NTMm(297),
 };
 
-function makeContext<Output>(dnatcofication: Dnatcofication, ntDoc: NTDocument<Output>, href: string, mode: OutputMode): Report.Context<Output> {
+function makeContext<Output>(dnatcofication: Dnatcofication, ntDoc: NTDocument<Output>, href: string, mode: OutputMode, generator: Generator): Report.Context<Output> {
     return {
         dnatcofication,
         ntDoc,
@@ -36,6 +39,7 @@ function makeContext<Output>(dnatcofication: Dnatcofication, ntDoc: NTDocument<O
         },
         href,
         mode,
+        generator
     };
 }
 
@@ -49,6 +53,8 @@ export namespace Report {
         DinucleotideOutliers.add(ctx);
         await RsccRmsd.add(ctx);
         BondAnglesLengths.add(ctx);
+        if (!!options.completeAnglesLengths)
+            CompleteAnglesLengths.add(ctx);
         UntypicalAnglesLengths.add(ctx);
     }
 
@@ -61,28 +67,30 @@ export namespace Report {
         },
         href: string,
         mode: OutputMode,
+        generator: Generator,
     }
 
     export type Options = {
         assetLoaderFunc: (subpath: string) => Uint8Array,
         completeStepsTable: boolean,
+        completeAnglesLengths: boolean,
     }
 
-    export async function pdf(dnatcofication: Dnatcofication, options: Partial<Options> & { href: string }) {
+    export async function pdf(dnatcofication: Dnatcofication, options: Partial<Options> & { href: string }, generator: Generator) {
         await _Fonts.load(options.assetLoaderFunc);
 
         const ntDoc = await NTPdfDocument.create(Margins, PageSize, _Fonts.get(), Fonts.Default);
-        const ctx = makeContext(dnatcofication, ntDoc, options.href, 'graphical');
+        const ctx = makeContext(dnatcofication, ntDoc, options.href, 'graphical', generator);
         await addContent(ctx, options);
 
         return await ntDoc.render();
     }
 
-    export async function text(dnatcofication: Dnatcofication, options: Partial<Options> & { href: string }) {
+    export async function text(dnatcofication: Dnatcofication, options: Partial<Options> & { href: string }, generator: Generator) {
         await _Fonts.load(options.assetLoaderFunc);
 
         const ntDoc = await NTTextDocument.create(80, 5, _Fonts.get());
-        const ctx = makeContext(dnatcofication, ntDoc, options.href, 'textual');
+        const ctx = makeContext(dnatcofication, ntDoc, options.href, 'textual', generator);
         await addContent(ctx, options);
 
         return await ntDoc.render();

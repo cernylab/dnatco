@@ -1,3 +1,5 @@
+import './browser-faker';
+
 import path from 'node:path';
 import process from 'node:process';
 import { fileExists, isDirectory, isReadable, isWriteable, readBinaryFile, readTextFile, writeBinaryFile, writeTextFile } from './io';
@@ -36,7 +38,7 @@ function getAppName() {
 
 async function getCoordinates(filePath: string): Promise<Coordinates> {
     const data = readTextFile(filePath);
-    const ext = path.extname(filePath);
+    const ext = path.extname(filePath).toLowerCase();
 
     if (ext === '.cif')
         return { data, type: 'cif' };
@@ -129,10 +131,16 @@ function writeCif(d: Dnatcofication, outputDirPath: string) {
 }
 
 async function writeValidationReport(d: Dnatcofication, url: string, outputDirPath: string) {
-    const report = await Report.pdf(d, {
-        href: url,
-        assetLoaderFunc: readBinaryFile
-    });
+    const report = await Report.pdf(
+        d,
+        {
+            href: url,
+            assetLoaderFunc: readBinaryFile,
+            completeStepsTable: true,
+            completeAnglesLengths: true,
+        },
+        'offline'
+    );
 
     const outPath = path.resolve(outputDirPath, `${d.pdbId}_report.pdf`);
     writeBinaryFile(outPath, report);

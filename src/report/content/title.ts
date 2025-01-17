@@ -78,7 +78,7 @@ export namespace Title {
         const tbl = root.table(2, Tables.EnumTable(ctx.tDims.characterWidth, ctx.tDims.characterHeight, ctx.mode));
         tbl.addRow([
             NTTable.Cell.lineText('Date:', tbl, { font: Tables.EnumTableName.font }, Tables.EnumTableName.cell),
-            NTTable.Cell.lineText(niceDate(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()), tbl, { font: Tables.EnumTableValue.font }, Tables.EnumTableValue.cell)
+            NTTable.Cell.lineText(niceDate(now.getUTCFullYear(), now.getUTCMonth() + 1, now.getUTCDate()), tbl, { font: Tables.EnumTableValue.font }, Tables.EnumTableValue.cell)
         ]);
         tbl.addRow([
             NTTable.Cell.lineText('Structure ID:', tbl, { font: Tables.EnumTableName.font }, Tables.EnumTableName.cell),
@@ -86,21 +86,25 @@ export namespace Title {
         ]);
         root.breakLine();
 
-        let url = `${ctx.href}/app/dnatco/downloads?cifcode=${ctx.dnatcofication.pdbId.toLowerCase()}`;
-        root.lineText('The full report is available at:');
-        root.hyperlink(url, url);
-        root.breakLine();
-
-        if (!ctx.dnatcofication.data.isCustomStructure) {
-            url = `${ctx.href}/app/dnatco/validation/confals-rmsds?cifcode=${ctx.dnatcofication.pdbId.toLowerCase()}`;
-            root.lineText('Detailed table of assigned NtC classes of each dinucleotide step is available at:');
+        if (ctx.generator === 'web') {
+            let url = `${ctx.href}/app/dnatco/downloads?cifcode=${ctx.dnatcofication.pdbId.toLowerCase()}`;
+            root.lineText('The full report is available at:');
             root.hyperlink(url, url);
             root.breakLine();
 
-            url = `${ctx.href}/app/dnatco/validation/angles-lengths?cifcode=${ctx.dnatcofication.pdbId.toLowerCase()}`;
-            root.lineText('Validation of valence geometry (bond lengths and angles) is available at:');
-            root.hyperlink(url, url);
-            root.breakLine();
+            if (!ctx.dnatcofication.data.isCustomStructure) {
+                url = `${ctx.href}/app/dnatco/validation/confals-rmsds?cifcode=${ctx.dnatcofication.pdbId.toLowerCase()}`;
+                root.lineText('Detailed table of assigned NtC classes of each dinucleotide step is available at:');
+                root.hyperlink(url, url);
+                root.breakLine();
+
+                url = `${ctx.href}/app/dnatco/validation/angles-lengths?cifcode=${ctx.dnatcofication.pdbId.toLowerCase()}`;
+                root.lineText('Validation of valence geometry (bond lengths and angles) is available at:');
+                root.hyperlink(url, url);
+                root.breakLine();
+            }
+        } else if (ctx.generator === 'offline') {
+            root.lineText(`This report was genetated by offline version of ${GlobalConfig.data().displayedProductName}`);
         }
 
         root.breakPage();

@@ -551,11 +551,14 @@ export function Downloads(props: { dnatcofication: Dnatcofication }) {
                 hoverImage={arrowDownHover as string}
                 onClick={() => {
                   setReportGenerationState("generating");
-                  Report.pdf(props.dnatcofication, {
-                    completeStepsTable: listAllDinus,
-                    href: Net.href(),
-                  })
-                    .then((report) => {
+                  Report.pdf(
+                    props.dnatcofication,
+                    {
+                      completeStepsTable: listAllDinus,
+                      href: Net.href(),
+                    },
+                    'web'
+                  ).then((report) => {
                       Net.serveFileRaw(
                         FileTypes.pdf.mimeType,
                         report,
@@ -584,11 +587,14 @@ export function Downloads(props: { dnatcofication: Dnatcofication }) {
                 hoverImage={arrowDownHover as string}
                 onClick={() => {
                   setReportGenerationState("generating");
-                  Report.text(props.dnatcofication, {
-                    completeStepsTable: listAllDinus,
-                    href: Net.href(),
-                  })
-                    .then((report) => {
+                  Report.text(
+                    props.dnatcofication,
+                    {
+                      completeStepsTable: listAllDinus,
+                      href: Net.href(),
+                    },
+                    'web'
+                 ).then((report) => {
                       Net.serveFile(
                         FileTypes.text.mimeType,
                         report,

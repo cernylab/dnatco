@@ -10,6 +10,7 @@ import {
   ResidueName,
   WindowsTracker,
 } from "./angles-lengths-common";
+import { AnglesLengthsDisplayOrder } from "./angles-lengths-display-order";
 import { View } from "../view";
 import { SearchBox } from "../../search-box";
 import { Common, DownloadButtonComponent } from "../../common";
@@ -90,7 +91,7 @@ const StatsDownloaders = [
 
 function makeAngleDetails(props: ResidueDetailsProps) {
   const displayOrder =
-    AnglesLengthsCommon.AnglesDisplayOrder[props.residue.compound];
+    AnglesLengthsDisplayOrder.Angles[props.residue.compound];
 
   let elems = [];
   for (const tripletTag of displayOrder) {
@@ -130,7 +131,7 @@ function makeAngleDetails(props: ResidueDetailsProps) {
 
 function makeLengthDetails(props: ResidueDetailsProps) {
   const displayOrder =
-    AnglesLengthsCommon.LengthsDisplayOrder[props.residue.compound];
+    AnglesLengthsDisplayOrder.Lengths[props.residue.compound];
 
   let elems = [];
   for (const pairTag of displayOrder) {

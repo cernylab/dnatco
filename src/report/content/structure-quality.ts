@@ -173,12 +173,14 @@ export namespace StructureQuality {
         root.breakLine();
 
         const url = `${ctx.href}/app/dnatco/validation/confals-rmsds?cifcode=${ctx.dnatcofication.pdbId.toLowerCase()}`;
-        root.paragraphText(
-            'Complete table of NtC and CANA classes assignment, confal score and RMSD from the closest ' +
-            'NtC representative can be found here:',
-            { dontSeparate: true }
-        );
-        root.hyperlink(url, url);
+        if (ctx.generator === 'web') {
+            root.paragraphText(
+                'Complete table of NtC and CANA classes assignment, confal score and RMSD from the closest ' +
+                'NtC representative can be found here:',
+                { dontSeparate: true }
+            );
+            root.hyperlink(url, url);
+        }
 
         root.breakPage();
     }

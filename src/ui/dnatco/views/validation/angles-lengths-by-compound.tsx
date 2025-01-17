@@ -9,6 +9,7 @@ import {
   ResidueName as CommonResidueName,
   WindowsTracker,
 } from "./angles-lengths-common";
+import { AnglesLengthsDisplayOrder } from './angles-lengths-display-order';
 import { View } from "../view";
 import { Common, DownloadButtonComponent } from "../../common";
 import {
@@ -1083,7 +1084,7 @@ export class AnglesLengthsByCompound extends View<View.Props> {
               >
                 <Bases
                   data={selected.lengths}
-                  displayOrders={AnglesLengthsCommon.LengthsDisplayOrder}
+                  displayOrders={AnglesLengthsDisplayOrder.Lengths}
                   colorsForCounts={htmlColorsForStatsBar}
                   outlierColor={outlierColor}
                   pgrpIndices={pgrpIndices}
@@ -1113,7 +1114,7 @@ export class AnglesLengthsByCompound extends View<View.Props> {
               >
                 <Bases
                   data={selected.angles}
-                  displayOrders={AnglesLengthsCommon.AnglesDisplayOrder}
+                  displayOrders={AnglesLengthsDisplayOrder.Angles}
                   colorsForCounts={htmlColorsForStatsBar}
                   outlierColor={outlierColor}
                   pgrpIndices={pgrpIndices}

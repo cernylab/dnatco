@@ -101,15 +101,21 @@ npm run build-lib
 
 #### Running the tool
 
-The standalone tool and the corresponding assets are copied into the `bin` subdirectory once they are built. Since the standalone tool must be launched in a specific way to work correctly, we provide a `rednatco.sh` script. To use the script, execute `./scripts/rednatco.sh` from ReDNATCO's root directory.
-
-The helper script expects to be run with the following parameters:
+To run the tool from the ReDNATCO root directory, execute the following command:
 
 ```
-./scripts/rednatco.sh <output_directory> <coordinates_file> <density_map (optional)>
+node ./bin/rednatco.js <output_directory> <coordinates_file> <density_map (optional)>
+```
+
+or, on a Windows system:
+
+```
+node bin\rednatco.js <output_directory> <coordinates_file> <density_map (optional)>
 ```
 
 The tool will produce a mmCIF file with additional categories and a validation report as a PDF file.
+
+**NOTE:** The standalone tool relies on the entire content of the `bin` directory. If you wish to move the standalone tool to a different directory, make sure that you copy the entire `bin` directory and that its contents remain unchanged.
 
 Configuration
 ---
