@@ -34,8 +34,13 @@ export function StaticDb(
         coordinates: async (pdbId) => {
             const id = transformId(pdbId, coords.idTransformation);
             const req = await fetch(replaceAll(coords.link, '${pdbId}', id));
-            if (!req.ok)
-                return ErrorResult(`Invalid database response: ${req.statusText}`);
+            if (!req.ok) {
+                let errorMessage = req.statusText;
+                if (req.status === 404) {
+                    errorMessage += `. Structure ${pdbId} might not be present in the database`;
+                }
+                return ErrorResult(`Download failed: ${errorMessage}`);
+            }
 
             try {
                 if (coords.gzipped) {

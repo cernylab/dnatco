@@ -359,31 +359,9 @@ class DnatcoficationHandler {
 
           if (
             errorMessage ===
-            "Problem with coordinates - Download failed: Not Found"
-          ) {
-            errorMessage = "PDB ID does not exist, try again";
-          }
-
-          if (
-            errorMessage ===
-            "Problem with coordinates - Invalid database response: Not Found"
-          ) {
-            errorMessage = "PDB ID is not found in PDB-REDO, try again";
-          }
-
-          if (
-            errorMessage ===
             "Error: Failed to classify steps: LLKA_E_NOTHING_TO_CLASSIFY"
           ) {
-            errorMessage = "PDB ID does not contain nucleic acid";
-          }
-
-          if (
-            errorMessage ===
-            "Problem with density map - Error: Density map file has unknown type. Only CCP4 and DSN6 maps are currently supported."
-          ) {
-            errorMessage =
-              "Problem with density file. Only CCP4 and DSN6 maps are currently supported";
+            errorMessage = "Structure does not any contain nucleic acid";
           }
 
           PopupCustomFile.create(

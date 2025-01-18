@@ -55,7 +55,14 @@ export class PopupCustomFile extends React.Component<PopupCustomFile.Props> {
   }
 
   render() {
-    console.log(this.props.errorMessage);
+    // FIXME: This is quite hacky. It expects that when an error occurs
+    // during structure geometry processing, libLLKA will return an error which
+    // will eventually get converted to a string containing the error code.
+    // We are making an assumption that such an error condition suggests
+    // a file with improper structure and that running that structure
+    // through MAXIT may fix it.
+    const isLlkaError = this.props.errorMessage.includes("LLKA_E_");
+
     return (
       <div
         ref={this.selfRef}
@@ -63,36 +70,27 @@ export class PopupCustomFile extends React.Component<PopupCustomFile.Props> {
         tabIndex={0}
       >
         <div className="bg-primary-first flex flex-col mx-auto p-4 relative top-[45%] rounded-standart max-w-[33%] max-h-[20%] overflow-y-scroll text-white">
-          {this.props.errorMessage === "PDB ID does not exist, try again" ||
-          this.props.errorMessage ===
-            "PDB ID is not found in PDB-REDO, try again" ||
-          this.props.errorMessage === "PDB ID does not contain nucleic acid" ||
-          this.props.errorMessage ===
-            "Problem with density file. Only CCP4 and DSN6 maps are currently supported" ? (
-            <div className="text-red-500">{this.props.errorMessage}</div>
-          ) : (
-            <div>
-              Cannot process structure. Your file is not formatted according to
-              PDB standards. If you will, we can try to repair the file by
-              providing it to the external server, which will attempt to fix it.
-              Do you want to repair your file?
-            </div>
-          )}
+          {isLlkaError
+            ? (
+              <div>
+                Cannot process structure. Your file is not formatted according to
+                PDB standards. We can try to repair the file by uploading to our
+                server, which will attempt to fix it.
+                Do you want to repair your file?
+              </div>
+            )
+            : <div className="text-red-500">{this.props.errorMessage}</div>
+          }
           <div className="flex justify-between mt-4">
-            {this.props.errorMessage !== "PDB ID does not exist, try again" &&
-              this.props.errorMessage !==
-                "PDB ID is not found in PDB-REDO, try again" &&
-              this.props.errorMessage !==
-                "PDB ID does not contain nucleic acid" &&
-              this.props.errorMessage !==
-                "Problem with density file. Only CCP4 and DSN6 maps are currently supported" && (
-                <button
-                  onClick={() => this.postToDatabase(this.props.jsonData)}
-                  className="bg-secondary-second text-primary-first items-center flex justify-center px-4 py-1 cursor-pointer w-fit rounded-smaller hover:bg-secondary-second-hover transition-all"
-                >
-                  Repair file
-                </button>
-              )}
+            {isLlkaError && (
+              <button
+                onClick={() => this.postToDatabase(this.props.jsonData)}
+                className="bg-secondary-second text-primary-first items-center flex justify-center px-4 py-1 cursor-pointer w-fit rounded-smaller hover:bg-secondary-second-hover transition-all"
+              >
+                Repair file
+              </button>
+            )}
+
             <button
               onClick={() => this.dismiss()}
               className="bg-secondary-second text-primary-first items-center flex justify-center px-4 py-1 cursor-pointer w-fit rounded-smaller hover:bg-secondary-second-hover transition-all"
