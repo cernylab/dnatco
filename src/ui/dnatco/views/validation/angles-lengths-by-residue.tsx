@@ -89,7 +89,18 @@ const StatsDownloaders = [
   },
 ] as StatsDownloader[];
 
+function reverseTagTriplet(tripletTag: string){
+	const parts = tripletTag.split('^');
+	if (parts.length !== 3){
+	  throw new Error('Invalid tripletTag format: ${tripletTag}');
+	}
+	return [parts[2], parts[1], parts[0]].join('^');
+}
+
 function makeAngleDetails(props: ResidueDetailsProps) {
+  if (!props.residue || !props.residue.bondAngles) {
+    return [];
+  }
   const displayOrder =
     AnglesLengthsDisplayOrder.Angles[props.residue.compound];
 
@@ -99,6 +110,9 @@ function makeAngleDetails(props: ResidueDetailsProps) {
 
     for (let _idx = 0; _idx < props.residue.bondAngles.length; _idx++) {
       if (props.residue.bondAngles[_idx].tag === tripletTag) {
+        idx = _idx;
+        break;
+      } else if (props.residue.bondAngles[_idx].tag === reverseTagTriplet(tripletTag)) {
         idx = _idx;
         break;
       }
@@ -129,6 +143,10 @@ function makeAngleDetails(props: ResidueDetailsProps) {
   return elems;
 }
 
+function reverseTag(pairTag: string){
+	return pairTag.split('^').reverse().join('^');
+}
+
 function makeLengthDetails(props: ResidueDetailsProps) {
   const displayOrder =
     AnglesLengthsDisplayOrder.Lengths[props.residue.compound];
@@ -139,6 +157,9 @@ function makeLengthDetails(props: ResidueDetailsProps) {
 
     for (let _idx = 0; _idx < props.residue.bondLengths.length; _idx++) {
       if (props.residue.bondLengths[_idx].tag === pairTag) {
+        idx = _idx;
+        break;
+      } else if (props.residue.bondLengths[_idx].tag === reverseTag(pairTag)) {
         idx = _idx;
         break;
       }
