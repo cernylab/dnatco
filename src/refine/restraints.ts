@@ -138,10 +138,19 @@ function restraintsAtoms(firstBase: string, secondBase: string): { atoms: string
         const ret = jsLLKA.crossResidueMetricAtomsFromBases(firstBase, secondBase, xr);
         if (ret.isSuccess()) {
             const quad = ret.success();
-            if (isTorsion)
-                restraintsAtoms.push({ atoms: [quad.a, quad.b, quad.c, quad.d], isTorsion });
-            else
-                restraintsAtoms.push({ atoms: [quad.a, quad.b], isTorsion });
+
+            // libLLKA quads contain base-dependent atoms. Since C1' is not base-dependent,
+            // we need to put together the actual list of atoms by hand. libLLKA does the
+            // same thing.
+            if (isTorsion) {
+                restraintsAtoms.push({ atoms: [quad.b, "C1'", "C1'", quad.c], isTorsion });
+            } else {
+                if (xr === jsLLKA.CrossResidueMetric.DIST_CC) {
+                    restraintsAtoms.push({ atoms: ["C1'", "C1'"], isTorsion });
+                } else {
+                    restraintsAtoms.push({ atoms: [quad.a, quad.b], isTorsion });
+                }
+            }
 
             quad.delete();
         } else
