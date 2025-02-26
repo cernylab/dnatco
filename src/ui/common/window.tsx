@@ -93,7 +93,7 @@ function Header(props: {
         isExpanded ? "w-full" : "w-max"
       } items-center border-b-[0.1px] border-primary-first flex flex-row justify-between`}
     >
-      <div ref={hdrRef} className="cursor-move">
+      <div ref={hdrRef} className="cursor-move mr-4">
         {title}
       </div>
       <div className="flex">
@@ -188,7 +188,8 @@ function TheWindow(props: {
       style={{
         left: `${position.x}px`,
         top: `${position.y}px`,
-        width: size.width > 0 ? `${size.width}px` : void 0,
+        width: !isExpanded || size.width <= 0 ? void 0 : `${size.width}px`,
+        //width: size.width > 0 ? `${size.width}px` : void 0,
         height: size.height > 0 ? `${size.height}px` : void 0,
         overflow: "clip",
       }}
