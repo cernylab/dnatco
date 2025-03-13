@@ -194,4 +194,10 @@ export namespace Phenix {
 
         return lines;
     }
+
+    export function restraintsAsText(restraints: Restraints): string {
+        const lines = Phenix.restraintsAsLines(restraints);
+
+        return lines.map((x) => x.text).join('\n');
+    }
 }

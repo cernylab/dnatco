@@ -14,6 +14,9 @@ import { Naval } from '../dnatco/naval';
 import { Rscc } from '../dnatco/rscc'
 import { GlobalConfig } from '../global-config';
 import { Report } from '../report';
+import { Buster } from '../refine/buster';
+import { Phenix as RPhenix } from '../refine/phenix';
+import { Coot } from '../refine/coot';
 import { TaskContext } from '../tasks/task';
 
 import { NavalAngleRestraintsFile, NavalBondRestraintsFile } from '../assets/params';
@@ -130,6 +133,30 @@ function writeCif(d: Dnatcofication, outputDirPath: string) {
     writeTextFile(outPath, d.rawCif());
 }
 
+function writeBusterRestraints(d: Dnatcofication, outputDirPath: string) {
+    const restraints  = Buster.restraints(d, '', 0.5);
+    const text = Buster.restraintsAsText(restraints);
+
+    const restraintsPath = path.resolve(outputDirPath, `${d.pdbId}_restraints_buster.txt`);
+    writeTextFile(restraintsPath, text);
+}
+
+function writeCootRestraints(d: Dnatcofication, outputDirPath: string) {
+    const restraints  = Coot.restraints(d, '', 0.5);
+    const text = Coot.restraintsAsText(restraints);
+
+    const restraintsPath = path.resolve(outputDirPath, `${d.pdbId}_restraints_coot.txt`);
+    writeTextFile(restraintsPath, text);
+}
+
+function writePhenixRestraints(d: Dnatcofication, outputDirPath: string) {
+    const restraints  = RPhenix.restraints(d, '', 0.5);
+    const text = RPhenix.restraintsAsText(restraints);
+
+    const restraintsPath = path.resolve(outputDirPath, `${d.pdbId}_restraints_phenix.txt`);
+    writeTextFile(restraintsPath, text);
+}
+
 async function writeValidationReport(d: Dnatcofication, url: string, outputDirPath: string) {
     const report = await Report.pdf(
         d,
@@ -178,6 +205,12 @@ async function main(argv: string[]): Promise<ExitCode> {
         return EXIT_FAILURE;
     }
 
+    const doAnnotatedCif = true;
+    const doValidationReport = true;
+    const doBusterRestraints = true;
+    const doCootRestraints = true;
+    const doPhenixRestraints = true;
+
     // TODO:
     // The entire content of this try-catch block could be done in a loop
     // for multiple structures. This would be a major performance improvement
@@ -213,8 +246,11 @@ async function main(argv: string[]): Promise<ExitCode> {
         const d = new Dnatcofication();
         d.setData(dd);
 
-        writeCif(d, outputDirPath);
-        await writeValidationReport(d, cfg.referenceUrl, outputDirPath);
+        if (doAnnotatedCif) writeCif(d, outputDirPath);
+        if (doValidationReport) await writeValidationReport(d, cfg.referenceUrl, outputDirPath);
+        if (doBusterRestraints) writeBusterRestraints(d, outputDirPath);
+        if (doCootRestraints) writeCootRestraints(d, outputDirPath);
+        if (doPhenixRestraints) writePhenixRestraints(d, outputDirPath);
 
         Logger.log(Logger.Severity.Debug, `Done processing "${coordsFilePath}"`);
     } catch (e) {
