@@ -14,6 +14,9 @@ import { Naval } from '../dnatco/naval';
 import { Rscc } from '../dnatco/rscc'
 import { GlobalConfig } from '../global-config';
 import { Report } from '../report';
+import { Buster } from '../refine/buster';
+import { Phenix as RPhenix } from '../refine/phenix';
+import { Coot } from '../refine/coot';
 import { TaskContext } from '../tasks/task';
 
 import { NavalAngleRestraintsFile, NavalBondRestraintsFile } from '../assets/params';
@@ -21,12 +24,221 @@ import {
     DnaBackdropAssigned, DnaBackdropUnassigned,
     RnaBackdropAssigned, RnaBackdropUnassigned
 } from '../assets/rscc';
+import { parseFloatStrict } from '../util';
 
 const ConfigFilePath = './config.json';
 
 const EXIT_SUCCESS = 0;
 const EXIT_FAILURE = 1;
 type ExitCode = typeof EXIT_SUCCESS | typeof EXIT_FAILURE;
+
+type Configuration = {
+    outputDir: string,
+    coordsFilePath: string,
+    reflnsFilePath: string,
+    doAnnotatedCif: boolean,
+    doReport: boolean,
+    doBusterRestraints: boolean,
+    doCootRestraints: boolean,
+    doPhenixRestraints: boolean,
+    restraintsRmsd: number,
+    restraintsSigmaFactor: number,
+    logFilePath: string,
+};
+
+const Parameters = [
+    {
+        cmd: '--help',
+        desc: 'Print usage and exit',
+        proc: () => {
+            printUsage();
+            process.exit(EXIT_SUCCESS);
+        },
+        required: false,
+    },
+    {
+        cmd: '--outputDir',
+        desc: 'Path to output directory [VALUE]',
+        proc: (args: string[], config: Partial<Configuration>) => {
+            if (args.length < 1) {
+                Logger.log(Logger.Severity.Error, 'Parameter "outputDir" requires an argument');
+                throw new Error();
+            }
+            if (!!config.outputDir) {
+                Logger.log(Logger.Severity.Error, 'Parameter "outputDir" is already set');
+                throw new Error();
+            }
+            config.outputDir = args[0];
+
+            return args.slice(1);
+        },
+        required: true,
+    },
+    {
+        cmd: '--coords',
+        desc: 'Path to file with coordinates [VALUE]',
+        proc: (args: string[], config: Partial<Configuration>) => {
+            if (args.length < 1) {
+                Logger.log(Logger.Severity.Error, 'Parameter "coords" requires an argument');
+                throw new Error();
+            }
+            if (!!config.coordsFilePath) {
+                Logger.log(Logger.Severity.Error, 'Parameter "coords" is already set');
+                throw new Error();
+            }
+            config.coordsFilePath = args[0];
+
+            return args.slice(1);
+        },
+        required: true,
+    },
+    {
+        cmd: '--reflns',
+        desc: 'Path to file with reflections [VALUE]',
+        proc: (args: string[], config: Partial<Configuration>) => {
+            if (args.length < 1) {
+                Logger.log(Logger.Severity.Error, 'Parameter "reflns" requires an argument');
+                throw new Error();
+            }
+            if (!!config.reflnsFilePath) {
+                Logger.log(Logger.Severity.Error, 'Parameter "reflns" is already set');
+                throw new Error();
+            }
+            config.reflnsFilePath = args[0];
+
+            return args.slice(1);
+        },
+        required: false,
+    },
+    {
+        cmd: '--annotatedCIF',
+        desc: 'Generate annotated mmCIF file',
+        proc: (args: string[], config: Partial<Configuration>) => {
+            if (config.doAnnotatedCif) {
+                Logger.log(Logger.Severity.Error, 'Parameter "annotatedCIF" is already set');
+                throw new Error();
+            }
+            config.doAnnotatedCif = true;
+            return args;
+        },
+        required: false,
+    },
+    {
+        cmd: '--report',
+        desc: 'Generate comprehensive report',
+        proc: (args: string[], config: Partial<Configuration>) => {
+            if (config.doReport) {
+                Logger.log(Logger.Severity.Error, 'Parameter "report" is already set');
+                throw new Error();
+            }
+            config.doReport = true;
+            return args;
+        },
+        required: false,
+    },
+    {
+        cmd: '--busterRestraints',
+        desc: 'Generate restraints file for Buster',
+        proc: (args: string[], config: Partial<Configuration>) => {
+            if (config.doBusterRestraints) {
+                Logger.log(Logger.Severity.Error, 'Parameter "busterRestraints" is already set');
+                throw new Error();
+            }
+            config.doBusterRestraints = true;
+            return args;
+        },
+        required: false,
+    },
+    {
+        cmd: '--cootRestraints',
+        desc: 'Generate restraints file for Coot',
+        proc: (args: string[], config: Partial<Configuration>) => {
+            if (config.doCootRestraints) {
+                Logger.log(Logger.Severity.Error, 'Parameter "cootRestraints" is already set');
+                throw new Error();
+            }
+            config.doCootRestraints = true;
+            return args;
+        },
+        required: false,
+    },
+    {
+        cmd: '--phenixRestraints',
+        desc: 'Generate restraints file for Phenix',
+        proc: (args: string[], config: Partial<Configuration>) => {
+            if (config.doPhenixRestraints) {
+                Logger.log(Logger.Severity.Error, 'Parameter "phenixRestraints" is already set');
+                throw new Error();
+            }
+            config.doPhenixRestraints = true;
+            return args;
+        },
+        required: false,
+    },
+    {
+        cmd: '--restraintsRmsd',
+        desc: 'Maximum restraint RMSD [VALUE]',
+        proc: (args: string[], config: Partial<Configuration>) => {
+            if (args.length < 1) {
+                Logger.log(Logger.Severity.Error, '"restraintsRmsd" parameter requires an argument');
+                throw new Error();
+            }
+            if (!!config.restraintsRmsd) {
+                Logger.log(Logger.Severity.Error, 'Parameter "restraintsRmsd" is already set');
+                throw new Error();
+            }
+            config.restraintsRmsd = parseFloatStrict(args[0]);
+            if (isNaN(config.restraintsRmsd)) {
+                Logger.log(Logger.Severity.Error, '"restraintsRmsd" value is invalid');
+                throw new Error();
+            }
+
+            return args.slice(1);
+        },
+        required: false,
+    },
+    {
+        cmd: '--restraintsSigmaFactor',
+        desc: 'Restraints sigma factor [VALUE]',
+        proc: (args: string[], config: Partial<Configuration>) => {
+            if (args.length < 1) {
+                Logger.log(Logger.Severity.Error, '"restraintsSigmaFactor" parameter requires an argument');
+                throw new Error();
+            }
+            if (!!config.restraintsSigmaFactor) {
+                Logger.log(Logger.Severity.Error, 'Parameter "restraintsSigmaFactor" is already set');
+                throw new Error();
+            }
+            config.restraintsSigmaFactor = parseFloatStrict(args[0]);
+            if (isNaN(config.restraintsSigmaFactor)) {
+                Logger.log(Logger.Severity.Error, '"restraintsSigmaFactor" value is invalid');
+                throw new Error();
+            }
+
+            return args.slice(1);
+        },
+        required: false,
+    },
+    {
+        cmd: '--log',
+        desc: 'Path to a log file [VALUE]',
+        proc: (args: string[], config: Partial<Configuration>) => {
+            if (args.length < 1) {
+                Logger.log(Logger.Severity.Error, '"log" parameter requires an argument');
+                throw new Error();
+            }
+            if (!!config.logFilePath) {
+                Logger.log(Logger.Severity.Error, 'Parameter "log" is already set');
+                throw new Error();
+            }
+
+            config.logFilePath = args[0];
+
+            return args.slice(1);
+        },
+        required: false,
+    }
+];
 
 function _relPath(_path: string) {
     return './' + _path;
@@ -120,14 +332,59 @@ function loadConfig() {
     GlobalConfig.load(JSON.parse(text));
 }
 
+function parseCmdParams(args: string[]) {
+    const cfg: Partial<Configuration> = {};
+    while (args.length > 0) {
+        const current = args[0];
+        const p = Parameters.find((x) => x.cmd === current);
+        if (!p) throw new Error(`"${current}" is not a valid parameter`);
+
+        try {
+            args = args.slice(1);
+            args = p.proc(args, cfg);
+        } catch (e) {
+            return null;
+        }
+    }
+
+    return cfg;
+}
+
 function printUsage() {
     const appName = getAppName();
-    console.log(`Usage: ${appName} OUTPUT_DIRECTORY COORDINATES_FILE.(cif|pdb) [MAP_COEFFICIENTS.mtz]`);
+    console.log(`Usage: ${appName}`);
+    for (const p of Parameters) {
+        console.log(`\t${p.cmd.padEnd(25)} \t${p.desc} ${p.required ? '(REQUIRED)' : ''}`);
+    }
 }
 
 function writeCif(d: Dnatcofication, outputDirPath: string) {
     const outPath = path.resolve(outputDirPath, `${d.pdbId}_annotated.cif`);
     writeTextFile(outPath, d.rawCif());
+}
+
+function writeBusterRestraints(d: Dnatcofication, outputDirPath: string, maxRmsd?: number, sigmaFactor?: number) {
+    const restraints  = Buster.restraints(d, '', maxRmsd ?? 0.5, sigmaFactor);
+    const text = Buster.restraintsAsText(restraints);
+
+    const restraintsPath = path.resolve(outputDirPath, `${d.pdbId}_restraints_buster.txt`);
+    writeTextFile(restraintsPath, text);
+}
+
+function writeCootRestraints(d: Dnatcofication, outputDirPath: string, maxRmsd?: number, sigmaFactor?: number) {
+    const restraints  = Coot.restraints(d, '', maxRmsd ?? 0.5, sigmaFactor);
+    const text = Coot.restraintsAsText(restraints);
+
+    const restraintsPath = path.resolve(outputDirPath, `${d.pdbId}_restraints_coot.txt`);
+    writeTextFile(restraintsPath, text);
+}
+
+function writePhenixRestraints(d: Dnatcofication, outputDirPath: string, maxRmsd?: number, sigmaFactor?: number) {
+    const restraints  = RPhenix.restraints(d, '', maxRmsd ?? 0.5, sigmaFactor);
+    const text = RPhenix.restraintsAsText(restraints);
+
+    const restraintsPath = path.resolve(outputDirPath, `${d.pdbId}_restraints_phenix.txt`);
+    writeTextFile(restraintsPath, text);
 }
 
 async function writeValidationReport(d: Dnatcofication, url: string, outputDirPath: string) {
@@ -147,16 +404,33 @@ async function writeValidationReport(d: Dnatcofication, url: string, outputDirPa
 }
 
 async function main(argv: string[]): Promise<ExitCode> {
-    if (argv.length < 2) {
-        Logger.log(Logger.Severity.Error, 'Invalid arguments');
+    const runCfg = parseCmdParams(argv);
+    if (runCfg === null) {
         printUsage();
-
         return EXIT_FAILURE;
     }
 
-    const outputDirPath = argv[0];
-    const coordsFilePath = argv[1];
-    const reflnsFilePath = argv[2];
+    const outputDirPath = runCfg.outputDir;
+    const coordsFilePath = runCfg.coordsFilePath;
+    const reflnsFilePath = runCfg.reflnsFilePath;
+
+    Logger.initialize(getAppName(),
+        {
+            appId: process.pid.toString(),
+            logFileDir: runCfg.logFilePath,
+        }
+    );
+
+    if (!outputDirPath) {
+        printUsage();
+        Logger.log(Logger.Severity.Error, 'Output directory is not set');
+        return EXIT_FAILURE;
+    }
+    if (!coordsFilePath) {
+        printUsage();
+        Logger.log(Logger.Severity.Error, 'Coordinates file is not set');
+        return EXIT_FAILURE;
+    }
 
     if (!isDirectory(outputDirPath) || !isWriteable(outputDirPath)) {
         Logger.log(Logger.Severity.Error, `Output directory "${outputDirPath}" does not appear to be a writeable directory.`);
@@ -213,8 +487,14 @@ async function main(argv: string[]): Promise<ExitCode> {
         const d = new Dnatcofication();
         d.setData(dd);
 
-        writeCif(d, outputDirPath);
-        await writeValidationReport(d, cfg.referenceUrl, outputDirPath);
+        const maxRmsd = runCfg.restraintsRmsd;
+        const sigmaFactor = runCfg.restraintsSigmaFactor;
+
+        if (runCfg.doAnnotatedCif) writeCif(d, outputDirPath);
+        if (runCfg.doReport) await writeValidationReport(d, cfg.referenceUrl, outputDirPath);
+        if (runCfg.doBusterRestraints) writeBusterRestraints(d, outputDirPath, maxRmsd, sigmaFactor);
+        if (runCfg.doCootRestraints) writeCootRestraints(d, outputDirPath, maxRmsd, sigmaFactor);
+        if (runCfg.doPhenixRestraints) writePhenixRestraints(d, outputDirPath, maxRmsd, sigmaFactor);
 
         Logger.log(Logger.Severity.Debug, `Done processing "${coordsFilePath}"`);
     } catch (e) {
@@ -225,13 +505,6 @@ async function main(argv: string[]): Promise<ExitCode> {
 
     return EXIT_SUCCESS;
 }
-
-Logger.initialize(getAppName(),
-    {
-        appId: process.pid.toString(),
-        logFileDir: process.argv[2],
-    }
-);
 
 process.chdir(path.dirname(process.argv[1]));
 main(process.argv.slice(2)).then((ret) => process.exit(ret));

@@ -2,7 +2,7 @@ import { Restraints } from './restraints';
 import { Dnatcofication } from '../dnatco/dnatcofication';
 import { Residues } from '../dnatco/residues';
 
-const SigmaFactor = 2.0;
+export const SigmaFactor = 2.0;
 const SPC = '  ';
 
 function angle(a: number) {
@@ -177,8 +177,8 @@ export namespace Phenix {
         return lines;
     }
 
-    export function restraints(d: Dnatcofication, NtCSet: string, maxRmsd: number): Restraints {
-        const restraints = Restraints.make(d, NtCSet, maxRmsd, SigmaFactor);
+    export function restraints(d: Dnatcofication, NtCSet: string, maxRmsd: number, sigmaFactor = SigmaFactor): Restraints {
+        const restraints = Restraints.make(d, NtCSet, maxRmsd, sigmaFactor);
         const residueAliases = makeResidueAliases(d);
 
         return { residueAliases, restraints };
@@ -193,5 +193,11 @@ export namespace Phenix {
         lines.push(ln('}'));
 
         return lines;
+    }
+
+    export function restraintsAsText(restraints: Restraints): string {
+        const lines = Phenix.restraintsAsLines(restraints);
+
+        return lines.map((x) => x.text).join('\n');
     }
 }

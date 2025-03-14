@@ -1,11 +1,11 @@
 import { Restraints } from './restraints';
 import { Dnatcofication } from '../dnatco/dnatcofication';
 
-const SigmaFactor = 1.0;
+export const SigmaFactor = 1.0;
 
 export namespace Buster {
-    export function restraints(d: Dnatcofication, NtCSet: string, maxRmsd: number) {
-        return Restraints.make(d, NtCSet, maxRmsd, SigmaFactor);
+    export function restraints(d: Dnatcofication, NtCSet: string, maxRmsd: number, sigmaFactor = SigmaFactor) {
+        return Restraints.make(d, NtCSet, maxRmsd, sigmaFactor);
     }
 
     export function restraintAsText(restraint: Restraints.Restraint) {
