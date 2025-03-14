@@ -47,6 +47,14 @@ type Configuration = {
 
 const Parameters = [
     {
+        cmd: '--help',
+        desc: 'Print usage and exit',
+        proc: () => {
+            printUsage();
+            process.exit(EXIT_SUCCESS);
+        },
+    },
+    {
         cmd: '--outputDir',
         desc: 'Path to output directory [VALUE]',
         proc: (args: string[], config: Partial<Configuration>) => {
@@ -473,7 +481,6 @@ async function main(argv: string[]): Promise<ExitCode> {
 Logger.initialize(getAppName(),
     {
         appId: process.pid.toString(),
-        logFileDir: process.argv[2],
     }
 );
 
