@@ -43,6 +43,7 @@ type Configuration = {
     doPhenixRestraints: boolean,
     restraintsRmsd: number,
     restraintsSigmaFactor: number,
+    logFilePath: string,
 };
 
 const Parameters = [
@@ -53,6 +54,7 @@ const Parameters = [
             printUsage();
             process.exit(EXIT_SUCCESS);
         },
+        required: false,
     },
     {
         cmd: '--outputDir',
@@ -217,6 +219,25 @@ const Parameters = [
         },
         required: false,
     },
+    {
+        cmd: '--log',
+        desc: 'Path to a log file [VALUE]',
+        proc: (args: string[], config: Partial<Configuration>) => {
+            if (args.length < 1) {
+                Logger.log(Logger.Severity.Error, '"log" parameter requires an argument');
+                throw new Error();
+            }
+            if (!!config.logFilePath) {
+                Logger.log(Logger.Severity.Error, 'Parameter "log" is already set');
+                throw new Error();
+            }
+
+            config.logFilePath = args[0];
+
+            return args.slice(1);
+        },
+        required: false,
+    }
 ];
 
 function _relPath(_path: string) {
@@ -393,6 +414,13 @@ async function main(argv: string[]): Promise<ExitCode> {
     const coordsFilePath = runCfg.coordsFilePath;
     const reflnsFilePath = runCfg.reflnsFilePath;
 
+    Logger.initialize(getAppName(),
+        {
+            appId: process.pid.toString(),
+            logFileDir: runCfg.logFilePath,
+        }
+    );
+
     if (!outputDirPath) {
         printUsage();
         Logger.log(Logger.Severity.Error, 'Output directory is not set');
@@ -478,11 +506,5 @@ async function main(argv: string[]): Promise<ExitCode> {
     return EXIT_SUCCESS;
 }
 
-Logger.initialize(getAppName(),
-    {
-        appId: process.pid.toString(),
-    }
-);
-
 process.chdir(path.dirname(process.argv[1]));
-main(process.argv.slice(3)).then((ret) => process.exit(ret));
+main(process.argv.slice(2)).then((ret) => process.exit(ret));
