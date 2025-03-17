@@ -37,7 +37,7 @@ type Configuration = {
     outputDir: string,
     coordsFilePath: string,
     reflnsFilePath: string,
-    doextendedCIF: boolean,
+    doExtendedCif: boolean,
     doReport: boolean,
     doBusterRestraints: boolean,
     doRefmacRestraints: boolean,
@@ -116,11 +116,11 @@ const Parameters = [
         cmd: '--extendedCIF',
         desc: 'Generate mmCIF file extended with additional DNATCO categories',
         proc: (args: string[], config: Partial<Configuration>) => {
-            if (config.doextendedCIF) {
+            if (config.doExtendedCif) {
                 Logger.log(Logger.Severity.Error, 'Parameter "extendedCIF" is already set');
                 throw new Error();
             }
-            config.doextendedCIF = true;
+            config.doExtendedCif = true;
             return args;
         },
         required: false,
@@ -374,7 +374,7 @@ function printUsage() {
 }
 
 function writeCif(d: Dnatcofication, outputDirPath: string) {
-    const outPath = path.resolve(outputDirPath, `${d.pdbId}_annotated.cif`);
+    const outPath = path.resolve(outputDirPath, `${d.pdbId}_extended.cif`);
     writeTextFile(outPath, d.rawCif());
 }
 
@@ -510,11 +510,13 @@ async function main(argv: string[]): Promise<ExitCode> {
         const d = new Dnatcofication();
         d.setData(dd);
 
+        // TODO:
+        // put the defaults (currently 0.5Å rmsd and 1.0 factor) to the config.json file (for both the app and offline)
         const maxRmsd = runCfg.restraintsRmsd;
         const sigmaFactor = runCfg.restraintsSigmaFactor;
 
-        if (runCfg.doextendedCIF) {
-            Logger.log(Logger.Severity.Warning, `Writing the DNATCO annotated mmCIF file.`);
+        if (runCfg.doExtendedCif) {
+            Logger.log(Logger.Severity.Warning, `Writing the DNATCO extended mmCIF file.`);
             writeCif(d, outputDirPath);
         } else {
             Logger.log(Logger.Severity.Warning, `The DNATCO extended mmCIF file will NOT be produced (see --extendedCIF).`);
