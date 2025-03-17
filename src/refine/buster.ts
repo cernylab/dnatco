@@ -25,7 +25,7 @@ export namespace Buster {
         if (Restraints.isUnavailable(restraint))
             return `# Restraint that would be a part of step ${restraint.stepName} is unavailable ${restraint.reason}`;
         else if (Restraints.isTorsion(restraint))
-            return `NOTE BUSTER_UTILTOR 1 ${restraint.angle.toFixed(1)} ${restraint.sigma.toFixed(3)} ${atom(restraint.atomA)} ${atom(restraint.atomB)} ${atom(restraint.atomC)} ${atom(restraint.atomD)}`;
+            return `NOTE BUSTER_UTILTOR 1 ${restraint.angle.toFixed(1)} ${restraint.sigma.toFixed(1)} ${atom(restraint.atomA)} ${atom(restraint.atomB)} ${atom(restraint.atomC)} ${atom(restraint.atomD)}`;
 
         else if (Restraints.isDistance(restraint))
             return `NOTE BUSTER_DISTANCE ${restraint.length.toFixed(3)} ${restraint.sigma.toFixed(3)} ${atom(restraint.atomA)} ${atom(restraint.atomB)}`;

@@ -126,7 +126,7 @@ export namespace Phenix {
                     lines.push(ln(`atom_selection_3 = $${aliasC} and name ${r.atomC.name}`, 2));
                     lines.push(ln(`atom_selection_4 = $${aliasD} and name ${r.atomD.name}`, 2));
                     lines.push(ln(`angle_ideal = ${angle(r.angle).toFixed(1)}`, 2));
-                    lines.push(ln(`sigma = ${r.sigma.toFixed(3)}`, 2));
+                    lines.push(ln(`sigma = ${r.sigma.toFixed(1)}`, 2));
                     lines.push(ln(`periodicity = ${-r.period}`, 2)); // This probably works only when periodicity is 1
 
                     // To account for the fact that most torsions are part of two steps, we need to specify

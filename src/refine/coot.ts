@@ -24,15 +24,17 @@ export namespace Coot {
         };
 
         if (Restraints.isUnavailable(restraint))
-            return `# Restraint that would be a part of step ${restraint.stepName} is unavailable ${restraint.reason}`;
+            return undefined;
+            // coot doesn't support comments (yet?)
+            //return `# Restraint that would be a part of step ${restraint.stepName} is unavailable ${restraint.reason}`;
         else if (Restraints.isTorsion(restraint))
             if ( atom(restraint.atomA) && atom(restraint.atomB) && atom(restraint.atomC) && atom(restraint.atomD) )
-                return `external torsion first ${atom(restraint.atomA)} next ${atom(restraint.atomB)} next ${atom(restraint.atomC)} next ${atom(restraint.atomD)} value ${restraint.angle.toFixed(1)} sigma ${restraint.sigma.toFixed(3)}`; // period ${restraint.period} removed as suggested by refmac
+                return `external torsion first ${atom(restraint.atomA)} next ${atom(restraint.atomB)} next ${atom(restraint.atomC)} next ${atom(restraint.atomD)} value ${restraint.angle.toFixed(1)} sigma ${restraint.sigma.toFixed(1)}`; // period ${restraint.period} removed as suggested by refmac team
             else
                 return undefined;
         else if (Restraints.isDistance(restraint))
             if ( atom(restraint.atomA) && atom(restraint.atomB) )
-                return `external distance first ${atom(restraint.atomA)} second ${atom(restraint.atomB)} value ${restraint.length.toFixed(3)} sigma ${restraint.sigma.toFixed(3)} type 1`;
+                return `external distance first ${atom(restraint.atomA)} second ${atom(restraint.atomB)} value ${restraint.length.toFixed(3)} sigma ${restraint.sigma.toFixed(3)}`; // type 1 removed as suggested by refmac team
             else
                 return undefined;
 

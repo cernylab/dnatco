@@ -16,6 +16,7 @@ import { GlobalConfig } from '../global-config';
 import { Report } from '../report';
 import { Buster } from '../refine/buster';
 import { Phenix as RPhenix } from '../refine/phenix';
+import { Refmac } from '../refine/refmac';
 import { Coot } from '../refine/coot';
 import { TaskContext } from '../tasks/task';
 
@@ -36,9 +37,10 @@ type Configuration = {
     outputDir: string,
     coordsFilePath: string,
     reflnsFilePath: string,
-    doAnnotatedCif: boolean,
+    doextendedCIF: boolean,
     doReport: boolean,
     doBusterRestraints: boolean,
+    doRefmacRestraints: boolean,
     doCootRestraints: boolean,
     doPhenixRestraints: boolean,
     restraintsRmsd: number,
@@ -111,21 +113,21 @@ const Parameters = [
         required: false,
     },
     {
-        cmd: '--annotatedCIF',
-        desc: 'Generate annotated mmCIF file',
+        cmd: '--extendedCIF',
+        desc: 'Generate mmCIF file extended with additional DNATCO categories',
         proc: (args: string[], config: Partial<Configuration>) => {
-            if (config.doAnnotatedCif) {
-                Logger.log(Logger.Severity.Error, 'Parameter "annotatedCIF" is already set');
+            if (config.doextendedCIF) {
+                Logger.log(Logger.Severity.Error, 'Parameter "extendedCIF" is already set');
                 throw new Error();
             }
-            config.doAnnotatedCif = true;
+            config.doextendedCIF = true;
             return args;
         },
         required: false,
     },
     {
         cmd: '--report',
-        desc: 'Generate comprehensive report',
+        desc: 'Generate comprehensive DNATCO validation report',
         proc: (args: string[], config: Partial<Configuration>) => {
             if (config.doReport) {
                 Logger.log(Logger.Severity.Error, 'Parameter "report" is already set');
@@ -138,7 +140,7 @@ const Parameters = [
     },
     {
         cmd: '--busterRestraints',
-        desc: 'Generate restraints file for Buster',
+        desc: 'Generate file with NtC restraints for Buster',
         proc: (args: string[], config: Partial<Configuration>) => {
             if (config.doBusterRestraints) {
                 Logger.log(Logger.Severity.Error, 'Parameter "busterRestraints" is already set');
@@ -150,8 +152,21 @@ const Parameters = [
         required: false,
     },
     {
+        cmd: '--refmacRestraints',
+        desc: 'Generate file with NtC restraints for Refmac/Servalcat',
+        proc: (args: string[], config: Partial<Configuration>) => {
+            if (config.doRefmacRestraints) {
+                Logger.log(Logger.Severity.Error, 'Parameter "refmacRestraints" is already set');
+                throw new Error();
+            }
+            config.doRefmacRestraints = true;
+            return args;
+        },
+        required: false,
+    },
+    {
         cmd: '--cootRestraints',
-        desc: 'Generate restraints file for Coot',
+        desc: 'Generate file with NtC restraints for Coot',
         proc: (args: string[], config: Partial<Configuration>) => {
             if (config.doCootRestraints) {
                 Logger.log(Logger.Severity.Error, 'Parameter "cootRestraints" is already set');
@@ -164,7 +179,7 @@ const Parameters = [
     },
     {
         cmd: '--phenixRestraints',
-        desc: 'Generate restraints file for Phenix',
+        desc: 'Generate file with NtC restraints for Phenix',
         proc: (args: string[], config: Partial<Configuration>) => {
             if (config.doPhenixRestraints) {
                 Logger.log(Logger.Severity.Error, 'Parameter "phenixRestraints" is already set');
@@ -177,7 +192,7 @@ const Parameters = [
     },
     {
         cmd: '--restraintsRmsd',
-        desc: 'Maximum restraint RMSD [VALUE]',
+        desc: 'Maximum allowed NtC RMSD (default 0.5Å) [VALUE]',
         proc: (args: string[], config: Partial<Configuration>) => {
             if (args.length < 1) {
                 Logger.log(Logger.Severity.Error, '"restraintsRmsd" parameter requires an argument');
@@ -199,7 +214,7 @@ const Parameters = [
     },
     {
         cmd: '--restraintsSigmaFactor',
-        desc: 'Restraints sigma factor [VALUE]',
+        desc: 'Restraints sigma factor (default 1.0) [VALUE]',
         proc: (args: string[], config: Partial<Configuration>) => {
             if (args.length < 1) {
                 Logger.log(Logger.Severity.Error, '"restraintsSigmaFactor" parameter requires an argument');
@@ -371,6 +386,14 @@ function writeBusterRestraints(d: Dnatcofication, outputDirPath: string, maxRmsd
     writeTextFile(restraintsPath, text);
 }
 
+function writeRefmacRestraints(d: Dnatcofication, outputDirPath: string, maxRmsd?: number, sigmaFactor?: number) {
+    const restraints  = Refmac.restraints(d, '', maxRmsd ?? 0.5, sigmaFactor);
+    const text = Refmac.restraintsAsText(restraints);
+
+    const restraintsPath = path.resolve(outputDirPath, `${d.pdbId}_restraints_refmac.txt`);
+    writeTextFile(restraintsPath, text);
+}
+
 function writeCootRestraints(d: Dnatcofication, outputDirPath: string, maxRmsd?: number, sigmaFactor?: number) {
     const restraints  = Coot.restraints(d, '', maxRmsd ?? 0.5, sigmaFactor);
     const text = Coot.restraintsAsText(restraints);
@@ -490,9 +513,25 @@ async function main(argv: string[]): Promise<ExitCode> {
         const maxRmsd = runCfg.restraintsRmsd;
         const sigmaFactor = runCfg.restraintsSigmaFactor;
 
-        if (runCfg.doAnnotatedCif) writeCif(d, outputDirPath);
-        if (runCfg.doReport) await writeValidationReport(d, cfg.referenceUrl, outputDirPath);
+        if (runCfg.doextendedCIF) {
+            Logger.log(Logger.Severity.Warning, `Writing the DNATCO annotated mmCIF file.`);
+            writeCif(d, outputDirPath);
+        } else {
+            Logger.log(Logger.Severity.Warning, `The DNATCO extended mmCIF file will NOT be produced (see --extendedCIF).`);
+        }
+        if (runCfg.doReport) {
+            Logger.log(Logger.Severity.Warning, `Writing the DNATCO validation report file.`);
+            await writeValidationReport(d, cfg.referenceUrl, outputDirPath);
+        } else {
+            Logger.log(Logger.Severity.Warning, `The DNATCO validation report file will NOT be produced (see --report).`);
+        }
+        // warn users that they didn't ask for any restraints
+        if (!(runCfg.doBusterRestraints || runCfg.doRefmacRestraints || runCfg.doCootRestraints || runCfg.doPhenixRestraints))
+            Logger.log(Logger.Severity.Warning, `No restraints requested, consider adding any of --busterRestraints|--refmacRestraints|--cootRestraints|--phenixRestraints parameters.`);
+        else
+            Logger.log(Logger.Severity.Warning, `Writing restraints.`);
         if (runCfg.doBusterRestraints) writeBusterRestraints(d, outputDirPath, maxRmsd, sigmaFactor);
+        if (runCfg.doRefmacRestraints) writeRefmacRestraints(d, outputDirPath, maxRmsd, sigmaFactor);
         if (runCfg.doCootRestraints) writeCootRestraints(d, outputDirPath, maxRmsd, sigmaFactor);
         if (runCfg.doPhenixRestraints) writePhenixRestraints(d, outputDirPath, maxRmsd, sigmaFactor);
 
