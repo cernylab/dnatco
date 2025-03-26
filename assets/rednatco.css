@@ -2,10 +2,6 @@
 
 /* HACK: Remove unwanted camera control from Molstar viewer display */
 
-@import "tailwindcss/base";
-@import "tailwindcss/components";
-@import "tailwindcss/utilities";
-
 .hover-animation {
   transition: all 300ms ease-in-out;
 }
@@ -184,7 +180,6 @@ input {
   appearance: none;
   -moz-appearance: none;
   -webkit-appearance: none;
-  border-radius: 0;
   box-sizing: border-box;
 }
 

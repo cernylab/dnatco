@@ -4,8 +4,6 @@ const CopyPlugin = require('copy-webpack-plugin');
 const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const webpack = require('webpack');
-const tailwindcss = require('tailwindcss');
-const autoprefixer = require('autoprefixer');
 ////  const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
 function removeContextFromPath(_path, ctx) {
@@ -144,14 +142,12 @@ function sharedConfig(productionBuild, outDir, extraConfig) {
                     test: /\.(s*)css$/,
                     use: [
                         MiniCssExtractPlugin.loader,
-                        'css-loader', 'postcss-loader'
+                        'css-loader'
                     ],
                 },
             ],
         },
         plugins: [
-            tailwindcss,
-            autoprefixer,
             new CssMinimizerPlugin(),
             new MiniCssExtractPlugin({ filename: 'rednatco.css' }),
             new CopyPlugin({

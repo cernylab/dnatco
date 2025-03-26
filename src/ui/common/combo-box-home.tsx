@@ -29,8 +29,8 @@ export class ComboBoxHome extends React.Component<ComboBox.Props> {
 
   private containerClass() {
     return this.props.disabled
-      ? "flex justify-center relative rounded-standart p-4 bg-primary-first text-secondary-third"
-      : "flex justify-center relative rounded-standart p-4 bg-primary-first";
+      ? "flex justify-center relative rounded-standard p-4 bg-primary-first text-secondary-third"
+      : "flex justify-center relative rounded-standard p-4 bg-primary-first";
   }
 
   onWheelEvent = (ev: WheelEvent) => {

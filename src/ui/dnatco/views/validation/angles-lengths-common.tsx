@@ -109,7 +109,7 @@ export function AnglesLengthsBar(props: {
 
     if (typeof props.caption === "string") {
       return (
-        <div className="text-white font-bold top-0 left-4 absolute z-[1]">
+        <div className="text-white font-bold top-0 left-4 absolute z-1">
           {props.caption}
         </div>
       );
@@ -1193,7 +1193,7 @@ export namespace AnglesLengthsCommon {
     return (
       <AnglesLengthsBar
         caption={
-          <div className="absolute z-[1] top-0" style={{ ...captionStyle }}>
+          <div className="absolute z-1 top-0" style={{ ...captionStyle }}>
             <div
               onClick={(ev) => {
                 ev.preventDefault();

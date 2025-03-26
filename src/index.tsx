@@ -59,6 +59,7 @@ import { Task } from "./tasks/task";
 import { objKeys } from "./util";
 
 import "assets/rednatco.css";
+import "assets/output.css";
 
 const IsDnatcoNavigation = new RegExp(
   "^/app/dnatco/(annotation|refinement|validation|downloads)"

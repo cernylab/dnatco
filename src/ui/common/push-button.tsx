@@ -76,7 +76,7 @@ export class DummyIconTextButton extends React.Component<
     if (!this.props.disabled)
       return (
         this.props.className ??
-        "items-center flex justify-center p-2 bg-primary-first rounded-standart text-white hover:text-primary-first transition-all hover:bg-secondary-second"
+        "items-center flex justify-center p-2 bg-primary-first rounded-standard text-white hover:text-primary-first transition-all hover:bg-secondary-second"
       );
     else return this.props.classNameDisabled ?? "rdo-pushbutton-disabled";
   }
@@ -133,7 +133,7 @@ export class IconTextButton extends React.Component<IconTextButton.Props> {
         {...this.props}
         className={
           this.props.className ??
-          "rdo-icon-text-button bg-primary-first text-white rounded-standart hover:text-primary-first cursor-pointer"
+          "rdo-icon-text-button bg-primary-first text-white rounded-standard hover:text-primary-first cursor-pointer"
         }
         classNameDisabled={
           this.props.classNameDisabled ?? "rdo-icon-text-button-disabled"
@@ -156,7 +156,7 @@ export class PushButton extends BasePushButton<PushButton.Props> {
     if (!this.props.disabled)
       return (
         this.props.className ??
-        "bg-primary-first items-center flex justify-center px-4 py-1 cursor-pointer w-fit rounded-standart hover:bg-secondary-second text-white hover:text-primary-first transition-all"
+        "bg-primary-first items-center flex justify-center px-4 py-1 cursor-pointer w-fit rounded-standard hover:bg-secondary-second text-white hover:text-primary-first transition-all"
       );
     else return this.props.classNameDisabled ?? "rdo-pushbutton-disabled";
   }

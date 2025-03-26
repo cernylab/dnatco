@@ -710,7 +710,7 @@ export class ConformersTab extends React.Component<ConformersTab.Props, State> {
       case "base-pairs":
         return (
           <>
-            <div className="bg-primary-first text-white p-3 mb-3 w-fit rounded-standart transition-all hover:bg-secondary-second hover:text-primary-first">
+            <div className="bg-primary-first text-white p-3 mb-3 w-fit rounded-standard transition-all hover:bg-secondary-second hover:text-primary-first">
               <a
                 className="font-700"
                 href="https://basepairs.datmos.org/#tWW-A-A/"

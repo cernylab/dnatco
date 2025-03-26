@@ -157,7 +157,7 @@ class ConfalPercentileStatsBar extends React.Component<{ percentile: number }> {
   render() {
     return (
       <div
-        className="items-center relative bg-gradient-to-r from-secondary-third via-white to-secondary-second"
+        className="items-center relative bg-linear-to-r from-secondary-third via-white to-secondary-second"
         style={{ height: `${Common.BarHeightEm}em` }}
       >
         <div

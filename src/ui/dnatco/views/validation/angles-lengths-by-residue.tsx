@@ -657,7 +657,7 @@ function ResidueHeader(props: {
       ref={tainerRef}
       id={props.residueIdentifyingName}
     >
-      <div className="text-white font-bold top-0 left-2 absolute z-[1]">
+      <div className="text-white font-bold top-0 left-2 absolute z-1">
         {props.caption}
       </div>
 

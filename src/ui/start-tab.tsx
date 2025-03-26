@@ -57,7 +57,7 @@ function makeExample(
   return (
     <div
       key={`${_db}${_pdbId}`}
-      className="rdo-example-structure cursor-pointer text-14px mx-1 p-3 bg-primary-first rounded-standart text-secondary-first hover:text-primary-first transition-all hover:bg-secondary-second"
+      className="rdo-example-structure cursor-pointer text-14px mx-1 p-3 bg-primary-first rounded-standard text-secondary-first hover:text-primary-first transition-all hover:bg-secondary-second"
       onClick={() => handler(_db, _pdbId)}
     >
       {name ?? _pdbId}
@@ -83,8 +83,8 @@ class AnalyzeButton extends React.Component<{
         caption="Analyze"
         onClick={() => this.props.onClick()}
         disabled={!this.props.ready}
-        className="items-center flex justify-center transition-all ease-in-out w-full bg-primary-first text-16px text-secondary-first rounded-standart p-2 hover:bg-secondary-second"
-        classNameDisabled="items-center flex justify-center rounded-standart w-full p-2 text-16px bg-primary-first-disabled text-white"
+        className="items-center flex justify-center transition-all ease-in-out w-full bg-primary-first text-16px text-secondary-first rounded-standard p-2 hover:bg-secondary-second"
+        classNameDisabled="items-center flex justify-center rounded-standard w-full p-2 text-16px bg-primary-first-disabled text-white"
       />
     );
   }
@@ -117,7 +117,7 @@ class Coordinates extends React.Component<Coordinates.Props> {
             <div className="text-20px text-primary-first w-[155px] my-auto">
               Select
             </div>
-            <div className="w-300px rounded-standart">
+            <div className="w-300px rounded-standard">
               <ComboBoxHome
                 value={this.props.database}
                 options={this.props.databaseOptions}
@@ -128,7 +128,7 @@ class Coordinates extends React.Component<Coordinates.Props> {
 
           {customFile ? (
             <>
-              <div className="text-center w-full p-1 px-3 text-13px font-roboto-bold bg-secondary-second text-primary-first rounded-standart mb-2">
+              <div className="text-center w-full p-1 px-3 text-13px font-roboto-bold bg-secondary-second text-primary-first rounded-standard mb-2">
                 We advise to check your file by{" "}
                 <a
                   className="hover:text-secondary-third underline"
@@ -182,7 +182,7 @@ class Coordinates extends React.Component<Coordinates.Props> {
                 <div className="text-20px text-primary-first w-[155px] my-auto">
                   PDB ID
                 </div>
-                <div className="w-300px rounded-standart">
+                <div className="w-300px rounded-standard">
                   <PdbIdInput
                     pdbId={this.props.pdbId}
                     onChange={(v) => this.props.onPdbIdChange(v)}
@@ -316,14 +316,14 @@ class DensityMapFiles extends React.Component<
         <div className="flex">
           <div className="text-20px my-auto w-[147px]">Density maps</div>
           <button
-            className="items-center flex justify-center p-3 font-700 w-[137px] text-16px bg-primary-first rounded-standart text-white hover:text-primary-first transition-all hover:bg-secondary-second"
+            className="items-center flex justify-center p-3 font-700 w-[137px] text-16px bg-primary-first rounded-standard text-white hover:text-primary-first transition-all hover:bg-secondary-second"
             onClick={() => this.setState({ openModal: true })}
           >
             Add Files
           </button>
           {openModal && (
             <div className="absolute top-0 left-0 z-50 w-full h-full bg-test">
-              <div className="relative p-6 mt-[10%] bg-primary-first rounded-standart text-white w-[625px] h-[400px] overflow-y-scroll m-auto">
+              <div className="relative p-6 mt-[10%] bg-primary-first rounded-standard text-white w-[625px] h-[400px] overflow-y-scroll m-auto">
                 <div>
                   {inputs.map((input, index) => (
                     <div key={index} className="mb-2">
@@ -348,7 +348,7 @@ class DensityMapFiles extends React.Component<
                             <div className="min-w-[8.6rem] mr-2">
                               <button
                                 disabled={this.props.disabled}
-                                className="inline-block p-3 font-700 min-w-[137px] max-w-[290px] overflow-hidden whitespace-nowrap text-ellipsis text-16px bg-secondary-second rounded-standart text-primary-first hover:text-primary-first transition-all hover:bg-secondary-second"
+                                className="inline-block p-3 font-700 min-w-[137px] max-w-[290px] overflow-hidden whitespace-nowrap text-ellipsis text-16px bg-secondary-second rounded-standard text-primary-first hover:text-primary-first transition-all hover:bg-secondary-second"
                                 onClick={() => {
                                   document
                                     .getElementById(
@@ -381,7 +381,7 @@ class DensityMapFiles extends React.Component<
                           />
                         </div>
                         <button
-                          className="ml-2 items-center flex justify-center p-2 font-700 w-[100px] text-16px bg-red-500 rounded-standart text-white hover:bg-red-600 transition-all"
+                          className="ml-2 items-center flex justify-center p-2 font-700 w-[100px] text-16px bg-red-500 rounded-standard text-white hover:bg-red-600 transition-all"
                           onClick={() => this.removeInput(index)}
                           disabled={this.props.disabled}
                         >
@@ -396,14 +396,14 @@ class DensityMapFiles extends React.Component<
                 )}
                 <div className="flex">
                   <button
-                    className="items-center flex justify-center p-3 font-700 text-16px bg-white rounded-standart text-primary-first hover:text-primary-first transition-all hover:bg-secondary-second mr-2"
+                    className="items-center flex justify-center p-3 font-700 text-16px bg-white rounded-standard text-primary-first hover:text-primary-first transition-all hover:bg-secondary-second mr-2"
                     onClick={this.addInput}
                   >
                     + Add file
                   </button>
 
                   <button
-                    className="items-center flex justify-center px-4 py-1 font-700 text-16px bg-white rounded-standart text-primary-first hover:text-primary-first transition-all hover:bg-secondary-second"
+                    className="items-center flex justify-center px-4 py-1 font-700 text-16px bg-white rounded-standard text-primary-first hover:text-primary-first transition-all hover:bg-secondary-second"
                     onClick={() => {
                       this.setState({ openModal: false });
                     }}
@@ -483,7 +483,7 @@ class PdbIdInput extends React.Component<{
   render() {
     return (
       <input
-        className="bg-primary-first placeholder:text-white text-white rounded-standart p-4 w-full items-center flex"
+        className="bg-primary-first placeholder:text-white text-white rounded-standard p-4 w-full items-center flex"
         style={{
           ...(!isPdbId(this.props.pdbId, true) && this.props.pdbId.length > 0
             ? { color: "#FF7973" }
@@ -621,10 +621,10 @@ export class StartTab extends React.Component<StartTab.Props, State> {
     return (
       <>
         <div className="flex flex-col h-full overflow-y-hidden">
-          <div className="hidden select-none xl:block xl:absolute xl:top-[-1rem] xl:left-0 xl:w-[20%] xl:-z-[1]">
+          <div className="hidden select-none xl:block xl:absolute xl:top-[-1rem] xl:left-0 xl:w-[20%] xl:-z-1">
             <img src={DnaLeft} alt="DNA" />
           </div>
-          <div className="hidden select-none xl:block xl:absolute xl:top-14 xl:right-0 xl:w-[24%] xl:-z-[1]">
+          <div className="hidden select-none xl:block xl:absolute xl:top-14 xl:right-0 xl:w-[24%] xl:-z-1">
             <img src={DnaRight} alt="DNA" />
           </div>
           <div>

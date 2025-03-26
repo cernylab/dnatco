@@ -39,7 +39,7 @@ export class SpinBox extends React.Component<SpinBox.Props> {
   render() {
     return (
       <div
-        className="bg-primary-first rounded-standart flex justify-between py-2 px-4"
+        className="bg-primary-first rounded-standard flex justify-between py-2 px-4"
         style={{
           width: this.props.sizing
             ? SizingPolicy[this.props.sizing]

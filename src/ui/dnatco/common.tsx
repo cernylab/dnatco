@@ -62,7 +62,7 @@ export function DownloadButton(props: {
       className="rdo-icon-text-button"
       classNameDisabled="rdo-icon-text-button-disabled"
     >
-      <div className="items-center flex h-full justify-center px-4 py-2 bg-primary-first text-white rounded-standart m-2">
+      <div className="items-center flex h-full justify-center px-4 py-2 bg-primary-first text-white rounded-standard m-2">
         <img className="w-4" src={arrowDown} />
         {props.caption ? (
           <div className="font-700 m-1">{props.caption}</div>

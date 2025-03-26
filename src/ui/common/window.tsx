@@ -183,7 +183,7 @@ function TheWindow(props: {
 
   return (
     <div
-      className="rdo-window absolute p-[0.2em] flex flex-col bg-white border-[0.1px] backdrop-blur border-primary-first rounded-[5px]"
+      className="rdo-window absolute p-[0.2em] flex flex-col bg-white border-[0.1px] backdrop-blur-sm border-primary-first rounded-[5px]"
       ref={tRef}
       style={{
         left: `${position.x}px`,

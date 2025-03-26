@@ -181,7 +181,7 @@ function Inner(props: {
             <div className="flex flex-col ml-0 overflow-hidden">
               <div className="flex">
                 <div className="flex w-full">
-                  <div className="bg-a py-1 font-700 w-full flex justify-center overflow-hidden">
+                  <div className="bg-aform py-1 font-700 w-full flex justify-center overflow-hidden">
                     A
                     <Tooltip
                       tag={
@@ -195,7 +195,7 @@ function Inner(props: {
                       Help (Link in footer)
                     </Tooltip>
                   </div>
-                  <div className="bg-b py-1 font-700 w-full flex justify-center">
+                  <div className="bg-bform py-1 font-700 w-full flex justify-center">
                     BI
                     <Tooltip
                       tag={

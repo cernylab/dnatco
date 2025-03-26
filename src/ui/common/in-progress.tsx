@@ -18,8 +18,8 @@ export namespace InProgress {
     spinnerId: string
   ) {
     return `
-            <div class="absolute top-0 left-0 h-full w-full z-[999] m-auto bg-test">
-                <div class="bg-primary-first flex flex-col mx-auto p-4 relative top-[45%] rounded-standart max-w-[33%] text-white">
+            <div class="absolute top-0 left-0 h-full w-full z-999 m-auto bg-test">
+                <div class="bg-primary-first flex flex-col mx-auto p-4 relative top-[45%] rounded-standard max-w-[33%] text-white">
                     <div class="flex justify-between">
                         <div id='rdo-current-operation'>
                             ${makeText(title, status)}

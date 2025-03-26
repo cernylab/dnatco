@@ -21,10 +21,10 @@ export class Popup extends React.Component<Popup.Props> {
     return (
       <div
         ref={this.selfRef}
-        className="absolute top-0 left-0 h-full w-full z-[999] m-auto bg-test"
+        className="absolute top-0 left-0 h-full w-full z-999 m-auto bg-test"
         tabIndex={0}
       >
-        <div className="bg-primary-first flex justify-between mx-auto p-4 relative top-[45%] rounded-standart max-w-[33%] max-h-[20%] overflow-y-scroll text-white">
+        <div className="bg-primary-first flex justify-between mx-auto p-4 relative top-[45%] rounded-standard max-w-[33%] max-h-[20%] overflow-y-scroll text-white">
           <div className="mb-4">{this.props.children}</div>
           <button
             onClick={() => this.dismiss()}

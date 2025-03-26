@@ -56,7 +56,7 @@ export class InputDialog extends React.Component<Props, State> {
     render() {
         return (
             <div className='rdo-popup absolute top-0 left-0 bg-test w-screen h-screen'>
-                <div className='rdo-popup-inner absolute top-[40%] left-[40%] bg-primary-first p-4 rounded-standart'>
+                <div className='rdo-popup-inner absolute top-[40%] left-[40%] bg-primary-first p-4 rounded-standard'>
                     <div className='rdo-named-list-name text-secondary-second mb-2'>{this.props.caption}</div>
                     <input
                         ref={this.textInputRef}
