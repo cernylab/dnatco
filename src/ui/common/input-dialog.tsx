@@ -1,6 +1,5 @@
 import React from 'react';
 import * as RDC from 'react-dom/client';
-import { PushButton } from './push-button';
 
 interface State {
     value: string;
@@ -57,10 +56,10 @@ export class InputDialog extends React.Component<Props, State> {
         return (
             <div className='rdo-popup absolute top-0 left-0 bg-test w-screen h-screen'>
                 <div className='rdo-popup-inner absolute top-[40%] left-[40%] bg-primary-first p-4 rounded-standard'>
-                    <div className='rdo-named-list-name text-secondary-second mb-2'>{this.props.caption}</div>
+                    <div className='rdo-named-list-name text-white mb-2'>{this.props.caption}</div>
                     <input
                         ref={this.textInputRef}
-                        className='text-22px w-full '
+                        className='text-18px w-full bg-white rounded-smaller px-2 py-1'
                         type='text'
                         value={this.state.value}
                         onChange={ev => {
@@ -73,18 +72,18 @@ export class InputDialog extends React.Component<Props, State> {
                     {this.state.error ? <div className='text-secondary-third'>{this.state.error}</div> : void 0}
 
                     <div className='rdo-popup-button-bar flex mt-4'>
-                        <div className='mr-2'>
-                            <PushButton
-                                caption='OK'
-                                onClick={() => this.accept()}
-                            />
-                        </div>
-                        <div>
-                            <PushButton
-                                caption='Cancel'
-                                onClick={() => this.reject()}
-                            />
-                        </div>
+                        <button
+                            className='bg-white items-center flex justify-center px-4 py-1 cursor-pointer rounded-standard hover:bg-secondary-second transition-all mr-2'
+                            onClick={() => this.accept()}
+                        >
+                            OK
+                        </button>
+                        <button 
+                            className='bg-white items-center flex justify-center px-4 py-1 cursor-pointer rounded-standard hover:bg-secondary-second transition-all mr-2'
+                            onClick={() => this.reject()}
+                        >
+                            Cancel
+                        </button>
                     </div>
                 </div>
             </div>
