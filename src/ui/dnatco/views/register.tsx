@@ -1,6 +1,5 @@
 import React from 'react';
 import { View } from './view';
-import { MainFeatures } from './annotation/main-features';
 import { Downloads } from './annotation/downloads';
 import { StructureInfo } from './annotation/structure-info';
 import { Refinement } from './refinement/common';
@@ -12,7 +11,7 @@ import { CootRestraints } from './refinement/coot-restraints';
 import { BusterRestraints } from './refinement/buster-restraints';
 import { ConnectivityPlot } from './refinement/connectivity-plot';
 import { AnglesLengthsUpper } from './validation/angles-lengths-upper';
-import { BackboneQuality } from './validation/backbone-quality';
+import { ConformerQuality } from './validation/conformer-quality';
 import { RsccPlot } from './validation/rscc-plot';
 import { SimilarityPlot } from './validation/similarity-plot';
 import { StepTorsions } from './validation/step-torsions';
@@ -23,7 +22,8 @@ import { HelpRefinement } from './refinement/help-refinement';
 import { HelpValidation } from './validation/help-validation';
 import { OverallQuality } from './validation/overall-quality';
 import { DownloadsValidation } from './validation/downloads-validation';
-import { AssignedNtCs } from './annotation/assigned-ntcs';
+import { Conformation } from './annotation/conformation';
+import { BasePairs } from './annotation/base-pairs';
 
 const NullDisplayer = async () => {};
 const NullSelectionMaker = () => ({ steps: [], residues: [], atoms: [], reconstruct: true });
@@ -49,19 +49,20 @@ export namespace Register {
     };
 
     export const Views = {
-        'main-features': {
-            render: (props: View.Props) => <MainFeatures {...props} />,
-            selectionDisplayer: MainFeatures.SelectionDisplayer,
-            selectionMaker: MainFeatures.SelectionMaker,
-            unscrollableContainer: MainFeatures.unscrollableContainer,
+        'conformation': {
+            render: (props: View.Props) => <Conformation {...props} />,
+            selectionDisplayer: Conformation.SelectionDisplayer,
+            selectionMaker: Conformation.SelectionMaker,
+            unscrollableContainer: Conformation.unscrollableContainer,
             granularity: 'two-residues' as View<any>['granularity'],
             visualizer: true,
         },
-        'assigned-ntcs': {
-            render: (props: View.Props) => <AssignedNtCs {...props} />,
-            selectionDisplayer: AssignedNtCs.SelectionDisplayer,
-            selectionMaker: AssignedNtCs.SelectionMaker,
-            unscrollableContainer: AssignedNtCs.unscrollableContainer,
+
+        'base-pairs': {
+            render: (props: View.Props) => <BasePairs {...props} />,
+            selectionDisplayer: BasePairs.SelectionDisplayer,
+            selectionMaker: BasePairs.SelectionMaker,
+            unscrollableContainer: BasePairs.unscrollableContainer,
             granularity: 'two-residues' as View<any>['granularity'],
             visualizer: true,
         },
@@ -91,10 +92,10 @@ export namespace Register {
             visualizer: true,
         },
         'backbone-quality': {
-            render: (props: View.Props) => <BackboneQuality {...props} />,
-            selectionDisplayer: BackboneQuality.SelectionDisplayer,
-            selectionMaker: BackboneQuality.SelectionMaker,
-            unscrollableContainer: BackboneQuality.unscrollableContainer,
+            render: (props: View.Props) => <ConformerQuality {...props} />,
+            selectionDisplayer: ConformerQuality.SelectionDisplayer,
+            selectionMaker: ConformerQuality.SelectionMaker,
+            unscrollableContainer: ConformerQuality.unscrollableContainer,
             granularity: 'two-residues' as View<any>['granularity'],
             visualizer: true,
         },

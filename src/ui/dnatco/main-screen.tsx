@@ -49,12 +49,12 @@ type DnatcoMode = {
 };
 
 const AvailableViews: Record<ViewId, { caption: string }> = {
-  "main-features": { caption: "Main features" },
-  "assigned-ntcs": { caption: "Assigned NtCs" },
+  "conformation": { caption: "Conformation" },
+  "base-pairs": { caption: "Base pairs" },
   "structure-info": { caption: "Structure Info" },
   "change-ntcs": { caption: "Change NtCs" },
   "overall-quality": { caption: "Overall quality" },
-  "backbone-quality": { caption: "Backbone quality" },
+  "backbone-quality": { caption: "Conformer quality" },
   "similarity-plot": { caption: "Similarity plot" },
   downloads: { caption: "Downloads" },
   "step-torsions": { caption: "Step torsions" },
@@ -73,8 +73,8 @@ const AvailableViews: Record<ViewId, { caption: string }> = {
 };
 const ViewsInMode: Record<MasterMode, [ViewId, Register.View<any>][]> = {
   annotation: [
-    ["main-features", Register.Views["main-features"]],
-    ["assigned-ntcs", Register.Views["assigned-ntcs"]],
+    ["conformation", Register.Views["conformation"]],
+    ["base-pairs", Register.Views["base-pairs"]],
     ["structure-info", Register.Views["structure-info"]],
     ["downloads", Register.Views["downloads"]],
     ["help-annotation", Register.Views["help-annotation"]],
@@ -92,6 +92,7 @@ const ViewsInMode: Record<MasterMode, [ViewId, Register.View<any>][]> = {
   validation: [
     ["overall-quality", Register.Views["overall-quality"]],
     ["backbone-quality", Register.Views["backbone-quality"]],
+    ["base-pairs", Register.Views["base-pairs"]],
     ["step-torsions", Register.Views["step-torsions"]],
     ["similarity-plot", Register.Views["similarity-plot"]],
     ["rscc-plot", Register.Views["rscc-plot"]],
@@ -126,7 +127,7 @@ function locationToDnatcoMode(location: string): DnatcoMode {
   const viewId = segments[4];
 
   if (!master || !(MasterMode as Readonly<string[]>).includes(master))
-    return { master: "annotation", viewId: "main-features" };
+    return { master: "annotation", viewId: "conformation" };
 
   const viewsInMode = ViewsInMode[master as MasterMode];
   const view = viewsInMode.find(([id, _]) => id === viewId);

@@ -19,7 +19,7 @@ const Footer:React.FC = () => {
                 <div className='items-center lg:flex lg:justify-between mx-auto my-4 xl:max-w-[1280px] 2xl:max-w-[1440px]'>
                     <div className='flex justify-center'>
                         <div className='my-auto mx-1'>
-                            <div className='text-18px text-center'>© 2024</div>
+                            <div className='text-18px text-center'>© 2025</div>
                         </div>
                         {Globals.PrimaryContacts.map((c, idx) => (
                             <div className='my-auto mx-1' key={idx}>

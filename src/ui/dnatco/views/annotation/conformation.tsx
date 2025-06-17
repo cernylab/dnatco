@@ -1,32 +1,21 @@
 import React from "react";
-import { Validation } from "./common";
+import { Annotation } from "./common";
 import { ChainSelect, ModelSelect } from "../structure-selectors";
 import { View } from "../view";
-import { niceStepName } from "../../common";
 import { Colors } from "../../colors";
-import { Constants } from "../../constants";
-import { SearchBox } from "../../search-box";
-import { SingleStepInfo } from "../../single-step-info";
+import { niceStepName } from "../../common";
 import { setDynamicTableModelColumns } from "../../util";
-import { Icon } from "../../../common/icon";
 import { DynamicTable as DynamicTableComp } from "../../../common/dynamic-table";
-import { IconButton } from "../../../common/push-button";
 import { NamedList, NamedListItem } from "../../../common/named-list";
 import { Tooltip } from "../../../common/tooltip";
-import { InfoImg, MagnifyingGlassImg } from "../../../../assets/images";
 import { Cif } from "../../../../cif";
 import {
   NdbStructNtcStep,
   NdbStructNtcStepSummary,
-  NdbStructNtcStepParameters,
 } from "../../../../cif/categories/ndb-struct-ntc";
 import { Dnatcofication } from "../../../../dnatco/dnatcofication";
-import { NtC } from "../../../../dnatco/ntc";
-import { Step } from "../../../../dnatco/step";
 import { StepsMapper } from "../../../../dnatco/steps-mapper";
-import { parseIntStrict } from "../../../../util";
 import { DynamicTable } from "../../../../util/dynamic-table";
-import { valueToSemaphore } from "../../../../util/semaphore";
 import {
   EmptyStructureSelection,
   InvalidAtom,
@@ -37,28 +26,13 @@ import {
   StructureSelection,
 } from "../../../../util/structure-selection";
 
-const CellBgAlpha = 0.5;
-
-function confalToColor(rmsd: number): React.CSSProperties {
-  const clr = valueToSemaphore(
-    rmsd,
-    Constants.GreenConfal,
-    Constants.GreenRMSD
-  );
-  return { backgroundColor: `rgba(${clr.r},${clr.g},${clr.b},${CellBgAlpha})` };
-}
-
-function rmsdToColor(rmsd: number): React.CSSProperties {
-  const clr = valueToSemaphore(rmsd, Constants.GreenRMSD, Constants.RedRMSD);
-  return { backgroundColor: `rgba(${clr.r},${clr.g},${clr.b},${CellBgAlpha})` };
-}
-
-export class BackboneQuality extends View<View.Props> {
+export class Conformation extends View<View.Props> {
   static readonly unscrollableContainer = true;
   private tableModel: DynamicTable.Model = new DynamicTable.Model([]);
   private tableTainer = React.createRef<HTMLDivElement>();
-  private searchBoxOpen = false;
+  //private searchBoxOpen = false;
 
+  /*
   private readonly Searching: SearchBox.Searching<Step> = {
     onRenderResult: (step) => (
       <div>
@@ -99,23 +73,21 @@ export class BackboneQuality extends View<View.Props> {
 
       return results;
     },
-    onUseResult: (step) => {
-      const sel = BackboneQuality.SelectionMaker(
-        step.id,
-        InvalidResidue,
-        InvalidAtom,
-        this.props.structureSelection.steps,
-        this.props.structureSelection.residues,
-        this.props.structureSelection.atoms,
-        this.props.dnatcofication
-      );
+    onUseResult: (step) =>
       this.props.switching.changeSelection(
-        sel,
-        BackboneQuality.SelectionDisplayer
-      );
-    },
+        AssignedNtCs.SelectionMaker(
+          step.id,
+          InvalidResidue,
+          InvalidAtom,
+          this.props.structureSelection.steps,
+          this.props.structureSelection.residues,
+          this.props.structureSelection.atoms,
+          this.props.dnatcofication
+        ),
+        AssignedNtCs.SelectionDisplayer
+      ),
   };
-
+  
   private readonly SearchBoxProps: SearchBox.Props<Step> = {
     anchor: "bottom-right",
     xOffset: 32,
@@ -124,6 +96,8 @@ export class BackboneQuality extends View<View.Props> {
     onClose: () => (this.searchBoxOpen = false),
     searching: this.Searching,
   };
+  
+  */
 
   constructor(props: View.Props) {
     super(props);
@@ -134,31 +108,9 @@ export class BackboneQuality extends View<View.Props> {
   private makeTableModel(selectedModelNum: number, selectedChain?: string) {
     const steps = this.props.dnatcofication.table(NdbStructNtcStep);
     const summary = this.props.dnatcofication.table(NdbStructNtcStepSummary);
-    const params = this.props.dnatcofication.table(NdbStructNtcStepParameters);
 
     const { PDB_model_number, label_asym_id_1, auth_asym_id_1, name } = steps;
-    const {
-      assigned_NtC,
-      assigned_CANA,
-      closest_NtC,
-      closest_CANA,
-      confal_score,
-      cartesian_rmsd_closest_NtC_representative,
-    } = summary;
-    const {
-      tor_delta_1,
-      tor_epsilon_1,
-      tor_zeta_1,
-      tor_alpha_2,
-      tor_beta_2,
-      tor_gamma_2,
-      tor_delta_2,
-      tor_chi_1,
-      tor_chi_2,
-      tor_NCCN,
-      dist_CC,
-      dist_NN,
-    } = params;
+    const { assigned_NtC, assigned_CANA, closest_NtC, closest_CANA } = summary;
 
     const chainColumn: DynamicTable.Column<string> = {
       name: "Chain",
@@ -197,53 +149,25 @@ export class BackboneQuality extends View<View.Props> {
         </div>
       ),
     };
-    const confalColumn: DynamicTable.Column<number> = {
-      name: "Confal score",
-      cells: new Array<DynamicTable.Cell<number>>(),
-      alignment: "center",
-      cellStyle: confalToColor,
-      tooltip: (
-        <div>
-          Confal Score: Score of similarity between the analyzed step and the
-          assigned NtC class; values between 0 (no match) to 100 (perfect match)
-        </div>
-      ),
-    };
-    const rmsdColumn: DynamicTable.Column<number> = {
-      name: "RMSD",
-      cells: new Array<DynamicTable.Cell<number>>(),
-      alignment: "center",
-      cellStyle: rmsdToColor,
-      tooltip: (
-        <div>
-          RMSD between the analyzed step and the closest NtC representative.
-        </div>
-      ),
-    };
 
-    const columns = [
-      chainColumn,
-      stepColumn,
-      ntcColumn,
-      canaColumn,
-      confalColumn,
-      rmsdColumn,
-    ];
+    const columns = [chainColumn, stepColumn, ntcColumn, canaColumn];
 
     for (let row = 0; row < steps._rowCount; row++) {
-      const modelNum = Cif.Column.value(PDB_model_number, row);
-      if (selectedModelNum !== -1 && selectedModelNum !== modelNum) continue;
+      const modelNum = Cif.Column.value(PDB_model_number, row)!;
+      if (
+        selectedModelNum !== InvalidModelIndex &&
+        selectedModelNum !== modelNum
+      )
+        continue;
 
       const chain = Cif.Column.value(label_asym_id_1, row)!;
-      if (selectedChain !== undefined && selectedChain !== chain) continue;
+      if (selectedChain && selectedChain !== chain) continue;
 
       const tag = Cif.Column.value(name, row)!;
-      const tags = [tag, tag, tag, tag, void 0, void 0, tag];
-      const confalScore = Cif.Column.value(confal_score, row)!;
-      const assignedNtC = (Cif.Column.value(assigned_NtC, row) ??
-        "NANT") as NtC.Class;
-      const assignedCANA = Cif.Column.value(assigned_CANA, row)!;
+      const tags = columns.map(() => tag);
       const _step = StepsMapper.byName(this.props.dnatcofication, tag)!; // tag is the internal step name
+      const assignedNtC = Cif.Column.value(assigned_NtC, row)!;
+      const assignedCANA = Cif.Column.value(assigned_CANA, row)!;
 
       setDynamicTableModelColumns(
         this.tableModel,
@@ -255,9 +179,6 @@ export class BackboneQuality extends View<View.Props> {
           tag,
           assignedNtC,
           assignedCANA,
-          confalScore,
-          Cif.Column.value(cartesian_rmsd_closest_NtC_representative, row)!,
-          "",
         ],
         [
           void 0,
@@ -286,34 +207,6 @@ export class BackboneQuality extends View<View.Props> {
             ) : (
               <span>{assignedCANA}</span>
             ),
-          () => <span>{confalScore.toFixed(0)}</span>,
-          () => (
-            <span>
-              {Cif.Column.value(
-                cartesian_rmsd_closest_NtC_representative,
-                row
-              )!.toFixed(3)}
-            </span>
-          ),
-          () => (
-            <Tooltip tag={<Icon img={InfoImg} size="0.75em" />} delayMsec={300}>
-              <SingleStepInfo
-                NtC={assignedNtC}
-                delta1={Cif.Column.value(tor_delta_1, row)!}
-                epsilon1={Cif.Column.value(tor_epsilon_1, row)!}
-                zeta1={Cif.Column.value(tor_zeta_1, row)!}
-                alpha2={Cif.Column.value(tor_alpha_2, row)!}
-                beta2={Cif.Column.value(tor_beta_2, row)!}
-                gamma2={Cif.Column.value(tor_gamma_2, row)!}
-                delta2={Cif.Column.value(tor_delta_2, row)!}
-                chi1={Cif.Column.value(tor_chi_1, row)!}
-                chi2={Cif.Column.value(tor_chi_2, row)!}
-                mu={Cif.Column.value(tor_NCCN, row)!}
-                CC={Cif.Column.value(dist_CC, row)!}
-                NN={Cif.Column.value(dist_NN, row)!}
-              />
-            </Tooltip>
-          ),
         ]
       );
     }
@@ -349,21 +242,19 @@ export class BackboneQuality extends View<View.Props> {
           const stepId =
             StepsMapper.byName(this.props.dnatcofication, stepName)?.id ??
             InvalidStepId;
-          if (stepId !== InvalidStepId) {
-            const sel = BackboneQuality.SelectionMaker(
-              stepId,
-              InvalidResidue,
-              InvalidAtom,
-              this.props.structureSelection.steps,
-              this.props.structureSelection.residues,
-              this.props.structureSelection.atoms,
-              this.props.dnatcofication
-            );
+          if (stepId !== InvalidStepId)
             this.props.switching.changeSelection(
-              sel,
-              BackboneQuality.SelectionDisplayer
+              Conformation.SelectionMaker(
+                stepId,
+                InvalidResidue,
+                InvalidAtom,
+                this.props.structureSelection.steps,
+                this.props.structureSelection.residues,
+                this.props.structureSelection.atoms,
+                this.props.dnatcofication
+              ),
+              Conformation.SelectionDisplayer
             );
-          }
         }}
         highlightedTag={stepName}
         highlightColor={Colors.CurrentStep()}
@@ -415,8 +306,9 @@ export class BackboneQuality extends View<View.Props> {
         ref={selfRef}
       >
         <div className="font-700 mb-2 p-2 text-center border-b border-primary-first">
-          Backbone conformational quality
+          Conformation
         </div>
+
         <NamedList sizing="min-content" rowSpacing="half">
           {numModels > 1 ? (
             <NamedListItem name="Model">
@@ -435,6 +327,7 @@ export class BackboneQuality extends View<View.Props> {
             />
           </NamedListItem>
         </NamedList>
+        <div className="rdo-line-spacer" />
 
         <div className="rdo-secondary-caption">
           Table of assigned dinucleotide NtC classes
@@ -444,26 +337,27 @@ export class BackboneQuality extends View<View.Props> {
             {this.renderStepsTable()}
           </div>
         </div>
+        {/*
+          <div className="rdo-floating-search-icon-tainer bottom-4 right-4">
+            <IconButton
+              src={MagnifyingGlassImg}
+              className="rdo-floating-search-icon rdo-pushbutton-border"
+              onClick={() => {
+                const tainer = selfRef.current;
+                if (!tainer || this.searchBoxOpen) return;
 
-        <div className="rdo-floating-search-icon-tainer bottom-4 right-4">
-          <IconButton
-            src={MagnifyingGlassImg}
-            className="rdo-floating-search-icon rdo-pushbutton-border"
-            onClick={() => {
-              const tainer = selfRef.current;
-              if (!tainer || this.searchBoxOpen) return;
-
-              this.searchBoxOpen = true;
-              SearchBox.create(tainer, this.SearchBoxProps);
-            }}
-          />
-        </div>
+                this.searchBoxOpen = true;
+                SearchBox.create(tainer, this.SearchBoxProps);
+              }}
+            />
+          </div>
+      */}
       </div>
     );
   }
 }
 
-export namespace BackboneQuality {
-  export const SelectionDisplayer = Validation.selectionDisplayer;
-  export const SelectionMaker = Validation.selectionMaker;
+export namespace Conformation {
+  export const SelectionDisplayer = Annotation.selectionDisplayer;
+  export const SelectionMaker = Annotation.selectionMaker;
 }

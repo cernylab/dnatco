@@ -237,7 +237,7 @@ export class RsccPlot extends View<View.Props, State> {
         >
           {_RsccPlot.isPlotEmpty(rsccPlotData.assigned) ? (
             this.state.fetchError ? (
-              <div>{this.state.fetchError}</div>
+              <div>{this.state.fetchError && 'Data not available'}</div>
             ) : (
               <div>There are no assigned steps in this structure</div>
             )
@@ -258,7 +258,7 @@ export class RsccPlot extends View<View.Props, State> {
         >
           {_RsccPlot.isPlotEmpty(rsccPlotData.unassigned) ? (
             this.state.fetchError ? (
-              <div>{this.state.fetchError}</div>
+              <div>{this.state.fetchError && 'Data not available'}</div>
             ) : (
               <div>There are no unassigned steps in this structure</div>
             )
