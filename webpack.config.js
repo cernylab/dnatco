@@ -2,7 +2,6 @@
 
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
-const webpack = require('webpack');
 const { createApp } = require('./webpack.common.js');
 
 const DistDir = 'dist';
@@ -16,7 +15,6 @@ module.exports = (env, argv) => {
         DistDir,
         {
             plugins: [
-                new webpack.ProvidePlugin({ process: 'process/browser' }),
                 new HtmlWebpackPlugin({
                     template: path.resolve(__dirname, 'assets/index.html'),
                 })
