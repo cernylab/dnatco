@@ -12,12 +12,12 @@ export namespace Refmac {
         const atom = (a: Restraints.Atom) => {
             let s = `chain ${a.chain} residue ${a.authNum}`;
             if (a.insCode)
-                s += ` insertion ${a.insCode}`;
+                s += ` ins ${a.insCode}`;
             else
-                s += ` insertion .`;
+                s += ` ins .`;
             s += ` atom ${a.name}`;
             if (a.atomAltId)
-                s += ` altecode ${a.atomAltId}`;
+                s += ` alt ${a.atomAltId}`;
 
             return s;
         };
