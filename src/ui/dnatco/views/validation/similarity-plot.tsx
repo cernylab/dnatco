@@ -81,6 +81,7 @@ export class SimilarityPlot extends View<View.Props> {
 
     render() {
         const numModels = Dnatcofication.Structure.numberOfModels(this.props.dnatcofication);
+        const numChains = this.props.dnatcofication.data.steps.chains[0].size;
 
         let plotData;
         let step: Step|undefined = void 0;
@@ -101,17 +102,16 @@ export class SimilarityPlot extends View<View.Props> {
                 </div>
 
                 <NamedList sizing='min-content' rowSpacing='half'>
-                {
-                    numModels > 1
-                        ? <NamedListItem name='Model'>
-                                <ModelSelect
-                                    dnatcofication={this.props.dnatcofication}
-                                    structureSelection={this.props.structureSelection}
-                                    switching={this.props.switching}
-                                />
-                            </NamedListItem>
-                        : undefined
-                }
+                {numModels > 1 && (
+                    <NamedListItem name='Model'>
+                        <ModelSelect
+                            dnatcofication={this.props.dnatcofication}
+                            structureSelection={this.props.structureSelection}
+                            switching={this.props.switching}
+                        />
+                    </NamedListItem>
+                )}
+                {numChains > 1 && (
                     <NamedListItem name='Chain'>
                         <ChainSelect
                             dnatcofication={this.props.dnatcofication}
@@ -119,6 +119,7 @@ export class SimilarityPlot extends View<View.Props> {
                             switching={this.props.switching}
                         />
                     </NamedListItem>
+                )}
                     <NamedListItem name='Step'>
                         <StepSelect
                             dnatcofication={this.props.dnatcofication}

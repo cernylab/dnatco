@@ -297,6 +297,7 @@ export class ConnectivityPlot extends View<Refinement.Props> {
 
     render() {
         const numModels = Dnatcofication.Structure.numberOfModels(this.props.dnatcofication);
+        const numChains = this.props.dnatcofication.data.steps.chains[0].size;
         let simPlotData = PlotData;
         let prevConnPlotData = PlotData;
         let nextConnPlotData = PlotData;
@@ -329,26 +330,26 @@ export class ConnectivityPlot extends View<Refinement.Props> {
         const nextConnMaxHints = axesMaximumHints(nextConnPlotData.x, nextConnPlotData.y, MinNumberOfPointsInPlot, Constants.DefaultConnectivityXRange[1], Constants.DefaultConnectivityYRange[1]);
 
         return (
-            <div style={{ height: '100%' }}>
+            <div className='h-full'>
                 <NamedList sizing='min-content' rowSpacing='half'>
-                {
-                    numModels > 1
-                        ? <NamedListItem name='Model'>
-                                <ModelSelect
-                                    dnatcofication={this.props.dnatcofication}
-                                    structureSelection={this.props.structureSelection}
-                                    switching={this.props.switching}
-                                />
-                            </NamedListItem>
-                        : undefined
-                }
-                    <NamedListItem name='Chain'>
-                        <ChainSelect
-                            dnatcofication={this.props.dnatcofication}
-                            structureSelection={this.props.structureSelection}
-                            switching={this.props.switching}
-                        />
-                    </NamedListItem>
+                    {numModels > 1 && (
+                        <NamedListItem name='Model'>
+                            <ModelSelect
+                                dnatcofication={this.props.dnatcofication}
+                                structureSelection={this.props.structureSelection}
+                                switching={this.props.switching}
+                            />
+                        </NamedListItem>
+                    )}
+                    {numChains > 1 && (
+                        <NamedListItem name='Chain'>
+                            <ChainSelect
+                                dnatcofication={this.props.dnatcofication}
+                                structureSelection={this.props.structureSelection}
+                                switching={this.props.switching}
+                            />
+                        </NamedListItem>
+                    )}
                     <NamedListItem name='Step'>
                         <StepSelect
                             dnatcofication={this.props.dnatcofication}

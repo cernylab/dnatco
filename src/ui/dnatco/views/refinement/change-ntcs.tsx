@@ -295,11 +295,12 @@ export class ChangeNtCs extends View<Refinement.Props> {
     const numModels = Dnatcofication.Structure.numberOfModels(
       this.props.dnatcofication
     );
+    const numChains = this.props.dnatcofication.data.steps.chains[0].size;
 
     return (
       <div className="overflow-hidden h-full flex flex-col">
         <NamedList sizing="min-content" rowSpacing="half">
-          {numModels > 1 ? (
+          {numModels > 1 && (
             <NamedListItem name="Model">
               <ModelSelect
                 dnatcofication={this.props.dnatcofication}
@@ -307,14 +308,16 @@ export class ChangeNtCs extends View<Refinement.Props> {
                 switching={this.props.switching}
               />
             </NamedListItem>
-          ) : undefined}
-          <NamedListItem name="Chain">
-            <ChainSelect
-              dnatcofication={this.props.dnatcofication}
-              structureSelection={this.props.structureSelection}
-              switching={this.props.switching}
-            />
-          </NamedListItem>
+          )}
+          {numChains > 1 && (
+            <NamedListItem name="Chain">
+              <ChainSelect
+                dnatcofication={this.props.dnatcofication}
+                structureSelection={this.props.structureSelection}
+                switching={this.props.switching}
+              />
+            </NamedListItem>
+          )}
         </NamedList>
 
         <div className="h-4" />

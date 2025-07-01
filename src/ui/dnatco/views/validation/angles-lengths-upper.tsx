@@ -9,8 +9,8 @@ import { NamedList, NamedListItem } from "../../../common/named-list";
 import { Dnatcofication } from "../../../../dnatco/dnatcofication";
 
 export function AnglesLengthsUpper(props: View.Props) {
-  const multipleModels =
-    Dnatcofication.Structure.numberOfModels(props.dnatcofication) > 1;
+  const multipleModels = Dnatcofication.Structure.numberOfModels(props.dnatcofication) > 1;
+  const numChains = props.dnatcofication.data.steps.chains[0].size;
   const [groupBy, setGroupBy] = React.useState("residue");
 
   return (
@@ -27,7 +27,7 @@ export function AnglesLengthsUpper(props: View.Props) {
             sizing="auto"
           />
         </NamedListItem>
-        {multipleModels ? (
+        {multipleModels && (
           <NamedListItem name="Model">
             <ModelSelect
               dnatcofication={props.dnatcofication}
@@ -35,14 +35,16 @@ export function AnglesLengthsUpper(props: View.Props) {
               switching={props.switching}
             />
           </NamedListItem>
-        ) : undefined}
-        <NamedListItem name="Chain">
-          <ChainSelect
-            dnatcofication={props.dnatcofication}
-            structureSelection={props.structureSelection}
-            switching={props.switching}
-          />
-        </NamedListItem>
+        )}
+        {numChains > 1 && (
+          <NamedListItem name="Chain">
+            <ChainSelect
+              dnatcofication={props.dnatcofication}
+              structureSelection={props.structureSelection}
+              switching={props.switching}
+            />
+          </NamedListItem>
+        )}
       </NamedList>
 
       <div className="h-4" />

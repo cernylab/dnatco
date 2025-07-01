@@ -407,6 +407,9 @@ export class ConformerQuality extends View<View.Props> {
     const numModels = Dnatcofication.Structure.numberOfModels(
       this.props.dnatcofication
     );
+
+    const numChains = this.props.dnatcofication.data.steps.chains[0].size;
+    
     const selfRef = React.createRef<HTMLDivElement>();
 
     return (
@@ -418,7 +421,7 @@ export class ConformerQuality extends View<View.Props> {
           Conformer quality
         </div>
         <NamedList sizing="min-content" rowSpacing="half">
-          {numModels > 1 ? (
+          {numModels > 1 && (
             <NamedListItem name="Model">
               <ModelSelect
                 dnatcofication={this.props.dnatcofication}
@@ -426,14 +429,16 @@ export class ConformerQuality extends View<View.Props> {
                 switching={this.props.switching}
               />
             </NamedListItem>
-          ) : undefined}
-          <NamedListItem name="Chain">
-            <ChainSelect
-              dnatcofication={this.props.dnatcofication}
-              structureSelection={this.props.structureSelection}
-              switching={this.props.switching}
-            />
-          </NamedListItem>
+          )}
+          {numChains > 1 && (
+            <NamedListItem name="Chain">
+              <ChainSelect
+                dnatcofication={this.props.dnatcofication}
+                structureSelection={this.props.structureSelection}
+                switching={this.props.switching}
+              />
+            </NamedListItem>
+          )}
         </NamedList>
 
         <div className="rdo-secondary-caption">
