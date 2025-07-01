@@ -1,0 +1,202 @@
+/* vim: set sw=4 tw=4 sts=4 expandtab : */
+
+:root {
+    --rmsp-anim-speed: 222ms;
+
+    --rmsp-h-gap: 1em;
+    --rmsp-v-gap: 0.5em;
+    --rmsp-x-gap: 1em;
+
+    --rmsp-color-a: #aaa;
+    --rmsp-color-b: #ccc;
+    --rmsp-color-c: #f0f0f0;
+    --rmsp-color-d: #4caf50;
+    --rmsp-color-e: #265b6a;
+    --rmsp-color-f: grey;
+    --rmsp-color-g: white;
+    --rmsp-color-x: #9e9e9e;
+    --rmsp-color-y: #616161;
+
+    --rmsp-font-small: 10pt;
+    --rmsp-font-large: 14pt;
+    --rmsp-font-xxlarge: 22pt;
+    --rmsp-font-mega: 32pt;
+    --rmsp-font-uber: 48pt;
+
+    --rmsp-content-padding: 0.25em;
+
+    --rmsp-thickness-border: 0.15em;
+}
+
+.rmsp-app {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    width: 100%;
+
+    font-family: Verdana, sans-serif;
+    font-size: 12pt;
+    line-height: 1.5;
+}
+
+.rmsp-collapsible-vertical-caption {
+    background-color: var(--rmsp-color-f);
+    color: var(--rmsp-color-c);
+    padding: calc(0.5 * var(--rmsp-x-gap));
+    transition: background-color var(--rmsp-anim-speed);
+}
+.rmsp-collapsible-vertical-caption:hover {
+    background-color: var(--rmsp-color-c);
+    color: black;
+}
+
+.rmsp-color-picker-nest {
+    font-family: Verdana, sans-serif;
+    font-size: 12pt;
+    line-height: 1.5;
+}
+
+.rmsp-control-item-group {
+    display: flex;
+    flex: 1;
+    gap: 0;
+}
+
+.rmsp-control-item {
+    flex: 1;
+}
+
+.rmsp-control-horizontal-spacer {
+    display: inline-block;
+    width: var(--rmsp-content-padding);
+}
+
+.rmsp-control-line {
+    align-items: center;
+    display: flex;
+    gap: var(--rmsp-h-gap);
+}
+
+.rmsp-control-vertical-spacer {
+    display: block;
+    height: var(--rmsp-v-gap);
+}
+
+.rmsp-icon-button-disabled {
+    background-color: var(--rmsp-color-a);
+}
+
+.rmsp-pushbutton {
+    align-items: center;
+    border-radius: 0;
+    border: .1px solid #30595C;
+    display: flex;
+    justify-content: center;
+    transition: background-color var(--rmsp-anim-speed);
+}
+.rmsp-pushbutton:hover {
+    background-color: rgba(185, 223, 234, 0.5);
+}
+
+.rmsp-pushbutton-disabled {
+    background-color: var(--rmsp-color-a);
+}
+
+.rmsp-togglebutton {
+    border: none;
+}
+
+.rmsp-togglebutton-switched-off {
+    background-color: red;
+}
+
+.rmsp-togglebutton-switched-on {
+    background-color: #26e326;
+}
+
+.rmsp-pushbutton-text {
+    font-weight: bold;
+    margin: 0.15em;
+}
+
+.rmsp-pushbutton-text-disabled {
+    color: var(--rmsp-color-a);
+    font-weight: bold;
+    margin: 0.15em;
+}
+
+.rmsp-range-slider {
+    -moz-appearance: none;
+    -webkit-appearance: none;
+    appearance: none;
+    margin: auto 0 auto 0;
+}
+.rmsp-range-slider::-moz-range-thumb {
+    background: #f5f1ed;
+    border-radius: 999px;
+    border: .1px solid var(--color-primary-first);
+    cursor: pointer;
+    height: 0.75rem;
+    width: 0.75rem;
+}
+
+.rmsp-range-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+
+    background: #f5f1ed;
+    border-radius: 999px;
+    border: .1px solid var(--color-primary-first);
+    cursor: pointer;
+    height: 0.75rem;
+    width: 0.75rem;
+}
+
+.rmsp-toolbar {
+    background-color: #fff;
+}
+
+.rmsp-toolbar-control-block {
+    background-color: white;
+    overflow-y: scroll;
+    height: 71vh;
+    padding: 0 var(--rmsp-content-padding) 0 var(--rmsp-content-padding);
+}
+
+.rmsp-toolbar-icon {
+    padding: var(--rmsp-content-padding);
+    transition: filter var(--rmsp-anim-speed);
+}
+.rmsp-toolbar-icon:hover {
+    filter: invert(0);
+}
+
+.rmsp-toolbar-icon-disabled {
+    filter: invert(0.5);
+    padding: var(--rmsp-content-padding);
+}
+
+.rmsp-toolbar-icon-selected {
+    filter: invert(0);
+}
+
+.rmsp-toolbar-icon-tainer {
+    transition: background-color var(--rmsp-anim-speed);
+}
+.rmsp-toolbar-icon-tainer:hover {
+    background-color: rgba(185, 223, 234, 0.5);
+}
+
+.rmsp-toolbar-icon-tainer-disabled {
+    background-color: var(--rmsp-color-a);
+}
+
+.rmsp-toolbar-icon-tainer-selected {
+    background-color: var(--rmsp-color-c);
+    transition: background-color var(--rmsp-anim-speed);
+}
+
+.rmsp-viewer {
+    flex: 1;
+    position: relative;
+}

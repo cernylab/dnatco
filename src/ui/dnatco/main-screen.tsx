@@ -36,6 +36,7 @@ import { Filters } from "viewer-filters";
 // We are not referencing these assets anywhere in the code, we just need to pull them in
 import "assets/molstar.js";
 import "assets/molstar.css";
+import "assets/rednatco-molstar.css";
 import { Tooltip } from "../common/tooltip";
 import { tooltipImg } from "../../assets/images";
 

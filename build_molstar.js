@@ -13,7 +13,7 @@ function copyDist(src, dst) {
     if (!isDir(assetsDir))
         throw new Error(`${assetsDir} does not exist or it is not a directory`);
 
-    for (const asset of ['molstar.js', 'molstar.css']) {
+    for (const asset of ['molstar.js', 'molstar.css', 'rednatco-molstar.css']) {
         const assetSrcPath = path.join(distDir, asset);
         const assetDstPath = path.join(assetsDir, asset);
         if (!isFile(assetSrcPath))
