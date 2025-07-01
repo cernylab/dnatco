@@ -1,7 +1,6 @@
 [submodule "molstar"]
 	path = molstar
 	url = https://gitlab.cesnet.cz/madcatxster/molstar.git
-	branch = rednatco
 [submodule "jsllka"]
 	path = jsllka
 	url = git@gitlab.cesnet.cz:madcatxster/jsllka.git
