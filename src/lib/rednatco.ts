@@ -37,6 +37,7 @@ type Configuration = {
     outputDir: string,
     coordsFilePath: string,
     reflnsFilePath: string,
+    outputPrefix: string,
     doExtendedCif: boolean,
     doReport: boolean,
     doBusterRestraints: boolean,
@@ -107,6 +108,24 @@ const Parameters = [
                 throw new Error();
             }
             config.reflnsFilePath = args[0];
+
+            return args.slice(1);
+        },
+        required: false,
+    },
+    {
+        cmd: '--prefix',
+        desc: 'Prefix for output files [VALUE]',
+        proc: (args: string[], config: Partial<Configuration>) => {
+            if (args.length < 1) {
+                Logger.log(Logger.Severity.Error, 'Parameter "prefix" requires an argument');
+                throw new Error();
+            }
+            if (!!config.outputPrefix) {
+                Logger.log(Logger.Severity.Error, 'Parameter "prefix" is already set');
+                throw new Error();
+            }
+            config.outputPrefix = args[0];
 
             return args.slice(1);
         },
@@ -267,7 +286,7 @@ async function getCoordinates(filePath: string): Promise<Coordinates> {
     const data = readTextFile(filePath);
     const ext = path.extname(filePath).toLowerCase();
 
-    if (ext === '.cif')
+    if (ext === '.cif' || ext === '.mmcif')
         return { data, type: 'cif' };
     else if (ext === '.pdb')
         return { data, type: 'pdb' };
@@ -373,44 +392,44 @@ function printUsage() {
     }
 }
 
-function writeCif(d: Dnatcofication, outputDirPath: string) {
-    const outPath = path.resolve(outputDirPath, `${d.pdbId}_extended.cif`);
+function writeCif(d: Dnatcofication, outputDirPath: string, outputPrefix?: string) {
+    const outPath = path.resolve(outputDirPath, `${outputPrefix ?? d.pdbId}_extended.cif`);
     writeTextFile(outPath, d.rawCif());
 }
 
-function writeBusterRestraints(d: Dnatcofication, outputDirPath: string, maxRmsd?: number, sigmaFactor?: number) {
+function writeBusterRestraints(d: Dnatcofication, outputDirPath: string, maxRmsd?: number, sigmaFactor?: number, outputPrefix?: string) {
     const restraints  = Buster.restraints(d, '', maxRmsd ?? 0.5, sigmaFactor);
     const text = Buster.restraintsAsText(restraints);
 
-    const restraintsPath = path.resolve(outputDirPath, `${d.pdbId}_restraints_buster.txt`);
+    const restraintsPath = path.resolve(outputDirPath, `${outputPrefix ?? d.pdbId}_restraints_buster.txt`);
     writeTextFile(restraintsPath, text);
 }
 
-function writeRefmacRestraints(d: Dnatcofication, outputDirPath: string, maxRmsd?: number, sigmaFactor?: number) {
+function writeRefmacRestraints(d: Dnatcofication, outputDirPath: string, maxRmsd?: number, sigmaFactor?: number, outputPrefix?: string) {
     const restraints  = Refmac.restraints(d, '', maxRmsd ?? 0.5, sigmaFactor);
     const text = Refmac.restraintsAsText(restraints);
 
-    const restraintsPath = path.resolve(outputDirPath, `${d.pdbId}_restraints_refmac.txt`);
+    const restraintsPath = path.resolve(outputDirPath, `${outputPrefix ?? d.pdbId}_restraints_refmac.txt`);
     writeTextFile(restraintsPath, text);
 }
 
-function writeCootRestraints(d: Dnatcofication, outputDirPath: string, maxRmsd?: number, sigmaFactor?: number) {
+function writeCootRestraints(d: Dnatcofication, outputDirPath: string, maxRmsd?: number, sigmaFactor?: number, outputPrefix?: string) {
     const restraints  = Coot.restraints(d, '', maxRmsd ?? 0.5, sigmaFactor);
     const text = Coot.restraintsAsText(restraints);
 
-    const restraintsPath = path.resolve(outputDirPath, `${d.pdbId}_restraints_coot.txt`);
+    const restraintsPath = path.resolve(outputDirPath, `${outputPrefix ?? d.pdbId}_restraints_coot.txt`);
     writeTextFile(restraintsPath, text);
 }
 
-function writePhenixRestraints(d: Dnatcofication, outputDirPath: string, maxRmsd?: number, sigmaFactor?: number) {
+function writePhenixRestraints(d: Dnatcofication, outputDirPath: string, maxRmsd?: number, sigmaFactor?: number, outputPrefix?: string) {
     const restraints  = RPhenix.restraints(d, '', maxRmsd ?? 0.5, sigmaFactor);
     const text = RPhenix.restraintsAsText(restraints);
 
-    const restraintsPath = path.resolve(outputDirPath, `${d.pdbId}_restraints_phenix.txt`);
+    const restraintsPath = path.resolve(outputDirPath, `${outputPrefix ?? d.pdbId}_restraints_phenix.txt`);
     writeTextFile(restraintsPath, text);
 }
 
-async function writeValidationReport(d: Dnatcofication, url: string, outputDirPath: string) {
+async function writeValidationReport(d: Dnatcofication, url: string, outputDirPath: string, outputPrefix?: string) {
     const report = await Report.pdf(
         d,
         {
@@ -422,7 +441,7 @@ async function writeValidationReport(d: Dnatcofication, url: string, outputDirPa
         'offline'
     );
 
-    const outPath = path.resolve(outputDirPath, `${d.pdbId}_report.pdf`);
+    const outPath = path.resolve(outputDirPath, `${outputPrefix ?? d.pdbId}_report.pdf`);
     writeBinaryFile(outPath, report);
 }
 
@@ -436,6 +455,7 @@ async function main(argv: string[]): Promise<ExitCode> {
     const outputDirPath = runCfg.outputDir;
     const coordsFilePath = runCfg.coordsFilePath;
     const reflnsFilePath = runCfg.reflnsFilePath;
+    const outputPrefix = runCfg.outputPrefix;
 
     Logger.initialize(getAppName(),
         {
@@ -517,7 +537,7 @@ async function main(argv: string[]): Promise<ExitCode> {
 
         if (runCfg.doExtendedCif) {
             Logger.log(Logger.Severity.Warning, `Writing the DNATCO extended mmCIF file.`);
-            writeCif(d, outputDirPath);
+            writeCif(d, outputDirPath, outputPrefix);
         } else {
             Logger.log(Logger.Severity.Warning, `The DNATCO extended mmCIF file will NOT be produced (see --extendedCIF).`);
         }
@@ -532,10 +552,10 @@ async function main(argv: string[]): Promise<ExitCode> {
             Logger.log(Logger.Severity.Warning, `No restraints requested, consider adding any of --busterRestraints|--refmacRestraints|--cootRestraints|--phenixRestraints parameters.`);
         else
             Logger.log(Logger.Severity.Warning, `Writing restraints.`);
-        if (runCfg.doBusterRestraints) writeBusterRestraints(d, outputDirPath, maxRmsd, sigmaFactor);
-        if (runCfg.doRefmacRestraints) writeRefmacRestraints(d, outputDirPath, maxRmsd, sigmaFactor);
-        if (runCfg.doCootRestraints) writeCootRestraints(d, outputDirPath, maxRmsd, sigmaFactor);
-        if (runCfg.doPhenixRestraints) writePhenixRestraints(d, outputDirPath, maxRmsd, sigmaFactor);
+        if (runCfg.doBusterRestraints) writeBusterRestraints(d, outputDirPath, maxRmsd, sigmaFactor, outputDirPath);
+        if (runCfg.doRefmacRestraints) writeRefmacRestraints(d, outputDirPath, maxRmsd, sigmaFactor, outputDirPath);
+        if (runCfg.doCootRestraints) writeCootRestraints(d, outputDirPath, maxRmsd, sigmaFactor, outputDirPath);
+        if (runCfg.doPhenixRestraints) writePhenixRestraints(d, outputDirPath, maxRmsd, sigmaFactor, outputDirPath);
 
         Logger.log(Logger.Severity.Debug, `Done processing "${coordsFilePath}"`);
     } catch (e) {
