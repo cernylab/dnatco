@@ -178,7 +178,7 @@ function Inner(props: {
           visible={view.visualizer ? "both" : "first"}
           first={routes}
           second={
-            <div className="flex ml-0 overflow-hidden">
+            <div className="flex ml-0">
               <div id="rdo-id-molstar-container" className="flex-1 relative" />
             </div>
           }

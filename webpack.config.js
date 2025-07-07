@@ -23,7 +23,7 @@ module.exports = (env, argv) => {
             copyPluginPatterns: [
                 // Molstar viewer image assets must be copied to dist like this
                 {
-                    from: 'molstar/build/rednatco/assets/imgs/*',
+                    from: 'molstar/build/rednatco/imgs/*',
                     to() { return path.resolve(__dirname, DistDir, 'imgs/[name][ext]') },
                 }
             ],

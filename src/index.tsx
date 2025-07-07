@@ -57,6 +57,7 @@ import { BackgroundWorker, WorkerMessage } from "./tasks/worker";
 import { ViewerInterop } from "./viewer/viewer-interop";
 import { Task } from "./tasks/task";
 import { objKeys } from "./util";
+import RouterBridge from "./ui/common/router-bridge"
 
 import "assets/rednatco.css";
 import "assets/output.css";
@@ -759,6 +760,7 @@ async function bootstrap() {
       </HashRouter>
     ) : (
       <BrowserRouter>
+        <RouterBridge />
         <App initial={initial} />
       </BrowserRouter>
     );

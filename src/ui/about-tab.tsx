@@ -118,11 +118,23 @@ function Downloads() {
 }
 
 function Help() {
+    const { state } = useLocation() as { state?: { scrollTo?: string } };
+
+    useEffect(() => {
+        if (!state?.scrollTo) return;
+
+        setTimeout(() => {
+        document
+            .getElementById(state.scrollTo!)
+            ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 100);
+    }, [state]);
 
     const displayAbout = about.map(page => ({
         headline: page.headline,
         subHeadlineText: page.subHeadlineText,
         sections: page.sections.map(section => ({
+            id: section.id,
             headline: section.headline,
             paragraphs: section.paragraphs
         }))
@@ -138,6 +150,7 @@ function Help() {
         headline: page.headline,
         subHeadlineText: page.subHeadlineText,
         sections: page.sections.map(section => ({
+            id: section.id,
             headline: section.headline,
             paragraphs: section.paragraphs,
         }))
@@ -147,6 +160,7 @@ function Help() {
         headline: page.headline,
         subHeadlineText: page.subHeadlineText,
         sections: page.sections.map(section => ({
+            id: section.id,
             headline: section.headline,
             paragraphs: section.paragraphs
         }))
@@ -156,6 +170,7 @@ function Help() {
         headline: page.headline,
         subHeadlineText: page.subHeadlineText,
         sections: page.sections.map(section => ({
+            id: section.id,
             headline: section.headline,
             paragraphs: section.paragraphs
         }))
@@ -165,6 +180,7 @@ function Help() {
         headline: page.headline,
         subHeadlineText: page.subHeadlineText,
         sections: page.sections.map(section => ({
+            id: section.id,
             headline: section.headline,
             paragraphs: section.paragraphs
         }))
@@ -186,7 +202,7 @@ function Help() {
                             </div>
                         </div>
                         {page.sections.map((section:any, idx:any) => (
-                            <div key={index + '-' + idx} className='flex border-t-secondary-second border-t pt-3 mb-8'>
+                            <div key={index + '-' + idx}  id={section?.id} className='flex border-t-secondary-second border-t pt-3 mb-8'>
                                 <div className='w-[25%]'>
                                     <h3 className='font-700 text-18px mb-2 uppercase'>
                                         {section.headline}
