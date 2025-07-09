@@ -543,7 +543,7 @@ async function main(argv: string[]): Promise<ExitCode> {
         }
         if (runCfg.doReport) {
             Logger.log(Logger.Severity.Warning, `Writing the DNATCO validation report file.`);
-            await writeValidationReport(d, cfg.referenceUrl, outputDirPath);
+            await writeValidationReport(d, cfg.referenceUrl, outputDirPath, outputPrefix);
         } else {
             Logger.log(Logger.Severity.Warning, `The DNATCO validation report file will NOT be produced (see --report).`);
         }
@@ -552,10 +552,10 @@ async function main(argv: string[]): Promise<ExitCode> {
             Logger.log(Logger.Severity.Warning, `No restraints requested, consider adding any of --busterRestraints|--refmacRestraints|--cootRestraints|--phenixRestraints parameters.`);
         else
             Logger.log(Logger.Severity.Warning, `Writing restraints.`);
-        if (runCfg.doBusterRestraints) writeBusterRestraints(d, outputDirPath, maxRmsd, sigmaFactor, outputDirPath);
-        if (runCfg.doRefmacRestraints) writeRefmacRestraints(d, outputDirPath, maxRmsd, sigmaFactor, outputDirPath);
-        if (runCfg.doCootRestraints) writeCootRestraints(d, outputDirPath, maxRmsd, sigmaFactor, outputDirPath);
-        if (runCfg.doPhenixRestraints) writePhenixRestraints(d, outputDirPath, maxRmsd, sigmaFactor, outputDirPath);
+        if (runCfg.doBusterRestraints) writeBusterRestraints(d, outputDirPath, maxRmsd, sigmaFactor, outputPrefix);
+        if (runCfg.doRefmacRestraints) writeRefmacRestraints(d, outputDirPath, maxRmsd, sigmaFactor, outputPrefix);
+        if (runCfg.doCootRestraints) writeCootRestraints(d, outputDirPath, maxRmsd, sigmaFactor, outputPrefix);
+        if (runCfg.doPhenixRestraints) writePhenixRestraints(d, outputDirPath, maxRmsd, sigmaFactor, outputPrefix);
 
         Logger.log(Logger.Severity.Debug, `Done processing "${coordsFilePath}"`);
     } catch (e) {
