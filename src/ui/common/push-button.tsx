@@ -106,7 +106,7 @@ export class IconButton extends React.Component<IconButton.Props> {
           this.props.classNameDisabled ?? "rdo-icon-button-disabled"
         }
       >
-        <div className="rdo-pushbutton-inner-container flex items-center gap-1 h-full justify-center m-auto mx-1">
+        <div className="rdo-pushbutton-inner-container cursor-pointer flex items-center gap-1 h-full justify-center m-auto mx-1">
           <img
             className={this.props.iconClassName ?? "rdo-icon-button-image"}
             src={this.props.src}

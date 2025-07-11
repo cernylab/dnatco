@@ -453,7 +453,7 @@ export class ConformerQuality extends View<View.Props> {
         <div className="rdo-floating-search-icon-tainer bottom-4 right-4">
           <IconButton
             src={MagnifyingGlassImg}
-            className="rdo-floating-search-icon rdo-pushbutton-border"
+            className="rdo-floating-search-icon h-5 rdo-pushbutton-border"
             onClick={() => {
               const tainer = selfRef.current;
               if (!tainer || this.searchBoxOpen) return;
