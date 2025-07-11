@@ -599,11 +599,12 @@ function AngleMetricDetails(props: {
                         residueName={commonResidueName}
                         suffix={"\u00B0"}
                         value={item.angle.angle}
-                        valueFormatter={(v) => v.toFixed(3)}
+                        valueFormatter={(v) => M.r2d(v).toFixed(2)}
                         naval={ni}
                         xTitle={"Angle (\u00B0)"}
                         yTitle="Prob. (%)"
                         yTransform={(y) => y * 100}
+                        xTransform={(x) => M.r2d(x)}
                         downloadFileName={dlName}
                         highlighter={doHighlight}
                         vi={props.vi}
