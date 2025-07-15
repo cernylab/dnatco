@@ -713,7 +713,7 @@ export class ConformersTab extends React.Component<ConformersTab.Props, State> {
             <div className="bg-primary-first text-white p-3 mb-3 w-fit rounded-standard transition-all hover:bg-secondary-second hover:text-primary-first">
               <a
                 className="font-700"
-                href="https://basepairs.datmos.org/#tWW-A-A/"
+                href="https://basepairs_internal.datmos.org/#tWW-A-A/"
                 target="_blank"
               >
                 Open base pairs

@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { Dnatcofication } from "src/dnatco/dnatcofication";
 import { Annotation } from "./common";
+import { Cif } from '../../../../cif';
 
 export function BasePairing({ d }: { d: Dnatcofication }) {
   const pdbId = d.pdbId; // is '' if not found in _struct, otherwise should be non-empty string
@@ -13,86 +14,43 @@ export function BasePairing({ d }: { d: Dnatcofication }) {
   // re-refined structure from other source, if the same pdbId exists on dnatco.
   
   if(pdbId !== '') {
-    const pdbLc = pdbId.toLowerCase();
+    const tables = d.data.cifData?.blocks[0].tables;
+    const bpList = tables?.get('ndb_base_pair_list');
+    const bpAnn = tables?.get('ndb_base_pair_annotation');
 
-    const pdbMid = pdbLc.slice(1, 3);
-
-    const [data, setData] = useState<any>(null);
-    const [loading, setLoading] = useState(true);
-
-    useEffect(() => {
-      const fetchData = async () => {
-        try {
-          const url = `/pairing/${pdbMid}/${pdbLc}_basepairs.json`;
-          const response = await fetch(url);
-          if (!response.ok) {
-            throw new Error("Network response was not ok");
-          }
-          const jsonData = await response.json();
-          setData(jsonData);
-          setLoading(false);
-        } catch (error) {
-          console.error("Error fetching data:", error);
-          setLoading(false);
-        }
-      };
-
-      fetchData();
-    }, []);
-
-    if (loading) {
-      return <div>Loading...</div>;
-    }
-
-    if(!data) {
+    if(!bpList) {
       return <div>No data available</div>;
     }
 
-    const sortedData = [...data.details]
-      .filter(([ , interaction ]) => !['cHW', 'cSW', 'cSH', 'tHW', 'tSW', 'tSH'].includes(interaction))
-      .map(([base1, interaction, base2, score]) => {
-        const cleanedBase1 = base1.split('|').slice(0, 5).join('|');
-        const cleanedBase2 = base2.split('|').slice(0, 5).join('|');
-        return [cleanedBase1, interaction, cleanedBase2];
-    }).sort((a, b) => {
-      const cleanA = a[0].split('|');
-      const cleanB = b[0].split('|');
-
-      const [ , modelA, chainA, , numberA ] = cleanA;
-      const [ , modelB, chainB, , numberB ] = cleanB;
-
-      const mA = Number(modelA);
-      const mB = Number(modelB);
-
-      if (mA !== mB) return mA - mB;
-      const chainCmp = chainA.localeCompare(chainB);
-      if (chainCmp !== 0) return chainCmp;
-
-      return Number(numberA) - Number(numberB);
+    const rows = Array.from({ length: bpList._rowCount }, (_, i) => {
+      const r = Cif.Row(bpList, i);
+      return {
+        id:        String(r.base_pair_id),
+        model:     String(r.PDB_model_number),
+        chain1:    r.auth_asym_id_1,
+        base1:     `${r.comp_id_1} ${r.auth_seq_id_1}`,
+        chain2:    r.auth_asym_id_2,
+        base2:     `${r.comp_id_2} ${r.auth_seq_id_2}`,
+      };
     });
 
-    const seenPairs = new Set();
-
-    const finalData = sortedData.filter(([base1, interaction, base2]) => {
-      const key = [base1, base2].sort().join('|');
-
-      if (seenPairs.has(key)) {
-        return false;
+    const annMap = new Map<string,string>();
+    if (bpAnn) {
+      for (let i = 0; i < bpAnn._rowCount; i++) {
+        const a = Cif.Row(bpAnn, i);
+        annMap.set(String(a.base_pair_id), a['class']);
       }
+    }
 
-      seenPairs.add(key);
-      return true;
-    });
+    const models = new Set(rows.map(r => r.model));
+    const showModel = models.size > 1;
     
-    const modelSet = new Set(finalData.map(([base1]) => base1.split('|')[1]));
-    const isSingleModel = modelSet.size === 1;
-
     return (
       <table className="mb-2 w-full">
         <thead>
           <tr>
             <th
-              colSpan={isSingleModel ? 5 : 6}
+              colSpan={showModel ? 6 : 5}
               className="mb-4 p-4 text-20px border-primary-first border-[.1px]"
             >
               <div>Base pairs</div>
@@ -100,9 +58,7 @@ export function BasePairing({ d }: { d: Dnatcofication }) {
             </th>
           </tr>
           <tr>
-            {!isSingleModel && (
-                <th className="py-2 border-primary-first border-[.1px]">Model</th>
-            )}
+            {showModel && <th className="py-2 border-primary-first border-[.1px]">Model</th>}
             <th className="py-2 border-primary-first border-[.1px]">Chain 1</th>
             <th className="py-2 border-primary-first border-[.1px]">Base 1</th>
             <th className="py-2 border-primary-first border-[.1px]">Family</th>
@@ -111,21 +67,19 @@ export function BasePairing({ d }: { d: Dnatcofication }) {
           </tr>
         </thead>
         <tbody>
-          {finalData.map(([base1, interaction, base2], index) => {
-            const [ , model, chain1, baseType1, baseNum1 ] = base1.split('|');
-            const [ , , chain2, baseType2, baseNum2 ] = base2.split('|');
+          {rows.map((r, i) => {
             return (
-              <tr key={index}>
-                {!isSingleModel && (
-                    <td className="border-primary-first border-[.1px] text-center py-1 px-2">{model}</td>
-                )}
-                <td className="border-primary-first border-[.1px] text-center py-1 px-2">{chain1}</td>
-                <td className="border-primary-first border-[.1px] text-center py-1 px-2">{`${baseType1} ${baseNum1}`}</td>
-                <td className="border-primary-first border-[.1px] text-center py-1 px-2">{interaction}</td>
-                <td className="border-primary-first border-[.1px] text-center py-1 px-2">{chain2}</td>
-                <td className="border-primary-first border-[.1px] text-center py-1 px-2">{`${baseType2} ${baseNum2}`}</td>
+              <tr key={i}>
+                {showModel && <th className="py-2 border-primary-first border-[.1px]">{r.model}</th>}
+                <th className="py-2 border-primary-first border-[.1px]">{r.chain1}</th>
+                <th className="py-2 border-primary-first border-[.1px]">{r.base1}</th>
+                
+                <th className="py-2 border-primary-first border-[.1px]">{annMap.get(r.id) ?? '-'}</th>
+  
+                <th className="py-2 border-primary-first border-[.1px]">{r.chain2}</th>
+                <th className="py-2 border-primary-first border-[.1px]">{r.base2}</th>
               </tr>
-            );
+            )
           })}
         </tbody>
       </table>

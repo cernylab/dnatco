@@ -10,8 +10,11 @@
     --color-red-500: oklch(63.7% 0.237 25.331);
     --color-red-600: oklch(57.7% 0.245 27.325);
     --color-gray-200: oklch(92.8% 0.006 264.531);
+    --color-black: rgba(0, 0, 0, 0.75);
     --color-white: rgba(255, 255, 255, 0.8);
     --spacing: 0.25rem;
+    --text-sm: 0.875rem;
+    --text-sm--line-height: calc(1.25 / 0.875);
     --font-weight-bold: 700;
     --tracking-wider: 0.05em;
     --radius-lg: 0.5rem;
@@ -265,6 +268,9 @@
   }
   .z-999 {
     z-index: 999;
+  }
+  .z-\[1000\] {
+    z-index: 1000;
   }
   .col-span-2 {
     grid-column: span 2 / span 2;
@@ -566,6 +572,9 @@
   .w-screen {
     width: 100vw;
   }
+  .max-w-\[13rem\] {
+    max-width: 13rem;
+  }
   .max-w-\[33\%\] {
     max-width: 33%;
   }
@@ -580,6 +589,9 @@
   }
   .min-w-\[8\.6rem\] {
     min-width: 8.6rem;
+  }
+  .min-w-\[10rem\] {
+    min-width: 10rem;
   }
   .min-w-\[80px\] {
     min-width: 80px;
@@ -891,6 +903,10 @@
   .font-roboto-regular {
     font-family: var(--font-roboto-regular);
   }
+  .text-sm {
+    font-size: var(--text-sm);
+    line-height: var(--tw-leading, var(--text-sm--line-height));
+  }
   .text-13px {
     font-size: var(--text-13px);
   }
@@ -934,11 +950,20 @@
     --tw-tracking: var(--tracking-wider);
     letter-spacing: var(--tracking-wider);
   }
+  .break-words {
+    overflow-wrap: break-word;
+  }
   .text-ellipsis {
     text-overflow: ellipsis;
   }
+  .whitespace-normal {
+    white-space: normal;
+  }
   .whitespace-nowrap {
     white-space: nowrap;
+  }
+  .text-black {
+    color: var(--color-black);
   }
   .text-primary-first {
     color: var(--color-primary-first);
@@ -1018,6 +1043,11 @@
   }
   .transition-colors {
     transition-property: color, background-color, border-color, outline-color, text-decoration-color, fill, stroke, --tw-gradient-from, --tw-gradient-via, --tw-gradient-to;
+    transition-timing-function: var(--tw-ease, var(--default-transition-timing-function));
+    transition-duration: var(--tw-duration, var(--default-transition-duration));
+  }
+  .transition-opacity {
+    transition-property: opacity;
     transition-timing-function: var(--tw-ease, var(--default-transition-timing-function));
     transition-duration: var(--tw-duration, var(--default-transition-duration));
   }

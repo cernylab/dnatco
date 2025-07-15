@@ -7,6 +7,7 @@ import { Entity, EntityPoly, EntityPolySeq } from './categories/entity';
 import { Entry } from './categories/entry';
 import { Exptl, ExptlCrystal, ExptlCrystalGrow } from './categories/experimental';
 import { NdbStructNtcOverall, NdbStructNtcStepParameters, NdbStructNtcStep, NdbStructNtcStepSummary, NdbStructSugarStepParameters } from './categories/ndb-struct-ntc';
+import { NdbBasePairList, NdbBasePairAnnotation } from './categories/ndb-base-pair';
 import { PdbxDatabaseStatus } from './categories/pdbx-database-status';
 import { Refine } from './categories/refine';
 import { Struct } from './categories/struct';
@@ -21,6 +22,7 @@ export const KnownCategories = [
     Entry,
     Exptl, ExptlCrystal, ExptlCrystalGrow,
     NdbStructNtcOverall, NdbStructNtcStepParameters, NdbStructNtcStep, NdbStructNtcStepSummary, NdbStructSugarStepParameters,
+    NdbBasePairList, NdbBasePairAnnotation,
     PdbxDatabaseStatus,
     Refine,
     Struct,
