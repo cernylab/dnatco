@@ -578,6 +578,9 @@
   .max-w-\[33\%\] {
     max-width: 33%;
   }
+  .max-w-\[40rem\] {
+    max-width: 40rem;
+  }
   .max-w-\[290px\] {
     max-width: 290px;
   }

@@ -1,4 +1,4 @@
-import { DefinitionNewTrans2Img, basePairs, basePairsTable, cisBasepairs,  } from "./assets/images"
+import { DefinitionNewTrans2Img, dnatcoFamilies, interactingEdges, cisTrans, } from "./assets/images"
 
 export const about = [
     {
@@ -94,19 +94,22 @@ export const annotation = [
                     },
                     {
                         type: 'image',
-                        url: basePairsTable,
+                        url: dnatcoFamilies,
+                        width: 'max-w-[40rem]'
                     },
                     {
                         type: 'image',
-                        url: basePairs,
+                        url: interactingEdges,
+                        width: 'max-w-[40rem]'
+                    },
+                    {
+                        type: 'image',
+                        url: cisTrans,
+                        width: 'max-w-[40rem]'
                     },
                     {
                         type: 'paragraph',
                         text: 'Base edges and Base-pair geometric isomerism. (Upper left) An adenosine showing the three base edges that are available for hydrogen-bonding interactions: Watson-Crick (W-C), Hoogsteen and Sugar-edge. (Lower left) Representation of RNA base as a triangle. The position of the ribose is indicated with a circle in the corner defined by the Hoogsteen and Sugar edge. (Right) Cis and Trans base-pairing geometries, illustrated for two bases interacting with W-C edges.',
-                    },
-                    {
-                        type: 'image',
-                        url: cisBasepairs,
                     },
                     {
                         type: 'paragraph',
@@ -176,7 +179,7 @@ export const validation = [
                 ],
             },
             {
-                id:'stepTorsions',
+                id: 'stepTorsions',
                 headline: 'Step torsions tab',
                 paragraphs: [
                     {
@@ -229,7 +232,7 @@ export const validation = [
     }
 ]
 
-export const  refinement = [
+export const refinement = [
     {
         headline: 'Refinement page',
         subHeadlineText: 'The "Refinement" page is currently under development to assist users in refining their structures by leveraging NtC conformers. This section offers tools for adjusting the automatically assigned NtCs and enables users to visually inspect these modifications through similarity and connectivity plots. Users have the flexibility to create multiple sets of altered NtCs to be used to further refine the structure. The default set, labelled as "(Computed)," is not editable and contains NtCs that were automatically assigned by DNATCO.',
@@ -267,7 +270,7 @@ export const  refinement = [
                 ],
             },
             {
-                id:'changeNtCs',
+                id: 'changeNtCs',
                 headline: 'Change NtCs',
                 paragraphs: [
                     {

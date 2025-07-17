@@ -36,9 +36,9 @@ import arrowDown from 'assets/imgs/arrowDown.png'
 import arrowDownHover from 'assets/imgs/arrowDownHover.png'
 import searchIcon from 'assets/imgs/search.png'
 import tooltipImg from 'assets/imgs/tooltip.png'
-import basePairsTable from 'assets/imgs/base-pairs-table.png'
-import basePairs from 'assets/imgs/base-pairs.png'
-import cisBasepairs from 'assets/imgs/cis-basepairs.png'
+import interactingEdges from 'assets/imgs/interacting_edges.png'
+import dnatcoFamilies from 'assets/imgs/families_to_dnatco.png'
+import cisTrans from 'assets/imgs/cis-trans.png'
 
 export {
     DnatcoLogoImg,
@@ -77,7 +77,7 @@ export {
     arrowDownHover,
     searchIcon,
     tooltipImg,
-    basePairsTable,
-    basePairs,
-    cisBasepairs
+    dnatcoFamilies,
+    interactingEdges,
+    cisTrans
 };
