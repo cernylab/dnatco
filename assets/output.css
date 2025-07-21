@@ -338,6 +338,9 @@
   .my-auto {
     margin-block: auto;
   }
+  .mt-1 {
+    margin-top: calc(var(--spacing) * 1);
+  }
   .mt-2 {
     margin-top: calc(var(--spacing) * 2);
   }
@@ -367,6 +370,9 @@
   }
   .mr-5 {
     margin-right: calc(var(--spacing) * 5);
+  }
+  .mb-1 {
+    margin-bottom: calc(var(--spacing) * 1);
   }
   .mb-2 {
     margin-bottom: calc(var(--spacing) * 2);
@@ -524,9 +530,6 @@
   .w-\[8\.6rem\] {
     width: 8.6rem;
   }
-  .w-\[20rem\] {
-    width: 20rem;
-  }
   .w-\[25\%\] {
     width: 25%;
   }
@@ -673,6 +676,9 @@
   }
   .items-center {
     align-items: center;
+  }
+  .items-start {
+    align-items: flex-start;
   }
   .justify-around {
     justify-content: space-around;
