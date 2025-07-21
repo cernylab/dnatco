@@ -39,6 +39,7 @@ import tooltipImg from 'assets/imgs/tooltip.png'
 import interactingEdges from 'assets/imgs/interacting_edges.png'
 import dnatcoFamilies from 'assets/imgs/families_to_dnatco.png'
 import cisTrans from 'assets/imgs/cis-trans.png'
+import ntcFamiliesTable from 'assets/imgs/ntcFamiliesTable.png'
 
 export {
     DnatcoLogoImg,
@@ -79,5 +80,6 @@ export {
     tooltipImg,
     dnatcoFamilies,
     interactingEdges,
-    cisTrans
+    cisTrans,
+    ntcFamiliesTable
 };

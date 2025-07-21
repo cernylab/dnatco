@@ -142,7 +142,6 @@ function Help() {
 
     const displayHome = home.map(page => ({
         headline: page.headline,
-        subHeadlineText: page.subHeadlineText,
         paragraphs: page.paragraphs.map(paragraph => paragraph)
     }));
 
@@ -248,7 +247,6 @@ function Help() {
                         </h3>
                     </div>
                     <div className='w-[75%] text-16px mb-2 text-justify'>
-                        {page.subHeadlineText}
                         <div className='h-3'></div>
                         {page.paragraphs.map((paragraph, idx) => (
                             <div key={idx}>

@@ -530,6 +530,9 @@
   .w-\[8\.6rem\] {
     width: 8.6rem;
   }
+  .w-\[20rem\] {
+    width: 20rem;
+  }
   .w-\[25\%\] {
     width: 25%;
   }
@@ -578,8 +581,23 @@
   .max-w-\[13rem\] {
     max-width: 13rem;
   }
+  .max-w-\[20rem\] {
+    max-width: 20rem;
+  }
+  .max-w-\[25rem\] {
+    max-width: 25rem;
+  }
+  .max-w-\[30rem\] {
+    max-width: 30rem;
+  }
   .max-w-\[33\%\] {
     max-width: 33%;
+  }
+  .max-w-\[35rem\] {
+    max-width: 35rem;
+  }
+  .max-w-\[37rem\] {
+    max-width: 37rem;
   }
   .max-w-\[40rem\] {
     max-width: 40rem;
