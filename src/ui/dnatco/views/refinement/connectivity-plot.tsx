@@ -159,7 +159,7 @@ export class ConnectivityPlot extends View<Refinement.Props> {
                             hovertemplate: '<i>C5</i>: %{x:.3f}, <i>O3</i>: %{y:.3f}<br />%{text}',
                             text: data.tags,
                             textposition: 'top center',
-                            type: 'scattergl',
+                            type: 'scatter',
                             showlegend: false,
                         },
                         {
@@ -170,7 +170,7 @@ export class ConnectivityPlot extends View<Refinement.Props> {
                             hovertemplate: '<i>RMSD</i>: %{x:.3f}, <i>ED</i>: %{y:.3f}<br />%{text}',
                             text: data.tagsSel,
                             textposition: 'top center',
-                            type: 'scattergl',
+                            type: 'scatter',
                             showlegend: false,
                         },
                         {
@@ -181,7 +181,7 @@ export class ConnectivityPlot extends View<Refinement.Props> {
                             hovertemplate: '<i>RMSD</i>: %{x:.3f}, <i>ED</i>: %{y:.3f}<br />%{text}',
                             text: data.tagsComputed,
                             textposition: 'top center',
-                            type: 'scattergl',
+                            type: 'scatter',
                             showlegend: false,
                         },
                     ]}
@@ -389,7 +389,7 @@ export class ConnectivityPlot extends View<Refinement.Props> {
                                     hovertemplate: '<i>RMSD</i>: %{x:.3f}, <i>ED</i>: %{y:.3f}<br />%{text}',
                                     text: simPlotData.tags,
                                     textposition: 'top center',
-                                    type: 'scattergl',
+                                    type: 'scatter',
                                     showlegend: false,
                                 },
                                 {
@@ -400,7 +400,7 @@ export class ConnectivityPlot extends View<Refinement.Props> {
                                     hovertemplate: '<i>RMSD</i>: %{x:.3f}, <i>ED</i>: %{y:.3f}<br />%{text}',
                                     text: simPlotData.tagsSel,
                                     textposition: 'top center',
-                                    type: 'scattergl',
+                                    type: 'scatter',
                                     showlegend: false,
                                 },
                                 {
@@ -411,7 +411,7 @@ export class ConnectivityPlot extends View<Refinement.Props> {
                                     hovertemplate: '<i>RMSD</i>: %{x:.3f}, <i>ED</i>: %{y:.3f}<br />%{text}',
                                     text: simPlotData.tagsComputed,
                                     textposition: 'top center',
-                                    type: 'scattergl',
+                                    type: 'scatter',
                                     showlegend: false,
                                 },
                             ]}

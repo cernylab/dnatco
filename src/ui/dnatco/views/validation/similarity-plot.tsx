@@ -157,7 +157,7 @@ export class SimilarityPlot extends View<View.Props> {
                                     textposition: 'top center',
                                     text: plotData.tags,
                                     hovertemplate: '<i>RMSD</i>: %{x:.3f}, <i>ED</i>: %{y:.3f}<br />%{text}',
-                                    type: 'scattergl',
+                                    type: 'scatter',
                                     showlegend: false,
                                 },
                                 {
@@ -168,7 +168,7 @@ export class SimilarityPlot extends View<View.Props> {
                                     textposition: 'top center',
                                     text: plotData.tagsSel,
                                     hovertemplate: 'RMSD: %{x:.3f}, ED: %{y:.3f}<br />%{text}',
-                                    type: 'scattergl',
+                                    type: 'scatter',
                                     showlegend: false,
                                 },
                             ]}

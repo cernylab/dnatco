@@ -187,8 +187,7 @@ async function downloadRsccPlot(
   const plotlyData = RsccPlot.makePlotlyData(
     plotData.xy,
     plotData.contour,
-    true,
-    false
+    true
   ) as PlotData[];
   const img = await ImageSerialization.toImage(
     plotlyData,
