@@ -129,8 +129,8 @@ export namespace RsccPlot {
         };
     }
 
-    export function makePlotlyData(xy: RsccXYData, contour: RsccContourData, automargin = false, useGl = true): PlotlyData[] {
-        const plotType = useGl ? 'scattergl' : 'scatter';
+    export function makePlotlyData(xy: RsccXYData, contour: RsccContourData, automargin = false): PlotlyData[] {
+        const plotType = 'scatter';
         const zMinMax = minAndMax(contour.z);
         const zRng = zMinMax.max - zMinMax.min;
 
