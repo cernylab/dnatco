@@ -194,14 +194,18 @@ export class ConnectivityPlot extends View<Refinement.Props> {
                                 Constants.DefaultConnectivityXRange[0],
                                 hints[0],
                             ],
-                            title: 'C5 distance [Å]',
+                            title: {
+                                text: 'C5 distance [Å]',
+                            }
                         },
                         yaxis: {
                             range: [
                                 Constants.DefaultConnectivityYRange[0],
                                 hints[1],
                             ],
-                            title: 'O3 distance [Å]',
+                            title: {
+                                text: 'O3 distance [Å]',
+                            },
                         },
                         margin: {
                             t: 0,
@@ -419,8 +423,8 @@ export class ConnectivityPlot extends View<Refinement.Props> {
                                 autosize: true,
                                 dragmode: 'pan',
                                 hovermode: 'closest',
-                                xaxis: { title: 'Cartesian RMSD [Å]', automargin: true },
-                                yaxis: { title: 'Euclidean distance', automargin: true },
+                                xaxis: { title: { text: 'Cartesian RMSD [Å]' }, automargin: true },
+                                yaxis: { title: { text: 'Euclidean distance' }, automargin: true },
                                 plot_bgcolor: 'white',
                                 paper_bgcolor: 'white',
                                 margin: {

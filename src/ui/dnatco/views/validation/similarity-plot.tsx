@@ -178,13 +178,16 @@ export class SimilarityPlot extends View<View.Props> {
                                 hovermode: 'closest',
                                 xaxis: {
                                     range: [Constants.DefaultSimilarityXRange[0], axesHints[0]],
-                                    title: 'Cartesian RMSD [Å]',
+                                    title: {
+                                        text: 'Cartesian RMSD [Å]',
+                                    },
                                     automargin: true
                                 },
                                 yaxis: {
                                     range: [Constants.DefaultSimilarityYRange[0], axesHints[1]],
-                                    title: 'Euclidean distance',
-                                    automargin: true
+                                    title: {
+                                        text: 'Euclidean distance',
+                                    }
                                 },
                                 plot_bgcolor: 'white',
                                 paper_bgcolor: 'white',
