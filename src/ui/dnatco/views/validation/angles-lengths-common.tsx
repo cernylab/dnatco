@@ -664,7 +664,7 @@ export function SubstructureSummary(props: {
       {props.countsInGroups.map((x, idx) => {
         const thr =
           x.pGroupIdx === "outlier"
-            ? "Outliers"
+            ? "OfConcern"
             : x.threshold.toFixed(maxDecimals);
         const clr = DAnglesLengths.pGroupColor(idx) ?? outlierColor;
         const perc = 100 * (x.cumulative / total);

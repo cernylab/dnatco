@@ -1353,7 +1353,7 @@ export class AnglesLengthsByResidue extends View<
     const countsLenghts = Summarize.countsInGroups(summary.lengths);
 
     const percentileOptions = [
-      { caption: "Outliers", value: "" },
+      { caption: "Of Concern", value: "" },
       ...DAnglesLengths.pGroupThresholds()
         .reverse()
         .map((thr) => {
