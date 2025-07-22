@@ -214,8 +214,6 @@ function createApp(name, productionBuild, outDir, extraConfig) {
     } else
         console.log('Building for development');
 
-    console.log(extraConfig);
-
     return {
         node: false,
         target: 'web',
