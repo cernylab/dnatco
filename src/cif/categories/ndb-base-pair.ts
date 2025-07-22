@@ -17,10 +17,10 @@ export const NdbBasePairList_Schema = {
     PDB_ins_code_2: Schema.str,
     alt_id_2: Schema.str,
     struct_oper_id_2: Schema.int,
-/*    auth_asym_id_1: Schema.strM,
+    auth_asym_id_1: Schema.strM,
     auth_seq_id_1: Schema.intM,
     auth_asym_id_2: Schema.strM,
-    auth_seq_id_2: Schema.intM,*/
+    auth_seq_id_2: Schema.intM,
 }
 
 export type NdbBasePairList_Schema = typeof NdbBasePairList_Schema;
