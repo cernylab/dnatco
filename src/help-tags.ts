@@ -189,58 +189,12 @@ export const home = [
 export const annotation = [
     {
         headline: 'Annotation page',
-        subHeadlineText: 'Provides a concise overview of conformer assignments and structural features across five tabs:',
-        sections: [
-            {
-                id: 'mainFeatures',
-                headline: 'Main Features',
-                paragraphs: [
-                    {
-                        type: 'paragraph',
-                        text: 'Table of assigned NtC classes (left) and Mol* viewer with color‑coded NtC tube (right); colors correspond to NtC family categories.',
-                    },
-                ],
-            },
-            {
-                id: 'assignedNtCs',
-                headline: 'Assigned NtCs',
-                paragraphs: [
-                    {
-                        type: 'paragraph',
-                        text: 'Table of all dinucleotide steps with NtC class, CANA letter, confal score, and RMSD. Hover for torsion details; selecting a row highlights that step and overlays its reference conformer in Mol*.',
-                    },
-                ],
-            },
-            {
-                id: 'basePairs',
-                headline: 'Base Pairs',
-                paragraphs: [
-                    {
-                        type: 'paragraph',
-                        text: 'Leontis–Westhof annotation of base pairs by edge (Watson–Crick, Hoogsteen, Sugar) and orientation (cis/trans), see User’s Guide.',
-                    },
-                ],
-            },
-            {
-                id: 'structureInfo',
-                headline: 'Structure Info',
-                paragraphs: [
-                    {
-                        type: 'paragraph',
-                        text: 'Key metadata from the mmCIF: experimental method, resolution, deposition date, and citation.'
-                    },
-                ],
-            },
-            {
-                id: 'downloads',
-                headline: 'Downloads',
-                paragraphs: [
-                    {
-                        type: 'paragraph',
-                        text: 'Export tables of assigned NtCs (CSV, JSON) and the annotated mmCIF with DNATCO categories.'
-                    },
-                ],
-            },
+        paragraphs: [
+            'Provides a concise overview of conformer assignments and structural features across five tabs:',
+            'Conformation: Table of assigned NtC classes (left) and Mol* viewer with color-coded NtC tube (right); colors correspond to NtC family categories.',
+            'Base Pairs: Leontis–Westhof annotation of base pairs by edge (Watson–Crick, Hoogsteen, Sugar) and orientation (cis/trans), see User’s Guide.',
+            'Structure Info: Key metadata from the mmCIF: experimental method, resolution, deposition date, and citation.',
+            'Downloads: Export tables of assigned NtCs (CSV, JSON) and the annotated mmCIF with DNATCO categories.'
         ],
     },
 ]
@@ -248,145 +202,28 @@ export const annotation = [
 export const validation = [
     {
         headline: 'Validation page',
-        subHeadlineText: 'Delivers in-depth quality metrics via seven tabs:',
-        sections: [
-            {
-                id: 'overallQuality',
-                headline: 'Overall Quality',
-                paragraphs: [
-                    {
-                        type: 'paragraph',
-                        text: 'Summary of total conformers, RMSD distributions, mean confal score, and valence-geometry assessment.',
-                    },
-                ],
-            },
-            {
-                id: 'backboneQuality',
-                headline: 'Backbone Quality',
-                paragraphs: [
-                    {
-                        type: 'paragraph',
-                        text: 'Stepwise table with NtC, CANA, CS, and RMSD, color-coded (red → yellow → green) to indicate quality.',
-                    },
-                ],
-            },
-            {
-                id: 'stepTorsions',
-                headline: 'Step Torsions',
-                paragraphs: [
-                    {
-                        type: 'paragraph',
-                        text: 'Displays 12 torsion angles for a selected step versus reference distributions (violin plots + overlaid values).'
-                    },
-                ],
-            },
-            {
-                id: 'similarityPlot',
-                headline: 'Similarity Plot',
-                paragraphs: [
-                    {
-                        type: 'paragraph',
-                        text: 'Interactive RMSD (Å) vs. torsional distance (°) scatter plot for all NtC references; colors reflect RMSD thresholds (< 1 Å = green).',
-                    },
-                ],
-            },
-            {
-                id: 'rsccRmsdPlot',
-                headline: 'RSCC/RMSD Plot',
-                paragraphs: [
-                    {
-                        type: 'paragraph',
-                        text: 'Contour-backed scattergrams correlating RSCC and RMSD for assigned vs. unassigned steps, linked to Mol* for interactive selection.'
-                    },
-                ],
-            },
-            {
-                id: 'bondLengthsAngles',
-                headline: 'Bond Lengths & Angles',
-                paragraphs: [
-                    {
-                        type: 'paragraph',
-                        text: 'Compares bond-geometry parameters to curated standards. Multi-colored stripes indicate percentile groups; expandable sections reveal per-residue statistics and probability plots.'
-                    },
-                ],
-            },
-            {
-                id: 'downloads',
-                headline: 'Downloads',
-                paragraphs: [
-                    {
-                        type: 'paragraph',
-                        text: 'Provides all validation outputs for offline analysis:'
-                    },
-                    {
-                        type: 'paragraph',
-                        text: 'Extended mmCIF file: mmCIF with additional DNATCO categories.'
-                    },
-                    {
-                        type: 'paragraph',
-                        text: 'Assigned NtCs tables: summary and full tables (with confal score & RMSD) in CSV/JSON.'
-                    },
-                    {
-                        type: 'paragraph',
-                        text: 'Bond lengths & angles by residue: individual-residue measurements (CSV, JSON).'
-                    },
-                    {
-                        type: 'paragraph',
-                        text: 'Bond lengths & angles by nucleotide type: aggregated by nucleotide (CSV, JSON).'
-                    },
-                    {
-                        type: 'paragraph',
-                        text: 'Valence-geometry reports: Naval validation reports for bond lengths, bond angles, and overall geometry (CSV).'
-                    },
-                    {
-                        type: 'paragraph',
-                        text: 'RSCC vs. RMSD plots: assigned vs. unassigned step plots (SVG).'
-                    },
-                    {
-                        type: 'paragraph',
-                        text: 'Structure validation report: comprehensive report listing all dinucleotide steps (PDF or plain-text).'
-                    },
-                ],
-            }
-        ]
+        paragraphs: [
+            'Delivers in-depth quality metrics via seven tabs:',
+            'Overall Quality: Summary of total conformers, RMSD distributions, mean confal score, and valence-geometry assessment.',
+            'Conformer Quality: Stepwise table with NtC, CANA, CS, and RMSD, color-coded (red → yellow → green) to indicate quality.',
+            'Base Pairs: Leontis–Westhof annotation of base pairs by edge (Watson–Crick, Hoogsteen, Sugar) and orientation (cis/trans), see User’s Guide.',
+            'Step Torsions: Displays 12 torsion angles for a selected step versus reference distributions (violin plots + overlaid values).',
+            'Similarity Plot: Interactive RMSD (Å) vs. torsional distance (°) scatter plot for all NtC references; colors reflect RMSD thresholds (< 1 Å = green).',
+            'RSCC/RMSD Plot: Contour-backed scattergrams correlating RSCC and RMSD for assigned vs. unassigned steps, linked to Mol* for interactive selection.',
+            'Bond Lengths & Angles: Compares bond-geometry parameters to curated standards. Multi-colored stripes indicate percentile groups; expandable sections reveal per-residue statistics and probability plots.',
+            'Downloads: Provides all validation outputs for offline analysis. Extended mmCIF file: mmCIF with additional DNATCO categories. Assigned NtCs tables: summary and full tables (with confal score & RMSD) in CSV/JSON. Bond lengths & angles by residue: individual-residue measurements (CSV, JSON). Bond lengths & angles by nucleotide type: aggregated by nucleotide (CSV, JSON). Valence-geometry reports: Naval validation reports for bond lengths, bond angles, and overall geometry (CSV). RSCC vs. RMSD plots: assigned vs. unassigned step plots (SVG). Structure validation report: comprehensive report listing all dinucleotide steps (PDF or plain-text).'
+        ],
     }
 ]
 
 export const refinement = [
     {
         headline: 'Refinement page',
-        subHeadlineText: 'Facilitates real-time adjustment of NtC assignments:',
-        sections: [
-            {
-                id: 'changeNtCs',
-                headline: 'Change NtCs',
-                paragraphs: [
-                    {
-                        type: 'paragraph',
-                        text: 'Create custom torsion-restraint sets by selecting new NtC codes (click Add, name set). The default Computed set is read-only; multiple custom sets can be saved and reused.'
-                    },
-                ],
-            },
-            {
-                id: 'connectivityPlot',
-                headline: 'Connectivity Plot',
-                paragraphs: [
-                    {
-                        type: 'paragraph',
-                        text: `Two plots evaluate O3' and C5' atomic distances with overlapping dinucleotide steps, helping to establish compatibility of the central step with the previous and next steps.`,
-                    },
-                ],
-            },
-            {
-                id: 'restraints',
-                headline: 'Restraints',
-                paragraphs: [
-                    {
-                        type: 'paragraph',
-                        text: 'Export restraint files for REFMAC, Coot, Phenix, Buster, and MMB (MacroMolecule Builder).',
-                    },
-                ],
-            },
+        paragraphs: [
+            'Facilitates real-time adjustment of NtC assignments:',
+            'Change NtCs: Create custom torsion-restraint sets by selecting new NtC codes (click Add, name set). The default Computed set is read-only; multiple custom sets can be saved and reused.',
+            `Connectivity Plot: Two plots evaluate O3' and C5' atomic distances with overlapping dinucleotide steps, helping to establish compatibility of the central step with the previous and next steps.`,
+            'Restraints: Export restraint files for REFMAC, Coot, Phenix, Buster, and MMB (MacroMolecule Builder).',
         ],
     }
 ]
@@ -394,48 +231,12 @@ export const refinement = [
 export const browse = [
     {
         headline: 'Browse page',
-        subHeadlineText: 'Explore conformer and base-pair resources:',
-        sections: [
-            {
-                id: 'conformers',
-                headline: 'Conformers',
-                paragraphs: [
-                    {
-                        type: 'paragraph',
-                        text: 'Search the PDB for NtC examples. Results include step ID, NtC, CANA, CS, RMSD, resolution, and density availability. Click to open and highlight your step in DNATCO analysis in a new window.',
-                    },
-                ],
-            },
-            {
-                id: 'basePairs',
-                headline: 'Base Pairs',
-                paragraphs: [
-                    {
-                        type: 'paragraph',
-                        text: 'Link to basepairs.datmos.org for detailed base-pair data.',
-                    },
-                ],
-            },
-            {
-                id: 'tableOfConformers',
-                headline: 'Table of Conformers',
-                paragraphs: [
-                    {
-                        type: 'paragraph',
-                        text: 'Lists all 96 NtC classes with annotations, DNA/RNA occurrence frequencies, and defining parameters.',
-                    },
-                ],
-            },
-            {
-                id: 'contourPlots',
-                headline: 'Contour Plots',
-                paragraphs: [
-                    {
-                        type: 'paragraph',
-                        text: 'RSCC vs. RMSD scattergrams for structures at < 1.8 Å and > 2.5 Å resolution, divided into quadrants with percentage annotations for quick quality assessment. (Lower-right = good geometry & good density fit). ',
-                    },
-                ],
-            },
-        ]
+        paragraphs: [
+            'Explore conformer and base-pair resources:',
+            'Conformers: Search the PDB for NtC examples. Results include step ID, NtC, CANA, CS, RMSD, resolution, and density availability. Click to open and highlight your step in DNATCO analysis in a new window.',
+            'Base Pairs: Link to basepairs.datmos.org for detailed base-pair data.',
+            'Table of Conformers: Lists all 96 NtC classes with annotations, DNA/RNA occurrence frequencies, and defining parameters.',
+            'Contour Plots: RSCC vs. RMSD scattergrams for structures at < 1.8 Å and > 2.5 Å resolution, divided into quadrants with percentage annotations for quick quality assessment. (Lower-right = good geometry & good density fit).',
+        ],
     }
 ]

@@ -66,7 +66,7 @@ function NucleotideCounts({ d }: { d: Dnatcofication }) {
               colSpan={2}
               className="mb-4 p-4 text-18px border-primary-first border-[.1px]"
             >
-              Counts of Nucleotide in polymer entity
+              Counts of nucleotide in polymer entity
               <div style={{ fontSize: '0.85rem', filter: 'saturate(66%)'}}>{sourceInfo}</div>
             </th>
           </tr>

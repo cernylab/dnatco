@@ -53,7 +53,7 @@ export function BasePairing({ d }: { d: Dnatcofication }) {
               colSpan={showModel ? 6 : 5}
               className="mb-4 p-4 text-20px border-primary-first border-[.1px]"
             >
-              <div>Base pairs</div>
+              <div>Base Pairs</div>
               <div className="text-14px">Data provided by FR3D</div>
             </th>
           </tr>

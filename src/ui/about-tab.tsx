@@ -147,42 +147,22 @@ function Help() {
 
     const displayAnnotation = annotation.map(page => ({
         headline: page.headline,
-        subHeadlineText: page.subHeadlineText,
-        sections: page.sections.map(section => ({
-            id: section.id,
-            headline: section.headline,
-            paragraphs: section.paragraphs,
-        }))
+        paragraphs: page.paragraphs.map(paragraph => paragraph)
     }))
 
     const displayValidation = validation.map(page => ({
         headline: page.headline,
-        subHeadlineText: page.subHeadlineText,
-        sections: page.sections.map(section => ({
-            id: section.id,
-            headline: section.headline,
-            paragraphs: section.paragraphs
-        }))
+        paragraphs: page.paragraphs.map(paragraph => paragraph)
     }))
 
     const displayRefinement = refinement.map(page => ({
         headline: page.headline,
-        subHeadlineText: page.subHeadlineText,
-        sections: page.sections.map(section => ({
-            id: section.id,
-            headline: section.headline,
-            paragraphs: section.paragraphs
-        }))
+        paragraphs: page.paragraphs.map(paragraph => paragraph)
     }))
 
     const displayBrowse = browse.map(page => ({
         headline: page.headline,
-        subHeadlineText: page.subHeadlineText,
-        sections: page.sections.map(section => ({
-            id: section.id,
-            headline: section.headline,
-            paragraphs: section.paragraphs
-        }))
+        paragraphs: page.paragraphs.map(paragraph => paragraph)
     }))
 
     function display(display: any): ReactNode {
@@ -230,33 +210,43 @@ function Help() {
         )
     }
 
+    function displayTabs(display: any): ReactNode {
+        return (
+            <>
+                {display.map((page: any, index:any) => (
+                    <div key={index} className='flex border-t-secondary-second border-t pt-3 mb-8'>
+                        <div className='w-[25%]'>
+                            <h3 className='font-700 text-18px mb-2 uppercase'>
+                                {page.headline}
+                            </h3>
+                        </div>
+                        <div className='w-[75%] text-16px mb-2 text-justify'>
+                            <div className='h-3'></div>
+                            {page.paragraphs.map((paragraph: any, idx: any) => (
+                                <div key={idx}>
+                                    {paragraph}
+                                    <div className='h-3'></div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                ))}
+            </>
+        )
+        
+    }
+
     const aboutSection = display(displayAbout);
-    const annotationSection = display(displayAnnotation);
-    const validationSection = display(displayValidation);
-    const refinementSection = display(displayRefinement);
-    const browseSection = display(displayBrowse);
+    const homeSection = displayTabs(displayHome);
+    const annotationSection = displayTabs(displayAnnotation);
+    const validationSection = displayTabs(displayValidation);
+    const refinementSection = displayTabs(displayRefinement);
+    const browseSection = displayTabs(displayBrowse);
 
     return (
         <div>
             <div>{aboutSection}</div>
-            {displayHome.map((page, index) => (
-                <div key={index} className='flex border-t-secondary-second border-t pt-3 mb-8'>
-                    <div className='w-[25%]'>
-                        <h3 className='font-700 text-18px mb-2 uppercase'>
-                            {page.headline}
-                        </h3>
-                    </div>
-                    <div className='w-[75%] text-16px mb-2 text-justify'>
-                        <div className='h-3'></div>
-                        {page.paragraphs.map((paragraph, idx) => (
-                            <div key={idx}>
-                                {paragraph}
-                                <div className='h-3'></div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            ))}
+            <div>{homeSection}</div>
             <div>{annotationSection}</div>
             <div>{validationSection}</div>
             <div>{refinementSection}</div>
