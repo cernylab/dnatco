@@ -33,7 +33,8 @@ export function StaticDb(
         name,
         coordinates: async (pdbId) => {
             const id = transformId(pdbId, coords.idTransformation);
-            const req = await fetch(replaceAll(coords.link, '${pdbId}', id));
+            const sd = replaceAll(coords.link, '${subDir}', id.slice(1,3)+'/' )
+            const req = await fetch(replaceAll(sd, '${pdbId}', id));
             if (!req.ok) {
                 let errorMessage = req.statusText;
                 if (req.status === 404) {
@@ -60,7 +61,8 @@ export function StaticDb(
             const maps = new Array<DensityMap>();
             for (const dm of densityMaps) {
                 const _id = transformId(id, dm.idTransformation)
-                const req = await fetch(replaceAll(dm.link, '${id}', _id));
+                const sd = replaceAll(dm.link, '${subDir}', _id.slice(1,3)+'/' )
+                const req = await fetch(replaceAll(sd, '${id}', _id));
                 if (!req.ok)
                     Logger.log(Logger.Severity.Warning, `Failed to download density map: ${req.statusText}`);
                 else {
