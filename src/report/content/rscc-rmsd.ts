@@ -69,7 +69,7 @@ async function drawImage<Output>(data: RsccPlot.RsccPlotData, title: string, roo
         margin: { l: 150 },
     };
 
-    const plotlyData = RsccPlot.makePlotlyData(data.xy, data.contour, true, false) as PlotData[];
+    const plotlyData = RsccPlot.makePlotlyData(data.xy, data.contour, true) as PlotData[];
 
     let png;
     if (EnvDetect.isNode()) {

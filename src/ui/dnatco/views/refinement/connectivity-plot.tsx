@@ -159,7 +159,7 @@ export class ConnectivityPlot extends View<Refinement.Props> {
                             hovertemplate: '<i>C5</i>: %{x:.3f}, <i>O3</i>: %{y:.3f}<br />%{text}',
                             text: data.tags,
                             textposition: 'top center',
-                            type: 'scattergl',
+                            type: 'scatter',
                             showlegend: false,
                         },
                         {
@@ -170,7 +170,7 @@ export class ConnectivityPlot extends View<Refinement.Props> {
                             hovertemplate: '<i>RMSD</i>: %{x:.3f}, <i>ED</i>: %{y:.3f}<br />%{text}',
                             text: data.tagsSel,
                             textposition: 'top center',
-                            type: 'scattergl',
+                            type: 'scatter',
                             showlegend: false,
                         },
                         {
@@ -181,7 +181,7 @@ export class ConnectivityPlot extends View<Refinement.Props> {
                             hovertemplate: '<i>RMSD</i>: %{x:.3f}, <i>ED</i>: %{y:.3f}<br />%{text}',
                             text: data.tagsComputed,
                             textposition: 'top center',
-                            type: 'scattergl',
+                            type: 'scatter',
                             showlegend: false,
                         },
                     ]}
@@ -194,14 +194,18 @@ export class ConnectivityPlot extends View<Refinement.Props> {
                                 Constants.DefaultConnectivityXRange[0],
                                 hints[0],
                             ],
-                            title: 'C5 distance [Å]',
+                            title: {
+                                text: 'C5 distance [Å]',
+                            }
                         },
                         yaxis: {
                             range: [
                                 Constants.DefaultConnectivityYRange[0],
                                 hints[1],
                             ],
-                            title: 'O3 distance [Å]',
+                            title: {
+                                text: 'O3 distance [Å]',
+                            },
                         },
                         margin: {
                             t: 0,
@@ -389,7 +393,7 @@ export class ConnectivityPlot extends View<Refinement.Props> {
                                     hovertemplate: '<i>RMSD</i>: %{x:.3f}, <i>ED</i>: %{y:.3f}<br />%{text}',
                                     text: simPlotData.tags,
                                     textposition: 'top center',
-                                    type: 'scattergl',
+                                    type: 'scatter',
                                     showlegend: false,
                                 },
                                 {
@@ -400,7 +404,7 @@ export class ConnectivityPlot extends View<Refinement.Props> {
                                     hovertemplate: '<i>RMSD</i>: %{x:.3f}, <i>ED</i>: %{y:.3f}<br />%{text}',
                                     text: simPlotData.tagsSel,
                                     textposition: 'top center',
-                                    type: 'scattergl',
+                                    type: 'scatter',
                                     showlegend: false,
                                 },
                                 {
@@ -411,7 +415,7 @@ export class ConnectivityPlot extends View<Refinement.Props> {
                                     hovertemplate: '<i>RMSD</i>: %{x:.3f}, <i>ED</i>: %{y:.3f}<br />%{text}',
                                     text: simPlotData.tagsComputed,
                                     textposition: 'top center',
-                                    type: 'scattergl',
+                                    type: 'scatter',
                                     showlegend: false,
                                 },
                             ]}
@@ -419,8 +423,8 @@ export class ConnectivityPlot extends View<Refinement.Props> {
                                 autosize: true,
                                 dragmode: 'pan',
                                 hovermode: 'closest',
-                                xaxis: { title: 'Cartesian RMSD [Å]', automargin: true },
-                                yaxis: { title: 'Euclidean distance', automargin: true },
+                                xaxis: { title: { text: 'Cartesian RMSD [Å]' }, automargin: true },
+                                yaxis: { title: { text: 'Euclidean distance' }, automargin: true },
                                 plot_bgcolor: 'white',
                                 paper_bgcolor: 'white',
                                 margin: {

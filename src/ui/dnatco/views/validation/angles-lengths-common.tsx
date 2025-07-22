@@ -350,7 +350,7 @@ export class AveragesChart extends React.Component<{
             dragmode: "pan",
             hovermode: "closest",
             margin: { t: 0, l: 0, b: 45, r: 0 },
-            xaxis: { title: this.props.xTitle, range: xRange },
+            xaxis: { title: { text: this.props.xTitle }, range: xRange },
             yaxis: { showticklabels: false },
             plot_bgcolor: "white",
             paper_bgcolor: "white",
