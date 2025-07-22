@@ -146,6 +146,7 @@ function sharedConfig(productionBuild, outDir, extraConfig) {
                     ],
                 },
             ],
+            ...(extraConfig.module ?? {}),
         },
         plugins: [
             new CssMinimizerPlugin(),
@@ -201,10 +202,19 @@ function sharedConfig(productionBuild, outDir, extraConfig) {
 };
 
 function createApp(name, productionBuild, outDir, extraConfig) {
-    if (productionBuild)
+    if (productionBuild) {
         console.log('Building for production...');
-    else
+
+        // Some modules are stupid and don't work with Webpack correctly
+        extraConfig.module = { ...extraConfig.module, parser: {
+            javascript: {
+                importExportsPresence: 'warn',
+            }
+        } };
+    } else
         console.log('Building for development');
+
+    console.log(extraConfig);
 
     return {
         node: false,
