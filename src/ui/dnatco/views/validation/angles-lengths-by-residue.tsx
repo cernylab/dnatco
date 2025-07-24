@@ -13,8 +13,7 @@ import {
 import { AnglesLengthsDisplayOrder } from "./angles-lengths-display-order";
 import { View } from "../view";
 import { SearchBox } from "../../search-box";
-import { Common, DownloadButtonComponent } from "../../common";
-import { arrowDown, arrowDownHover } from "../../../../assets/images";
+import { Common } from "../../common";
 import { colorStyle, scrollIntoViewIfNeeded } from "../../../util";
 import { CollapsibleVertical } from "../../../common/collapsible-vertical";
 import { ComboBox } from "../../../common/combo-box";
@@ -23,7 +22,6 @@ import { IconButton } from "../../../common/push-button";
 import { SpinBox } from "../../../common/spin-box";
 import { Window } from "../../../common/window";
 import { MagnifyingGlassImg, TriangleDownImg } from "../../../../assets/images";
-import { doDownload, Downloader } from "../../../../browser-util/downloader";
 import { ALM } from "../../../../dnatco/alm";
 import { Dnatcofication } from "../../../../dnatco/dnatcofication";
 import { AnglesLengths as DAnglesLengths } from "../../../../dnatco/angles-lengths";
@@ -31,7 +29,6 @@ import { tripletTag, Triplet } from "../../../../dnatco/angles-lengths/angles";
 import { ByResidueHelpers } from "../../../../dnatco/angles-lengths/helpers";
 import { pairTag, Pair } from "../../../../dnatco/angles-lengths/lengths";
 import { Measurements } from "../../../../dnatco/angles-lengths/measurements";
-import { SerializeByResidue } from "../../../../dnatco/angles-lengths/serialize";
 import { Summarize } from "../../../../dnatco/angles-lengths/summarize";
 import { GlobalConfig } from "../../../../global-config";
 import { parseIntStrict, sequence } from "../../../../util";
@@ -43,7 +40,6 @@ import {
   ColorTuple,
   Rgba,
 } from "../../../../util/colors";
-import { FileTypes } from "../../../../util/file-type";
 import { EventsKeeper } from "../../../../util/events-keeper";
 import { M } from "../../../../util/math";
 import {
@@ -51,43 +47,6 @@ import {
   StructureSelection,
 } from "../../../../util/structure-selection";
 import { ViewerInterop, ViewerApi } from "../../../../viewer/viewer-interop";
-
-type StatsDownloader = Downloader<{
-  residues: Measurements.Residue[];
-  counts: {
-    angles: Summarize.CountsInGroup[];
-    lengths: Summarize.CountsInGroup[];
-  };
-  stats: ALM.ResidueStats[];
-}>;
-const StatsDownloaders = [
-  {
-    caption: "CSV",
-    download: function (fileNameStem, data) {
-      const text = SerializeByResidue.toCsv(
-        data.counts.angles,
-        data.counts.lengths,
-        data.residues,
-        data.stats
-      );
-      doDownload(fileNameStem, text, this.fileType);
-    },
-    fileType: FileTypes.csv,
-  },
-  {
-    caption: "JSON",
-    download: function (fileNameStem, data) {
-      const text = SerializeByResidue.toJson(
-        data.counts.angles,
-        data.counts.lengths,
-        data.residues,
-        data.stats
-      );
-      doDownload(fileNameStem, text, this.fileType);
-    },
-    fileType: FileTypes.json,
-  },
-] as StatsDownloader[];
 
 function makeAngleDetails(props: ResidueDetailsProps) {
   const displayOrder =
@@ -484,45 +443,12 @@ function BondLengthDetails(props: {
   );
 }
 
-function DownloadButtons(props: {
-  counts: {
-    angles: Summarize.CountsInGroup[];
-    lengths: Summarize.CountsInGroup[];
-  };
-  downloaders: StatsDownloader[];
-  fileName: string;
-  residues: Measurements.Residue[];
-  stats: ALM.ResidueStats[];
-}) {
-  return (
-    <div className="flex flex-col -ml-2">
-      {props.downloaders.map((dl, idx) => (
-        <DownloadButtonComponent
-          key={idx}
-          defaultImage={arrowDown as string}
-          hoverImage={arrowDownHover as string}
-          title={dl.caption}
-          onClick={(e) => {
-            e.stopPropagation();
-            dl.download(props.fileName, {
-              residues: props.residues,
-              counts: props.counts,
-              stats: props.stats,
-            });
-          }}
-        />
-      ))}
-    </div>
-  );
-}
-
 export function OverallStatsBar(props: {
   children: React.ReactNode;
   counts: {
     angles: Summarize.CountsInGroup[];
     lengths: Summarize.CountsInGroup[];
   };
-  downloaders: StatsDownloader[];
   name: string;
   residues: Measurements.Residue[];
   stats: ALM.ResidueStats[];
@@ -538,13 +464,6 @@ export function OverallStatsBar(props: {
       }}
     >
       {props.children}
-      <DownloadButtons
-        counts={props.counts}
-        downloaders={props.downloaders}
-        fileName={`${props.name}angles_lenghts_by_residue`}
-        residues={props.residues}
-        stats={props.stats}
-      />
     </div>
   );
 }
@@ -663,7 +582,6 @@ function ResidueHeader(props: {
 
       <OverallStatsBar
         counts={{ angles: props.countsAngles, lengths: props.countsLengths }}
-        downloaders={StatsDownloaders}
         name={AnglesLengthsCommon.residueIdentifyingName(
           props.structureName,
           r
@@ -671,7 +589,7 @@ function ResidueHeader(props: {
         residues={[props.residue]}
         stats={[props.stats]}
       >
-        <div className="flex flex-col">
+        <div className="flex flex-col h-20">
           <div className="flex flex-1">
             {AnglesLengthsCommon.renderSubstructureStats(
               props.winTracker,
@@ -1410,7 +1328,6 @@ export class AnglesLengthsByResidue extends View<
         </div>
         <OverallStatsBar
           counts={{ angles: countsAngles, lengths: countsLenghts }}
-          downloaders={StatsDownloaders}
           name={AnglesLengthsCommon.selectionName(
             this.props.dnatcofication,
             multipleModels,
@@ -1420,7 +1337,7 @@ export class AnglesLengthsByResidue extends View<
           residues={selectedResidues}
           stats={selectedResidueStats}
         >
-          <div className="flex flex-col">
+          <div className="flex flex-col h-20">
             <div className="flex flex-1">
               {AnglesLengthsCommon.renderSubstructureStats(
                 this.winTracker,

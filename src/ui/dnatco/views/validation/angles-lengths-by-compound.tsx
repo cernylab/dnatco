@@ -11,22 +11,16 @@ import {
 } from "./angles-lengths-common";
 import { AnglesLengthsDisplayOrder } from './angles-lengths-display-order';
 import { View } from "../view";
-import { Common, DownloadButtonComponent } from "../../common";
-import {
-  arrowDown,
-  arrowDownHover,
-  TriangleDownImg,
-} from "../../../../assets/images";
+import { Common } from "../../common";
+import { TriangleDownImg } from "../../../../assets/images";
 import { CollapsibleVertical } from "../../../common/collapsible-vertical";
 import { Window } from "../../../common/window";
 import { colorStyle } from "../../../util";
-import { doDownload, Downloader } from "../../../../browser-util/downloader";
 import { ALM, ALMCompoundAngleLength } from "../../../../dnatco/alm";
 import { AnglesLengths as DAnglesLengths } from "../../../../dnatco/angles-lengths";
 import { tripletTag, Triplet } from "../../../../dnatco/angles-lengths/angles";
 import { pairTag, Pair } from "../../../../dnatco/angles-lengths/lengths";
 import { Measurements } from "../../../../dnatco/angles-lengths/measurements";
-import { SerializeByCompound } from "../../../../dnatco/angles-lengths/serialize";
 import { Summarize } from "../../../../dnatco/angles-lengths/summarize";
 import { Dnatcofication } from "../../../../dnatco/dnatcofication";
 import { Residues } from "../../../../dnatco/residues";
@@ -40,7 +34,6 @@ import {
   type ColorTuple,
   Rgba,
 } from "../../../../util/colors";
-import { FileTypes } from "../../../../util/file-type";
 import { EventsKeeper } from "../../../../util/events-keeper";
 import { M } from "../../../../util/math";
 import {
@@ -75,36 +68,6 @@ function DownloadableData(
   };
 }
 
-type StatsDownloader = Downloader<DownloadableData>;
-const StatsDownloaders = [
-  {
-    caption: "CSV",
-    download(fileNameStem, data) {
-      const text = SerializeByCompound.toCsv(
-        data.angles,
-        data.countsAngles,
-        data.lengths,
-        data.countsLengths
-      );
-      doDownload(fileNameStem, text, this.fileType);
-    },
-    fileType: FileTypes.csv,
-  },
-  {
-    caption: "JSON",
-    download(fileNameStem, data) {
-      const text = SerializeByCompound.toJson(
-        data.angles,
-        data.countsAngles,
-        data.lengths,
-        data.countsLengths
-      );
-      doDownload(fileNameStem, text, this.fileType);
-    },
-    fileType: FileTypes.json,
-  },
-] as StatsDownloader[];
-
 function getSelection(
   alm: ALMCompoundAngleLength,
   modelNum: number,
@@ -133,37 +96,12 @@ function makeLengthDownloadableData(
   return DownloadableData({}, [], lengths, counts);
 }
 
-function DownloadButtons(props: {
-  downloadableData: DownloadableData;
-  downloaders: StatsDownloader[];
-  fileName: string;
-}) {
-  return (
-    <div className="flex flex-col -ml-2">
-      {props.downloaders.map((dl, idx) => (
-        <DownloadButtonComponent
-          key={idx}
-          defaultImage={arrowDown as string}
-          hoverImage={arrowDownHover as string}
-          title={dl.caption}
-          onClick={(e) => {
-            e.stopPropagation();
-            dl.download(props.fileName, props.downloadableData);
-          }}
-        />
-      ))}
-    </div>
-  );
-}
-
 function OverallStatsBar(props: {
   children: React.ReactNode;
   counts: {
     angles: Summarize.CountsInGroup[];
     lengths: Summarize.CountsInGroup[];
   };
-  downloadableData: DownloadableData;
-  downloaders: StatsDownloader[];
   name: string;
   style?: StandardLonghandProperties;
 }) {
@@ -177,11 +115,6 @@ function OverallStatsBar(props: {
       }}
     >
       {props.children}
-      <DownloadButtons
-        downloadableData={props.downloadableData}
-        downloaders={props.downloaders}
-        fileName={`${props.name}angles_lenghts_by_compound`}
-      />
     </div>
   );
 }
@@ -232,13 +165,10 @@ function Base<T extends ALM.AngleStats | ALM.LengthStats>(props: {
     );
   }
 
-  const dlStats = { [props.base]: props.stats };
-  const dlCounts = Summarize.countsInGroups(props.stats.overall);
-
   return (
     <CollapsibleVertical
       header={AnglesLengthsCommon.makeCollapsibleHeader(
-        <div className="flex">
+        <div className="flex h-20">
           {AnglesLengthsCommon.renderSubstructureStats(
             props.winTracker,
             props.base,
@@ -247,11 +177,6 @@ function Base<T extends ALM.AngleStats | ALM.LengthStats>(props: {
             Summarize.countsInGroups(props.stats.overall),
             props.colorsForCounts
           )}
-          <DownloadButtons
-            downloadableData={props.dlMaker(dlStats, dlCounts)}
-            downloaders={StatsDownloaders}
-            fileName={`${props.structureName}_${props.base}_by_compound`}
-          />
         </div>
       )}
     >
@@ -400,26 +325,11 @@ function Metric<T extends ALM.AngleStats | ALM.LengthStats>(props: {
       />
     );
 
-  const dlData: DownloadableData =
-    props.stats.type === "angle"
-      ? {
-          angles: [props.stats.individual as ALM.AngleStats],
-          countsAngles: Summarize.countsInGroups(props.stats.overall),
-          lengths: [],
-          countsLengths: [],
-        }
-      : {
-          angles: [],
-          countsAngles: [],
-          lengths: [props.stats.individual as ALM.LengthStats],
-          countsLengths: Summarize.countsInGroups(props.stats.overall),
-        };
-
   return (
     <CollapsibleVertical
       style={{ width: "100%" }}
       header={AnglesLengthsCommon.makeCollapsibleHeader(
-        <div className="flex flex-row gap-1">
+        <div className="flex flex-row gap-1 h-20">
           {AnglesLengthsCommon.renderSubstructureStats(
             props.winTracker,
             <div className="font-700">
@@ -430,13 +340,6 @@ function Metric<T extends ALM.AngleStats | ALM.LengthStats>(props: {
             Summarize.countsInGroups(props.stats.overall),
             props.colorsForCounts
           )}
-          <DownloadButtons
-            downloadableData={dlData}
-            downloaders={StatsDownloaders}
-            fileName={`${props.structureName}_${
-              props.base
-            }_${props.stats.identifier.join("-")}_by_compound`}
-          />
         </div>
       )}
       ref={collapsibleRef}
@@ -1035,13 +938,6 @@ export class AnglesLengthsByCompound extends View<View.Props> {
         </div>
         <OverallStatsBar
           counts={{ angles: countsAngles, lengths: countsLengths }}
-          downloadableData={DownloadableData(
-            selected.angles,
-            countsAngles,
-            selected.lengths,
-            countsLengths
-          )}
-          downloaders={StatsDownloaders}
           name={AnglesLengthsCommon.selectionName(
             this.props.dnatcofication,
             multipleModels,
@@ -1049,7 +945,7 @@ export class AnglesLengthsByCompound extends View<View.Props> {
             chain
           )}
         >
-          <div className="flex flex-col">
+          <div className="flex flex-col h-20">
             <div className="flex flex-1">
               {AnglesLengthsCommon.renderSubstructureStats(
                 this.winTracker,
