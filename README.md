@@ -291,3 +291,7 @@ ReDNATCO can be configured with a JSON configuration file. The file must be name
 #### Note about configuration
 Mind that the JSON format **does not** support comments and the annotated example above **is not** a valid JSON file. Unless specifically overridden in the configuration file,
 ReDNATCO will use sensible defaults for all configuration options. It is not necessary to list every single option in your configuration file, override only the options that you need.
+
+Citation
+---
+If you use this Software in a scientific or academic work, you must cite the paper(s) listed in the "CITATION.txt" file that accompanies the Software. The citation(s) should be included in all academic and scientific publications, presentations, or derivative works that make use of this Software.
