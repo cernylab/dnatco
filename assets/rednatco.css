@@ -176,6 +176,10 @@ img.rdo-autosized {
   object-fit: cover;
 }
 
+img.column-sort-button {
+  display: inline-block;
+}
+
 input {
   appearance: none;
   -moz-appearance: none;
@@ -273,6 +277,10 @@ td.rdo-angles-lengths {
 
 tr.rdo-angles-lengths:hover {
   background-color: var(--color-c);
+}
+
+th.data-table {
+    padding: 0.2em;
 }
 
 .rdo-unassigned-ntc {

@@ -309,7 +309,7 @@ export class DynamicTable extends React.Component<
           style={col.headerStyle}
           key={idx}
         >
-          <div>
+          <div className="flex items-center justify-center">
             {this.renderColumnCaption(col)}
             {"\u00A0"}
             {col.notSortable ? undefined : (
