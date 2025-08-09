@@ -255,7 +255,7 @@ class Stats extends React.Component<{
               const clr = GappedSemaphore.toSemaphore(v, green, red, GSMapping);
 
               return (
-                <div className="flex">
+                <div className="flex" key={idx}>
                   <div>Bellow</div>
                   <div
                     key={idx}
