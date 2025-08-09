@@ -40,8 +40,10 @@ export class ViewerInterop {
 
         for (let attempt = 0; attempt < 5; attempt++) {
             //@ts-ignore
-            if (!molstar || !molstar.ReDNATCOMspApi)
+            if (!molstar || !molstar.ReDNATCOMspApi) {
                 await sleep(250);
+                continue;
+            }
 
             //@ts-ignore
             this._api = molstar.ReDNATCOMspApi.init(
@@ -79,6 +81,9 @@ export class ViewerInterop {
                     hydrogensInReferences: options.hydogensInReferences ?? false,
                 }
             );
+
+            // If we get here, the Viewer can be assumed to be initialized
+            break;
         }
 
         if (!this._api)
