@@ -5,8 +5,8 @@ import { SideSwitchingPanel } from './common/side-switching-panel';
 import { CasLogoImg, IbtLogoImg } from '../assets/images';
 import { ConformersFile } from '../assets/misc';
 import { about, annotation, browse, home, refinement, validation } from '../help-tags';
-import { useLocation } from 'react-router';
-import { useState, useEffect } from 'react';
+import { useLocation, useNavigate, useParams } from 'react-router';
+import { useState, useEffect, useMemo } from 'react';
 import { ReactNode } from 'react';
 
 const Tabs = [
@@ -118,17 +118,23 @@ function Downloads() {
 }
 
 function Help() {
-    const { state } = useLocation() as { state?: { scrollTo?: string } };
+  const location = useLocation();
+  const navigate = useNavigate();
+  const topic = location.hash ? location.hash.slice(1) : undefined;
 
-    useEffect(() => {
-        if (!state?.scrollTo) return;
+  useEffect(() => {
+    if (!topic) return;
 
-        setTimeout(() => {
-        document
-            .getElementById(state.scrollTo!)
-            ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    const el = document.getElementById(topic);
+    if (el) {
+        const t = setTimeout(() => {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }, 100);
-    }, [state]);
+        return () => clearTimeout(t);
+    } else {
+        navigate('/app/about/help', { replace: true });
+    }
+}, [location.hash, navigate]);
 
     const displayAbout = about.map(page => ({
         headline: page.headline,
@@ -477,48 +483,64 @@ function VersionHistory() {
     );
 }
 
-interface State {
-    selected: typeof Tabs[number][0];
-}
+type Section = typeof Tabs[number][0];
+
 const AboutTab: React.FC = () => {
+    const { section } = useParams<{ section?: string }>();
+    const location = useLocation();
+    const navigate = useNavigate();
+    
+    const [selected, setSelected] = useState<string>('help');
 
-        const location = useLocation();
-        const [state, setState] = useState<State>({ selected: 'help' });
+    const validIds = useMemo(() => new Set<Section>(Tabs.map(([id]) => id)), []);
 
-        useEffect(() => {
-            const selectedTab = location?.state?.selectedTab || 'help';
-            setState({ selected: selectedTab });
-          }, [location]);
+    useEffect(() => {
+        if (!section || !validIds.has(section as Section)) {
+            navigate(
+                { pathname: '/app/about/help', hash: location.hash || undefined },
+                { replace: true }
+            );
+            setSelected('help');
+        } else {
+            setSelected(section as Section);
+        }
+    }, [section, navigate, validIds, location.hash]);
 
     const renderTab = () => {
-        switch (state.selected) {
+        switch (section) {
         case 'contact': return <Contact />;
         case 'resources': return <Downloads />;
         case 'help': return <Help />;
         case 'how-to-cite': return <HowToCite />;
         case 'version-history': return <VersionHistory />;
+        default:
+            return <Help />;
         }
     }
 
-        return (
-            <div className='rdo-offset'>
-                    <div className='rdo-screen-with-side-panel overflow-hidden h-full flex flex-col'>
-                        <SideSwitchingPanel
-                            items={Tabs}
-                            selectedItemId={state.selected}
-                            onSwitched={id => setState({ ...state, selected: id})}
-                        />
-                        <div className='flex flex-col overflow-hidden rdo-offset'>
-                            <div className=' text-22px uppercase font-700 mb-4'>
-                                {Tabs.find((tab) => tab[0] === state.selected)![1].caption}
-                            </div>
-                            <div className='overflow-hidden rdo-scroll-vertically'>
-                                {renderTab()}
-                            </div>
+      const sectionLabel = selected
+        .replace(/[-_]+/g, ' ')
+        .replace(/^./, c => c.toUpperCase());
+
+    return (
+        <div className='rdo-offset'>
+                <div className='rdo-screen-with-side-panel overflow-hidden h-full flex flex-col'>
+                    <SideSwitchingPanel
+                        items={Tabs}
+                        selectedItemId={selected}
+                        onSwitched={id => navigate({ pathname: `/app/about/${id}`, hash: location.hash || undefined })}
+                    />
+                    <div className='flex flex-col overflow-hidden rdo-offset'>
+                        <div className=' text-22px uppercase font-700 mb-4'>
+                            {sectionLabel}
+                        </div>
+                        <div className='overflow-hidden rdo-scroll-vertically'>
+                            {renderTab()}
                         </div>
                     </div>
-            </div>
-        );
+                </div>
+        </div>
+    );
 }
 
 export default AboutTab;

@@ -45,6 +45,10 @@ function sharedConfig(productionBuild, outDir, extraConfig) {
             static: {
                 directory: path.join(__dirname, outDir),
             },
+            historyApiFallback: {
+                index: '/index.html',
+                disableDotRule: true
+            },
             compress: false,
             port: 8118,
         },
@@ -222,7 +226,8 @@ function createApp(name, productionBuild, outDir, extraConfig) {
         },
         output: {
             filename: `${name}[chunkhash].js`,
-            path: path.resolve(__dirname, outDir)
+            path: path.resolve(__dirname, outDir),
+            publicPath: '/'
         },
         ...sharedConfig(productionBuild, outDir, extraConfig),
     };
