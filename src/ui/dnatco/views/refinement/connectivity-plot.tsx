@@ -167,7 +167,7 @@ export class ConnectivityPlot extends View<Refinement.Props> {
                             y: data.ySel,
                             marker: { size: 14, color: data.colorsSel, symbol: 'x' },
                             mode: 'text+markers',
-                            hovertemplate: '<i>RMSD</i>: %{x:.3f}, <i>ED</i>: %{y:.3f}<br />%{text}',
+                            hovertemplate: '<i>C5</i>: %{x:.3f}, <i>O3</i>: %{y:.3f}<br />%{text}',
                             text: data.tagsSel,
                             textposition: 'top center',
                             type: 'scatter',
@@ -178,7 +178,7 @@ export class ConnectivityPlot extends View<Refinement.Props> {
                             y: data.yComputed,
                             marker: { size: 14, color: data.colorsComputed, symbol: 'square' },
                             mode: 'text+markers',
-                            hovertemplate: '<i>RMSD</i>: %{x:.3f}, <i>ED</i>: %{y:.3f}<br />%{text}',
+                            hovertemplate: '<i>C5</i>: %{x:.3f}, <i>O3</i>: %{y:.3f}<br />%{text}',
                             text: data.tagsComputed,
                             textposition: 'top center',
                             type: 'scatter',
@@ -190,22 +190,20 @@ export class ConnectivityPlot extends View<Refinement.Props> {
                         dragmode: 'pan',
                         hovermode: 'closest',
                         xaxis: {
-                            range: [
-                                Constants.DefaultConnectivityXRange[0],
-                                hints[0],
-                            ],
                             title: {
                                 text: 'C5 distance [Å]',
-                            }
+                            },
+                            range: [0, 2],
+                            zeroline: true,
+                            automargin: true
                         },
                         yaxis: {
-                            range: [
-                                Constants.DefaultConnectivityYRange[0],
-                                hints[1],
-                            ],
                             title: {
                                 text: 'O3 distance [Å]',
                             },
+                            range: [0, 3],
+                            zeroline: true,
+                            automargin:true
                         },
                         margin: {
                             t: 0,
