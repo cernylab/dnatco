@@ -120,7 +120,7 @@ function Downloads() {
 function Help() {
   const location = useLocation();
   const navigate = useNavigate();
-  const topic = location.hash ? location.hash.slice(1) : undefined;
+  const topic = location.hash ? location.hash.slice(1) : '';
 
   useEffect(() => {
     if (!topic) return;
@@ -497,7 +497,7 @@ const AboutTab: React.FC = () => {
     useEffect(() => {
         if (!section || !validIds.has(section as Section)) {
             navigate(
-                { pathname: '/app/about/help', hash: location.hash || undefined },
+                { pathname: '/app/about/help', hash: location.hash || '' },
                 { replace: true }
             );
             setSelected('help');
@@ -528,7 +528,7 @@ const AboutTab: React.FC = () => {
                     <SideSwitchingPanel
                         items={Tabs}
                         selectedItemId={selected}
-                        onSwitched={id => navigate({ pathname: `/app/about/${id}`, hash: location.hash || undefined })}
+                        onSwitched={id => navigate({ pathname: `/app/about/${id}`, hash: '' })}
                     />
                     <div className='flex flex-col overflow-hidden rdo-offset'>
                         <div className=' text-22px uppercase font-700 mb-4'>
