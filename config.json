@@ -40,11 +40,11 @@
     ],
     "anglesLengths": {
         "chartMarkerColor": "#000000",
-        "outlierColor": "#ff0000",
-        "navalMarkerColor": "#03b900",
+        "outlierColor": "#ff8a89",
+        "navalMarkerColor": "#6D74FF",
         "pGroups": [
-            { "threshold": 98, "color": "#6D74FF" },
-            { "threshold": 99.9, "color": "#ffff00" }
+            { "threshold": 95, "color": "#a8ff8a" },
+            { "threshold": 99.9, "color": "#fffa8a" }
         ]
     },
     "displayedProductName": "DNATCO"

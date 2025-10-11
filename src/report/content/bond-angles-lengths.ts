@@ -3,13 +3,12 @@ import { Layout } from '../layout';
 import { Colors, Fonts, Tables } from '../styling';
 import { NTDocument } from '../nottex/document';
 import { NTFont, NTHAlignment, NTInset, NTTable } from '../nottex/primitives';
-import { NTRgba } from '../nottex/util';
 import { NTMm, NTUnit, NTXYWH } from '../nottex/space';
 import { Dnatcofication } from '../../dnatco/dnatcofication';
 import { AnglesLengths } from '../../dnatco/angles-lengths';
 import { ByResidueHelpers } from '../../dnatco/angles-lengths/helpers';
 import { Summarize } from '../../dnatco/angles-lengths/summarize';
-import { colorToRgb, nrgb } from '../../util/colors';
+import { colorToRgb, nrgb, nrgba, NRgba } from '../../util/colors';
 import { InvalidChain } from '../../util/structure-selection';
 
 const Monospace = { ...Fonts.Default, family: 'monospace' } as NTFont;
@@ -19,8 +18,7 @@ function drawBarSegment(inset: NTInset, x: number, w: number, totalWidth: NTUnit
     const ntX = NTUnit.multiply(x, totalWidth);
     const ntW = NTUnit.multiply(w, totalWidth);
 
-    const nc = nrgb(colorToRgb(clr));
-    const color = NTRgba(nc.r, nc.g, nc.b);
+    const color = nrgba(colorToRgb(clr));
     const xywh = NTXYWH.create(ntX, NTUnit.zero(), ntW, H);
     inset.rect(xywh, { color }, ref);
 }
@@ -66,7 +64,7 @@ function drawCountsBar<Output>(inset: NTInset, counts: Summarize.CountsInGroup[]
         {},
         `${tag}-${mIdx}`
     );
-    _inset.lineText(tag, { color: NTRgba(1, 1, 1), font: { size: 14, style: 'bold' } });
+    _inset.lineText(tag, { color: NRgba(1, 1, 1), font: { size: 14, style: 'bold' } });
 }
 
 function drawCountsTable<Output>(inset: NTInset | NTDocument<Output>, counts: Summarize.CountsInGroup[], tag: string, ctx: Report.Context<Output>) {
@@ -97,7 +95,7 @@ function drawCountsTable<Output>(inset: NTInset | NTDocument<Output>, counts: Su
         if (ctx.mode === 'textual')
             box.lineText(Colors.colorToGlyph(rectClr), {}, ref);
         else
-            box.rect(clrXywh, { color: NTRgba(rectNClr.r, rectNClr.g, rectNClr.b) }, ref);
+            box.rect(clrXywh, { color: NRgba(rectNClr.r, rectNClr.g, rectNClr.b) }, ref);
         box.lineText(c.threshold.toFixed(1), CountCellText, ref);
 
         tbl.addRow([
@@ -117,7 +115,7 @@ function drawCountsTable<Output>(inset: NTInset | NTDocument<Output>, counts: Su
     if (ctx.mode === 'textual')
         box.lineText(Colors.colorToGlyph(rectClr), {}, ref);
     else
-        box.rect(clrXywh, { color: NTRgba(rectNClr.r, rectClr.g, rectClr.b) }, ref);
+        box.rect(clrXywh, { color: NRgba(rectNClr.r, rectClr.g, rectClr.b) }, ref);
     box.lineText(outlierC.threshold.toFixed(1), CountCellText, ref);
 
     tbl.addRow([

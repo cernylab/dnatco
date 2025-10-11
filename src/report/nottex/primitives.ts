@@ -1,7 +1,8 @@
 import { PDFFont } from 'pdf-lib';
 import { NTPdf } from './pdf';
 import { NTMetric, NTMm, NTUnit, NTXYWH } from './space';
-import { NTerror, NTBlackColor, NTWhiteColor, NTRgba, NTHyperlinkColor } from './util';
+import { NTerror, NTBlackColor, NTWhiteColor, NTHyperlinkColor } from './util';
+import { NRgba } from '../../util/colors';
 
 export type NTHAlignment = 'left' | 'center' | 'right';
 export type NTVAlignment = 'top' | 'center' | 'bottom';
@@ -22,7 +23,7 @@ export function NTFont(family: NTFont['family'], style: NTFont['style'], size: n
 }
 
 export type NTText = {
-    color: NTRgba,
+    color: NRgba,
     font: NTFont,
     hAlign: NTHAlignment,
 }
@@ -110,8 +111,8 @@ export type NTFramedLineText = {
 export namespace NTFramedLineText {
     export type Options = {
         border?: NTUnit | NTMetric,
-        borderColor?: NTRgba,
-        backgroundColor?: NTRgba | 'none',
+        borderColor?: NRgba,
+        backgroundColor?: NRgba | 'none',
         hMargin?: NTUnit | NTMetric | 'fill',
         vMargin?: NTUnit | NTMetric,
         textHAlign?: NTHAlignment,
@@ -119,8 +120,8 @@ export namespace NTFramedLineText {
 
     export type Props = {
         border: NTUnit,
-        borderColor: NTRgba,
-        backgroundColor: NTRgba | 'none',
+        borderColor: NRgba,
+        backgroundColor: NRgba | 'none',
         hMargin: NTUnit | 'fill',
         vMargin: NTUnit,
         textHAlign: NTHAlignment,
@@ -297,14 +298,14 @@ export class NTInset implements NTPrimitive {
 export namespace NTInset {
     export type Options = {
         defaultFontSize?: number,
-        backgroundColor?: NTRgba | 'none',
+        backgroundColor?: NRgba | 'none',
         border?: NTMetric | NTUnit,
-        borderColor?: NTRgba,
+        borderColor?: NRgba,
     };
     export type Props = {
-        backgroundColor: NTRgba | 'none',
+        backgroundColor: NRgba | 'none',
         border: NTUnit,
-        borderColor: NTRgba,
+        borderColor: NRgba,
     };
 
     export function is(obj: NTAnyPrimitive): obj is NTInset {
@@ -357,7 +358,7 @@ export type NTLineText = {
 } & NTLineText.Props & NTPrimitive;
 export namespace NTLineText {
     export type Options = {
-        color?: NTRgba,
+        color?: NRgba,
         font?: Partial<NTFont>,
         hAlign?: NTHAlignment,
     };
@@ -406,7 +407,7 @@ export type NTParagraphText = {
 } & NTParagraphText.Props & NTPrimitive;
 export namespace NTParagraphText {
     export type Options = {
-        color?: NTRgba,
+        color?: NRgba,
         font?: Partial<NTFont>,
         hAlign? :NTHAlignment,
         lineSpacing?: number,
@@ -414,7 +415,7 @@ export namespace NTParagraphText {
         breakWords?: boolean,
     }
     export type Props = {
-        color: NTRgba,
+        color: NRgba,
         lineSpacing: number,
         dontSeparate: boolean,
         breakWords: boolean,
@@ -451,13 +452,13 @@ export type NTRect = {
 export namespace NTRect {
     export type Options = {
         border?: NTMetric | NTUnit;
-        borderColor?: NTRgba,
-        color?: NTRgba,
+        borderColor?: NRgba,
+        color?: NRgba,
     }
     export type Props = {
         border: NTUnit,
-        borderColor: NTRgba,
-        color: NTRgba | 'none',
+        borderColor: NRgba,
+        color: NRgba | 'none',
     };
 
     export function is(obj: NTAnyPrimitive): obj is NTRect {
@@ -523,7 +524,7 @@ export class NTTable implements NTPrimitive {
 export namespace NTTable {
     export type Options = {
         border?: NTUnit | NTMetric,
-        borderColor?: NTRgba,
+        borderColor?: NRgba,
         hAlign?: Props['hAlign'],
         padding?: {
             top?: NTUnit | NTMetric,
@@ -535,7 +536,7 @@ export namespace NTTable {
     }
     export type Props = {
         border: NTUnit,
-        borderColor: NTRgba,
+        borderColor: NRgba,
         hAlign: NTHAlignment | 'fill',
         padding: {
             top: NTUnit,
@@ -589,7 +590,7 @@ export namespace NTTable {
 
         export type Options = Partial<Props>;
         export type Props = {
-            backgroundColor: NTRgba | 'none',
+            backgroundColor: NRgba | 'none',
             colSpan: number,
             vAlign: NTVAlignment,
         };

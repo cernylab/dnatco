@@ -3,7 +3,6 @@ import { Colors, Fonts, Tables } from '../../styling';
 import { NTDocument } from '../../nottex/document';
 import { NTTable } from '../../nottex/primitives';
 import { NTUnit, NTXYWH } from '../../nottex/space';
-import { NTRgba } from '../../nottex/util';
 import { ALM } from '../../../dnatco/alm';
 import { Triplet } from '../../../dnatco/angles-lengths/angles';
 import { isShiftedName, unshiftName } from '../../../dnatco/angles-lengths/atoms';
@@ -12,7 +11,7 @@ import { Measurements } from '../../../dnatco/angles-lengths/measurements';
 import { ByResidueHelpers } from '../../../dnatco/angles-lengths/helpers';
 import { Pair } from '../../../dnatco/angles-lengths/lengths';
 import { AngstromSignChar } from '../../../util';
-import { colorToRgb, nrgb } from '../../../util/colors';
+import { colorToRgb, nrgba } from '../../../util/colors';
 import { M } from '../../../util/math';
 import { AnglesLengthsDisplayOrder } from '../../../ui/dnatco/views/validation/angles-lengths-display-order';
 
@@ -75,13 +74,12 @@ function drawAnglesLengths<Output, BL extends (Measurements.BondAngle | Measurem
 
     const xywh = NTXYWH.create(NTUnit.zero(), NTUnit.zero(), NTUnit.multiply(1, ctx.tDims.characterWidth), ctx.tDims.characterHeight);
     for (const al of angleLengthData) {
-        const rectClr = colorToRgb(al.pGroup?.color ?? AnglesLengths.outlierColor());
-        const rectNClr = nrgb(rectClr);
-        const ntrgba = NTRgba(rectNClr.r, rectNClr.g, rectNClr.b);
+        const rgb = colorToRgb(al.pGroup?.color ?? AnglesLengths.outlierColor());
+        const clr = nrgba(rgb);
 
         const clrCell = ctx.mode === 'textual'
-            ? NTTable.Cell.lineText(Colors.colorToGlyph(rectClr), tbl)
-            : NTTable.Cell.rect(xywh, { color: ntrgba });
+            ? NTTable.Cell.lineText(Colors.colorToGlyph(rgb), tbl)
+            : NTTable.Cell.rect(xywh, { color: clr });
         tbl.addRow([
             NTTable.Cell.lineText(residueName(al.residue), tbl),
             clrCell,

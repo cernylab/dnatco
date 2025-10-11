@@ -1,6 +1,6 @@
 import { rgb as pdfRgb, PDFDocument, PDFFont, PDFName, PDFPage, PDFString } from 'pdf-lib';
 import { NTCm, NTMm, NTUnit } from './space';
-import { NTRgba } from './util';
+import { NRgba } from '../../util/colors';
 
 export const PDFUnit = 2.834645669291339;
 const PDFUnitToMmRatio = 1.0 / PDFUnit; // Internal PDF unit to millimeter ratio
@@ -53,7 +53,7 @@ export namespace NTPdf {
         return NTMm(pdm * PDFUnitToMmRatio);
     }
 
-    export function rgb(v: NTRgba) {
+    export function rgb(v: NRgba) {
         return pdfRgb(v.r, v.g, v.b);
     }
 
