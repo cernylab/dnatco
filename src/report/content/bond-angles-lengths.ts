@@ -109,13 +109,13 @@ function drawCountsTable<Output>(inset: NTInset | NTDocument<Output>, counts: Su
         ]);
     }
     const rectClr = colorToRgb(AnglesLengths.outlierColor());
-    const rectNClr = nrgb(rectClr);
+    const rectNClr = nrgba(rectClr);
     const box = tbl.getBox(boxXywh);
     const ref = `${tag}-outlier`;
     if (ctx.mode === 'textual')
         box.lineText(Colors.colorToGlyph(rectClr), {}, ref);
     else
-        box.rect(clrXywh, { color: NRgba(rectNClr.r, rectClr.g, rectClr.b) }, ref);
+        box.rect(clrXywh, { color: rectNClr }, ref);
     box.lineText(outlierC.threshold.toFixed(1), CountCellText, ref);
 
     tbl.addRow([

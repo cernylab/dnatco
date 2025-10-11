@@ -137,10 +137,10 @@ export function rgbToHex(rgb: Rgb | ColorTuple) {
 
 function isNormalized(c: NRgb | NRgba) {
     if (c.k === 'nrgb') {
-        if (c.r > 1.0 && c.g > 1.0 && c.b > 1.0) throw new Error(`NRgb color ${c} is not normalized`);
+        if (c.r > 1.0 || c.g > 1.0 || c.b > 1.0) throw new Error(`NRgb color [${c.r}, ${c.g}, ${c.b}] is not normalized`);
     }
 
     if (c.k === 'nrgba') {
-        if (c.r > 1.0 && c.g > 1.0 && c.b > 1.0 && c.a > 1.0) throw new Error(`NRgba color ${c} is not normalized`);
+        if (c.r > 1.0 || c.g > 1.0 || c.b > 1.0 || c.a > 1.0) throw new Error(`NRgba color [${c.r}, ${c.g}, ${c.b}, ${c.a}] is not normalized`);
     }
 }
