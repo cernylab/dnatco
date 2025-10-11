@@ -375,7 +375,7 @@ export class OverallQuality extends View<View.Props> {
               {AnglesLengthsCommon.renderSubstructureStats(
                 this.winTracker,
                 "Lengths",
-                AnglesLengthsCommon.substructureBarCaption("Lengths"),
+                AnglesLengthsCommon.substructureBarCaption("Lengths", DAnglesLengths.pGroupColor(0)),
                 overallLengths,
                 countsLengths,
                 htmlColorsForStatsBar
@@ -385,7 +385,7 @@ export class OverallQuality extends View<View.Props> {
               {AnglesLengthsCommon.renderSubstructureStats(
                 this.winTracker,
                 "Angles",
-                AnglesLengthsCommon.substructureBarCaption("Angles"),
+                AnglesLengthsCommon.substructureBarCaption("Angles", DAnglesLengths.pGroupColor(0)),
                 overallAngles,
                 countsAngles,
                 htmlColorsForStatsBar

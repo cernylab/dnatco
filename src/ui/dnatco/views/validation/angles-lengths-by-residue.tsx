@@ -3,6 +3,7 @@ import React from "react";
 import { Subject, Subscription } from "rxjs";
 import {
   AnglesLengthsCommon,
+  ColorIsDarkThreshold,
   FloatingCue,
   NavalItem,
   PGroupSummary,
@@ -36,6 +37,7 @@ import {
   colorToRgb,
   colorToTuple,
   hexToRgb,
+  luminance,
   rgbToHex,
   ColorTuple,
   Rgba,
@@ -570,13 +572,31 @@ function ResidueHeader(props: {
   const tainerRef = React.useRef<HTMLDivElement>(null);
   const r = props.residue;
 
+  const lastLengthsColor = React.useMemo(() => {
+    let idx = props.countsLengths.length - 1;
+    for (; idx > 0; idx--) {
+      if (props.countsLengths[idx].exclusive > 0) break;
+    }
+
+    return DAnglesLengths.pGroupColor(idx);
+  }, [props.countsLengths]);
+  const lastAnglesColor = React.useMemo(() => {
+    let idx = props.countsAngles.length - 1;
+    for (; idx > 0; idx--) {
+      if (props.countsAngles[idx].exclusive > 0) break;
+    }
+
+    return DAnglesLengths.pGroupColor(idx);
+  }, [props.countsAngles]);
+
   return (
     <div
       className="relative w-full h-full"
       ref={tainerRef}
       id={props.residueIdentifyingName}
     >
-      <div className="text-white font-bold top-0 left-2 absolute z-1">
+        <div className={
+            `${luminance(DAnglesLengths.pGroupColor(0)) < ColorIsDarkThreshold ?  "text-white" : "" } font-bold top-0 left-2 absolute z-1`}>
         {props.caption}
       </div>
 
@@ -594,7 +614,7 @@ function ResidueHeader(props: {
             {AnglesLengthsCommon.renderSubstructureStats(
               props.winTracker,
               props.caption,
-              AnglesLengthsCommon.substructureBarCaption("L"),
+              AnglesLengthsCommon.substructureBarCaption("L", lastLengthsColor),
               props.summary.lengths,
               props.countsLengths,
               props.colorsForStatsBar,
@@ -605,7 +625,7 @@ function ResidueHeader(props: {
             {AnglesLengthsCommon.renderSubstructureStats(
               props.winTracker,
               props.caption,
-              AnglesLengthsCommon.substructureBarCaption("A"),
+              AnglesLengthsCommon.substructureBarCaption("A", lastAnglesColor),
               props.summary.angles,
               props.countsAngles,
               props.colorsForStatsBar,
@@ -1342,7 +1362,7 @@ export class AnglesLengthsByResidue extends View<
               {AnglesLengthsCommon.renderSubstructureStats(
                 this.winTracker,
                 "Lengths",
-                AnglesLengthsCommon.substructureBarCaption("Lengths"),
+                AnglesLengthsCommon.substructureBarCaption("Lengths", DAnglesLengths.pGroupColor(0)),
                 summary.lengths,
                 countsLenghts,
                 htmlColorsForStatsBar
@@ -1352,7 +1372,7 @@ export class AnglesLengthsByResidue extends View<
               {AnglesLengthsCommon.renderSubstructureStats(
                 this.winTracker,
                 "Angles",
-                AnglesLengthsCommon.substructureBarCaption("Angles"),
+                AnglesLengthsCommon.substructureBarCaption("Angles", DAnglesLengths.pGroupColor(0)),
                 summary.angles,
                 countsAngles,
                 htmlColorsForStatsBar
