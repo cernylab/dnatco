@@ -21,7 +21,7 @@ export namespace Downloads {
     children: JSX.Element[] | JSX.Element;
   }) {
     return (
-      <div className="flex flex-row h-8">
+      <div className="flex items-center flex-row h-8">
         <EquiBox padding={0} orientation="row" gap="0.5em">
           {props.children}
         </EquiBox>

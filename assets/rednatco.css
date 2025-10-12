@@ -250,6 +250,7 @@ select {
   background: none;
   box-sizing: border-box;
   padding-left: 0.25em;
+  padding-right: 1rem;
 }
 
 option {

@@ -214,7 +214,7 @@ function RsccRmsdDownload(props: { d: Dnatcofication; structureName: string }) {
 
   if (availability.length === 0) {
     return (
-      <div className="flex flex-row gap-4 content-center">
+      <div className="flex items-center flex-row gap-4 content-center">
         Checking availability... <InProgressSpinner />{" "}
       </div>
     );
@@ -225,9 +225,7 @@ function RsccRmsdDownload(props: { d: Dnatcofication; structureName: string }) {
 
     return (
       <_Downloads.DownloadBox>
-        <div className="flex items-center h-full">
-          <div className="font-700">Model</div>
-        </div>
+        <div className="font-700">Model</div>
         <ComboBox
           options={toComboBoxOptions(modelOptions(props.d, true), (o) => ({
             caption: o.name,
@@ -440,7 +438,7 @@ export function Downloads(props: { dnatcofication: Dnatcofication }) {
                 Only residues with standard bases are measured.
               </div>
             </div>
-            <div className="flex">
+            <div className="flex items-center">
               <DownloadButtonComponent
                 title="CSV"
                 defaultImage={arrowDown as string}
@@ -475,7 +473,7 @@ export function Downloads(props: { dnatcofication: Dnatcofication }) {
                 Naval validation reports of nucleic acid structure quality.
               </div>
             </div>
-            <div className="flex">
+            <div className="flex items-center">
               <DownloadButtonComponent
                 title="Bond lengths"
                 defaultImage={arrowDown as string}
@@ -532,7 +530,7 @@ export function Downloads(props: { dnatcofication: Dnatcofication }) {
             />
           </div>
 
-          <div className="flex justify-between border-t-secondary-second border-t pt-3 mb-8">
+          <div className="flex items-center justify-between border-t-secondary-second border-t pt-3 mb-8">
             <div>
               <_Downloads.Title
                 title={`${
@@ -543,7 +541,7 @@ export function Downloads(props: { dnatcofication: Dnatcofication }) {
                 Comprehensive structure validation report.
               </div>
             </div>
-            <div className="flex">
+            <div className="flex items-center">
               <DownloadButtonComponent
                 title="PDF"
                 defaultImage={arrowDown as string}

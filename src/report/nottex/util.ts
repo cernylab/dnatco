@@ -1,21 +1,13 @@
 import { NTUnit, NTXYWH } from './space';
 import{ Logger } from '../../log/logger';
+import { NRgba } from '../../util/colors';
 
 const XName = '\u03BD\u03BF\u03C4TEX';
 
-export const NTBlackColor = NTRgba(0, 0, 0);
-export const NTHyperlinkColor = NTRgba(0.278, 0.651, 1);
-export const NTWhiteColor = NTRgba(1, 1, 1);
+export const NTBlackColor = NRgba(0, 0, 0, 0);
+export const NTHyperlinkColor = NRgba(0.278, 0.651, 1, 0);
+export const NTWhiteColor = NRgba(1, 1, 1, 0);
 
-export type NTRgba = {
-    r: number,
-    g: number,
-    b: number,
-    a: number,
-}
-export function NTRgba(r: number, g: number, b: number, a = 1): NTRgba {
-    return { r, g, b, a };
-}
 export function NTboundingRect<T extends number = NTUnit>(areas: NTXYWH<T>[]) {
     let x = Number.MAX_VALUE;
     let y = Number.MAX_VALUE;

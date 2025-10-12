@@ -75,7 +75,7 @@ export class ComboBox extends React.Component<ComboBox.Props> {
           ref={this.selRef}
           className={`${
             this.props.theme === "light" ? "text-primary-first" : "text-white"
-          } rdo-combobox`}
+          } rdo-combobox pr-2`}
           value={this.props.value}
           onChange={(e) => this.props.onChange(e.currentTarget.value)}
           style={{ ...DropdownArrowStyle }}
@@ -84,8 +84,7 @@ export class ComboBox extends React.Component<ComboBox.Props> {
           {this.props.options.map((o) => {
             return (
               <option key={o.value} value={o.value}>
-                {o.caption === "-" ? "Select" : o.caption}
-                {"\u00A0\u00A0"}
+                <div>{o.caption === "-" ? "Select" : o.caption}</div>
               </option>
             );
           })}

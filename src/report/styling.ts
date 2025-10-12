@@ -1,15 +1,14 @@
 import { NTFont, NTTable } from './nottex/primitives';
 import { NTUnit } from './nottex/space';
-import { NTRgba } from './nottex/util';
-import { luminance, nclr, Rgb, rgbToColor } from '../util/colors';
+import { luminance, nclr, rgbToColor, Rgb, NRgba } from '../util/colors';
 
 const LuminanceToChar = [' ', '░', '▒', '▓', '█' ];
 
 export type OutputMode = 'graphical' | 'textual';
 
 export namespace Colors {
-    export const SectionHeaderBg = NTRgba(nclr(187), nclr(187), nclr(187));
-    export const SectionHeaderFg = NTRgba(nclr(67), nclr(67), nclr(67));
+    export const SectionHeaderBg = NRgba(nclr(187), nclr(187), nclr(187));
+    export const SectionHeaderFg = NRgba(nclr(67), nclr(67), nclr(67));
 
     export function colorToGlyph(clr: Rgb) {
         const lum = luminance(rgbToColor(clr.r, clr.g, clr.b));

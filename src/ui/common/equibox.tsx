@@ -10,7 +10,7 @@ export function EquiBox(props: {
     const elems = Array.isArray(props.children) ? props.children : [props.children];
 
     return (
-        <div style={{ display: 'flex', flexDirection: props.orientation, gap }}>
+        <div style={{ display: 'flex', flexDirection: props.orientation, gap, justifyContent: 'center', alignItems: 'center' }}>
             {elems.map((item, idx) => <div key={idx}>{item}</div>)}
         </div>
     );

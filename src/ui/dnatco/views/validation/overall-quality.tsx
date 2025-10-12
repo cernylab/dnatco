@@ -23,7 +23,7 @@ import { SerializeByCompound } from "../../../../dnatco/angles-lengths/serialize
 import { FileTypes } from "../../../../util/file-type";
 import { objKeys } from "../../../../util";
 import { WindowsTracker } from "./angles-lengths-common";
-import { colorToRgb, rgbToHex } from "../../../../util/colors";
+import { colorToRgb, Rgb, rgbToHex } from "../../../../util/colors";
 import { Tooltip } from "../../../common/tooltip";
 import { tooltipImg } from "../../../../assets/images";
 
@@ -270,7 +270,7 @@ class Stats extends React.Component<{
             })}
           <div className="flex">
             <div>Over</div>
-            <div style={{ color: rgbToHex({ r: 255, g: 0, b: 0 }) }}>
+            <div style={{ color: rgbToHex(Rgb(255, 0, 0)) }}>
               {`\u00A0${this.props.rmsdStats[
                 this.props.rmsdStats.length - 2
               ].rmsdThreshold.toFixed(1)} Å :\u00A0${
@@ -375,7 +375,7 @@ export class OverallQuality extends View<View.Props> {
               {AnglesLengthsCommon.renderSubstructureStats(
                 this.winTracker,
                 "Lengths",
-                AnglesLengthsCommon.substructureBarCaption("Lengths"),
+                AnglesLengthsCommon.substructureBarCaption("Lengths", DAnglesLengths.pGroupColor(0)),
                 overallLengths,
                 countsLengths,
                 htmlColorsForStatsBar
@@ -385,7 +385,7 @@ export class OverallQuality extends View<View.Props> {
               {AnglesLengthsCommon.renderSubstructureStats(
                 this.winTracker,
                 "Angles",
-                AnglesLengthsCommon.substructureBarCaption("Angles"),
+                AnglesLengthsCommon.substructureBarCaption("Angles", DAnglesLengths.pGroupColor(0)),
                 overallAngles,
                 countsAngles,
                 htmlColorsForStatsBar
