@@ -1,7 +1,4 @@
 {
-
-    "useHashRouter": false,
-
     "previousStepColor": "#f0f",
     "currentStepColor": "#2f2",
     "nextStepColor": "#a0a",
