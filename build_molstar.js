@@ -68,6 +68,11 @@ function build_molstar(args) {
         throw new Error(`${molstarDir} is does not exist or it is not a directory`);
 
     runProcess('npm', ['install'], molstarDir);
+
+    // Build Tailwind CSS for molstar rednatco app
+    console.log('Building Tailwind CSS for molstar...');
+    runProcess('npx', ['@tailwindcss/cli', '-i', './src/apps/rednatco/input.css', '-o', './src/apps/rednatco/output.css'], molstarDir);
+
     runProcess('npm', ['run', 'build'], molstarDir);
     copyDist(molstarDir, baseDir);
 }
