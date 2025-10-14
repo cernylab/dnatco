@@ -35,7 +35,7 @@ export class ViewerInterop {
             throw new Error('Viewer is not initialized yet');
         return this._api;
     }
-    async bind(viewerContainerId: string, options: { highlightColor: string, highlightThickness: number, hydogensInReferences: boolean }) {
+    async bind(viewerContainerId: string, options: { highlightColor: string, highlightThickness: number, hydogensInReferences: boolean, basePairsLadder?: ViewerApi.Options['basePairsLadder'] }) {
         const highlightColor = options.highlightColor ? htmlColorAsNumber(options.highlightColor) : void 0;
 
         for (let attempt = 0; attempt < 5; attempt++) {
@@ -79,6 +79,7 @@ export class ViewerInterop {
                     highlightColor,
                     highlightThickness: options.highlightThickness,
                     hydrogensInReferences: options.hydogensInReferences ?? false,
+                    ...(options.basePairsLadder && { basePairsLadder: options.basePairsLadder }),
                 }
             );
 

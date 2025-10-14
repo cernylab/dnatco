@@ -47,5 +47,23 @@
             { "threshold": 99.9, "color": "#fffa8a" }
         ]
     },
+    "basePairsLadder": {
+        "barRadius": 0.5,
+        "barScale": 1.0,
+        "cWWBallRadius": 0.6,
+        "cisBallRadius": 0.6,
+        "transBallRadius": 1.2,
+        "unpairedBallRadius": 1.2,
+        "showPairs": true,
+        "showUnpaired": true,
+        "showUnpairedBall": false,
+        "showcWWBall": true,
+        "showCisBall": true,
+        "showTransBall": true,
+        "showBrick": true,
+        "brickLength": 4.0,
+        "brickWidth": 2.0,
+        "brickHeight": 0.6
+    },
     "displayedProductName": "DNATCO"
 }

@@ -546,6 +546,7 @@ export function MainScreen(props: {
         highlightColor: GlobalConfig.data().highlightColor,
         highlightThickness: GlobalConfig.data().highlightThickness,
         hydogensInReferences: GlobalConfig.data().showHydrogensInReferences,
+        basePairsLadder: GlobalConfig.data().basePairsLadder,
       })
       .then(() => {
         subs.push(
