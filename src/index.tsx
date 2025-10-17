@@ -4,7 +4,6 @@ import {
   useLocation,
   useNavigate,
   BrowserRouter,
-  HashRouter,
   Navigate,
   Routes,
   Route,
@@ -57,7 +56,6 @@ import { BackgroundWorker, WorkerMessage } from "./tasks/worker";
 import { ViewerInterop } from "./viewer/viewer-interop";
 import { Task } from "./tasks/task";
 import { objKeys } from "./util";
-import RouterBridge from "./ui/common/router-bridge"
 
 import "assets/rednatco.css";
 import "assets/output.css";
@@ -658,7 +656,10 @@ function App(props: { initial: Initial }) {
               }
             />
             <Route path="list-of-conformers" element={<ConformersTab />} />
-            <Route path="about" element={<AboutTab />} />
+            <Route path="about" element={<AboutTab/>} >
+              <Route index element={<Navigate to="help" replace />} />
+              <Route path=":section" element={<AboutTab/>} />
+            </Route>
             <Route path="dnatco">
               <Route
                 path="annotation/*"
@@ -731,8 +732,8 @@ function InitializationError(props: { e: Error }) {
 
 async function bootstrap() {
   const config = await GlobalConfig.fetchConfigFile();
-
   const root = RDC.createRoot(document.getElementById("app")!);
+  
   try {
     const configData = GlobalConfig.load(config);
     for (const db of configData.userDatabases) UserRemoteDatabases.add(db);
@@ -754,18 +755,11 @@ async function bootstrap() {
       search: window.location.search,
     };
 
-    const app = configData.useHashRouter ? (
-      <HashRouter>
-        <App initial={initial} />
-      </HashRouter>
-    ) : (
+    root.render(
       <BrowserRouter>
-        <RouterBridge />
         <App initial={initial} />
       </BrowserRouter>
     );
-
-    root.render(app);
   } catch (e) {
     root.render(<InitializationError e={e as Error} />);
   }

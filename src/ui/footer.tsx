@@ -2,64 +2,49 @@ import * as React from 'react';
 import { Email } from './common/email';
 import { ElixirLogoImg, IbtLogoImg } from '../assets/images';
 import { Globals } from '../globals'; 
-import { useNavigate } from 'react-router';
+import { Link } from 'react-router';
 
 const Footer:React.FC = () => {
-    
-    const navigate = useNavigate();
-
-    const handleAboutClick = (selectedTab: string) => {
-        // Pass the selectedTab prop when navigating
-        navigate('/app/about', { state: { selectedTab } });
-      };
 
     return (
         <>
             <div className='bg-primary-first text-white'>
-                <div className='items-center lg:flex lg:justify-between mx-auto my-4 xl:max-w-[1280px] 2xl:max-w-[1440px]'>
+                <div className='items-center flex justify-between mx-6 my-2 xl:mx-auto xl:max-w-[1280px] 2xl:max-w-[1440px]'>
                     <div className='flex justify-center'>
                         <div className='my-auto mx-1'>
-                            <div className='text-18px text-center'>© 2025</div>
+                            <div className='text-16px text-center'>© 2025</div>
                         </div>
                         {Globals.PrimaryContacts.map((c, idx) => (
                             <div className='my-auto mx-1' key={idx}>
-                                <div className='text-18px text-center'>
+                                <div className='text-16px text-center'>
                                     <Email email={c.email} subject='DNATCO'><span>{c.name}</span></Email>
                                 </div>
                             </div>
                         ))}
                     </div>
 
-                    <div className='flex justify-center'>
-                        <div
-                            onClick={() => handleAboutClick('how-to-cite')}
-                            className='hover-animation my-auto mx-3'
-                        >
-                            <a className='cursor-pointer text-18px'>
+                    <div className='hidden lg:flex justify-center'>
+                        <div className='hover-animation my-auto mx-3' >
+                            <Link className='cursor-pointer text-16px' to='/app/about/how-to-cite'>
                                 How to cite
-                            </a>
+                            </Link>
                         </div>
-                        <div
-                            onClick={() => handleAboutClick('help')}
-                            className='hover-animation my-auto mx-3'
-                        >
-                            <a className='cursor-pointer text-18px'>
+                        <div className='hover-animation my-auto mx-3' >
+                            <Link className='cursor-pointer text-16px' to='/app/about/help'>
                                 Help
-                            </a>
+                            </Link>
                         </div>
-                        <div
-                            onClick={() => handleAboutClick('contact')} 
-                            className='hover-animation my-auto mx-3'>
-                            <a className='cursor-pointer text-18px'>
+                        <div className='hover-animation my-auto mx-3' >
+                            <Link className='cursor-pointer text-16px' to='/app/about/contact'>
                                 Contact
-                            </a>
+                            </Link>
                         </div>
                     </div>
 
                     <div className='flex justify-center'>
                         <div className='my-auto mx-2'>
-                            <div className='text-18px text-center'>
-                                <div>Supported by Institute of Biotechnology & Elixir CZ</div>
+                            <div className='text-16px text-center'>
+                                <div>Supported by</div>
                             </div>
                         </div>
                         <div className='flex my-auto mx-2'>

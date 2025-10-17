@@ -47,6 +47,8 @@
     --text-20px: 1.25rem;
     --text-22px: 1.375rem;
     --text-24px: 1.5rem;
+    --text-28px: 1.75rem;
+    --text-30px: 1.875rem;
     --text-34px: 2.125rem;
     --text-39px: 2.4375rem;
     --width-300px: 300px;
@@ -323,6 +325,9 @@
   }
   .mx-4 {
     margin-inline: calc(var(--spacing) * 4);
+  }
+  .mx-6 {
+    margin-inline: calc(var(--spacing) * 6);
   }
   .mx-auto {
     margin-inline: auto;
@@ -1185,11 +1190,6 @@
       display: flex;
     }
   }
-  .lg\:justify-between {
-    @media (width >= 64rem) {
-      justify-content: space-between;
-    }
-  }
   .xl\:absolute {
     @media (width >= 80rem) {
       position: absolute;
@@ -1228,6 +1228,11 @@
   .xl\:z-50 {
     @media (width >= 80rem) {
       z-index: 50;
+    }
+  }
+  .xl\:mx-auto {
+    @media (width >= 80rem) {
+      margin-inline: auto;
     }
   }
   .xl\:mt-\[20\%\] {
