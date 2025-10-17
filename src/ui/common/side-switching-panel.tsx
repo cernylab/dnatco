@@ -145,18 +145,20 @@ export function SideSwitchingPanel<K extends string>(props: {
                         src={GridThreeUpImg}
                     />
                 </div>
+                {!compact &&(
+                    <button
+                        className={`rdo-side-switching-panel-hamburger-icon rdo-side-switching-panel-hamburger-icon-${hamburgerHovered ? 'active' : 'inactive'}`}
+                        onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            setPermaCompact(prev => !prev);
+                        }}
+                        title={permaCompact ? 'Show panel' : 'Hide panel'}
+                    >
+                        {permaCompact ? '⮞' : '⮜'}
+                    </button>
+                )}
 
-                <button
-                    className={`rdo-side-switching-panel-hamburger-icon rdo-side-switching-panel-hamburger-icon-${hamburgerHovered ? 'active' : 'inactive'}`}
-                    onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        setPermaCompact(prev => !prev);
-                    }}
-                    title={permaCompact ? 'Show panel' : 'Hide panel'}
-                >
-                    {permaCompact ? '⮞' : '⮜'}
-                </button>
 
                 <div className='rdo-side-switching-panel-item rdo-side-switching-panel-item-compact selected bg-secondary-second'>
                     <div className='rdo-side-switching-panel-item-text rdo-side-switching-panel-item-text-compact'>
