@@ -85,11 +85,13 @@ const Footer:React.FC = () => {
 
 
                     <div className='flex justify-center'>
-                        <div className='hidden lg:flex my-auto mx-2'>
-                            <div className='text-18px text-center'>
-                                <div>Supported by Institute of Biotechnology & Elixir CZ</div>
+                        {!compact && (
+                            <div className='my-auto mx-2'>
+                                <div className='text-18px text-center'>
+                                    <div>Supported by Institute of Biotechnology & Elixir CZ</div>
+                                </div>
                             </div>
-                        </div>
+                        )}
                         <div className='flex my-auto mx-2'>
                             <a className='bg-white p-1 rounded-standard mr-2' href='https://www.ibt.cas.cz/en' target='_blank'>
                                 <img className='h-8 hover-animation' src={IbtLogoImg} alt='Ibt logo'/>
