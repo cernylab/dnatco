@@ -36,6 +36,7 @@ export namespace Validation {
             steps: newStepId === InvalidStepId ? [] : [newStepId],
             residues: [],
             atoms: [],
+            basePairs: [],
             reconstruct: !(steps[0] === newStepId && steps.length === 1)
         };
     }

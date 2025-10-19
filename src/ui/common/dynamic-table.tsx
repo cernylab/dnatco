@@ -343,14 +343,45 @@ export class DynamicTable extends React.Component<
     return !sortingsAreSame(nextState.sorting, this.state.sorting);
   }
 
+  private scrollToHighlighted(retryCount = 0) {
+    if (!this.props.scrollTainer || !this.props.highlightedTag) return;
+
+    const cellId = this.findFirstTaggedCellId(this.props.highlightedTag);
+    if (!cellId) return;
+
+    // Check if element exists before scrolling
+    const element = document.getElementById(cellId);
+    if (element) {
+      scrollIntoViewIfNeeded(cellId, this.props.scrollTainer);
+    } else if (retryCount < 5) {
+      // Element not found yet, retry after a delay (up to 5 retries = 500ms total)
+      setTimeout(() => this.scrollToHighlighted(retryCount + 1), 100);
+    }
+  }
+
+  componentDidMount() {
+    // Scroll to highlighted row on initial mount
+    if (this.props.scrollTainer && this.props.highlightedTag) {
+      // Use longer setTimeout for initial mount to ensure table rows are fully rendered
+      // This is especially important when the table first appears after section activation
+      setTimeout(() => this.scrollToHighlighted(), 300);
+    }
+  }
+
   componentDidUpdate(prevProps: _DynamicTable.Props) {
-    if (
-      this.props.scrollTainer &&
-      this.props.highlightedTag &&
-      this.props.highlightedTag !== prevProps.highlightedTag
-    ) {
-      const cellId = this.findFirstTaggedCellId(this.props.highlightedTag);
-      if (cellId) scrollIntoViewIfNeeded(cellId, this.props.scrollTainer);
+    const highlightedTagChanged = this.props.highlightedTag !== prevProps.highlightedTag;
+    const scrollTainerBecameAvailable = this.props.scrollTainer && !prevProps.scrollTainer;
+
+    // Scroll if highlighted tag changed OR if scrollTainer became available
+    if (this.props.scrollTainer && this.props.highlightedTag) {
+      if (highlightedTagChanged) {
+        // Immediate scroll when tag changes (component already mounted)
+        this.scrollToHighlighted();
+      } else if (scrollTainerBecameAvailable) {
+        // ScrollTainer just became available (was null/undefined, now defined)
+        // Use longer delay to ensure the container and rows are fully rendered
+        setTimeout(() => this.scrollToHighlighted(), 300);
+      }
     }
   }
 

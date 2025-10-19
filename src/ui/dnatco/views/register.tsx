@@ -26,7 +26,7 @@ import { Conformation } from './annotation/conformation';
 import { BasePairs } from './annotation/base-pairs';
 
 const NullDisplayer = async () => {};
-const NullSelectionMaker = () => ({ steps: [], residues: [], atoms: [], reconstruct: true });
+const NullSelectionMaker = () => ({ steps: [], residues: [], atoms: [], basePairs: [], reconstruct: true });
 
 export namespace Register {
     export type PropsType = {
