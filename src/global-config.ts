@@ -71,6 +71,14 @@ export type GlobalConfigData = {
         brickWidth: number,
         brickHeight: number,
     },
+    ntcTubeAlpha: number,
+    pyramidAlpha: number,
+    pairingLadderAlpha: number,
+    showNtcTubeSegmentForSelectedResidues: boolean,
+    cameraRadiusFactor: number,
+    cameraClippingRadius: number,
+    cameraClippingFar: boolean,
+    cameraClippingMinNear: number,
 
     // Options relevant only for NodeJS builds
     referenceUrl: string,
@@ -125,6 +133,14 @@ const GlobalConfigData: GlobalConfigData = {
         brickWidth: 2.0,
         brickHeight: 0.6,
     },
+    ntcTubeAlpha: 0.5,
+    pyramidAlpha: 0.5,
+    pairingLadderAlpha: 0.5,
+    showNtcTubeSegmentForSelectedResidues: true,
+    cameraRadiusFactor: 3,
+    cameraClippingRadius: 100,
+    cameraClippingFar: true,
+    cameraClippingMinNear: 5,
     referenceUrl: '',
     phenix: {
         rsccExec: '',
@@ -139,7 +155,7 @@ const DefaultGlobalConfigData = deepCopy(GlobalConfigData);
 function checkAndSetEntry<K extends keyof GlobalConfigData>(data: GlobalConfigData, k: K, inputObj: any, partials: typeof AllowedPartials) {
     const to = data[k];
     const obj = fromTemplate(inputObj, to, partials[k]);
-    if (obj)
+    if (obj !== null && obj !== undefined)
         data[k] = obj;
     else
         console.warn(`"${k}" entry in the configuration file appears to be malformed. Falling back to default value. Mind that if the malformed entry is a complex object, the problem may be with one of its nested objects.`);
@@ -148,7 +164,7 @@ function checkAndSetEntry<K extends keyof GlobalConfigData>(data: GlobalConfigDa
 function checkAndSet(data: GlobalConfigData, input: Record<string, any>) {
     for (const prop in data) {
         const inputObj = input[prop];
-        if (inputObj)
+        if (inputObj !== undefined)
             checkAndSetEntry(data, prop as keyof GlobalConfigData, inputObj, AllowedPartials);
     }
 }

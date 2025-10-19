@@ -7,6 +7,7 @@ export const InvalidModelIndex = -1;
 export const InvalidChain = '';
 export const InvalidResidue: CifResidue = { modelNum: -1, chain: '', seqId: -1, altId: '' };
 export const InvalidStepId = -1;
+export const InvalidBasePairId = -1;
 
 export type AuthAtom = {
     modelNum: number,
@@ -48,6 +49,7 @@ export type StructureSelection = {
     steps: number[], // Array of step IDs
     residues: CifResidue[],
     atoms: CifAtom[],
+    basePairs: number[], // Array of base pair IDs
 }
 
 export namespace StructureSelection {
@@ -155,5 +157,6 @@ export function EmptyStructureSelection(d: Dnatcofication): StructureSelection {
         steps: [],
         residues: [],
         atoms: [],
+        basePairs: [],
     };
 }

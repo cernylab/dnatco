@@ -964,6 +964,7 @@ export namespace AnglesLengthsCommon {
       steps: [],
       residues: newResidues,
       atoms: newAtoms,
+      basePairs: [],
       reconstruct: steps.length > 0,
     };
   }
@@ -981,6 +982,7 @@ export namespace AnglesLengthsCommon {
         steps: [],
         residues: selection.residues,
         atoms: selection.atoms,
+        basePairs: [],
         reconstruct: true,
       },
       d,
@@ -1165,6 +1167,7 @@ export namespace AnglesLengthsCommon {
         steps: [],
         residues: selection.residues,
         atoms: selection.atoms,
+        basePairs: [],
         reconstruct: false,
       },
       d,

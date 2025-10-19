@@ -62,5 +62,13 @@
         "brickWidth": 2.0,
         "brickHeight": 0.6
     },
+    "ntcTubeAlpha": 0.5,
+    "pyramidAlpha": 0.5,
+    "pairingLadderAlpha": 0.5,
+    "showNtcTubeSegmentForSelectedResidues": false,
+    "cameraRadiusFactor": 3,
+    "cameraClippingRadius": 100,
+    "cameraClippingFar": true,
+    "cameraClippingMinNear": 5,
     "displayedProductName": "DNATCO"
 }

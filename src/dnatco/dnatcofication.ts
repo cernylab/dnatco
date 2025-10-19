@@ -14,6 +14,7 @@ import { NavalContext, NavalResult } from './naval';
 import { GeometryReport } from './naval/geometry-report';
 import { Validation } from './naval/validation';
 import { StepsMapper } from './steps-mapper';
+import { BasePairsMapper } from './base-pairs-mapper';
 import { Chain, Structure as _Structure } from './structure';
 import { Cif } from '../cif';
 import { Category, Schema } from '../cif/categories';
@@ -24,6 +25,7 @@ import {
     NdbStructNtcOverall, NdbStructNtcStepParameters, NdbStructNtcStepSummary,
     NdbStructNtcStep, NdbStructSugarStepParameters,
 } from '../cif/categories/ndb-struct-ntc';
+import { NdbBasePairList, NdbBasePairAnnotation } from '../cif/categories/ndb-base-pair';
 import { Struct } from '../cif/categories/struct';
 import { objKeys } from '../util';
 import { EventsKeeper } from '../util/events-keeper';
@@ -103,6 +105,7 @@ export const DnatcoficationData = {
     entityKinds: [] as Dnatcofication.EntityKinds[],
     similarities: [] as (ConnSimil.Similarities|null|undefined)[], // null = no similarity, undefined = similarity data not calculated yet
     steps: StepsMapper.Mapping(),
+    basePairs: BasePairsMapper.Mapping(),
     structures: new Array<_Structure>(),
     cifData: null as (Cif.Data|null),
 
@@ -399,6 +402,15 @@ export namespace Dnatcofication {
                 structures[0],
             );
 
+            ctx.status = 'Mapping base pairs';
+
+            let basePairs = BasePairsMapper.Mapping();
+            const bpListTable = Cif.File.table(cifData, NdbBasePairList);
+            const bpAnnTable = Cif.File.table(cifData, NdbBasePairAnnotation);
+            if (bpListTable && bpAnnTable) {
+                basePairs = BasePairsMapper.map(bpListTable, bpAnnTable);
+            }
+
             let connectivities;
             let similarities;
             if (config.precalculateConnectivitiesAndSimilarities) {
@@ -434,6 +446,7 @@ export namespace Dnatcofication {
                 entityKinds,
                 similarities,
                 steps,
+                basePairs,
                 structures,
                 cifData,
                 sourceFileName,
