@@ -83,7 +83,7 @@ class AnalyzeButton extends React.Component<{
         caption="Analyze"
         onClick={() => this.props.onClick()}
         disabled={!this.props.ready}
-        className="items-center flex justify-center transition-all ease-in-out w-full bg-primary-first text-16px text-secondary-first rounded-standard p-2 hover:bg-secondary-second"
+        className="items-center flex justify-center cursor-pointer transition-all ease-in-out w-full bg-primary-first text-16px text-secondary-first rounded-standard p-2 hover:bg-secondary-second"
         classNameDisabled="items-center flex justify-center rounded-standard w-full p-2 text-16px bg-primary-first-disabled text-white"
       />
     );
