@@ -684,12 +684,15 @@ export function MainScreen(props: {
 
               const view = Register.Views['base-pairs'];
 
-              // Find the base pair by auth sequence IDs
-              const basePair = BasePairsMapper.byAuthSeqIds(
+              // Find the base pair by residue identifiers (chain and sequence)
+              const basePair = BasePairsMapper.findByResidues(
                 props.dnatcofication,
-                basePairSelection.modelNum,
-                basePairSelection.authSeqId1,
-                basePairSelection.authSeqId2
+                basePairSelection.asymId1,
+                basePairSelection.seqId1,
+                basePairSelection.insCode1,
+                basePairSelection.asymId2,
+                basePairSelection.seqId2,
+                basePairSelection.insCode2
               );
 
               if (basePair) {
@@ -714,12 +717,15 @@ export function MainScreen(props: {
 
                 const view = Register.Views['base-pairs'];
 
-                // Find the base pair by auth sequence IDs
-                const basePair = BasePairsMapper.byAuthSeqIds(
+                // Find the base pair by residue identifiers (chain and sequence)
+                const basePair = BasePairsMapper.findByResidues(
                   props.dnatcofication,
-                  basePairSelection.modelNum,
-                  basePairSelection.authSeqId1,
-                  basePairSelection.authSeqId2
+                  basePairSelection.asymId1,
+                  basePairSelection.seqId1,
+                  basePairSelection.insCode1,
+                  basePairSelection.asymId2,
+                  basePairSelection.seqId2,
+                  basePairSelection.insCode2
                 );
 
                 if (basePair) {
