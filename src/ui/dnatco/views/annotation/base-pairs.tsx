@@ -30,7 +30,16 @@ export function BasePairing({ d, viewerInterop, switching, structureSelection }:
     const bpList = tables?.get('ndb_base_pair_list');
 
     if(!bpList) {
-      return <div>No data available</div>;
+      return (
+        <div className="flex items-center justify-center h-full p-8">
+          <div className="text-center">
+            <div className="text-18px mb-2">Base Pairing Data Not Available</div>
+            <div className="text-14px text-gray-400">
+              This structure does not contain base pairing information.
+            </div>
+          </div>
+        </div>
+      );
     }
 
     // Build rows with full data from BasePairsMapper

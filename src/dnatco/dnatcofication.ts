@@ -405,9 +405,9 @@ export namespace Dnatcofication {
             ctx.status = 'Mapping base pairs';
 
             let basePairs = BasePairsMapper.Mapping();
-            const bpListTable = Cif.File.table(cifData, NdbBasePairList);
-            const bpAnnTable = Cif.File.table(cifData, NdbBasePairAnnotation);
-            if (bpListTable && bpAnnTable) {
+            if (Cif.File.hasTable(cifData, NdbBasePairList) && Cif.File.hasTable(cifData, NdbBasePairAnnotation)) {
+                const bpListTable = Cif.File.table(cifData, NdbBasePairList);
+                const bpAnnTable = Cif.File.table(cifData, NdbBasePairAnnotation);
                 basePairs = BasePairsMapper.map(bpListTable, bpAnnTable);
             }
 
