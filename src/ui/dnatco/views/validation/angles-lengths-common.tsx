@@ -16,6 +16,7 @@ import { ALM } from "../../../../dnatco/alm";
 import { Dnatcofication } from "../../../../dnatco/dnatcofication";
 import {
     AnglesLengths as DAnglesLengths,
+    NavalRankingClass,
     NavalRankingData
 } from "../../../../dnatco/angles-lengths";
 import { Triplet } from "../../../../dnatco/angles-lengths/angles";
@@ -359,6 +360,10 @@ export class PGroupSummary extends React.Component<
     navalTainer: HTMLDivElement | null,
   }
 > {
+  private ofConcernClr = colorToHex(DAnglesLengths.navalRankingClassColor('of-concern'));
+  private allowedClr = colorToHex(DAnglesLengths.navalRankingClassColor('allowed'));
+  private preferredClr = colorToHex(DAnglesLengths.navalRankingClassColor('preferred'));
+
   constructor(props: PGroupSummaryProps) {
     super(props);
 
@@ -475,11 +480,11 @@ export class PGroupSummary extends React.Component<
     return (
       <div className="relative" ref={this.setNavalTainer}>
         <div className="flex flex-row">
-          <div style={{ backgroundColor: 'red', flex: ofConcernLowerRatio, height: '32px' }} />
-          <div style={{ backgroundColor: 'orange', flex: preferredLeftRatio, height: '32px' }} />
-          <div style={{ backgroundColor: 'violet', flex: rest }} />
-          <div style={{ backgroundColor: 'orange', flex: preferredRightRatio, height: '32px' }} />
-          <div style={{ backgroundColor: 'red', flex: ofConcernUpperRatio, height: '32px' }} />
+          <div style={{ backgroundColor: this.ofConcernClr, flex: ofConcernLowerRatio, height: '32px' }} />
+          <div style={{ backgroundColor: this.allowedClr, flex: preferredLeftRatio, height: '32px' }} />
+          <div style={{ backgroundColor: this.preferredClr, flex: rest }} />
+          <div style={{ backgroundColor: this.allowedClr, flex: preferredRightRatio, height: '32px' }} />
+          <div style={{ backgroundColor: this.ofConcernClr, flex: ofConcernUpperRatio, height: '32px' }} />
         </div>
 
         <div style={{
@@ -821,11 +826,11 @@ export namespace AnglesLengthsCommon {
     residueName: JSX.Element,
     metricName: JSX.Element,
     proscoPGroup: DAnglesLengths.PGroup,
-    navalPGroup: DAnglesLengths.PGroup,
+    navalRankingClass: NavalRankingClass,
     value: string,
   ) {
     const proscoColor = colorToHex(proscoPGroup?.color ?? DAnglesLengths.outlierColor());
-    const navalColor = colorToHex(navalPGroup?.color ?? DAnglesLengths.outlierColor());
+    const navalColor = colorToHex(DAnglesLengths.navalRankingClassColor(navalRankingClass));
 
     return (
       <div className="font-700 flex flex-row gap-1 items-center whitespace-nowrap">

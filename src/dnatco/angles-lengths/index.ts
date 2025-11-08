@@ -57,6 +57,8 @@ type NavalRanking = Record<
     >
 >;
 
+export type NavalRankingClass = 'preferred' | 'allowed' | 'of-concern';
+
 const AngleAverageData: AverageData = {
     'A': new Map(),
     'C': new Map(),
@@ -446,5 +448,22 @@ export namespace AnglesLengths {
 
     export function pGroupThresholds() {
         return PGroups.map(x => x.threshold);
+    }
+
+    export function navalRankingClass(value: number, navalRanking: NavalRankingData): NavalRankingClass {
+        if (value <= navalRanking.ofConcernLower) return 'of-concern';
+        else if (value >= navalRanking.ofConcernUpper) return 'of-concern';
+
+        // TODO: Add rules to calculate the 'allowed' interval
+
+        return 'preferred';
+    }
+
+    export function navalRankingClassColor(cls: NavalRankingClass) {
+        switch (cls) {
+            case 'of-concern': return 0x00FF0000;
+            case 'allowed': return 0x00FFFF00;
+            case 'preferred': return 0x0000FF00;
+        }
     }
 }

@@ -524,7 +524,7 @@ function AngleMetricDetails(props: {
                           tripletTag(item.angle.triplet)
                         ),
                         item.pGroup,
-                        item.pGroup, // FIXME: This must be NAVAL PGroup
+                        DAnglesLengths.navalRankingClass(item.angle.angle, nrank),
                         `${M.r2d(item.angle.angle).toFixed(2)} ${DegreesUnit}`
                       ),
                       { x: evt.pageX, y: evt.pageY },
@@ -716,7 +716,7 @@ function LengthMetricDetails(props: {
                           pairTag(item.length.pair),
                         ),
                         item.pGroup,
-                        item.pGroup, // FIXME: This must be NAVAL pgroup
+                        DAnglesLengths.navalRankingClass(item.length.length, nrank),
                         `${item.length.length.toFixed(3)} ${AngstromUnit}`,
                       ),
                       { x: evt.pageX, y: evt.pageY },
