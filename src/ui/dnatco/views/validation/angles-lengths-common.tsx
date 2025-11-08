@@ -462,14 +462,14 @@ export class PGroupSummary extends React.Component<
     const margin = span * 0.05;
     const spanWithMargin = 2 * margin + span;
 
-    // TODO: Consider ProSco here
-    const preferredLeft = DAnglesLengths.navalPreferredLowerBound(this.props.navalPrefferedLower, this.props.pGroup);
-    const preferredRight = DAnglesLengths.navalPreferredUpperBound(this.props.navalPrefferedUpper, this.props.pGroup);
+    const preferredLower = DAnglesLengths.navalPreferredLowerBound(this.props.navalPrefferedLower, this.props.pGroup);
+    const preferredUpper = DAnglesLengths.navalPreferredUpperBound(this.props.navalPrefferedUpper, this.props.pGroup);
 
-    const ofConcernLowerRatio = Math.round(100 * (ranking.ofConcernLower - lowest - margin) / spanWithMargin);
-    const preferredLeftRatio = Math.round(100 * (preferredLeft - lowest) / spanWithMargin);
-    const preferredRightRatio = Math.round(100 * (ranking.ofConcernUpper - preferredRight) / spanWithMargin);
-    const ofConcernUpperRatio = Math.round(100 * (margin + highest - ranking.ofConcernUpper) / spanWithMargin);
+    const marginRatio = Math.round(100 * margin / spanWithMargin);
+    const ofConcernLowerRatio = Math.round(100 * (ranking.ofConcernLower - lowest) / spanWithMargin);
+    const preferredLeftRatio = Math.round(100 * (preferredLower - ranking.ofConcernLower) / spanWithMargin);
+    const preferredRightRatio = Math.round(100 * (ranking.ofConcernUpper - preferredUpper) / spanWithMargin);
+    const ofConcernUpperRatio = Math.round(100 * (highest - ranking.ofConcernUpper) / spanWithMargin);
     const rest = 100 - ofConcernLowerRatio - ofConcernUpperRatio - preferredLeftRatio - preferredRightRatio;
 
     const totalWidth = this.state.navalTainer?.getBoundingClientRect().width ?? 0;
@@ -480,11 +480,13 @@ export class PGroupSummary extends React.Component<
     return (
       <div className="relative" ref={this.setNavalTainer}>
         <div className="flex flex-row">
+          <div style={{ backgroundColor: this.ofConcernClr, flex: marginRatio, height: '32px' }} />
           <div style={{ backgroundColor: this.ofConcernClr, flex: ofConcernLowerRatio, height: '32px' }} />
           <div style={{ backgroundColor: this.allowedClr, flex: preferredLeftRatio, height: '32px' }} />
           <div style={{ backgroundColor: this.preferredClr, flex: rest }} />
           <div style={{ backgroundColor: this.allowedClr, flex: preferredRightRatio, height: '32px' }} />
           <div style={{ backgroundColor: this.ofConcernClr, flex: ofConcernUpperRatio, height: '32px' }} />
+          <div style={{ backgroundColor: this.ofConcernClr, flex: marginRatio, height: '32px' }} />
         </div>
 
         <div style={{
