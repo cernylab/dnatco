@@ -1,4 +1,3 @@
-import { PlotData } from "plotly.js";
 import Plot from "react-plotly.js";
 import React from "react";
 import { Subject } from "rxjs";
@@ -16,8 +15,8 @@ import { doDownload, Downloader } from "../../../../browser-util/downloader";
 import { ALM } from "../../../../dnatco/alm";
 import { Dnatcofication } from "../../../../dnatco/dnatcofication";
 import {
-  AnglesLengths,
-  AnglesLengths as DAnglesLengths,
+    AnglesLengths as DAnglesLengths,
+    NavalRankingData
 } from "../../../../dnatco/angles-lengths";
 import { Triplet } from "../../../../dnatco/angles-lengths/angles";
 import {
@@ -32,7 +31,7 @@ import { Validation } from "../../../../dnatco/naval/validation";
 import { Summarize } from "../../../../dnatco/angles-lengths/summarize";
 import { GlobalConfig } from "../../../../global-config";
 import { htmlColorAsNumber, isWithin, replaceAll } from "../../../../util";
-import { colorToTuple, luminance, ColorTuple, colorToHex } from "../../../../util/colors";
+import { colorToTuple, luminance, colorToHex } from "../../../../util/colors";
 import { FileTypes } from "../../../../util/file-type";
 import { M } from "../../../../util/math";
 import { Serialization } from "../../../../util/serialization";
@@ -52,9 +51,6 @@ export const DegreesUnit = "\u00B0";
 
 const PairBondNameCache: Map<string, React.ReactElement> = new Map();
 const TripletBondNameCache: Map<string, React.ReactElement> = new Map();
-
-const EmptyPlotPoints = new Array<number>();
-
 
 export type NavalItem = {
   csdPreferredLeft: number;
@@ -136,7 +132,6 @@ export class AveragesChart extends React.Component<{
   bins: Bins;
   pGroupDatas: DAnglesLengths.PGroupData[];
   mark: number;
-  naval: NavalItem;
   xTitle: string;
   yTitle: string;
   xTransform?: (x: number) => number;
@@ -169,39 +164,9 @@ export class AveragesChart extends React.Component<{
     return indices;
   }
 
-  private makeNavalLine(
-    x: number,
-    relativeYMax: number,
-    text: string,
-    color: ColorTuple,
-    yMax: number,
-    xt: number[]
-  ): Partial<PlotData> {
-    return {
-      x: this.props.naval.quality !== "none" ? [x] : EmptyPlotPoints,
-      y:
-        this.props.naval.quality !== "none"
-          ? [yMax * relativeYMax]
-          : EmptyPlotPoints,
-      type: "bar",
-      width: 2 * (xt[1] - xt[0]),
-      marker: {
-        color: `rgb(${color[0]}, ${color[1]}, ${color[2]})`,
-      },
-      hoverinfo: "text",
-      hovertext: text,
-      hoveron: "fills",
-      showlegend: false,
-    };
-  }
-
   render() {
     const markerColorTup = colorToTuple(
       htmlColorAsNumber(GlobalConfig.data().anglesLengths.chartMarkerColor) ?? 0
-    );
-    const navalColorTup = colorToTuple(
-      htmlColorAsNumber(GlobalConfig.data().anglesLengths.navalMarkerColor) ??
-        16744576
     );
     const outlierColor = DAnglesLengths.outlierColor();
     const pGroupIndices = this.binsToPGroupIndices(
@@ -229,14 +194,8 @@ export class AveragesChart extends React.Component<{
     );
     const yMax = Math.max(...yt);
 
-    const xtFrom =
-      this.props.naval.quality !== "none"
-        ? Math.min(xt[0], this.props.naval.csdPreferredLeft)
-        : xt[0];
-    const xtTo =
-      this.props.naval.quality !== "none"
-        ? Math.max(xt[xt.length - 1], this.props.naval.csdPreferredRight)
-        : xt[xt.length - 1];
+    const xtFrom = xt[0];
+    const xtTo = xt[xt.length - 1];
     const xAxisMargin = (xtTo - xtFrom) * 0.05;
     const xRange = [
       (xtFrom > tm ? tm : xtFrom) - xAxisMargin,
@@ -325,30 +284,6 @@ export class AveragesChart extends React.Component<{
               hoveron: "fills",
               showlegend: false,
             },
-            this.makeNavalLine(
-              this.props.naval.value,
-              0.75,
-              "Naval target value",
-              navalColorTup,
-              yMax,
-              xt
-            ),
-            this.makeNavalLine(
-              this.props.naval.csdPreferredLeft,
-              0.5,
-              "Naval CSD-preferred lower bound",
-              navalColorTup,
-              yMax,
-              xt
-            ),
-            this.makeNavalLine(
-              this.props.naval.csdPreferredRight,
-              0.5,
-              "Naval CSD-preferred upper bound",
-              navalColorTup,
-              yMax,
-              xt
-            ),
           ]}
           layout={{
             autosize: true,
@@ -405,7 +340,9 @@ export type PGroupSummaryProps = {
   residueName: JSX.Element;
   value: number;
   valueFormatter: (v: number) => string;
-  naval: NavalItem;
+  navalPrefferedLower: number,
+  navalPrefferedUpper: number,
+  navalRanking: NavalRankingData;
   xTitle: string;
   yTitle: string;
   suffix?: string;
@@ -417,13 +354,17 @@ export type PGroupSummaryProps = {
 };
 export class PGroupSummary extends React.Component<
   PGroupSummaryProps,
-  { mode: "chart" | "details" }
+  {
+    mode: "chart" | "details",
+    navalTainer: HTMLDivElement | null,
+  }
 > {
   constructor(props: PGroupSummaryProps) {
     super(props);
 
     this.state = {
       mode: "chart",
+      navalTainer: null,
     };
   }
 
@@ -446,7 +387,6 @@ export class PGroupSummary extends React.Component<
       <AveragesChart
         bins={this.props.bins}
         mark={this.props.value}
-        naval={this.props.naval}
         pGroupDatas={this.props.pGroupDatas}
         xTitle={this.props.xTitle}
         yTitle={this.props.yTitle}
@@ -457,29 +397,12 @@ export class PGroupSummary extends React.Component<
     );
   }
 
-  private renderNaval() {
-    return (
-      <>
-        <div className="font-700 col-span-2 whitespace-nowrap">
-          Naval quality
-        </div>
-        <div>
-          {this.props.naval.quality === "none"
-            ? "N/A"
-            : Naval.QualityName[this.props.naval.quality]}
-        </div>
-      </>
-    );
-  }
-
   private renderPercentile() {
     if (!this.props.pGroup) {
       return (
         <div className="grid grid-cols-3 gap-x-4">
           <div className="col-span-2" />
           {this.renderPGroup()}
-          <div className="h-4 col-span-3" />
-          {this.renderNaval()}
         </div>
       );
     }
@@ -511,8 +434,6 @@ export class PGroupSummary extends React.Component<
         <div className="h-4 col-span-3" />
         <div className="font-700 col-span-2">Percentile</div>
         {this.renderPGroup()}
-        <div className="h-4 col-span-3" />
-        {this.renderNaval()}
       </div>
     );
   }
@@ -524,6 +445,52 @@ export class PGroupSummary extends React.Component<
       case "details":
         return this.renderPercentile();
     }
+  }
+
+  private renderNavalBar() {
+    const bins = this.props.bins;
+    const ranking = this.props.navalRanking;
+
+    const lowest = bins[0].from;
+    const highest = bins[bins.length - 1].to;
+    const span = highest - lowest;
+    const margin = span * 0.05;
+    const spanWithMargin = 2 * margin + span;
+
+    // TODO: Consider ProSco here
+    const preferredLeft = this.props.navalPrefferedLower;
+    const preferredRight = this.props.navalPrefferedUpper;
+
+    const ofConcernLowerRatio = Math.round(100 * (ranking.ofConcernLower - lowest - margin) / spanWithMargin);
+    const preferredLeftRatio = Math.round(100 * (preferredLeft - lowest) / spanWithMargin);
+    const preferredRightRatio = Math.round(100 * (ranking.ofConcernUpper - preferredRight) / spanWithMargin);
+    const ofConcernUpperRatio = Math.round(100 * (margin + highest - ranking.ofConcernUpper) / spanWithMargin);
+    const rest = 100 - ofConcernLowerRatio - ofConcernUpperRatio - preferredLeftRatio - preferredRightRatio;
+
+    const totalWidth = this.state.navalTainer?.getBoundingClientRect().width ?? 0;
+    let valueMarkerLeft = (this.props.value - lowest + margin) * totalWidth / spanWithMargin;
+    if (valueMarkerLeft > totalWidth) valueMarkerLeft = totalWidth;
+    else if (valueMarkerLeft < 0) valueMarkerLeft = 0;
+
+    return (
+      <div className="relative" ref={this.setNavalTainer}>
+        <div className="flex flex-row">
+          <div style={{ backgroundColor: 'red', flex: ofConcernLowerRatio, height: '32px' }} />
+          <div style={{ backgroundColor: 'orange', flex: preferredLeftRatio, height: '32px' }} />
+          <div style={{ backgroundColor: 'violet', flex: rest }} />
+          <div style={{ backgroundColor: 'orange', flex: preferredRightRatio, height: '32px' }} />
+          <div style={{ backgroundColor: 'red', flex: ofConcernUpperRatio, height: '32px' }} />
+        </div>
+
+        <div style={{
+          position: 'absolute',
+          height: "100%", width: "4px", backgroundColor: "black",
+          top: '0px',
+          left: `${valueMarkerLeft - 2}px`,
+        }}>
+        </div>
+      </div>
+    );
   }
 
   private renderPGroup() {
@@ -542,6 +509,16 @@ export class PGroupSummary extends React.Component<
         <div className="text-right">{text}</div>
       </div>
     );
+  }
+
+  setNavalTainer = (node: HTMLDivElement | null) => {
+    if (!node) return;
+
+    if (this.state.navalTainer !== node) {
+      const obs = new ResizeObserver(() => this.forceUpdate());
+      obs.observe(node);
+    }
+    this.setState({ ...this.setState, navalTainer: node });
   }
 
   componentDidMount() {
@@ -570,6 +547,9 @@ export class PGroupSummary extends React.Component<
 
         <div className="h-2" />
         {this.renderMain()}
+
+        <div className="h-2" />
+        {this.renderNavalBar()}
       </div>
     );
   }
@@ -840,12 +820,12 @@ export namespace AnglesLengthsCommon {
   export function pGroupWindowTitle(
     residueName: JSX.Element,
     metricName: JSX.Element,
-    proscoPGroup: AnglesLengths.PGroup,
-    navalPGroup: AnglesLengths.PGroup,
+    proscoPGroup: DAnglesLengths.PGroup,
+    navalPGroup: DAnglesLengths.PGroup,
     value: string,
   ) {
-    const proscoColor = colorToHex(proscoPGroup?.color ?? AnglesLengths.outlierColor());
-    const navalColor = colorToHex(navalPGroup?.color ?? AnglesLengths.outlierColor());
+    const proscoColor = colorToHex(proscoPGroup?.color ?? DAnglesLengths.outlierColor());
+    const navalColor = colorToHex(navalPGroup?.color ?? DAnglesLengths.outlierColor());
 
     return (
       <div className="font-700 flex flex-row gap-1 items-center whitespace-nowrap">

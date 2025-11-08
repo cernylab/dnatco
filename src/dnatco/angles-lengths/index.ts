@@ -1,8 +1,9 @@
-import { Bin, Bins, isWireBins, toBins } from './bin';
+import { Bin, Bins, isWireBins, toBins, WireBins } from './bin';
 import { Angles, Triplet, tripletTag } from './angles';
 import { Grouping } from './grouping';
 import { Lengths, Pair, pairTag } from './lengths';
 import { Measurements } from './measurements';
+import { Naval, ZPrime, isNavalZPrime } from './naval';
 import { Residues } from '../residues';
 import { VoidResult, ErrorResult, Result } from '../';
 import { GlobalConfig } from '../../global-config';
@@ -40,6 +41,21 @@ type PGroupData = Record<
     >
 >;
 type Resource = [base: Residues.ElementaryResidue, tag: string, file: string];
+
+export type NavalRankingData = {
+    weightedMedian: number,
+    scaleFactorLower: number,
+    scaleFactorUpper: number,
+    ofConcernLower: number,
+    ofConcernUpper: number,
+};
+type NavalRanking = Record<
+    ElementaryResidue,
+    Map<
+        string, // Angle or length tag
+        NavalRankingData
+    >
+>;
 
 const AngleAverageData: AverageData = {
     'A': new Map(),
@@ -89,6 +105,32 @@ const LengthPGroupData: PGroupData = {
     'DU': new Map(),
 };
 
+const LengthNavalRankings: NavalRanking = {
+    'A': new Map(),
+    'C': new Map(),
+    'G': new Map(),
+    'U': new Map(),
+    'DA': new Map(),
+    'DC': new Map(),
+    'DG': new Map(),
+    'DT': new Map(),
+    'DU': new Map(),
+};
+
+const AngleNavalRankings: NavalRanking = {
+    'A': new Map(),
+    'C': new Map(),
+    'G': new Map(),
+    'U': new Map(),
+    'DA': new Map(),
+    'DC': new Map(),
+    'DG': new Map(),
+    'DT': new Map(),
+    'DU': new Map(),
+};
+
+
+
 export type AnglesLengthsContext = {
     angleData: AverageData;
     lengthData: AverageData;
@@ -96,32 +138,56 @@ export type AnglesLengthsContext = {
     lengthPGroupData: PGroupData;
     pGroups: PGroup[];
     outlierColor: number;
+    angleNavalRankings: NavalRanking,
+    lengthNavalRankings: NavalRanking,
 }
 
 type PGroup = { threshold: number, color: number };
 const PGroups = new Array<PGroup>();
 let OutlierColor = 0;
 
-async function fetchAverages(prefix: string, resources: Resource[], loaderFunc?: (subpath: string) => string) {
+function checkReferenceData(data: object): asserts data is (WireBins & ZPrime) {
+    if (!isWireBins(data))
+        throw new Error('Invalid bond angle or length object type');
+
+    for (let idx = 0; idx < data.from.length; idx++) {
+        if (data.from[idx] >= data.to[idx])
+            throw new Error('Bin has invalid range');
+
+        if (data.binprob[idx] < 0.0)
+            throw new Error('Bin has invalid probability');
+    }
+
+    if (!isNavalZPrime(data))
+        throw new Error('Invalid Naval classification object type');
+}
+
+async function fetchReferenceData(prefix: string, resources: Resource[], loaderFunc?: (subpath: string) => string) {
     const averages = [] as Average[];
+    const navalRankings = {
+        'A': new Map(),
+        'C': new Map(),
+        'G': new Map(),
+        'U': new Map(),
+        'DA': new Map(),
+        'DC': new Map(),
+        'DG': new Map(),
+        'DT': new Map(),
+        'DU': new Map(),
+    };
 
     if (loaderFunc) {
         for (const [base, tag, file] of resources) {
             const text = loaderFunc(`${prefix}/${file}`);
 
-            const wireBins = JSON.parse(text);
-            if (!isWireBins(wireBins))
-                throw new Error('Invalid bond angle or length object type');
+            const data = JSON.parse(text);
+            checkReferenceData(data);
 
-            for (let idx = 0; idx < wireBins.from.length; idx++) {
-                if (wireBins.from[idx] >= wireBins.to[idx])
-                    throw new Error('Bin has invalid range');
+            averages.push([base, tag, toBins(data)]);
 
-                if (wireBins.binprob[idx] < 0.0)
-                    throw new Error('Bin has invalid probability');
-            }
-
-            averages.push([base, tag, toBins(wireBins)]);
+            const z = data.zprime;
+            const naval = Naval(z.weightedMedian, z.scaleFactorLower, z.scaleFactorUpper, z.ofConcernLower, z.ofConcernUpper);
+            navalRankings[base].set(tag, naval);
         }
     } else {
         const requests = [] as [Residues.ElementaryResidue, string, Promise<Response>][];
@@ -135,23 +201,18 @@ async function fetchAverages(prefix: string, resources: Resource[], loaderFunc?:
             if (!resp.ok)
                 throw new Error(`Bad server response: ${resp.statusText}`);
 
-            const wireBins = await resp.json();
-            if (!isWireBins(wireBins))
-                throw new Error('Invalid bond angle or length object type');
+            const data = await resp.json();
+            checkReferenceData(data);
 
-            for (let idx = 0; idx < wireBins.from.length; idx++) {
-                if (wireBins.from[idx] >= wireBins.to[idx])
-                    throw new Error('Bin has invalid range');
+            averages.push([base, tag, toBins(data)]);
 
-                if (wireBins.binprob[idx] < 0.0)
-                    throw new Error('Bin has invalid probability');
-            }
-
-            averages.push([base, tag, toBins(wireBins)]);
+            const z = data.zprime;
+            const naval = Naval(z.weightedMedian, z.scaleFactorLower, z.scaleFactorUpper, z.ofConcernLower, z.ofConcernUpper);
+            navalRankings[base].set(tag, naval);
         }
     }
 
-    return averages;
+    return { averages, navalRankings };
 }
 
 function fileName(base: ElementaryResidue, data: { kind: 'length', v: Pair } | { kind: 'angle', v: Triplet }) {
@@ -218,6 +279,12 @@ function setPGroupData(pgroups: typeof PGroups, data: PGroupData, averages: Aver
     }
 }
 
+function setNavalRankings(target: NavalRanking, source: NavalRanking) {
+    for (const base of  objKeys(source)) {
+        target[base] = source[base];
+    }
+}
+
 export namespace AnglesLengths {
     export type PGroup = ReturnType<typeof getPGroup>;
     export type PGroupData = NonNullable<ReturnType<typeof lengthPGroupData>>;
@@ -230,6 +297,8 @@ export namespace AnglesLengths {
             lengthPGroupData: { ...LengthPGroupData },
             pGroups: [...PGroups],
             outlierColor: OutlierColor,
+            angleNavalRankings: { ...AngleNavalRankings },
+            lengthNavalRankings: { ...LengthNavalRankings },
         }
     }
 
@@ -254,12 +323,12 @@ export namespace AnglesLengths {
         OutlierColor = htmlColorAsNumber(GlobalConfig.data().anglesLengths.outlierColor) ?? 0;
 
         try {
-            const angleAverages = await fetchAverages(
+            const { averages: angleAverages, navalRankings: angleNavalRankings } = await fetchReferenceData(
                 prefix,
                 iterate(Angles).flatMap(([base, triplets]) => triplets.map(t => ([base, tripletTag(t), fileName(base, { kind: 'angle', v: t })] as Resource))),
                 loaderFunc
             );
-            const lengthAverages = await fetchAverages(
+            const { averages: lengthAverages, navalRankings: lengthNavalRankings } = await fetchReferenceData(
                 prefix,
                 iterate(Lengths).flatMap(([base, pairs]) => pairs.map(p => ([base, pairTag(p), fileName(base, { kind: 'length', v: p })] as Resource))),
                 loaderFunc
@@ -270,6 +339,9 @@ export namespace AnglesLengths {
 
             setPGroupData(PGroups, AnglePGroupData, angleAverages);
             setPGroupData(PGroups, LengthPGroupData, lengthAverages);
+
+            setNavalRankings(AngleNavalRankings, angleNavalRankings);
+            setNavalRankings(LengthNavalRankings, lengthNavalRankings);
 
             return VoidResult();
         } catch (e) {
@@ -297,6 +369,13 @@ export namespace AnglesLengths {
             return void 0;
 
         return getBin(bins, angle.angle);
+    }
+
+    export function angleNavalRanking(base: ElementaryResidue, angle: Measurements.BondAngle) {
+        const n = AngleNavalRankings[base].get(tripletTag(angle.triplet));
+        if (!n) throw new Error(`No Naval ranking for angle of ${base} - ${angle.triplet}`);
+
+        return n;
     }
 
     export function anglePGroup(base: ElementaryResidue, angle: Measurements.BondAngle) {
@@ -339,6 +418,13 @@ export namespace AnglesLengths {
     export function lengthAverages(base: ElementaryResidue, pair: Pair) {
         const tag = pairTag(pair);
         return LengthAverageData[base].get(tag);
+    }
+
+    export function lengthNavalRanking(base: ElementaryResidue, length: Measurements.BondLength) {
+        const n = LengthNavalRankings[base].get(pairTag(length.pair));
+        if (!n) throw new Error(`No Naval data for length of ${base} - ${length.pair}`);
+
+        return n;
     }
 
     export function lengthPGroupData(idx: number, base: ElementaryResidue, pair: Pair) {

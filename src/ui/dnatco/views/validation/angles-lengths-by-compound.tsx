@@ -447,6 +447,7 @@ function AngleMetricDetails(props: {
               item.residue,
               item.angle.triplet
             );
+            const nrank = DAnglesLengths.angleNavalRanking(item.residue.compound, item.angle);
             const clr = item.pGroup
               ? colorToTuple(item.pGroup.color)
               : props.outlierColor;
@@ -505,7 +506,9 @@ function AngleMetricDetails(props: {
                         suffix={DegreesUnit}
                         value={item.angle.angle}
                         valueFormatter={(v) => M.r2d(v).toFixed(2)}
-                        naval={ni}
+                        navalPrefferedLower={M.d2r(ni.csdPreferredLeft)}
+                        navalPrefferedUpper={M.d2r(ni.csdPreferredLeft)}
+                        navalRanking={nrank}
                         xTitle={"Angle (\u00B0)"}
                         yTitle="Prob. (%)"
                         yTransform={(y) => y * 100}
@@ -641,6 +644,7 @@ function LengthMetricDetails(props: {
               item.residue,
               item.length.pair
             );
+            const nrank = DAnglesLengths.lengthNavalRanking(item.residue.compound, item.length);
             const clr = item.pGroup
               ? colorToTuple(item.pGroup.color)
               : props.outlierColor;
@@ -695,7 +699,9 @@ function LengthMetricDetails(props: {
                         suffix={AngstromUnit}
                         value={item.length.length}
                         valueFormatter={(v) => v.toFixed(3)}
-                        naval={ni}
+                        navalPrefferedLower={ni.csdPreferredLeft}
+                        navalPrefferedUpper={ni.csdPreferredRight}
+                        navalRanking={nrank}
                         xTitle={"Length\u00A0(\u00C5)"}
                         yTitle="Prob. (%)"
                         yTransform={(y) => y * 100}

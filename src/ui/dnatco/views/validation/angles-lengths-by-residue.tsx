@@ -27,7 +27,7 @@ import { Window } from "../../../common/window";
 import { MagnifyingGlassImg, TriangleDownImg } from "../../../../assets/images";
 import { ALM } from "../../../../dnatco/alm";
 import { Dnatcofication } from "../../../../dnatco/dnatcofication";
-import { AnglesLengths as DAnglesLengths } from "../../../../dnatco/angles-lengths";
+import { AnglesLengths as DAnglesLengths, NavalRankingData } from "../../../../dnatco/angles-lengths";
 import { tripletTag, Triplet } from "../../../../dnatco/angles-lengths/angles";
 import { ByResidueHelpers } from "../../../../dnatco/angles-lengths/helpers";
 import { pairTag, Pair } from "../../../../dnatco/angles-lengths/lengths";
@@ -155,6 +155,7 @@ function renderBondAngleDetail(
     residue
   )}_${AnglesLengthsCommon.fileNameFriendlyTag(tripletTag(bondAngle.triplet))}`;
   const ni = AnglesLengthsCommon.getNavalAngle(d, residue, bondAngle.triplet);
+  const nrank = DAnglesLengths.angleNavalRanking(residue.compound, bondAngle);
 
   return (
     <BondAngleDetails
@@ -162,6 +163,7 @@ function renderBondAngleDetail(
       downloadName={dlName}
       maybeBin={maybeBin}
       navalItem={ni}
+      navalRanking={nrank}
       outlierColor={outlierColor}
       pGroup={pGroup}
       pGroupDatas={pgrpDatas}
@@ -197,6 +199,7 @@ function renderBondLengthDetail(
     residue
   )}_${AnglesLengthsCommon.fileNameFriendlyTag(pairTag(bondLength.pair))}`;
   const ni = AnglesLengthsCommon.getNavalBond(d, residue, bondLength.pair);
+  const nrank = DAnglesLengths.lengthNavalRanking(residue.compound, bondLength);
 
   return (
     <BondLengthDetails
@@ -204,6 +207,7 @@ function renderBondLengthDetail(
       downloadName={dlName}
       maybeBin={maybeBin}
       navalItem={ni}
+      navalRanking={nrank}
       outlierColor={outlierColor}
       pGroup={pGroup}
       pGroupDatas={pgrpDatas}
@@ -221,6 +225,7 @@ function BondAngleDetails(props: {
   downloadName: string;
   maybeBin: ALM.MaybeBin;
   navalItem: NavalItem;
+  navalRanking: NavalRankingData;
   outlierColor: [r: number, g: number, b: number];
   pGroup: DAnglesLengths.PGroup;
   pGroupDatas: DAnglesLengths.PGroupData[];
@@ -285,7 +290,9 @@ function BondAngleDetails(props: {
               suffix={DegreesUnit}
               value={ba.angle}
               valueFormatter={(v) => M.r2d(v).toFixed(2)}
-              naval={props.navalItem} // Contained value is already in degrees
+              navalPrefferedLower={M.d2r(props.navalItem.csdPreferredLeft)}
+              navalPrefferedUpper={M.d2r(props.navalItem.csdPreferredRight)}
+              navalRanking={props.navalRanking}
               xTitle={"Angle (\u00B0)"}
               yTitle="Prob. (%)"
               xTransform={(x) => M.r2d(x)}
@@ -342,6 +349,7 @@ function BondLengthDetails(props: {
   downloadName: string;
   maybeBin: ALM.MaybeBin;
   navalItem: NavalItem;
+  navalRanking: NavalRankingData;
   outlierColor: [r: number, g: number, b: number];
   pGroup: DAnglesLengths.PGroup;
   pGroupDatas: DAnglesLengths.PGroupData[];
@@ -399,7 +407,9 @@ function BondLengthDetails(props: {
               suffix={AngstromUnit}
               value={bl.length}
               valueFormatter={(v) => v.toFixed(3)}
-              naval={props.navalItem}
+              navalPrefferedLower={props.navalItem.csdPreferredLeft}
+              navalPrefferedUpper={props.navalItem.csdPreferredRight}
+              navalRanking={props.navalRanking}
               xTitle={"Length (\u00C5)"}
               yTitle="Prob. (%)"
               yTransform={(y) => y * 100}
