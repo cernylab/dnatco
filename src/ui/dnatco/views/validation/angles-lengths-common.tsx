@@ -463,8 +463,8 @@ export class PGroupSummary extends React.Component<
     const spanWithMargin = 2 * margin + span;
 
     // TODO: Consider ProSco here
-    const preferredLeft = this.props.navalPrefferedLower;
-    const preferredRight = this.props.navalPrefferedUpper;
+    const preferredLeft = DAnglesLengths.navalPreferredLowerBound(this.props.navalPrefferedLower, this.props.pGroup);
+    const preferredRight = DAnglesLengths.navalPreferredUpperBound(this.props.navalPrefferedUpper, this.props.pGroup);
 
     const ofConcernLowerRatio = Math.round(100 * (ranking.ofConcernLower - lowest - margin) / spanWithMargin);
     const preferredLeftRatio = Math.round(100 * (preferredLeft - lowest) / spanWithMargin);

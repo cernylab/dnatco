@@ -57,6 +57,8 @@ type NavalRanking = Record<
     >
 >;
 
+const ProScoAllowedThreshold = 0.05;
+
 export type NavalRankingClass = 'preferred' | 'allowed' | 'of-concern';
 
 const AngleAverageData: AverageData = {
@@ -450,11 +452,59 @@ export namespace AnglesLengths {
         return PGroups.map(x => x.threshold);
     }
 
-    export function navalRankingClass(value: number, navalRanking: NavalRankingData): NavalRankingClass {
+    export function navalPreferredLowerBound(navalValue: number, pGroup: PGroup) {
+        if (!pGroup) return navalValue;
+
+        for (const bin of pGroup.groupedBins) {
+            if (bin.from > navalValue) {
+                // Naval value is more permissive than ProSco
+                return navalValue;
+            }
+
+            if (bin.prosco >= ProScoAllowedThreshold) {
+                // ProSco value is more permissive than Naval
+                return bin.from;
+            }
+        }
+
+        // We should not get here
+        return navalValue;
+    }
+
+    export function navalPreferredUpperBound(navalValue: number, pGroup: PGroup) {
+        if (!pGroup) return navalValue;
+
+        for (let idx = pGroup.groupedBins.length - 1; idx >= 0; idx--) {
+            const bin = pGroup.groupedBins[idx];
+
+            if (bin.to < navalValue) {
+                // Naval value is more permissive than ProSco
+                return navalValue;
+            }
+
+            if (bin.prosco >= ProScoAllowedThreshold) {
+                // ProSco value is more permissive than Naval
+                return bin.to;
+            }
+        }
+
+        // We should not get here
+        return navalValue;
+    }
+
+    export function navalRankingClass(
+        value: number,
+        navalRanking: NavalRankingData,
+        navalValueLower: number,
+        navalValueUpper: number,
+        pGroup: PGroup
+    ): NavalRankingClass {
+        const preferredLower = navalPreferredLowerBound(navalValueLower, pGroup);
+        const preferredUpper = navalPreferredUpperBound(navalValueUpper, pGroup);
+
         if (value <= navalRanking.ofConcernLower) return 'of-concern';
         else if (value >= navalRanking.ofConcernUpper) return 'of-concern';
-
-        // TODO: Add rules to calculate the 'allowed' interval
+        else if (value <= preferredLower || value >= preferredUpper) return 'allowed';
 
         return 'preferred';
     }

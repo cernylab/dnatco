@@ -305,7 +305,13 @@ function BondAngleDetails(props: {
               props.residueName,
               AnglesLengthsCommon.tripletBondName(ba.triplet, ba.tag),
               props.pGroup,
-              DAnglesLengths.navalRankingClass(ba.angle, props.navalRanking),
+              DAnglesLengths.navalRankingClass(
+                ba.angle,
+                props.navalRanking,
+                M.d2r(props.navalItem.csdPreferredLeft),
+                M.d2r(props.navalItem.csdPreferredRight),
+                props.pGroup
+              ),
               `${M.r2d(props.bondAngle.angle).toFixed(2)} ${DegreesUnit}`
             ),
             { x: evt.pageX, y: evt.pageY },
@@ -424,7 +430,13 @@ function BondLengthDetails(props: {
                 props.bondLength.tag
               ),
               props.pGroup,
-              DAnglesLengths.navalRankingClass(bl.length, props.navalRanking),
+              DAnglesLengths.navalRankingClass(
+                bl.length,
+                props.navalRanking,
+                props.navalItem.csdPreferredLeft,
+                props.navalItem.csdPreferredRight,
+                props.pGroup
+              ),
               `${props.bondLength.length.toFixed(3)} ${AngstromUnit}`
             ),
             { x: evt.pageX, y: evt.pageY },

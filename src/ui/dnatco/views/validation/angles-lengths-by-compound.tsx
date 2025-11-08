@@ -507,7 +507,7 @@ function AngleMetricDetails(props: {
                         value={item.angle.angle}
                         valueFormatter={(v) => M.r2d(v).toFixed(2)}
                         navalPrefferedLower={M.d2r(ni.csdPreferredLeft)}
-                        navalPrefferedUpper={M.d2r(ni.csdPreferredLeft)}
+                        navalPrefferedUpper={M.d2r(ni.csdPreferredRight)}
                         navalRanking={nrank}
                         xTitle={"Angle (\u00B0)"}
                         yTitle="Prob. (%)"
@@ -524,7 +524,13 @@ function AngleMetricDetails(props: {
                           tripletTag(item.angle.triplet)
                         ),
                         item.pGroup,
-                        DAnglesLengths.navalRankingClass(item.angle.angle, nrank),
+                        DAnglesLengths.navalRankingClass(
+                          item.angle.angle,
+                          nrank,
+                          M.d2r(ni.csdPreferredLeft),
+                          M.d2r(ni.csdPreferredRight),
+                          item.pGroup
+                        ),
                         `${M.r2d(item.angle.angle).toFixed(2)} ${DegreesUnit}`
                       ),
                       { x: evt.pageX, y: evt.pageY },
@@ -716,7 +722,13 @@ function LengthMetricDetails(props: {
                           pairTag(item.length.pair),
                         ),
                         item.pGroup,
-                        DAnglesLengths.navalRankingClass(item.length.length, nrank),
+                        DAnglesLengths.navalRankingClass(
+                           item.length.length,
+                           nrank,
+                           ni.csdPreferredLeft,
+                           ni.csdPreferredRight,
+                           item.pGroup
+                        ),
                         `${item.length.length.toFixed(3)} ${AngstromUnit}`,
                       ),
                       { x: evt.pageX, y: evt.pageY },
