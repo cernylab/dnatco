@@ -16,6 +16,7 @@ import { doDownload, Downloader } from "../../../../browser-util/downloader";
 import { ALM } from "../../../../dnatco/alm";
 import { Dnatcofication } from "../../../../dnatco/dnatcofication";
 import {
+  AnglesLengths,
   AnglesLengths as DAnglesLengths,
 } from "../../../../dnatco/angles-lengths";
 import { Triplet } from "../../../../dnatco/angles-lengths/angles";
@@ -31,7 +32,7 @@ import { Validation } from "../../../../dnatco/naval/validation";
 import { Summarize } from "../../../../dnatco/angles-lengths/summarize";
 import { GlobalConfig } from "../../../../global-config";
 import { htmlColorAsNumber, isWithin, replaceAll } from "../../../../util";
-import { colorToTuple, luminance, ColorTuple } from "../../../../util/colors";
+import { colorToTuple, luminance, ColorTuple, colorToHex } from "../../../../util/colors";
 import { FileTypes } from "../../../../util/file-type";
 import { M } from "../../../../util/math";
 import { Serialization } from "../../../../util/serialization";
@@ -46,11 +47,14 @@ import {
 import { ViewerApi, ViewerInterop } from "../../../../viewer/viewer-interop";
 
 export const ColorIsDarkThreshold = 0.5;
+export const AngstromUnit = "\u00A0\u00C5";
+export const DegreesUnit = "\u00B0";
 
 const PairBondNameCache: Map<string, React.ReactElement> = new Map();
 const TripletBondNameCache: Map<string, React.ReactElement> = new Map();
 
 const EmptyPlotPoints = new Array<number>();
+
 
 export type NavalItem = {
   csdPreferredLeft: number;
@@ -835,13 +839,24 @@ export namespace AnglesLengthsCommon {
 
   export function pGroupWindowTitle(
     residueName: JSX.Element,
-    metricName: JSX.Element
+    metricName: JSX.Element,
+    proscoPGroup: AnglesLengths.PGroup,
+    navalPGroup: AnglesLengths.PGroup,
+    value: string,
   ) {
+    const proscoColor = colorToHex(proscoPGroup?.color ?? AnglesLengths.outlierColor());
+    const navalColor = colorToHex(navalPGroup?.color ?? AnglesLengths.outlierColor());
+
     return (
-      <div className="font-700 flex flex-row gap-1 items-center">
+      <div className="font-700 flex flex-row gap-1 items-center whitespace-nowrap">
         {residueName}
         <div>|</div>
         {metricName}
+
+        <div style={{ backgroundColor: proscoColor, width: '1rem', height: '1rem' }} />
+        <div style={{ backgroundColor: navalColor, width: '1rem', height: '1rem' }} />
+
+        <div>{value}</div>
       </div>
     );
   }

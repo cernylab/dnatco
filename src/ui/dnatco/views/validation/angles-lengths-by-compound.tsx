@@ -3,6 +3,8 @@ import React from "react";
 import { Subject, type Subscription } from "rxjs";
 import {
   AnglesLengthsCommon,
+  AngstromUnit,
+  DegreesUnit,
   FloatingCue,
   PGroupSummary,
   Prosco,
@@ -500,7 +502,7 @@ function AngleMetricDetails(props: {
                         pGroupDatas={pGroupDatas}
                         rangeFormatter={(v) => v.toFixed(3)}
                         residueName={commonResidueName}
-                        suffix={"\u00B0"}
+                        suffix={DegreesUnit}
                         value={item.angle.angle}
                         valueFormatter={(v) => M.r2d(v).toFixed(2)}
                         naval={ni}
@@ -517,7 +519,10 @@ function AngleMetricDetails(props: {
                         AnglesLengthsCommon.tripletBondName(
                           item.angle.triplet,
                           tripletTag(item.angle.triplet)
-                        )
+                        ),
+                        item.pGroup,
+                        item.pGroup, // FIXME: This must be NAVAL PGroup
+                        `${M.r2d(item.angle.angle).toFixed(2)} ${DegreesUnit}`
                       ),
                       { x: evt.pageX, y: evt.pageY },
                       () => props.winTracker.remove(hwnd),
@@ -687,7 +692,7 @@ function LengthMetricDetails(props: {
                         pGroupDatas={pGroupDatas}
                         rangeFormatter={(v) => v.toFixed(3)}
                         residueName={commonResidueName}
-                        suffix={"\u00A0\u00C5"}
+                        suffix={AngstromUnit}
                         value={item.length.length}
                         valueFormatter={(v) => v.toFixed(3)}
                         naval={ni}
@@ -702,8 +707,11 @@ function LengthMetricDetails(props: {
                         commonResidueName,
                         AnglesLengthsCommon.pairBondName(
                           item.length.pair,
-                          pairTag(item.length.pair)
-                        )
+                          pairTag(item.length.pair),
+                        ),
+                        item.pGroup,
+                        item.pGroup, // FIXME: This must be NAVAL pgroup
+                        `${item.length.length.toFixed(3)} ${AngstromUnit}`,
                       ),
                       { x: evt.pageX, y: evt.pageY },
                       () => props.winTracker.remove(hwnd),

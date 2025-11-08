@@ -2,8 +2,10 @@ import type { StandardLonghandProperties } from "csstype";
 import React from "react";
 import { Subject, Subscription } from "rxjs";
 import {
+  AngstromUnit,
   AnglesLengthsCommon,
   ColorIsDarkThreshold,
+  DegreesUnit,
   FloatingCue,
   NavalItem,
   PGroupSummary,
@@ -280,7 +282,7 @@ function BondAngleDetails(props: {
               pGroupDatas={props.pGroupDatas}
               rangeFormatter={(v) => M.r2d(v).toFixed(2)}
               residueName={props.residueName}
-              suffix={"\u00B0"}
+              suffix={DegreesUnit}
               value={ba.angle}
               valueFormatter={(v) => M.r2d(v).toFixed(2)}
               naval={props.navalItem} // Contained value is already in degrees
@@ -294,7 +296,10 @@ function BondAngleDetails(props: {
             />,
             AnglesLengthsCommon.pGroupWindowTitle(
               props.residueName,
-              AnglesLengthsCommon.tripletBondName(ba.triplet, ba.tag)
+              AnglesLengthsCommon.tripletBondName(ba.triplet, ba.tag),
+              props.pGroup,
+              props.pGroup, // FIXME NAVAL
+              `${M.r2d(props.bondAngle.angle).toFixed(2)} ${DegreesUnit}`
             ),
             { x: evt.pageX, y: evt.pageY },
             () => props.winTracker.remove(hwnd),
@@ -391,7 +396,7 @@ function BondLengthDetails(props: {
               pGroupDatas={props.pGroupDatas}
               rangeFormatter={(v) => v.toFixed(3)}
               residueName={props.residueName}
-              suffix={"\u00A0\u00C5"}
+              suffix={AngstromUnit}
               value={bl.length}
               valueFormatter={(v) => v.toFixed(3)}
               naval={props.navalItem}
@@ -407,7 +412,10 @@ function BondLengthDetails(props: {
               AnglesLengthsCommon.pairBondName(
                 props.bondLength.pair,
                 props.bondLength.tag
-              )
+              ),
+              props.pGroup,
+              props.pGroup, // FIXME NAVAL
+              `${props.bondLength.length.toFixed(3)} ${AngstromUnit}`
             ),
             { x: evt.pageX, y: evt.pageY },
             () => props.winTracker.remove(hwnd),
