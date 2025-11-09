@@ -4,7 +4,7 @@ import { Grouping } from './grouping';
 import { Lengths, Pair, pairTag } from './lengths';
 import { Measurements } from './measurements';
 import { Naval, ZPrime, isNavalZPrime } from './naval';
-import { isWireReferenceSets, Reference, WireReferenceSets } from './reference-sets';
+import { isWireReferenceSets, References, WireReferenceSets } from './reference-sets';
 import { Residues } from '../residues';
 import { VoidResult, ErrorResult, Result } from '../';
 import { GlobalConfig } from '../../global-config';
@@ -62,7 +62,7 @@ type ReferenceSets = Record<
     ElementaryResidue,
     Map<
         string, // Angle or length tag
-        Reference[]
+        References[]
     >
 >;
 
@@ -200,6 +200,9 @@ function checkReferenceData(data: object): asserts data is (WireBins & ZPrime & 
 
     if (!isWireReferenceSets(data))
         throw new Error('Invalid Reference Sets object type');
+
+    if (data.from.length !== data.rs.bins.length)
+        throw new Error(`Mismatching number of ProSco bins and reference set Bins (${data.from.length} vs. ${data.rs.bins}`);
 }
 
 async function fetchReferenceData(prefix: string, resources: Resource[], loaderFunc?: (subpath: string) => string) {
@@ -274,7 +277,7 @@ function fileName(base: ElementaryResidue, data: { kind: 'length', v: Pair } | {
     return `${base}_${data.kind}_${data.v.map(x => x.replace("'", "p")).join('_')}_prosco.json`;
 }
 
-function getBin(bins: Bins, value: number): Bin|'below'|'above' {
+function getBinIndex(bins: Bins, value: number): number|'below'|'above' {
     let left = 0;
     let right = bins.length - 1;
 
@@ -285,7 +288,7 @@ function getBin(bins: Bins, value: number): Bin|'below'|'above' {
         const pos = isWithinTri(value, b);
 
         if (pos === 0) {
-            return b;
+            return idx;
         } else if (pos < 0) {
             if (idx === right)
                 return 'below';
@@ -295,6 +298,17 @@ function getBin(bins: Bins, value: number): Bin|'below'|'above' {
                 return 'above';
             left = idx;
         }
+    }
+}
+
+function getBin(bins: Bins, value: number): Bin|'below'|'above' {
+    const v = getBinIndex(bins, value);
+    switch (v) {
+        case 'above':
+        case 'below':
+            return v;
+        default:
+            return bins[v];
     }
 }
 
@@ -445,6 +459,24 @@ export namespace AnglesLengths {
         return getBin(bins, angle.angle);
     }
 
+    export function angleBinIndex(base: ElementaryResidue, angle: Measurements.BondAngle) {
+        const bins = AngleAverageData[base].get(tripletTag(angle.triplet));
+        if (!bins)
+            return -1
+
+        return getBinIndex(bins, angle.angle);
+    }
+
+    export function angleBinFromIndex(base: ElementaryResidue, angle: Measurements.BondAngle, binIndex: number | 'above' | 'below') {
+        if (binIndex === 'above' || binIndex === 'below') return binIndex;
+
+        const bins = AngleAverageData[base].get(tripletTag(angle.triplet));
+        if (!bins)
+            return void 0;
+
+        return bins[binIndex];
+    }
+
     export function angleNavalRanking(base: ElementaryResidue, angle: Measurements.BondAngle) {
         const n = AngleNavalRankings[base].get(tripletTag(angle.triplet));
         if (!n) throw new Error(`No Naval ranking for angle of ${base} - ${angle.triplet}`);
@@ -470,6 +502,24 @@ export namespace AnglesLengths {
             return void 0;
 
         return getBin(bins, length.length);
+    }
+
+    export function lengthBinIndex(base: ElementaryResidue, length: Measurements.BondLength) {
+        const bins = LengthAverageData[base].get(pairTag(length.pair));
+        if (!bins)
+            return -1
+
+        return getBinIndex(bins, length.length);
+    }
+
+    export function lengthBinFromIndex(base: ElementaryResidue, length: Measurements.BondLength, binIndex: number | 'above' | 'below') {
+        if (binIndex === 'above' || binIndex === 'below') return binIndex;
+
+        const bins = LengthAverageData[base].get(pairTag(length.pair));
+        if (!bins)
+            return void 0;
+
+        return bins[binIndex];
     }
 
     export function anglePGroupData(idx: number, base: ElementaryResidue, triplet: Triplet) {
@@ -585,5 +635,61 @@ export namespace AnglesLengths {
             case 'allowed': return 0x00FFFF00;
             case 'preferred': return 0x0000FF00;
         }
+    }
+
+    export function nearestAngleReferenceLower(binIndex: number, base: ElementaryResidue, triplet: Triplet) {
+        if (binIndex < 0) return void 0;
+
+        const refs = AngleReferenceSets[base].get(tripletTag(triplet));
+        if (!refs) return void 0;
+
+        for (let idx = binIndex; idx >= 0; idx--) {
+            const candidate = refs[idx][0];
+            if (candidate) return candidate;
+        }
+
+        return void 0;
+    }
+
+    export function nearestAngleReferenceUpper(binIndex: number, base: ElementaryResidue, triplet: Triplet) {
+        if (binIndex < 0) return void 0;
+
+        const refs = AngleReferenceSets[base].get(tripletTag(triplet));
+        if (!refs) return void 0;
+
+        for (let idx = binIndex; idx < refs.length; idx++) {
+            const candidate = refs[idx][0];
+            if (candidate) return candidate;
+        }
+
+        return void 0;
+    }
+
+    export function nearestLengthReferenceLower(binIndex: number, base: ElementaryResidue, pair: Pair) {
+        if (binIndex < 0) return void 0;
+
+        const refs = LengthReferenceSets[base].get(pairTag(pair));
+        if (!refs) return void 0;
+
+        for (let idx = binIndex; idx >= 0; idx--) {
+            const candidate = refs[idx][0];
+            if (candidate) return candidate;
+        }
+
+        return void 0;
+    }
+
+    export function nearestLengthReferenceUpper(binIndex: number, base: ElementaryResidue, pair: Pair) {
+        if (binIndex < 0) return void 0;
+
+        const refs = LengthReferenceSets[base].get(pairTag(pair));
+        if (!refs) return void 0;
+
+        for (let idx = binIndex; idx < refs.length; idx++) {
+            const candidate = refs[idx][0];
+            if (candidate) return candidate;
+        }
+
+        return void 0;
     }
 }

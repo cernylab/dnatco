@@ -248,6 +248,9 @@ function BondAngleDetails(props: {
     M.d2r(props.navalItem.csdPreferredRight),
     props.pGroup
   );
+  const binIndex = ALM.maybeBinHasValue(props.maybeBin)
+    ? props.maybeBin.binIndex
+    : -1;
 
   const doHighlight = () => {
     const r = props.residue;
@@ -303,6 +306,8 @@ function BondAngleDetails(props: {
               navalPrefferedUpper={M.d2r(props.navalItem.csdPreferredRight)}
               navalRanking={props.navalRanking}
               navalRankingClass={nrankCls}
+              nearestReferenceLower={DAnglesLengths.nearestAngleReferenceLower(binIndex, props.residue.compound, props.bondAngle.triplet)}
+              nearestReferenceUpper={DAnglesLengths.nearestAngleReferenceUpper(binIndex, props.residue.compound, props.bondAngle.triplet)}
               xTitle={"Angle (\u00B0)"}
               yTitle="Prob. (%)"
               xTransform={(x) => M.r2d(x)}
@@ -381,6 +386,9 @@ function BondLengthDetails(props: {
     props.navalItem.csdPreferredRight,
     props.pGroup
   );
+  const binIndex = ALM.maybeBinHasValue(props.maybeBin)
+    ? props.maybeBin.binIndex
+    : -1;
 
   const doHighlight = () => {
     const r = props.residue;
@@ -429,6 +437,8 @@ function BondLengthDetails(props: {
               navalPrefferedUpper={props.navalItem.csdPreferredRight}
               navalRanking={props.navalRanking}
               navalRankingClass={nrankCls}
+              nearestReferenceLower={DAnglesLengths.nearestLengthReferenceLower(binIndex, props.residue.compound, props.bondLength.pair)}
+              nearestReferenceUpper={DAnglesLengths.nearestLengthReferenceUpper(binIndex, props.residue.compound, props.bondLength.pair)}
               xTitle={"Length (\u00C5)"}
               yTitle="Prob. (%)"
               yTransform={(y) => y * 100}

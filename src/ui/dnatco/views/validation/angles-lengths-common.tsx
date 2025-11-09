@@ -20,6 +20,7 @@ import {
     NavalRankingData
 } from "../../../../dnatco/angles-lengths";
 import { Triplet } from "../../../../dnatco/angles-lengths/angles";
+import { Reference } from "../../../../dnatco/angles-lengths/reference-sets";
 import {
   isShiftedName,
   unshiftName,
@@ -49,6 +50,8 @@ import { ViewerApi, ViewerInterop } from "../../../../viewer/viewer-interop";
 export const ColorIsDarkThreshold = 0.5;
 export const AngstromUnit = "\u00A0\u00C5";
 export const DegreesUnit = "\u00B0";
+export const LeftwardsArrowWithBar = "\u21A4";
+export const RightwardsArrowWithBar = "\u21A6";
 
 const PairBondNameCache: Map<string, React.ReactElement> = new Map();
 const TripletBondNameCache: Map<string, React.ReactElement> = new Map();
@@ -346,6 +349,8 @@ export type PGroupSummaryProps = {
   navalPrefferedUpper: number,
   navalRanking: NavalRankingData;
   navalRankingClass: NavalRankingClass;
+  nearestReferenceLower: Reference | undefined;
+  nearestReferenceUpper: Reference | undefined;
   xTitle: string;
   yTitle: string;
   suffix?: string;
@@ -530,20 +535,13 @@ export class PGroupSummary extends React.Component<
 
   private renderSummary() {
     const proscoColor = colorToHex(this.props.pGroup?.color ?? DAnglesLengths.outlierColor());
-      const prob = (() => {
-          switch (this.props.maybeBin) {
-            case 'below':
-            case 'above':
-            case 'no-data':
-              return '-';
-            default:
-              return <Prosco bin={this.props.maybeBin} />
-          }
-      })();
+
+    const nearestLower = this.props.nearestReferenceLower;
+    const nearestUpper = this.props.nearestReferenceUpper;
 
     return (
-      <div>
-        <div className="grid grid-cols-[auto_auto_auto_auto]">
+      <div className="flex flex-row gap-4 font-bold">
+          <div className="gap-2" style={{ display: 'grid', gridTemplateColumns: 'auto auto auto auto', alignItems: 'center' }}>
           <div>NA-VAL</div>
           <div></div>
           <div style={{
@@ -554,13 +552,32 @@ export class PGroupSummary extends React.Component<
           <div>{this.navalRankingClassName()}</div>
 
           <div>ProSco</div>
-          <div>{prob}</div>
+          <div><Prosco bin={this.props.maybeBin} /></div>
           <div style={{
             width: '1rem',
             height: '1rem',
             backgroundColor: proscoColor
           }} />
           <div>...</div>
+        </div>
+
+        <div style={{ flex: '1' }} />
+
+        <div className="flex flex-row gap-2">
+            <div>RS18</div>
+            <div className="gap-2" style={{ display: 'grid', gridTemplateColumns: 'auto auto auto auto auto' }}>
+                <div>{LeftwardsArrowWithBar}</div>
+                <div>{nearestLower?.[1].toUpperCase() ?? ''}</div>
+                <div>{nearestLower?.[3] ?? ''}</div>
+                <div>{nearestLower?.[4] ?? ''}</div>
+                <div>{nearestLower?.[6] ?? ''}</div>
+
+                <div>{RightwardsArrowWithBar}</div>
+                <div>{nearestUpper?.[1].toUpperCase() ?? ''}</div>
+                <div>{nearestUpper?.[3] ?? ''}</div>
+                <div>{nearestUpper?.[4] ?? ''}</div>
+                <div>{nearestUpper?.[6] ?? ''}</div>
+            </div>
         </div>
       </div>
     );

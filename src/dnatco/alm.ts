@@ -30,6 +30,20 @@ function accumulateArray(target: number[], source: number[]) {
         target[idx] += source[idx];
 }
 
+function asMaybeBin(bin: Bin | 'above' | 'below' | 'no-data', binIndex: number | 'above' | 'below'): ALM.MaybeBin | 'above' | 'below' | 'no-data' {
+    switch (bin) {
+        case 'above':
+        case 'below':
+        case 'no-data':
+            return bin;
+        default:
+            return {
+                ...bin,
+                binIndex: binIndex as number,
+            };
+    }
+}
+
 function processAggregation(aggregation: Map<any, ALM.ByCompound>) {
     for (const alm of aggregation.values()) {
         // Go over all bases for the given model
@@ -215,11 +229,22 @@ export namespace ALM {
         };
     }
 
-    export type MaybeBin = Bin | 'below' | 'above' | 'no-data';
+    export type MaybeBin = (Bin & { binIndex: number }) | 'below' | 'above' | 'no-data';
     export type ResidueStats = {
         angles: { pGroup?: AnglesLengths.PGroup, bin: MaybeBin }[],
         lengths: { pGroup?: AnglesLengths.PGroup, bin: MaybeBin }[],
         summary: Summarize.Summary;
+    }
+
+    export function maybeBinHasValue(maybeBin: MaybeBin): maybeBin is (Bin & { binIndex: number }) {
+        switch (maybeBin) {
+            case 'above':
+            case 'below':
+            case 'no-data':
+                return false;
+            default:
+                return true;
+        }
     }
 
     export function emptyMappingByCompoundAngleLength() {
@@ -281,13 +306,15 @@ export namespace ALM {
                     statsC = almC.byMetric.get(tag)!;
 
                 const pGroup = AnglesLengths.anglePGroup(comp, a);
-                const bin: MaybeBin = AnglesLengths.angleBin(comp, a) ?? 'no-data';
+                const binIndex = AnglesLengths.angleBinIndex(comp, a);
+                const bin = AnglesLengths.angleBinFromIndex(comp, a, binIndex) ?? 'no-data';
+                const maybeBin = asMaybeBin(bin, binIndex);
 
                 const ang = {
                     angle: a,
                     residue: r,
                     pGroup,
-                    bin
+                    bin: maybeBin,
                 };
                 statsM.individual.angles.push(ang);
                 statsC.individual.angles.push(ang);
@@ -316,13 +343,15 @@ export namespace ALM {
                     statsC = almC.byMetric.get(tag)!;
 
                 const pGroup = AnglesLengths.lengthPGroup(comp, l);
-                const bin: MaybeBin = AnglesLengths.lengthBin(comp, l) ?? 'no-data';
+                const binIndex = AnglesLengths.lengthBinIndex(comp, l);
+                const bin = AnglesLengths.lengthBinFromIndex(comp, l, binIndex) ?? 'no-data';
+                const maybeBin = asMaybeBin(bin, binIndex);
 
                 const len = {
                     length: l,
                     residue: r,
                     pGroup,
-                    bin
+                    bin: maybeBin
                 };
                 statsM.individual.lengths.push(len);
                 statsC.individual.lengths.push(len);
@@ -429,17 +458,21 @@ export namespace ALM {
             const angles = [];
             for (const a of r.bondAngles) {
                 const pgrp = AnglesLengths.anglePGroup(r.compound, a);
-                const bin = AnglesLengths.angleBin(r.compound, a) ?? 'no-data' as MaybeBin;
+                const binIndex = AnglesLengths.angleBinIndex(r.compound, a);
+                const bin = AnglesLengths.angleBinFromIndex(r.compound, a, binIndex) ?? 'no-data';
+                const maybeBin = asMaybeBin(bin, binIndex);
 
-                angles.push({ pGroup: pgrp, bin });
+                angles.push({ pGroup: pgrp, bin: maybeBin });
             }
 
             const lengths = [];
             for (const l of r.bondLengths) {
                 const pgrp = AnglesLengths.lengthPGroup(r.compound, l);
-                const bin = AnglesLengths.lengthBin(r.compound, l) ?? 'no-data' as MaybeBin;
+                const binIndex = AnglesLengths.lengthBinIndex(r.compound, l);
+                const bin = AnglesLengths.lengthBinFromIndex(r.compound, l, binIndex) ?? 'no-data';
+                const maybeBin = asMaybeBin(bin, binIndex);
 
-                lengths.push({ pGroup: pgrp, bin });
+                lengths.push({ pGroup: pgrp, bin: maybeBin });
             }
 
             stats.push({ angles, lengths, summary: Summarize.residue(r) });

@@ -455,6 +455,10 @@ function AngleMetricDetails(props: {
               M.d2r(ni.csdPreferredRight),
               item.pGroup
             );
+            const binIndex = ALM.maybeBinHasValue(item.bin)
+              ? item.bin.binIndex
+              : -1;
+
             const clr = item.pGroup
               ? colorToTuple(item.pGroup.color)
               : props.outlierColor;
@@ -518,6 +522,9 @@ function AngleMetricDetails(props: {
                         navalPrefferedUpper={M.d2r(ni.csdPreferredRight)}
                         navalRanking={nrank}
                         navalRankingClass={nrankCls}
+                        nearestReferenceLower={DAnglesLengths.nearestAngleReferenceLower(binIndex, item.residue.compound, item.angle.triplet)}
+                        nearestReferenceUpper={DAnglesLengths.nearestAngleReferenceLower(binIndex, item.residue.compound, item.angle.triplet)}
+
                         xTitle={"Angle (\u00B0)"}
                         yTitle="Prob. (%)"
                         yTransform={(y) => y * 100}
@@ -661,6 +668,10 @@ function LengthMetricDetails(props: {
               ni.csdPreferredRight,
               item.pGroup
             );
+            const binIndex = ALM.maybeBinHasValue(item.bin)
+              ? item.bin.binIndex
+              : -1;
+
             const clr = item.pGroup
               ? colorToTuple(item.pGroup.color)
               : props.outlierColor;
@@ -679,6 +690,7 @@ function LengthMetricDetails(props: {
               pairTag(item.length.pair)
             )}`;
 
+              item.bin
             return (
               <tr className="rdo-angles-lengths">
                 <td onMouseEnter={doHighlight} onMouseLeave={doUnhighlight}>
@@ -718,6 +730,8 @@ function LengthMetricDetails(props: {
                         valueFormatter={(v) => v.toFixed(3)}
                         navalPrefferedLower={ni.csdPreferredLeft}
                         navalPrefferedUpper={ni.csdPreferredRight}
+                        nearestReferenceLower={DAnglesLengths.nearestLengthReferenceLower(binIndex, item.residue.compound, item.length.pair)}
+                        nearestReferenceUpper={DAnglesLengths.nearestLengthReferenceLower(binIndex, item.residue.compound, item.length.pair)}
                         navalRanking={nrank}
                         navalRankingClass={nrankCls}
                         xTitle={"Length\u00A0(\u00C5)"}
