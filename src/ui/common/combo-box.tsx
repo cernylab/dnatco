@@ -84,7 +84,7 @@ export class ComboBox extends React.Component<ComboBox.Props> {
           {this.props.options.map((o) => {
             return (
               <option key={o.value} value={o.value}>
-                <div>{o.caption === "-" ? "Select" : o.caption}</div>
+                {o.caption === "-" ? "Select" : o.caption}
               </option>
             );
           })}
