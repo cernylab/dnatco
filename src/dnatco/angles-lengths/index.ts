@@ -184,6 +184,9 @@ type PGroup = { threshold: number, color: number, name: string };
 const PGroups = new Array<PGroup>();
 let OutlierColor = 0;
 let OutlierName = 'Outlier';
+let NavalPrefferedColor = 0x0000FF00;
+let NavalAllowedColor   = 0x00FFFF00;
+let NavalOfConcernColor = 0x00FF0000;
 
 function checkReferenceData(data: object): asserts data is (WireBins & ZPrime & WireReferenceSets) {
     if (!isWireBins(data))
@@ -402,6 +405,15 @@ export namespace AnglesLengths {
         PGroups.sort((a, b) => a.threshold - b.threshold);
         OutlierColor = htmlColorAsNumber(GlobalConfig.data().anglesLengths.outlierColor) ?? 0;
         OutlierName = GlobalConfig.data().anglesLengths.outlierName;
+
+        const tryColor = (color: number | undefined) => {
+            if (!color)
+                throw new Error(`${color} is not a valid HTML color string`);
+            return color
+        };
+        NavalPrefferedColor = tryColor(htmlColorAsNumber(GlobalConfig.data().anglesLengths.navalPreferredColor));
+        NavalAllowedColor = tryColor(htmlColorAsNumber(GlobalConfig.data().anglesLengths.navalAllowedColor));
+        NavalOfConcernColor = tryColor(htmlColorAsNumber(GlobalConfig.data().anglesLengths.navalOfConcernColor));
 
         try {
             const {
@@ -639,9 +651,9 @@ export namespace AnglesLengths {
 
     export function navalRankingClassColor(cls: NavalRankingClass) {
         switch (cls) {
-            case 'of-concern': return 0x00FF0000;
-            case 'allowed': return 0x00FFFF00;
-            case 'preferred': return 0x0000FF00;
+            case 'of-concern': return NavalOfConcernColor;
+            case 'allowed': return NavalAllowedColor;
+            case 'preferred': return NavalPrefferedColor;
         }
     }
 
