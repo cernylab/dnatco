@@ -173,15 +173,17 @@ export type AnglesLengthsContext = {
     lengthPGroupData: PGroupData;
     pGroups: PGroup[];
     outlierColor: number;
-    angleNavalRankings: NavalRanking,
-    lengthNavalRankings: NavalRanking,
-    angleReferenceSets: ReferenceSets,
-    lengthReferenceSets: ReferenceSets,
+    outlierName: string;
+    angleNavalRankings: NavalRanking;
+    lengthNavalRankings: NavalRanking;
+    angleReferenceSets: ReferenceSets;
+    lengthReferenceSets: ReferenceSets;
 };
 
-type PGroup = { threshold: number, color: number };
+type PGroup = { threshold: number, color: number, name: string };
 const PGroups = new Array<PGroup>();
 let OutlierColor = 0;
+let OutlierName = 'Outlier';
 
 function checkReferenceData(data: object): asserts data is (WireBins & ZPrime & WireReferenceSets) {
     if (!isWireBins(data))
@@ -372,6 +374,7 @@ export namespace AnglesLengths {
             lengthPGroupData: { ...LengthPGroupData },
             pGroups: [...PGroups],
             outlierColor: OutlierColor,
+            outlierName: OutlierName,
             angleNavalRankings: { ...AngleNavalRankings },
             lengthNavalRankings: { ...LengthNavalRankings },
             angleReferenceSets: { ...AngleReferenceSets },
@@ -391,13 +394,14 @@ export namespace AnglesLengths {
             if (!color)
                 throw new Error(`${pgrp.color} is not a valid HTML color string`);
 
-            PGroups.push({ threshold, color });
+            PGroups.push({ threshold, color, name: pgrp.name });
         }
         if (PGroups.length === 0)
             throw new Error('No probability intervals');
 
         PGroups.sort((a, b) => a.threshold - b.threshold);
         OutlierColor = htmlColorAsNumber(GlobalConfig.data().anglesLengths.outlierColor) ?? 0;
+        OutlierName = GlobalConfig.data().anglesLengths.outlierName;
 
         try {
             const {
@@ -558,6 +562,10 @@ export namespace AnglesLengths {
 
     export function outlierColor() {
         return OutlierColor;
+    }
+
+    export function outlierName() {
+        return OutlierName;
     }
 
     export function pGroupColor(idx: number) {

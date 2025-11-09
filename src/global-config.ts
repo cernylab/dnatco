@@ -18,10 +18,12 @@ const SchemeRegex = new RegExp('^([a-zA-Z]){1}([a-zA-Z0-9])*:\\/\\/');
 export type AngleLengthPGroup = {
     threshold: number,
     color: string,
+    name: string,
 };
 export const AngleLengthPGroup: AngleLengthPGroup = {
     threshold: 0,
     color: '#ffffff',
+    name: '',
 };
 
 export type GlobalConfigData = {
@@ -35,6 +37,7 @@ export type GlobalConfigData = {
         navalMarkerColor: string,
         pGroups: AngleLengthPGroup[],
         outlierColor: string,
+        outlierName: string,
     },
     violinPlotMarkerColorA: string,
     violinPlotMarkerColorB: string,
@@ -96,10 +99,11 @@ const GlobalConfigData: GlobalConfigData = {
         navalMarkerColor: '#ff8080',
         maxWorst: 30,
         outlierColor: '#000000',
+        outlierName: 'Outlier',
         pGroups: [
-            { threshold: 80, color: '#006eff' },
-            { threshold: 95, color: '#00ff00' },
-            { threshold: 99.9, color: '#ffff00' },
+            { threshold: 80, color: '#006eff', name: '', },
+            { threshold: 95, color: '#00ff00', name: '', },
+            { threshold: 99.9, color: '#ffff00', name: '' },
         ],
     },
     violinPlotMarkerColorA: '#fff70c',

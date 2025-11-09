@@ -559,7 +559,7 @@ export class PGroupSummary extends React.Component<
             height: '1rem',
             backgroundColor: proscoColor
           }} />
-          <div>...</div>
+          <div>{this.props.pGroup?.name ?? DAnglesLengths.outlierName()}</div>
         </div>
 
         <div style={{ flex: '1' }} />
