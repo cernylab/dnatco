@@ -6,7 +6,6 @@ import { Colors } from "../../colors";
 import { StatsBar } from "../../stats-bar";
 import { SelectedPieces } from "../../structure-selection";
 import { Icon } from "../../../common/icon";
-import { ToggleButton } from "../../../common/push-button";
 import { Tooltip } from "../../../common/tooltip";
 import { Window } from "../../../common/window";
 import { colorStyle } from "../../../util";
@@ -136,6 +135,8 @@ export class AveragesChart extends React.Component<{
   bins: Bins;
   pGroupDatas: DAnglesLengths.PGroupData[];
   mark: number;
+  ofConcernLowerMark: number;
+  ofConcernUpperMark: number;
   xTitle: string;
   yTitle: string;
   xTransform?: (x: number) => number;
@@ -172,17 +173,21 @@ export class AveragesChart extends React.Component<{
     const markerColorTup = colorToTuple(
       htmlColorAsNumber(GlobalConfig.data().anglesLengths.chartMarkerColor) ?? 0
     );
+
     const outlierColor = DAnglesLengths.outlierColor();
     const pGroupIndices = this.binsToPGroupIndices(
       this.props.bins,
       this.props.pGroupDatas
     );
-
+    const ofConcernColor = (() => {
+      const tup = colorToTuple(DAnglesLengths.navalRankingClassColor('of-concern'));
+      return `rgb(${tup[0]}, ${tup[1]}, ${tup[2]})`;
+    })();
     const color = pGroupIndices.map((pgIdx) => {
       const tup = colorToTuple(
         pgIdx === -1 ? outlierColor : DAnglesLengths.pGroupColor(pgIdx)
       );
-      return `$rgb(${tup[0]}, ${tup[1]}, ${tup[2]})`;
+      return `rgb(${tup[0]}, ${tup[1]}, ${tup[2]})`;
     });
 
     const tm = this.props.xTransform
@@ -288,6 +293,32 @@ export class AveragesChart extends React.Component<{
               hoveron: "fills",
               showlegend: false,
             },
+            {
+              x: [this.props.xTransform?.(this.props.ofConcernLowerMark) ?? this.props.ofConcernLowerMark],
+              y: [yMax * 0.33],
+              type: "bar",
+              width: 2 * (xt[1] - xt[0]),
+              marker: {
+                color: ofConcernColor,
+              },
+              hoverinfo: "text",
+              hovertext: "NA-VAL Of Concern Lower",
+              hoveron: "fills",
+              showlegend: false,
+            },
+            {
+              x: [this.props.xTransform?.(this.props.ofConcernUpperMark) ?? this.props.ofConcernUpperMark],
+              y: [yMax * 0.33],
+              type: "bar",
+              width: 2 * (xt[1] - xt[0]),
+              marker: {
+                color: ofConcernColor,
+              },
+              hoverinfo: "text",
+              hovertext: "NA-VAL Of Concern Upper",
+              hoveron: "fills",
+              showlegend: false,
+            },
           ]}
           layout={{
             autosize: true,
@@ -372,6 +403,9 @@ export class PGroupSummary extends React.Component<
   private allowedClr = colorToHex(DAnglesLengths.navalRankingClassColor('allowed'));
   private preferredClr = colorToHex(DAnglesLengths.navalRankingClassColor('preferred'));
 
+  private totalPreferredLower = DAnglesLengths.navalPreferredLowerBound(this.props.navalPrefferedLower, this.props.pGroup);
+  private totalPreferredUpper = DAnglesLengths.navalPreferredUpperBound(this.props.navalPrefferedUpper, this.props.pGroup);
+
   constructor(props: PGroupSummaryProps) {
     super(props);
 
@@ -379,20 +413,6 @@ export class PGroupSummary extends React.Component<
       mode: "chart",
       navalTainer: null,
     };
-  }
-
-  private makeToggleButton(caption: string, mode: typeof this.state.mode) {
-    return (
-      <ToggleButton
-        caption={caption}
-        onClick={(e) => {
-          e.stopPropagation();
-          e.nativeEvent.stopImmediatePropagation();
-          if (mode !== this.state.mode) this.setState({ ...this.state, mode });
-        }}
-        selected={this.state.mode === mode}
-      />
-    );
   }
 
   private navalRankingClassName() {
@@ -408,6 +428,8 @@ export class PGroupSummary extends React.Component<
       <AveragesChart
         bins={this.props.bins}
         mark={this.props.value}
+        ofConcernLowerMark={this.props.navalRanking.ofConcernLower}
+        ofConcernUpperMark={this.props.navalRanking.ofConcernUpper}
         pGroupDatas={this.props.pGroupDatas}
         xTitle={this.props.xTitle}
         yTitle={this.props.yTitle}
@@ -478,13 +500,10 @@ export class PGroupSummary extends React.Component<
     const margin = span * 0.05;
     const spanWithMargin = 2 * margin + span;
 
-    const preferredLower = DAnglesLengths.navalPreferredLowerBound(this.props.navalPrefferedLower, this.props.pGroup);
-    const preferredUpper = DAnglesLengths.navalPreferredUpperBound(this.props.navalPrefferedUpper, this.props.pGroup);
-
     const marginRatio = Math.round(100 * margin / spanWithMargin);
     const ofConcernLowerRatio = Math.round(100 * (ranking.ofConcernLower - lowest) / spanWithMargin);
-    const preferredLeftRatio = Math.round(100 * (preferredLower - ranking.ofConcernLower) / spanWithMargin);
-    const preferredRightRatio = Math.round(100 * (ranking.ofConcernUpper - preferredUpper) / spanWithMargin);
+    const preferredLeftRatio = Math.round(100 * (this.totalPreferredLower - ranking.ofConcernLower) / spanWithMargin);
+    const preferredRightRatio = Math.round(100 * (ranking.ofConcernUpper - this.totalPreferredUpper) / spanWithMargin);
     const ofConcernUpperRatio = Math.round(100 * (highest - ranking.ofConcernUpper) / spanWithMargin);
     const rest = 100 - ofConcernLowerRatio - ofConcernUpperRatio - preferredLeftRatio - preferredRightRatio;
 
@@ -496,13 +515,27 @@ export class PGroupSummary extends React.Component<
     return (
       <div className="relative" ref={this.setNavalTainer}>
         <div className="flex flex-row">
-          <div style={{ backgroundColor: this.ofConcernClr, flex: marginRatio, height: '32px' }} />
-          <div style={{ backgroundColor: this.ofConcernClr, flex: ofConcernLowerRatio, height: '32px' }} />
-          <div style={{ backgroundColor: this.allowedClr, flex: preferredLeftRatio, height: '32px' }} />
-          <div style={{ backgroundColor: this.preferredClr, flex: rest }} />
-          <div style={{ backgroundColor: this.allowedClr, flex: preferredRightRatio, height: '32px' }} />
-          <div style={{ backgroundColor: this.ofConcernClr, flex: ofConcernUpperRatio, height: '32px' }} />
-          <div style={{ backgroundColor: this.ofConcernClr, flex: marginRatio, height: '32px' }} />
+          <div style={{ flex: marginRatio, height: '32px', display: 'flex' }}>
+            <Tooltip display='flex' tag={<div style={{ backgroundColor: this.ofConcernClr, flex: 1 }} />}>Of Concern</Tooltip>
+          </div>
+          <div style={{ flex: ofConcernLowerRatio, height: '32px', display: 'flex' }}>
+            <Tooltip display='flex' tag={<div style={{ backgroundColor: this.ofConcernClr, flex: 1 }} />}>Of Concern</Tooltip>
+          </div>
+          <div style={{ flex: preferredLeftRatio, height: '32px', display: 'flex' }}>
+            <Tooltip display='flex' tag={<div style={{ backgroundColor: this.allowedClr, flex: 1}} />}>Allowed</Tooltip>
+          </div>
+          <div style={{ flex: rest, height: '32px', display: 'flex' }}>
+            <Tooltip display='flex' tag={<div style={{ backgroundColor: this.preferredClr, flex: 1 }} />}>Preferred</Tooltip>
+          </div>
+          <div style={{ flex: preferredRightRatio, height: '32px', display: 'flex' }}>
+            <Tooltip display='flex' tag={<div style={{ backgroundColor: this.allowedClr, flex: 1 }} />}>Allowed</Tooltip>
+          </div>
+          <div style={{ flex: ofConcernUpperRatio, height: '32px', display: 'flex' }}>
+            <Tooltip display='flex' tag={<div style={{ backgroundColor: this.ofConcernClr, flex: 1 }} />}>Of Concern</Tooltip>
+          </div>
+          <div style={{ flex: marginRatio, height: '32px', display: 'flex' }}>
+            <Tooltip display='flex' tag={<div style={{ backgroundColor: this.ofConcernClr, flex: 1 }} />}>Of Concern</Tooltip>
+          </div>
         </div>
 
         <div style={{

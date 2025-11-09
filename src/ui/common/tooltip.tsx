@@ -8,6 +8,13 @@ function inside(x: number, y: number, l: number, t: number, r: number, b: number
     return (x >= l && x <= r && y >= t && y <= b);
 }
 
+function findZIndexOfParent(startElement: Element) {
+    const zIndexParent = startElement.closest('[style*="z-index"]');
+    return zIndexParent
+        ? parseInt(window.getComputedStyle(zIndexParent).zIndex)
+        : void 0;
+}
+
 export class Tooltip extends React.Component<Tooltip.Props> {
     static defaultProps: Tooltip.Props = {
         delayMsec: 0,
@@ -17,7 +24,7 @@ export class Tooltip extends React.Component<Tooltip.Props> {
 
     private contentId;
     private inhibitDisplay = false;
-    private ref: React.RefObject<HTMLSpanElement> = React.createRef();
+    private ref: React.RefObject<HTMLDivElement> = React.createRef();
     private pendingDisplay: number|null = null;
 
     constructor(props: Tooltip.Props) {
@@ -44,11 +51,14 @@ export class Tooltip extends React.Component<Tooltip.Props> {
         const posX = pageX + CursorOffset;
         const posY = pageY + CursorOffset;
 
+        const zIndex = findZIndexOfParent(this.ref.current!);
+
         const tainer = document.createElement('div');
         tainer.id = this.contentId;
         tainer.className = 'rdo-tooltip-text rdo-tooltip-text-faded';
         tainer.style.left = `${posX}px`;
         tainer.style.top = `${posY}px`;
+        tainer.style.zIndex = zIndex ? `${zIndex + 1}` : '99';
 
         const hideTooltip = () => {
             tainer.classList.add('rdo-tooltip-text-faded');
@@ -152,8 +162,8 @@ export class Tooltip extends React.Component<Tooltip.Props> {
 
     render() {
         return (
-            <span className='relative'
-                style={{ display: this.props.display, overflow: this.props.overflow }}
+            <div className='relative'
+                style={{ display: this.props.display, overflow: this.props.overflow, flex: this.props.display === 'flex' ? 1 : void 0 }}
                 ref={this.ref}
                 onMouseEnter={e => this.scheduleDisplay(e.pageX, e.pageY, false, this.props.delayMsec)}
                 onMouseLeave={() => {
@@ -174,7 +184,7 @@ export class Tooltip extends React.Component<Tooltip.Props> {
                 }}
             >
                 {this.renderTag()}
-            </span>
+            </div>
         );
     }
 }
@@ -183,7 +193,7 @@ export namespace Tooltip {
     export interface Props {
         children?: React.ReactNode;
         delayMsec: number;
-        display: 'inline' | 'block';
+        display: 'inline' | 'block' | 'flex';
         overflow: 'visible' | 'hidden';
         tag?: JSX.Element|string;
     }
