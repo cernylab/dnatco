@@ -303,11 +303,12 @@ export class AveragesChart extends React.Component<{
           config={{
             displayModeBar: false,
             responsive: true,
-            scrollZoom: true,
+                  scrollZoom: true,
+                  autosizable: true
           }}
           style={{
-            margin: 0,
-            height: "450px",
+              margin: 0,
+              height: '450px',
           }}
         />
       </div>
@@ -599,7 +600,7 @@ export class PGroupSummary extends React.Component<
 
   render() {
     return (
-      <div>
+      <div className="flex flex-col w-full h-full">
         <div className="h-2" />
         <div className="flex">
           <div className="flex">
