@@ -602,23 +602,6 @@ export class PGroupSummary extends React.Component<
     return (
       <div className="flex flex-col w-full h-full">
         <div className="h-2" />
-        <div className="flex">
-          <div className="flex">
-            <div className="flex-1">
-              {this.makeToggleButton("Chart", "chart")}
-            </div>
-            <div className="flex-1">
-              {this.makeToggleButton("Details", "details")}
-            </div>
-          </div>
-          <div className="flex-1" />
-          <div className="rdo-text-large">
-            {this.props.valueFormatter(this.props.value)}
-            {this.props.suffix}
-          </div>
-        </div>
-
-        <div className="h-2" />
         {this.renderMain()}
 
         <div className="h-2" />
