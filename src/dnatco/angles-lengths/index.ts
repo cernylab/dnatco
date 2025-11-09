@@ -4,6 +4,7 @@ import { Grouping } from './grouping';
 import { Lengths, Pair, pairTag } from './lengths';
 import { Measurements } from './measurements';
 import { Naval, ZPrime, isNavalZPrime } from './naval';
+import { isWireReferenceSets, Reference, WireReferenceSets } from './reference-sets';
 import { Residues } from '../residues';
 import { VoidResult, ErrorResult, Result } from '../';
 import { GlobalConfig } from '../../global-config';
@@ -54,6 +55,14 @@ type NavalRanking = Record<
     Map<
         string, // Angle or length tag
         NavalRankingData
+    >
+>;
+
+type ReferenceSets = Record<
+    ElementaryResidue,
+    Map<
+        string, // Angle or length tag
+        Reference[]
     >
 >;
 
@@ -133,7 +142,29 @@ const AngleNavalRankings: NavalRanking = {
     'DU': new Map(),
 };
 
+const LengthReferenceSets: ReferenceSets = {
+    'A': new Map(),
+    'C': new Map(),
+    'G': new Map(),
+    'U': new Map(),
+    'DA': new Map(),
+    'DC': new Map(),
+    'DG': new Map(),
+    'DT': new Map(),
+    'DU': new Map(),
+};
 
+const AngleReferenceSets: ReferenceSets = {
+    'A': new Map(),
+    'C': new Map(),
+    'G': new Map(),
+    'U': new Map(),
+    'DA': new Map(),
+    'DC': new Map(),
+    'DG': new Map(),
+    'DT': new Map(),
+    'DU': new Map(),
+};
 
 export type AnglesLengthsContext = {
     angleData: AverageData;
@@ -144,13 +175,15 @@ export type AnglesLengthsContext = {
     outlierColor: number;
     angleNavalRankings: NavalRanking,
     lengthNavalRankings: NavalRanking,
-}
+    angleReferenceSets: ReferenceSets,
+    lengthReferenceSets: ReferenceSets,
+};
 
 type PGroup = { threshold: number, color: number };
 const PGroups = new Array<PGroup>();
 let OutlierColor = 0;
 
-function checkReferenceData(data: object): asserts data is (WireBins & ZPrime) {
+function checkReferenceData(data: object): asserts data is (WireBins & ZPrime & WireReferenceSets) {
     if (!isWireBins(data))
         throw new Error('Invalid bond angle or length object type');
 
@@ -164,11 +197,25 @@ function checkReferenceData(data: object): asserts data is (WireBins & ZPrime) {
 
     if (!isNavalZPrime(data))
         throw new Error('Invalid Naval classification object type');
+
+    if (!isWireReferenceSets(data))
+        throw new Error('Invalid Reference Sets object type');
 }
 
 async function fetchReferenceData(prefix: string, resources: Resource[], loaderFunc?: (subpath: string) => string) {
     const averages = [] as Average[];
     const navalRankings = {
+        'A': new Map(),
+        'C': new Map(),
+        'G': new Map(),
+        'U': new Map(),
+        'DA': new Map(),
+        'DC': new Map(),
+        'DG': new Map(),
+        'DT': new Map(),
+        'DU': new Map(),
+    };
+    const referenceSets = {
         'A': new Map(),
         'C': new Map(),
         'G': new Map(),
@@ -192,6 +239,8 @@ async function fetchReferenceData(prefix: string, resources: Resource[], loaderF
             const z = data.zprime;
             const naval = Naval(z.weightedMedian, z.scaleFactorLower, z.scaleFactorUpper, z.ofConcernLower, z.ofConcernUpper);
             navalRankings[base].set(tag, naval);
+
+            referenceSets[base].set(tag, data.rs.bins);
         }
     } else {
         const requests = [] as [Residues.ElementaryResidue, string, Promise<Response>][];
@@ -213,10 +262,12 @@ async function fetchReferenceData(prefix: string, resources: Resource[], loaderF
             const z = data.zprime;
             const naval = Naval(z.weightedMedian, z.scaleFactorLower, z.scaleFactorUpper, z.ofConcernLower, z.ofConcernUpper);
             navalRankings[base].set(tag, naval);
+
+            referenceSets[base].set(tag, data.rs.bins);
         }
     }
 
-    return { averages, navalRankings };
+    return { averages, navalRankings, referenceSets };
 }
 
 function fileName(base: ElementaryResidue, data: { kind: 'length', v: Pair } | { kind: 'angle', v: Triplet }) {
@@ -284,7 +335,13 @@ function setPGroupData(pgroups: typeof PGroups, data: PGroupData, averages: Aver
 }
 
 function setNavalRankings(target: NavalRanking, source: NavalRanking) {
-    for (const base of  objKeys(source)) {
+    for (const base of objKeys(source)) {
+        target[base] = source[base];
+    }
+}
+
+function setReferenceSets(target: ReferenceSets, source: ReferenceSets) {
+    for (const base of objKeys(source)) {
         target[base] = source[base];
     }
 }
@@ -303,7 +360,9 @@ export namespace AnglesLengths {
             outlierColor: OutlierColor,
             angleNavalRankings: { ...AngleNavalRankings },
             lengthNavalRankings: { ...LengthNavalRankings },
-        }
+            angleReferenceSets: { ...AngleReferenceSets },
+            lengthReferenceSets: { ...LengthReferenceSets },
+        };
     }
 
     export async function initialize(loaderFunc?: (subpath: string) => string): Promise<Result<void>> {
@@ -327,12 +386,20 @@ export namespace AnglesLengths {
         OutlierColor = htmlColorAsNumber(GlobalConfig.data().anglesLengths.outlierColor) ?? 0;
 
         try {
-            const { averages: angleAverages, navalRankings: angleNavalRankings } = await fetchReferenceData(
+            const {
+                averages: angleAverages,
+                navalRankings: angleNavalRankings,
+                referenceSets: angleReferenceSets
+            } = await fetchReferenceData(
                 prefix,
                 iterate(Angles).flatMap(([base, triplets]) => triplets.map(t => ([base, tripletTag(t), fileName(base, { kind: 'angle', v: t })] as Resource))),
                 loaderFunc
             );
-            const { averages: lengthAverages, navalRankings: lengthNavalRankings } = await fetchReferenceData(
+            const {
+                averages: lengthAverages,
+                navalRankings: lengthNavalRankings,
+                referenceSets: lengthReferenceSets
+            } = await fetchReferenceData(
                 prefix,
                 iterate(Lengths).flatMap(([base, pairs]) => pairs.map(p => ([base, pairTag(p), fileName(base, { kind: 'length', v: p })] as Resource))),
                 loaderFunc
@@ -346,6 +413,9 @@ export namespace AnglesLengths {
 
             setNavalRankings(AngleNavalRankings, angleNavalRankings);
             setNavalRankings(LengthNavalRankings, lengthNavalRankings);
+
+            setReferenceSets(AngleReferenceSets, angleReferenceSets);
+            setReferenceSets(LengthReferenceSets, lengthReferenceSets);
 
             return VoidResult();
         } catch (e) {
