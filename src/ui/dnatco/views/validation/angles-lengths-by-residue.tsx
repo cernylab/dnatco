@@ -241,6 +241,14 @@ function BondAngleDetails(props: {
     ? colorToTuple(props.pGroup.color)
     : props.outlierColor;
 
+  const nrankCls = DAnglesLengths.navalRankingClass(
+    ba.angle,
+    props.navalRanking,
+    M.d2r(props.navalItem.csdPreferredLeft),
+    M.d2r(props.navalItem.csdPreferredRight),
+    props.pGroup
+  );
+
   const doHighlight = () => {
     const r = props.residue;
     const a = AnglesLengthsCommon.makeAtomSelectionPayload(
@@ -285,6 +293,7 @@ function BondAngleDetails(props: {
               }
               pGroup={props.pGroup}
               pGroupDatas={props.pGroupDatas}
+              maybeBin={props.maybeBin}
               rangeFormatter={(v) => M.r2d(v).toFixed(2)}
               residueName={props.residueName}
               suffix={DegreesUnit}
@@ -293,6 +302,7 @@ function BondAngleDetails(props: {
               navalPrefferedLower={M.d2r(props.navalItem.csdPreferredLeft)}
               navalPrefferedUpper={M.d2r(props.navalItem.csdPreferredRight)}
               navalRanking={props.navalRanking}
+              navalRankingClass={nrankCls}
               xTitle={"Angle (\u00B0)"}
               yTitle="Prob. (%)"
               xTransform={(x) => M.r2d(x)}
@@ -305,13 +315,7 @@ function BondAngleDetails(props: {
               props.residueName,
               AnglesLengthsCommon.tripletBondName(ba.triplet, ba.tag),
               props.pGroup,
-              DAnglesLengths.navalRankingClass(
-                ba.angle,
-                props.navalRanking,
-                M.d2r(props.navalItem.csdPreferredLeft),
-                M.d2r(props.navalItem.csdPreferredRight),
-                props.pGroup
-              ),
+              nrankCls,
               `${M.r2d(props.bondAngle.angle).toFixed(2)} ${DegreesUnit}`
             ),
             { x: evt.pageX, y: evt.pageY },
@@ -370,6 +374,13 @@ function BondLengthDetails(props: {
   const clr = props.pGroup
     ? colorToTuple(props.pGroup.color)
     : props.outlierColor;
+  const nrankCls = DAnglesLengths.navalRankingClass(
+    bl.length,
+    props.navalRanking,
+    props.navalItem.csdPreferredLeft,
+    props.navalItem.csdPreferredRight,
+    props.pGroup
+  );
 
   const doHighlight = () => {
     const r = props.residue;
@@ -408,6 +419,7 @@ function BondLengthDetails(props: {
               }
               pGroup={props.pGroup}
               pGroupDatas={props.pGroupDatas}
+              maybeBin={props.maybeBin}
               rangeFormatter={(v) => v.toFixed(3)}
               residueName={props.residueName}
               suffix={AngstromUnit}
@@ -416,6 +428,7 @@ function BondLengthDetails(props: {
               navalPrefferedLower={props.navalItem.csdPreferredLeft}
               navalPrefferedUpper={props.navalItem.csdPreferredRight}
               navalRanking={props.navalRanking}
+              navalRankingClass={nrankCls}
               xTitle={"Length (\u00C5)"}
               yTitle="Prob. (%)"
               yTransform={(y) => y * 100}

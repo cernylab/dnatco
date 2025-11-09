@@ -448,6 +448,13 @@ function AngleMetricDetails(props: {
               item.angle.triplet
             );
             const nrank = DAnglesLengths.angleNavalRanking(item.residue.compound, item.angle);
+            const nrankCls = DAnglesLengths.navalRankingClass(
+              item.angle.angle,
+              nrank,
+              M.d2r(ni.csdPreferredLeft),
+              M.d2r(ni.csdPreferredRight),
+              item.pGroup
+            );
             const clr = item.pGroup
               ? colorToTuple(item.pGroup.color)
               : props.outlierColor;
@@ -501,6 +508,7 @@ function AngleMetricDetails(props: {
                         }
                         pGroup={item.pGroup}
                         pGroupDatas={pGroupDatas}
+                        maybeBin={item.bin}
                         rangeFormatter={(v) => v.toFixed(3)}
                         residueName={commonResidueName}
                         suffix={DegreesUnit}
@@ -509,6 +517,7 @@ function AngleMetricDetails(props: {
                         navalPrefferedLower={M.d2r(ni.csdPreferredLeft)}
                         navalPrefferedUpper={M.d2r(ni.csdPreferredRight)}
                         navalRanking={nrank}
+                        navalRankingClass={nrankCls}
                         xTitle={"Angle (\u00B0)"}
                         yTitle="Prob. (%)"
                         yTransform={(y) => y * 100}
@@ -524,13 +533,7 @@ function AngleMetricDetails(props: {
                           tripletTag(item.angle.triplet)
                         ),
                         item.pGroup,
-                        DAnglesLengths.navalRankingClass(
-                          item.angle.angle,
-                          nrank,
-                          M.d2r(ni.csdPreferredLeft),
-                          M.d2r(ni.csdPreferredRight),
-                          item.pGroup
-                        ),
+                        nrankCls,
                         `${M.r2d(item.angle.angle).toFixed(2)} ${DegreesUnit}`
                       ),
                       { x: evt.pageX, y: evt.pageY },
@@ -651,6 +654,13 @@ function LengthMetricDetails(props: {
               item.length.pair
             );
             const nrank = DAnglesLengths.lengthNavalRanking(item.residue.compound, item.length);
+            const nrankCls = DAnglesLengths.navalRankingClass(
+              item.length.length,
+              nrank,
+              ni.csdPreferredLeft,
+              ni.csdPreferredRight,
+              item.pGroup
+            );
             const clr = item.pGroup
               ? colorToTuple(item.pGroup.color)
               : props.outlierColor;
@@ -700,6 +710,7 @@ function LengthMetricDetails(props: {
                         }
                         pGroup={item.pGroup}
                         pGroupDatas={pGroupDatas}
+                        maybeBin={item.bin}
                         rangeFormatter={(v) => v.toFixed(3)}
                         residueName={commonResidueName}
                         suffix={AngstromUnit}
@@ -708,6 +719,7 @@ function LengthMetricDetails(props: {
                         navalPrefferedLower={ni.csdPreferredLeft}
                         navalPrefferedUpper={ni.csdPreferredRight}
                         navalRanking={nrank}
+                        navalRankingClass={nrankCls}
                         xTitle={"Length\u00A0(\u00C5)"}
                         yTitle="Prob. (%)"
                         yTransform={(y) => y * 100}
@@ -722,13 +734,7 @@ function LengthMetricDetails(props: {
                           pairTag(item.length.pair),
                         ),
                         item.pGroup,
-                        DAnglesLengths.navalRankingClass(
-                           item.length.length,
-                           nrank,
-                           ni.csdPreferredLeft,
-                           ni.csdPreferredRight,
-                           item.pGroup
-                        ),
+                        nrankCls,
                         `${item.length.length.toFixed(3)} ${AngstromUnit}`,
                       ),
                       { x: evt.pageX, y: evt.pageY },

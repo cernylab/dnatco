@@ -337,6 +337,7 @@ export type PGroupSummaryProps = {
   bins: Bins;
   pGroup: DAnglesLengths.PGroup;
   pGroupDatas: DAnglesLengths.PGroupData[];
+  maybeBin: ALM.MaybeBin,
   rangeFormatter: (v: number) => string;
   residueName: JSX.Element;
   value: number;
@@ -344,6 +345,7 @@ export type PGroupSummaryProps = {
   navalPrefferedLower: number,
   navalPrefferedUpper: number,
   navalRanking: NavalRankingData;
+  navalRankingClass: NavalRankingClass;
   xTitle: string;
   yTitle: string;
   suffix?: string;
@@ -385,6 +387,14 @@ export class PGroupSummary extends React.Component<
         selected={this.state.mode === mode}
       />
     );
+  }
+
+  private navalRankingClassName() {
+    switch (this.props.navalRankingClass) {
+      case 'of-concern': return 'Of concern';
+      case 'allowed': return 'Allowed';
+      case 'preferred': return 'Preferred';
+    }
   }
 
   private renderChart() {
@@ -518,6 +528,44 @@ export class PGroupSummary extends React.Component<
     );
   }
 
+  private renderSummary() {
+    const proscoColor = colorToHex(this.props.pGroup?.color ?? DAnglesLengths.outlierColor());
+      const prob = (() => {
+          switch (this.props.maybeBin) {
+            case 'below':
+            case 'above':
+            case 'no-data':
+              return '-';
+            default:
+              return <Prosco bin={this.props.maybeBin} />
+          }
+      })();
+
+    return (
+      <div>
+        <div className="grid grid-cols-[auto_auto_auto_auto]">
+          <div>NA-VAL</div>
+          <div></div>
+          <div style={{
+            width: '1rem',
+            height: '1rem',
+            backgroundColor: colorToHex(DAnglesLengths.navalRankingClassColor(this.props.navalRankingClass))
+          }} />
+          <div>{this.navalRankingClassName()}</div>
+
+          <div>ProSco</div>
+          <div>{prob}</div>
+          <div style={{
+            width: '1rem',
+            height: '1rem',
+            backgroundColor: proscoColor
+          }} />
+          <div>...</div>
+        </div>
+      </div>
+    );
+  }
+
   setNavalTainer = (node: HTMLDivElement | null) => {
     if (!node) return;
 
@@ -557,6 +605,9 @@ export class PGroupSummary extends React.Component<
 
         <div className="h-2" />
         {this.renderNavalBar()}
+
+        <div className="h-2" />
+        {this.renderSummary()}
       </div>
     );
   }
