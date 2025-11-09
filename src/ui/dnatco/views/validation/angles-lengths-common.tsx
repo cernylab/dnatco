@@ -513,37 +513,45 @@ export class PGroupSummary extends React.Component<
     else if (valueMarkerLeft < 0) valueMarkerLeft = 0;
 
     return (
-      <div className="relative" ref={this.setNavalTainer}>
+      <div className="flex flex-col">
         <div className="flex flex-row">
-          <div style={{ flex: marginRatio, height: '32px', display: 'flex' }}>
-            <Tooltip display='flex' tag={<div style={{ backgroundColor: this.ofConcernClr, flex: 1 }} />}>Of Concern</Tooltip>
-          </div>
-          <div style={{ flex: ofConcernLowerRatio, height: '32px', display: 'flex' }}>
-            <Tooltip display='flex' tag={<div style={{ backgroundColor: this.ofConcernClr, flex: 1 }} />}>Of Concern</Tooltip>
-          </div>
-          <div style={{ flex: preferredLeftRatio, height: '32px', display: 'flex' }}>
-            <Tooltip display='flex' tag={<div style={{ backgroundColor: this.allowedClr, flex: 1}} />}>Allowed</Tooltip>
-          </div>
-          <div style={{ flex: rest, height: '32px', display: 'flex' }}>
-            <Tooltip display='flex' tag={<div style={{ backgroundColor: this.preferredClr, flex: 1 }} />}>Preferred</Tooltip>
-          </div>
-          <div style={{ flex: preferredRightRatio, height: '32px', display: 'flex' }}>
-            <Tooltip display='flex' tag={<div style={{ backgroundColor: this.allowedClr, flex: 1 }} />}>Allowed</Tooltip>
-          </div>
-          <div style={{ flex: ofConcernUpperRatio, height: '32px', display: 'flex' }}>
-            <Tooltip display='flex' tag={<div style={{ backgroundColor: this.ofConcernClr, flex: 1 }} />}>Of Concern</Tooltip>
-          </div>
-          <div style={{ flex: marginRatio, height: '32px', display: 'flex' }}>
-            <Tooltip display='flex' tag={<div style={{ backgroundColor: this.ofConcernClr, flex: 1 }} />}>Of Concern</Tooltip>
-          </div>
+          <div>{this.props.valueFormatter(lowest - margin)}{this.props.suffix}</div>
+          <div className="flex-1" />
+          <div>{this.props.valueFormatter(highest + margin)}{this.props.suffix}</div>
         </div>
 
-        <div style={{
-          position: 'absolute',
-          height: "100%", width: "4px", backgroundColor: "black",
-          top: '0px',
-          left: `${valueMarkerLeft - 2}px`,
-        }}>
+        <div className="relative" ref={this.setNavalTainer}>
+          <div className="flex flex-row">
+            <div style={{ flex: marginRatio, height: '32px', display: 'flex' }}>
+              <Tooltip display='flex' tag={<div style={{ backgroundColor: this.ofConcernClr, flex: 1 }} />}>Of Concern</Tooltip>
+            </div>
+            <div style={{ flex: ofConcernLowerRatio, height: '32px', display: 'flex' }}>
+              <Tooltip display='flex' tag={<div style={{ backgroundColor: this.ofConcernClr, flex: 1 }} />}>Of Concern</Tooltip>
+            </div>
+            <div style={{ flex: preferredLeftRatio, height: '32px', display: 'flex' }}>
+              <Tooltip display='flex' tag={<div style={{ backgroundColor: this.allowedClr, flex: 1}} />}>Allowed</Tooltip>
+            </div>
+            <div style={{ flex: rest, height: '32px', display: 'flex' }}>
+              <Tooltip display='flex' tag={<div style={{ backgroundColor: this.preferredClr, flex: 1 }} />}>Preferred</Tooltip>
+            </div>
+            <div style={{ flex: preferredRightRatio, height: '32px', display: 'flex' }}>
+              <Tooltip display='flex' tag={<div style={{ backgroundColor: this.allowedClr, flex: 1 }} />}>Allowed</Tooltip>
+            </div>
+            <div style={{ flex: ofConcernUpperRatio, height: '32px', display: 'flex' }}>
+              <Tooltip display='flex' tag={<div style={{ backgroundColor: this.ofConcernClr, flex: 1 }} />}>Of Concern</Tooltip>
+            </div>
+            <div style={{ flex: marginRatio, height: '32px', display: 'flex' }}>
+              <Tooltip display='flex' tag={<div style={{ backgroundColor: this.ofConcernClr, flex: 1 }} />}>Of Concern</Tooltip>
+            </div>
+          </div>
+
+          <div style={{
+            position: 'absolute',
+            height: "100%", width: "4px", backgroundColor: "black",
+            top: '0px',
+            left: `${valueMarkerLeft - 2}px`,
+          }}>
+          </div>
         </div>
       </div>
     );
