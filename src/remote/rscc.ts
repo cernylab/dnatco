@@ -27,11 +27,11 @@ export namespace Rscc {
         return isArr(v, isRscc);
     }
 
-    export async function calculateRemotely(coords: File, coordsType: 'cif' | 'pdb', coeffs: File) {
+    export async function calculateRemotely(coords: File, coordsType: 'cif' | 'pdb', coeffs: File, mapKind: string, resolution: number) {
         const b64coords = await Serialization.toBase64(coords);
         const b64coeffs = await Serialization.toBase64(coeffs);
 
-        const req = Requests.Rscc(b64coords, coordsType, b64coeffs);
+        const req = Requests.Rscc(b64coords, coordsType, b64coeffs, mapKind, resolution);
 
         const pending = WebApi.request('/api/rscc', req);
         return await WebApi.resolve(pending, isList);

@@ -55,37 +55,50 @@ export class PopupCustomFile extends React.Component<PopupCustomFile.Props> {
   }
 
   render() {
-    // FIXME: This is quite hacky. It expects that when an error occurs
-    // during structure geometry processing, libLLKA will return an error which
-    // will eventually get converted to a string containing the error code.
-    // We are making an assumption that such an error condition suggests
-    // a file with improper structure and that running that structure
-    // through MAXIT may fix it.
+    // Check if this is an error that can be potentially fixed by MAXIT
+    // LLKA errors suggest geometry issues
+    // Parsing errors (from tscif/tspdb) suggest format issues
     const isLlkaError = this.props.errorMessage.includes("LLKA_E_");
+    const isParsingError = this.props.errorMessage.includes("Mismatching categories") ||
+                           this.props.errorMessage.includes("Cannot parse") ||
+                           this.props.errorMessage.includes("Invalid");
+    const canRepair = isLlkaError || isParsingError;
 
     return (
       <div
         ref={this.selfRef}
-        className="absolute top-0 left-0 h-full w-full z-999 m-auto bg-test"
+        className="absolute top-0 left-0 w-screen h-screen z-999 bg-test flex items-center justify-center"
         tabIndex={0}
       >
-        <div className="bg-primary-first flex flex-col mx-auto p-4 relative top-[45%] rounded-standard max-w-[33%] max-h-[20%] overflow-y-scroll text-white">
-          {isLlkaError
+        <div className="bg-primary-first flex flex-col p-6 rounded-standard max-w-[50%] text-white">
+          <div className="text-xl font-bold mb-4">Error Processing Structure</div>
+          {canRepair
             ? (
-              <div>
-                Cannot process structure. Your file is not formatted according to
-                PDB standards. We can try to repair the file by uploading to our
-                server, which will attempt to fix it.
-                Do you want to repair your file?
+              <div className="mb-4">
+                <div className="mb-4">
+                  Cannot process structure. Your file is not formatted according to
+                  PDB/mmCIF standards. We can try to repair the file by uploading to our
+                  server, which will attempt to fix it.
+                </div>
+                <div className="text-red-400 mb-4">
+                  Error: {this.props.errorMessage}
+                </div>
+                <div className="text-sm">
+                  <strong>Warning:</strong> This will upload your structure to an external server (maxit.datmos.org).
+                </div>
+                <div className="h-4" />
+                <div>
+                  Do you want to repair your file?
+                </div>
               </div>
             )
-            : <div className="text-red-500">{this.props.errorMessage}</div>
+            : <div className="text-red-500 mb-4">{this.props.errorMessage}</div>
           }
-          <div className="flex justify-between mt-4">
-            {isLlkaError && (
+          <div className="flex justify-end gap-4">
+            {canRepair && (
               <button
                 onClick={() => this.postToDatabase(this.props.jsonData)}
-                className="bg-secondary-second text-primary-first items-center flex justify-center px-4 py-1 cursor-pointer w-fit rounded-smaller hover:bg-secondary-second-hover transition-all"
+                className="bg-secondary-second text-primary-first items-center flex justify-center px-4 py-1 cursor-pointer rounded-smaller hover:bg-secondary-second-hover transition-all"
               >
                 Repair file
               </button>
@@ -93,7 +106,7 @@ export class PopupCustomFile extends React.Component<PopupCustomFile.Props> {
 
             <button
               onClick={() => this.dismiss()}
-              className="bg-secondary-second text-primary-first items-center flex justify-center px-4 py-1 cursor-pointer w-fit rounded-smaller hover:bg-secondary-second-hover transition-all"
+              className="bg-secondary-second text-primary-first items-center flex justify-center px-4 py-1 cursor-pointer rounded-smaller hover:bg-secondary-second-hover transition-all"
             >
               Dismiss
             </button>
