@@ -518,8 +518,8 @@ function AngleMetricDetails(props: {
                         suffix={DegreesUnit}
                         value={item.angle.angle}
                         valueFormatter={(v) => M.r2d(v).toFixed(2)}
-                        navalPrefferedLower={M.d2r(ni.csdPreferredLeft)}
-                        navalPrefferedUpper={M.d2r(ni.csdPreferredRight)}
+                        navalPreferredLower={M.d2r(ni.csdPreferredLeft)}
+                        navalPreferredUpper={M.d2r(ni.csdPreferredRight)}
                         navalRanking={nrank}
                         navalRankingClass={nrankCls}
                         nearestReferenceLower={DAnglesLengths.nearestAngleReferenceLower(binIndex, item.residue.compound, item.angle.triplet)}
@@ -529,6 +529,7 @@ function AngleMetricDetails(props: {
                         yTitle="Prob. (%)"
                         yTransform={(y) => y * 100}
                         xTransform={(x) => M.r2d(x)}
+                        xUntransform={(x) => M.d2r(x)}
                         downloadFileName={dlName}
                         highlighter={doHighlight}
                         vi={props.vi}
@@ -728,8 +729,8 @@ function LengthMetricDetails(props: {
                         suffix={AngstromUnit}
                         value={item.length.length}
                         valueFormatter={(v) => v.toFixed(3)}
-                        navalPrefferedLower={ni.csdPreferredLeft}
-                        navalPrefferedUpper={ni.csdPreferredRight}
+                        navalPreferredLower={ni.csdPreferredLeft}
+                        navalPreferredUpper={ni.csdPreferredRight}
                         nearestReferenceLower={DAnglesLengths.nearestLengthReferenceLower(binIndex, item.residue.compound, item.length.pair)}
                         nearestReferenceUpper={DAnglesLengths.nearestLengthReferenceLower(binIndex, item.residue.compound, item.length.pair)}
                         navalRanking={nrank}

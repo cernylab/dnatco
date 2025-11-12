@@ -302,8 +302,8 @@ function BondAngleDetails(props: {
               suffix={DegreesUnit}
               value={ba.angle}
               valueFormatter={(v) => M.r2d(v).toFixed(2)}
-              navalPrefferedLower={M.d2r(props.navalItem.csdPreferredLeft)}
-              navalPrefferedUpper={M.d2r(props.navalItem.csdPreferredRight)}
+              navalPreferredLower={M.d2r(props.navalItem.csdPreferredLeft)}
+              navalPreferredUpper={M.d2r(props.navalItem.csdPreferredRight)}
               navalRanking={props.navalRanking}
               navalRankingClass={nrankCls}
               nearestReferenceLower={DAnglesLengths.nearestAngleReferenceLower(binIndex, props.residue.compound, props.bondAngle.triplet)}
@@ -312,6 +312,7 @@ function BondAngleDetails(props: {
               yTitle="Prob. (%)"
               xTransform={(x) => M.r2d(x)}
               yTransform={(y) => y * 100}
+              xUntransform={(x) => M.d2r(x)}
               downloadFileName={props.downloadName}
               highlighter={doHighlight}
               vi={props.vi}
@@ -433,8 +434,8 @@ function BondLengthDetails(props: {
               suffix={AngstromUnit}
               value={bl.length}
               valueFormatter={(v) => v.toFixed(3)}
-              navalPrefferedLower={props.navalItem.csdPreferredLeft}
-              navalPrefferedUpper={props.navalItem.csdPreferredRight}
+              navalPreferredLower={props.navalItem.csdPreferredLeft}
+              navalPreferredUpper={props.navalItem.csdPreferredRight}
               navalRanking={props.navalRanking}
               navalRankingClass={nrankCls}
               nearestReferenceLower={DAnglesLengths.nearestLengthReferenceLower(binIndex, props.residue.compound, props.bondLength.pair)}

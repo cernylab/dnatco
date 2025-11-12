@@ -1,4 +1,4 @@
-import Plot from "react-plotly.js";
+import Plot, { Figure } from "react-plotly.js";
 import React from "react";
 import { Subject } from "rxjs";
 import { View } from "../view";
@@ -45,6 +45,7 @@ import {
   StructureSelection,
 } from "../../../../util/structure-selection";
 import { ViewerApi, ViewerInterop } from "../../../../viewer/viewer-interop";
+import { PlotRelayoutEvent } from "plotly.js";
 
 export const ColorIsDarkThreshold = 0.5;
 export const AngstromUnit = "\u00A0\u00C5";
@@ -142,6 +143,8 @@ export class AveragesChart extends React.Component<{
   xTransform?: (x: number) => number;
   yTransform?: (y: number) => number;
   downloadFileName?: string;
+  onInitialized?: (fig: Readonly<Figure>) => void;
+  onRelayout?: (relayout: Readonly<PlotRelayoutEvent>) => void;
 }> {
   private binsToPGroupIndices(
     bins: Bins,
@@ -167,6 +170,21 @@ export class AveragesChart extends React.Component<{
     }
 
     return indices;
+  }
+
+    shouldComponentUpdate(nextProps: Readonly<{ bins: Bins; pGroupDatas: DAnglesLengths.PGroupData[]; mark: number; ofConcernLowerMark: number; ofConcernUpperMark: number; xTitle: string; yTitle: string; xTransform?: (x: number) => number; yTransform?: (y: number) => number; downloadFileName?: string; onInitialized?: (fig: Readonly<Figure>) => void; onRelayout?: (relayout: Readonly<PlotRelayoutEvent>) => void; }>, nextState: Readonly<{}>, nextContext: any): boolean {
+        return (
+            nextProps.bins !== this.props.bins ||
+            nextProps.pGroupDatas !== this.props.pGroupDatas ||
+            nextProps.mark !== this.props.mark ||
+            nextProps.ofConcernLowerMark !== this.props.ofConcernLowerMark ||
+            nextProps.ofConcernUpperMark !== this.props.ofConcernUpperMark ||
+            nextProps.xTitle !== this.props.xTitle ||
+            nextProps.yTitle !== this.props.yTitle ||
+            nextProps.xTransform !== this.props.xTransform ||
+            nextProps.yTransform !== this.props.yTransform ||
+            nextProps.downloadFileName !== this.props.downloadFileName
+        );
   }
 
   render() {
@@ -341,6 +359,8 @@ export class AveragesChart extends React.Component<{
               margin: 0,
               height: '450px',
           }}
+          onInitialized={(fig, _elem) => this.props.onInitialized?.(fig)}
+          onRelayout={(evt) => this.props.onRelayout?.(evt)}
         />
       </div>
     );
@@ -368,6 +388,75 @@ export function FloatingCue(props: {
   } else return <div className="invisible" />;
 }
 
+function NavalBar(props: {
+  pGroup: DAnglesLengths.PGroup;
+  value: number,
+  navalRanking: NavalRankingData;
+  navalRangeLow: number,
+  navalRangeHigh: number,
+  navalPreferredLower: number,
+  navalPreferredUpper: number,
+}) {
+  const ofConcernClr = React.useMemo(() => colorToHex(DAnglesLengths.navalRankingClassColor('of-concern')), []);
+  const allowedClr = React.useMemo(() => colorToHex(DAnglesLengths.navalRankingClassColor('allowed')), []);
+  const preferredClr = React.useMemo(() => colorToHex(DAnglesLengths.navalRankingClassColor('preferred')), []);
+
+  const totalPreferredLower = React.useMemo(() => (
+    DAnglesLengths.navalPreferredLowerBound(props.navalPreferredLower, props.pGroup)
+  ), [props.pGroup]);
+  const totalPreferredUpper = React.useMemo(() => (
+    DAnglesLengths.navalPreferredUpperBound(props.navalPreferredUpper, props.pGroup)
+  ), [props.pGroup]);
+
+  const canvasRef = React.useRef<HTMLCanvasElement | null>(null);
+
+  const ranking = props.navalRanking;
+
+  const lowest = props.navalRangeLow;
+  const highest = props.navalRangeHigh;
+  const span = highest - lowest;
+
+  const context = canvasRef.current?.getContext('2d');
+  if (context) {
+    if (span === 0) return;
+
+    const w = context.canvas.width;
+    const h = context.canvas.height;
+
+    const ofConcernLower = w * (ranking.ofConcernLower - lowest) / span;
+    if (ofConcernLower > 0) {
+      context.fillStyle = ofConcernClr;
+      context.fillRect(0, 0, ofConcernLower, h);
+    }
+
+    const preferredLower = w * (totalPreferredLower - lowest) / span;
+    context.fillStyle = allowedClr;
+    context.fillRect(ofConcernLower, 0, preferredLower - ofConcernLower, 32);
+
+    const preferredUpper = w * (totalPreferredUpper - lowest) / span;
+    context.fillStyle = preferredClr;
+    context.fillRect(preferredLower, 0, preferredUpper - preferredLower, 32);
+
+    const ofConcernUpper = w * (ranking.ofConcernUpper - lowest) / span;
+    context.fillStyle = allowedClr;
+    context.fillRect(preferredUpper, 0, ofConcernUpper - preferredUpper, 32);
+
+    if (ofConcernUpper < w) {
+      context.fillStyle = ofConcernClr;
+      context.fillRect(ofConcernUpper, 0, w - ofConcernUpper, 32);
+    }
+
+    const valueMarker = w * (props.value - lowest) / span;
+    context.fillStyle = '#000000';
+    context.fillRect(valueMarker - 2, 0, 4, 32);
+  }
+
+  return (
+    <canvas ref={canvasRef} width={canvasRef.current?.width ?? 450} height={32}>
+    </canvas>
+  );
+}
+
 export type PGroupSummaryProps = {
   bins: Bins;
   pGroup: DAnglesLengths.PGroup;
@@ -377,8 +466,8 @@ export type PGroupSummaryProps = {
   residueName: JSX.Element;
   value: number;
   valueFormatter: (v: number) => string;
-  navalPrefferedLower: number,
-  navalPrefferedUpper: number,
+  navalPreferredLower: number,
+  navalPreferredUpper: number,
   navalRanking: NavalRankingData;
   navalRankingClass: NavalRankingClass;
   nearestReferenceLower: Reference | undefined;
@@ -388,6 +477,7 @@ export type PGroupSummaryProps = {
   suffix?: string;
   xTransform?: (x: number) => number;
   yTransform?: (y: number) => number;
+  xUntransform?: (x: number) => number;
   downloadFileName?: string;
   highlighter: () => void;
   vi: ViewerInterop;
@@ -397,21 +487,18 @@ export class PGroupSummary extends React.Component<
   {
     mode: "chart" | "details",
     navalTainer: HTMLDivElement | null,
+    navalRangeLow: number,
+    navalRangeHigh: number,
   }
 > {
-  private ofConcernClr = colorToHex(DAnglesLengths.navalRankingClassColor('of-concern'));
-  private allowedClr = colorToHex(DAnglesLengths.navalRankingClassColor('allowed'));
-  private preferredClr = colorToHex(DAnglesLengths.navalRankingClassColor('preferred'));
-
-  private totalPreferredLower = DAnglesLengths.navalPreferredLowerBound(this.props.navalPrefferedLower, this.props.pGroup);
-  private totalPreferredUpper = DAnglesLengths.navalPreferredUpperBound(this.props.navalPrefferedUpper, this.props.pGroup);
-
   constructor(props: PGroupSummaryProps) {
     super(props);
 
     this.state = {
       mode: "chart",
       navalTainer: null,
+      navalRangeLow: 0,
+      navalRangeHigh: 0,
     };
   }
 
@@ -421,158 +508,6 @@ export class PGroupSummary extends React.Component<
       case 'allowed': return 'Allowed';
       case 'preferred': return 'Preferred';
     }
-  }
-
-  private renderChart() {
-    return (
-      <AveragesChart
-        bins={this.props.bins}
-        mark={this.props.value}
-        ofConcernLowerMark={this.props.navalRanking.ofConcernLower}
-        ofConcernUpperMark={this.props.navalRanking.ofConcernUpper}
-        pGroupDatas={this.props.pGroupDatas}
-        xTitle={this.props.xTitle}
-        yTitle={this.props.yTitle}
-        xTransform={this.props.xTransform}
-        yTransform={this.props.yTransform}
-        downloadFileName={this.props.downloadFileName}
-      />
-    );
-  }
-
-  private renderPercentile() {
-    if (!this.props.pGroup) {
-      return (
-        <div className="grid grid-cols-3 gap-x-4">
-          <div className="col-span-2" />
-          {this.renderPGroup()}
-        </div>
-      );
-    }
-
-    return (
-      <div className="grid grid-cols-3 gap-x-4">
-        <div className="font-700">From</div>
-        <div className="font-700">To</div>
-        <div className="font-700 whitespace-nowrap">Probability (%)</div>
-        {this.props.pGroup.groupedBins.map((x, idx) => {
-          const strg = isWithin(this.props.value, x) ? "font-700" : "";
-          const from = this.props.rangeFormatter(x.from);
-          const to = this.props.rangeFormatter(x.to);
-
-          return (
-            <React.Fragment key={idx}>
-              <div className={`text-right ${strg}`}>{`${from}${
-                this.props.suffix ?? ""
-              }`}</div>
-              <div className={`text-right ${strg}`}>{`${to}${
-                this.props.suffix ?? ""
-              }`}</div>
-              <div className={`text-right ${strg}`}>
-                {(x.probability * 100).toFixed(2)}
-              </div>
-            </React.Fragment>
-          );
-        })}
-        <div className="h-4 col-span-3" />
-        <div className="font-700 col-span-2">Percentile</div>
-        {this.renderPGroup()}
-      </div>
-    );
-  }
-
-  private renderMain() {
-    switch (this.state.mode) {
-      case "chart":
-        return this.renderChart();
-      case "details":
-        return this.renderPercentile();
-    }
-  }
-
-  private renderNavalBar() {
-    const bins = this.props.bins;
-    const ranking = this.props.navalRanking;
-
-    const lowest = bins[0].from;
-    const highest = bins[bins.length - 1].to;
-    const span = highest - lowest;
-    const margin = span * 0.05;
-    const spanWithMargin = 2 * margin + span;
-
-    const marginRatio = Math.round(100 * margin / spanWithMargin);
-    const ofConcernLowerRatio = Math.round(100 * (ranking.ofConcernLower - lowest) / spanWithMargin);
-    const preferredLeftRatio = Math.round(100 * (this.totalPreferredLower - ranking.ofConcernLower) / spanWithMargin);
-    const preferredRightRatio = Math.round(100 * (ranking.ofConcernUpper - this.totalPreferredUpper) / spanWithMargin);
-    const ofConcernUpperRatio = Math.round(100 * (highest - ranking.ofConcernUpper) / spanWithMargin);
-    const rest = 100 - ofConcernLowerRatio - ofConcernUpperRatio - preferredLeftRatio - preferredRightRatio;
-
-    const totalWidth = this.state.navalTainer?.getBoundingClientRect().width ?? 0;
-    let valueMarkerLeft = (this.props.value - lowest + margin) * totalWidth / spanWithMargin;
-    if (valueMarkerLeft > totalWidth) valueMarkerLeft = totalWidth;
-    else if (valueMarkerLeft < 0) valueMarkerLeft = 0;
-
-    return (
-      <div className="flex flex-col">
-        <div className="flex flex-row">
-          <div>{this.props.valueFormatter(lowest - margin)}{this.props.suffix}</div>
-          <div className="flex-1" />
-          <div>{this.props.valueFormatter(highest + margin)}{this.props.suffix}</div>
-        </div>
-
-        <div className="relative" ref={this.setNavalTainer}>
-          <div className="flex flex-row">
-            <div style={{ flex: marginRatio, height: '32px', display: 'flex' }}>
-              <Tooltip display='flex' tag={<div style={{ backgroundColor: this.ofConcernClr, flex: 1 }} />}>Of Concern</Tooltip>
-            </div>
-            <div style={{ flex: ofConcernLowerRatio, height: '32px', display: 'flex' }}>
-              <Tooltip display='flex' tag={<div style={{ backgroundColor: this.ofConcernClr, flex: 1 }} />}>Of Concern</Tooltip>
-            </div>
-            <div style={{ flex: preferredLeftRatio, height: '32px', display: 'flex' }}>
-              <Tooltip display='flex' tag={<div style={{ backgroundColor: this.allowedClr, flex: 1}} />}>Allowed</Tooltip>
-            </div>
-            <div style={{ flex: rest, height: '32px', display: 'flex' }}>
-              <Tooltip display='flex' tag={<div style={{ backgroundColor: this.preferredClr, flex: 1 }} />}>Preferred</Tooltip>
-            </div>
-            <div style={{ flex: preferredRightRatio, height: '32px', display: 'flex' }}>
-              <Tooltip display='flex' tag={<div style={{ backgroundColor: this.allowedClr, flex: 1 }} />}>Allowed</Tooltip>
-            </div>
-            <div style={{ flex: ofConcernUpperRatio, height: '32px', display: 'flex' }}>
-              <Tooltip display='flex' tag={<div style={{ backgroundColor: this.ofConcernClr, flex: 1 }} />}>Of Concern</Tooltip>
-            </div>
-            <div style={{ flex: marginRatio, height: '32px', display: 'flex' }}>
-              <Tooltip display='flex' tag={<div style={{ backgroundColor: this.ofConcernClr, flex: 1 }} />}>Of Concern</Tooltip>
-            </div>
-          </div>
-
-          <div style={{
-            position: 'absolute',
-            height: "100%", width: "4px", backgroundColor: "black",
-            top: '0px',
-            left: `${valueMarkerLeft - 2}px`,
-          }}>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  private renderPGroup() {
-    const clr = colorToTuple(
-      this.props.pGroup
-        ? this.props.pGroup.color
-        : DAnglesLengths.outlierColor()
-    );
-    const text = this.props.pGroup
-      ? this.props.pGroup.threshold.toFixed(4)
-      : "Outlier";
-
-    return (
-      <div className="grid [grid-template-columns:1em_1fr]">
-        <div style={{ backgroundColor: colorStyle(clr) }} />
-        <div className="text-right">{text}</div>
-      </div>
-    );
   }
 
   private renderSummary() {
@@ -625,16 +560,6 @@ export class PGroupSummary extends React.Component<
     );
   }
 
-  setNavalTainer = (node: HTMLDivElement | null) => {
-    if (!node) return;
-
-    if (this.state.navalTainer !== node) {
-      const obs = new ResizeObserver(() => this.forceUpdate());
-      obs.observe(node);
-    }
-    this.setState({ ...this.setState, navalTainer: node });
-  }
-
   componentDidMount() {
     this.props.highlighter();
   }
@@ -643,10 +568,49 @@ export class PGroupSummary extends React.Component<
     return (
       <div className="flex flex-col w-full h-full">
         <div className="h-2" />
-        {this.renderMain()}
+        <AveragesChart
+          bins={this.props.bins}
+          mark={this.props.value}
+          ofConcernLowerMark={this.props.navalRanking.ofConcernLower}
+          ofConcernUpperMark={this.props.navalRanking.ofConcernUpper}
+          pGroupDatas={this.props.pGroupDatas}
+          xTitle={this.props.xTitle}
+          yTitle={this.props.yTitle}
+          xTransform={this.props.xTransform}
+          yTransform={this.props.yTransform}
+          downloadFileName={this.props.downloadFileName}
+          onInitialized={(fig) => {
+            this.setState({
+              ...this.state,
+              navalRangeLow: fig.layout?.xaxis?.range?.[0] as number ?? 0,
+              navalRangeHigh: fig.layout?.xaxis?.range?.[1] as number ?? 0,
+            });
+          }}
+        onRelayout={(relayout) => {
+            const [rangeLow , rangeHigh] = relayout["xaxis.range"]
+               ? [relayout["xaxis.range"][0], relayout["xaxis.range"][1]] as [number, number]
+               : [relayout["xaxis.range[0]"], relayout["xaxis.range[1]"]] as [number, number];
+
+            if (!!rangeLow && !!rangeHigh) {
+              this.setState({
+                ...this.state,
+                navalRangeLow: this.props.xUntransform?.(rangeLow) ?? rangeLow,
+                navalRangeHigh: this.props.xUntransform?.(rangeHigh) ?? rangeHigh
+              });
+            }
+          }}
+        />
 
         <div className="h-2" />
-        {this.renderNavalBar()}
+        <NavalBar
+          pGroup={this.props.pGroup}
+          navalRanking={this.props.navalRanking}
+          value={this.props.value}
+          navalRangeLow={this.state.navalRangeLow}
+          navalRangeHigh={this.state.navalRangeHigh}
+          navalPreferredLower={this.props.navalPreferredLower}
+          navalPreferredUpper={this.props.navalPreferredUpper}
+        />
 
         <div className="h-2" />
         {this.renderSummary()}
