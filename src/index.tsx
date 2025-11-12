@@ -657,7 +657,7 @@ function App(props: { initial: Initial }) {
         tabs={TabsForModes[appMode]}
         selectedTab={locationToTab(appMode, location.pathname)}
       />
-      <div className="rdo-tab-content-container" id="rdo-tab-content-container">
+      <div className={navigator.userAgent.toLowerCase().includes('android') ? "rdo-tab-padding-android" : "rdo-tab-content-container"} id="rdo-tab-content-container">
         <Routes>
           <Route path="/app">
             <Route

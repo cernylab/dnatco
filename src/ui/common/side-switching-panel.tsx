@@ -91,6 +91,7 @@ export function SideSwitchingPanel<K extends string>(props: {
     onSwitched: (id: K) => void,
 }) {
     const [compact, setCompact] = useState(window.innerWidth < MinimumWidthForStandardPanel);
+    const [permaCompact, setPermaCompact] = useState(false);
     const [hamburgerHovered, setHamburberHovered] = useState(false);
     const [hamburgerOpen, setHamburberOpen] = useState(false);
 
@@ -106,7 +107,15 @@ export function SideSwitchingPanel<K extends string>(props: {
         };
     });
 
-    if (compact) {
+    useEffect(() => {
+        if (props.selectedItemId === 'hide' && permaCompact) {
+            setPermaCompact(false);
+        }else if (props.selectedItemId == 'hide'){
+            setPermaCompact(true);
+        }
+    }, [props.selectedItemId]);
+
+    if (compact || permaCompact) {
         return (
             <div className='rdo-side-switching-panel'>
                 <div
@@ -136,6 +145,21 @@ export function SideSwitchingPanel<K extends string>(props: {
                         src={GridThreeUpImg}
                     />
                 </div>
+                {!compact &&(
+                    <button
+                        className={`rdo-side-switching-panel-hamburger-icon rdo-side-switching-panel-hamburger-icon-${hamburgerHovered ? 'active' : 'inactive'}`}
+                        onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            setPermaCompact(prev => !prev);
+                        }}
+                        title={permaCompact ? 'Show panel' : 'Hide panel'}
+                    >
+                        {permaCompact ? '>>' : '<<'}
+                    </button>
+                )}
+
+
                 <div className='rdo-side-switching-panel-item rdo-side-switching-panel-item-compact selected bg-secondary-second'>
                     <div className='rdo-side-switching-panel-item-text rdo-side-switching-panel-item-text-compact'>
                         {props.items.find((item) => item[0] === props.selectedItemId)![1].caption}
@@ -148,6 +172,19 @@ export function SideSwitchingPanel<K extends string>(props: {
         return (
             <div className='rdo-side-switching-panel'>
                 {makeList(props.items, props.selectedItemId, props.onSwitched)}
+                    <button
+                        className={`rdo-side-switching-panel-item rdo-side-switching-panel-item-standard hover:bg-secondary-second-hover deselected`}
+                        onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            setPermaCompact(prev => !prev);
+                        }}
+                        title={permaCompact ? 'Show panel' : 'Hide panel'}
+                    >
+                        <div className={'rdo-side-switching-panel-item-text'}>
+                            {permaCompact ? '>>' : '<< Hide'}
+                        </div>
+                    </button>
                 <div key='padder' className='rdo-side-switching-panel-padder' />
             </div>
         );

@@ -804,6 +804,13 @@ a.rdo-imglink:visited {
 .rdo-tab-content-container {
   flex: 1;
   overflow: hidden;
+  padding-bottom: 50px;
+}
+
+.rdo-tab-padding-android{
+    flex: 1;
+    overflow: hidden;
+    padding-bottom:150px;
 }
 
 .rdo-taller {
