@@ -101,13 +101,13 @@ export const DownloadButtonComponent: React.FC<ButtonComponentProps> = ({
     <button
       onMouseOver={handleMouseOver}
       onMouseOut={handleMouseOut}
-      className="flex bg-primary-first ml-2 px-4 py-2 rounded-smaller items-center h-fit text-white hover:bg-secondary-second hover:text-primary-first transition-all"
+      className="flex items-center bg-primary-first ml-2 px-4 py-2 rounded-smaller items-center h-fit text-white hover:bg-secondary-second hover:text-primary-first transition-all"
       onClick={onClick}
     >
       <div className="image-container">
         <img className="w-4 h-4 mr-2" src={imageSrc} alt="Image" />
       </div>
-      {title}
+      <div className="whitespace-nowrap">{title}</div>
     </button>
   );
 };

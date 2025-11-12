@@ -3,9 +3,11 @@ export namespace Requests {
         coords: string,
         coordsType: 'cif' | 'pdb',
         coeffs: string,
+        mapKind: string,
+        resolution: number,
     };
-    export function Rscc(coords: string, coordsType: 'cif' | 'pdb', coeffs: string): Rscc {
-        return { coords, coordsType, coeffs };
+    export function Rscc(coords: string, coordsType: 'cif' | 'pdb', coeffs: string, mapKind: string, resolution: number): Rscc {
+        return { coords, coordsType, coeffs, mapKind, resolution };
     }
 
     export type Search = {

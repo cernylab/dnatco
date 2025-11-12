@@ -31,7 +31,7 @@ import { Validation } from "../../../../dnatco/naval/validation";
 import { Summarize } from "../../../../dnatco/angles-lengths/summarize";
 import { GlobalConfig } from "../../../../global-config";
 import { htmlColorAsNumber, isWithin, replaceAll } from "../../../../util";
-import { colorToTuple, ColorTuple } from "../../../../util/colors";
+import { colorToTuple, luminance, ColorTuple } from "../../../../util/colors";
 import { FileTypes } from "../../../../util/file-type";
 import { M } from "../../../../util/math";
 import { Serialization } from "../../../../util/serialization";
@@ -44,6 +44,8 @@ import {
   StructureSelection,
 } from "../../../../util/structure-selection";
 import { ViewerApi, ViewerInterop } from "../../../../viewer/viewer-interop";
+
+export const ColorIsDarkThreshold = 0.5;
 
 const PairBondNameCache: Map<string, React.ReactElement> = new Map();
 const TripletBondNameCache: Map<string, React.ReactElement> = new Map();
@@ -962,6 +964,7 @@ export namespace AnglesLengthsCommon {
       steps: [],
       residues: newResidues,
       atoms: newAtoms,
+      basePairs: [],
       reconstruct: steps.length > 0,
     };
   }
@@ -979,6 +982,7 @@ export namespace AnglesLengthsCommon {
         steps: [],
         residues: selection.residues,
         atoms: selection.atoms,
+        basePairs: [],
         reconstruct: true,
       },
       d,
@@ -1163,6 +1167,7 @@ export namespace AnglesLengthsCommon {
         steps: [],
         residues: selection.residues,
         atoms: selection.atoms,
+        basePairs: [],
         reconstruct: false,
       },
       d,
@@ -1237,10 +1242,10 @@ export namespace AnglesLengthsCommon {
     return d.identifyingName ?? d.pdbId;
   }
 
-  export function substructureBarCaption(text: string | JSX.Element) {
+  export function substructureBarCaption(text: string | JSX.Element, backgroundClr: number) {
     return (
       <div className="flex items-center h-full cursor-pointer p-1">
-        <div className="font-bold mr-2">{text}</div>
+          <div className={`${luminance(backgroundClr) < ColorIsDarkThreshold ? "text-white" : ""} font-bold mr-2`}>{text}</div>
         <Tooltip
           tag={
             <div className="cursor-pointer">

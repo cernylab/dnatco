@@ -172,7 +172,7 @@ function Base<T extends ALM.AngleStats | ALM.LengthStats>(props: {
           {AnglesLengthsCommon.renderSubstructureStats(
             props.winTracker,
             props.base,
-            AnglesLengthsCommon.substructureBarCaption(props.base),
+            AnglesLengthsCommon.substructureBarCaption(props.base, DAnglesLengths.pGroupColor(0)),
             props.stats.overall,
             Summarize.countsInGroups(props.stats.overall),
             props.colorsForCounts
@@ -335,7 +335,7 @@ function Metric<T extends ALM.AngleStats | ALM.LengthStats>(props: {
             <div className="font-700">
               {props.base} {name}
             </div>,
-            AnglesLengthsCommon.substructureBarCaption(name),
+            AnglesLengthsCommon.substructureBarCaption(name, DAnglesLengths.pGroupColor(0)),
             props.stats.overall,
             Summarize.countsInGroups(props.stats.overall),
             props.colorsForCounts
@@ -950,7 +950,7 @@ export class AnglesLengthsByCompound extends View<View.Props> {
               {AnglesLengthsCommon.renderSubstructureStats(
                 this.winTracker,
                 "Lengths",
-                AnglesLengthsCommon.substructureBarCaption("Lengths"),
+                AnglesLengthsCommon.substructureBarCaption("Lengths", DAnglesLengths.pGroupColor(0)),
                 overallLengths,
                 countsLengths,
                 htmlColorsForStatsBar
@@ -960,7 +960,7 @@ export class AnglesLengthsByCompound extends View<View.Props> {
               {AnglesLengthsCommon.renderSubstructureStats(
                 this.winTracker,
                 "Angles",
-                AnglesLengthsCommon.substructureBarCaption("Angles"),
+                AnglesLengthsCommon.substructureBarCaption("Angles", DAnglesLengths.pGroupColor(0)),
                 overallAngles,
                 countsAngles,
                 htmlColorsForStatsBar

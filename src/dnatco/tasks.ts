@@ -9,6 +9,10 @@ import { Logger } from '../log/logger';
 import { UserRemoteDatabases, BuiltInRemoteDatabases } from '../remote/db/register';
 import { Rscc } from '../remote/rscc';
 import { GlobalConfig, GlobalConfigData } from '../global-config';
+import { getCifValue } from '../util/dnatco';
+import { Refine } from '../cif/categories/refine';
+import { Em3dReconstruction } from '../cif/categories/em-3d-reconstruction';
+import { Exptl } from '../cif/categories/experimental';
 
 async function getConfigData() {
     if (GlobalConfig.isLoaded())
@@ -32,8 +36,23 @@ async function tryGetDensityMaps(dmFiles: { file: File, kind: DensityMap['kind']
     return results;
 }
 
-async function tryGetRscc(coords: File, coeffs: File, ctx: DnatcoficationTaskContext, data: DnatcoficationData) {
-    ctx.events.statusChanged.next('Getting RSCC coefficients');
+function extractResolution(d: Dnatcofication): number {
+    // Get experimental method to determine which resolution field to use
+    const method = getCifValue(d, Exptl, 'method');
+
+    if (method === 'electron microscopy') {
+        // EM structures: use em_3d_reconstruction.resolution
+        const emRes = getCifValue(d, Em3dReconstruction, 'resolution');
+        return emRes ?? 0;
+    } else {
+        // X-ray/NMR structures: use refine.ls_d_res_high
+        const xrayRes = getCifValue(d, Refine, 'ls_d_res_high');
+        return xrayRes ?? 0;
+    }
+}
+
+async function tryGetRscc(coords: File, densityFile: File, mapKind: string, resolution: number, ctx: DnatcoficationTaskContext, data: DnatcoficationData) {
+    ctx.events.statusChanged.next('Calculating RSCC values');
 
     const coordsType = Coordinates.guessType(coords);
     if (coordsType === 'unknown') {
@@ -41,7 +60,7 @@ async function tryGetRscc(coords: File, coeffs: File, ctx: DnatcoficationTaskCon
         return;
     }
 
-    const r = await Rscc.calculateRemotely(coords, coordsType, coeffs);
+    const r = await Rscc.calculateRemotely(coords, coordsType, densityFile, mapKind, resolution);
     if (r.success) {
         Dnatcofication.addRscc(data, r.payload);
         ctx.events.finished.next({ state: 'succeeded', data });
@@ -89,6 +108,7 @@ export const Tasks = {
             coords: { file: File, type: Coordinates['type'] },
             densityMaps: { file: File, kind: DensityMap['kind'] }[],
             densityMapCoeffs: File|null,
+            skipRsccCalculation?: boolean,
             clsfResData: ClassificationResources.Data,
             alCtx: AnglesLengthsContext,
             nvCtx: NavalContext,
@@ -107,11 +127,48 @@ export const Tasks = {
             if (!data)
                 return;
 
-            if (payload.densityMapCoeffs) {
-                // The "await" here is necessary for the worker thread to stay alive until the Rscc query finishes, apparently
-                await tryGetRscc(payload.coords.file, payload.densityMapCoeffs, ctx, data);
-            } else
+            // Check if RSCC calculation should be skipped
+            if (payload.skipRsccCalculation) {
+                console.log('RSCC calculation skipped by user request');
                 ctx.events.finished.next({ state: 'succeeded', data });
+                return;
+            }
+
+            // Determine which file to use for RSCC calculation
+            let rsccFile: File | null = null;
+            let mapKind = 'coefficients'; // Default for MTZ
+
+            if (payload.densityMapCoeffs) {
+                // MTZ coefficients take priority
+                rsccFile = payload.densityMapCoeffs;
+                mapKind = 'coefficients';
+            } else if (payload.densityMaps.length > 0) {
+                // If no MTZ, use density maps in priority order: 2fo-fc > em
+                // Note: fo-fc maps are only for visualization, not for RSCC calculation
+                const map2fofc = payload.densityMaps.find(m => m.kind === '2fo-fc');
+                const mapEm = payload.densityMaps.find(m => m.kind === 'em');
+
+                if (map2fofc) {
+                    rsccFile = map2fofc.file;
+                    mapKind = '2fo-fc';
+                } else if (mapEm) {
+                    rsccFile = mapEm.file;
+                    mapKind = 'em';
+                }
+                // fo-fc maps are skipped - only used for visualization
+            }
+
+            if (rsccFile) {
+                // Create temporary Dnatcofication object to extract resolution
+                const tempDnatco = new Dnatcofication();
+                tempDnatco.data = data;
+                const resolution = extractResolution(tempDnatco);
+
+                // The "await" here is necessary for the worker thread to stay alive until the Rscc query finishes, apparently
+                await tryGetRscc(payload.coords.file, rsccFile, mapKind, resolution, ctx, data);
+            } else {
+                ctx.events.finished.next({ state: 'succeeded', data });
+            }
         } catch (e) {
             ctx.events.finished.next({ state: 'failed', message: (e as Error).message });
         }

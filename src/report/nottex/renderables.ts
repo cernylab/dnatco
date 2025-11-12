@@ -2,7 +2,8 @@ import { NTEmbeddedImage } from './embedded-image';
 import * as NTPrims from './primitives';
 import { NTRenderContext } from './render';
 import { NTUnit, NTXYWH } from './space';
-import { NTboundingRect, NTwarning, NTRgba } from './util';
+import { NTboundingRect, NTwarning } from './util';
+import { NRgba } from '../../util/colors';
 
 export namespace NTRenderable {
     export function xy(r: NTRenderables<any, any>): { x: NTUnit, y: NTUnit } {
@@ -153,8 +154,8 @@ export namespace NTRenderableLine {
 export type NTRenderableRect = {
     type: 'ntrenderablerect',
     border: NTUnit,
-    borderColor: NTRgba,
-    color: NTRgba | 'none',
+    borderColor: NRgba,
+    color: NRgba | 'none',
     dontAlign: boolean,
     unimportant: boolean,
 } & NTRenderableObject;
@@ -163,7 +164,7 @@ export namespace NTRenderableRect {
         return obj.type === 'ntrenderablerect';
     }
 
-    export function mk(color: NTRgba | 'none', border: NTUnit, borderColor: NTRgba, xywh: NTXYWH, zIndex = 0, dontAlign = false, unimportant = false): NTRenderableRect {
+    export function mk(color: NRgba | 'none', border: NTUnit, borderColor: NRgba, xywh: NTXYWH, zIndex = 0, dontAlign = false, unimportant = false): NTRenderableRect {
         return {
             type: 'ntrenderablerect',
             border,
@@ -179,7 +180,7 @@ export namespace NTRenderableRect {
 
 export type NTRenderableText = {
     type: 'ntrenderabletext',
-    color: NTRgba,
+    color: NRgba,
     font: NTPrims.NTFont,
     text: string,
 } & NTRenderableObject;
@@ -188,7 +189,7 @@ export namespace NTRenderableText {
         return obj.type === 'ntrenderabletext';
     }
 
-    export function mk(text: string, font: NTPrims.NTFont, color: NTRgba, xywh: NTXYWH, zIndex = 0): NTRenderableText {
+    export function mk(text: string, font: NTPrims.NTFont, color: NRgba, xywh: NTXYWH, zIndex = 0): NTRenderableText {
         return {
             type: 'ntrenderabletext',
             text,

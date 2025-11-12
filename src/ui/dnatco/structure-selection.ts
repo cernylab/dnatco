@@ -2,6 +2,7 @@ import { Subject } from 'rxjs';
 import { filterToChain }  from './util';
 import { Dnatcofication } from '../../dnatco/dnatcofication';
 import { StepsMapper } from '../../dnatco/steps-mapper';
+import { BasePairsMapper } from '../../dnatco/base-pairs-mapper';
 import {
     EmptyStructureSelection,
     InvalidChain, InvalidModelIndex,
@@ -20,6 +21,7 @@ export function StructureSelectionFromViewer(viewerInterop: ViewerInterop, dnatc
         const steps = [] as StructureSelection['steps'];
         const residues = [] as StructureSelection['residues'];
         const atoms = [] as StructureSelection['atoms'];
+        const basePairs = [] as StructureSelection['basePairs'];
 
         const selections = viewerInterop.api.query('selected-structures');
 
@@ -36,10 +38,18 @@ export function StructureSelectionFromViewer(viewerInterop: ViewerInterop, dnatc
                 const atom = StructureSelection.authToCifAtom(dnatcofication.data.structures[0], { ...sel });
                 if (atom)
                     atoms.push(atom);
+            } else if (sel.type === 'base-pair') {
+                const bp = BasePairsMapper.findByResidues(
+                    dnatcofication,
+                    sel.asymId1, sel.seqId1, sel.insCode1,
+                    sel.asymId2, sel.seqId2, sel.insCode2
+                );
+                if (bp)
+                    basePairs.push(bp.id);
             }
         }
 
-        return { modelIndex, chain, steps, residues, atoms };
+        return { modelIndex, chain, steps, residues, atoms, basePairs };
     } else
         return EmptyStructureSelection(dnatcofication);
 }
@@ -48,15 +58,17 @@ export type SelectedPieces = {
     steps: StructureSelection['steps'],
     residues: StructureSelection['residues'],
     atoms: StructureSelection['atoms'],
+    basePairs: StructureSelection['basePairs'],
     reconstruct: boolean,
 }
-export function SelectedPieces(steps: number[], residues: SelectedPieces['residues'], atoms: SelectedPieces['atoms'], reconstruct: boolean): SelectedPieces {
-    return { steps, residues, atoms, reconstruct };
+export function SelectedPieces(steps: number[], residues: SelectedPieces['residues'], atoms: SelectedPieces['atoms'], basePairs: SelectedPieces['basePairs'], reconstruct: boolean): SelectedPieces {
+    return { steps, residues, atoms, basePairs, reconstruct };
 }
 export const EmptySelectionPieces: SelectedPieces = {
     steps: [],
     residues: [],
     atoms: [],
+    basePairs: [],
     reconstruct: true,
 }
 

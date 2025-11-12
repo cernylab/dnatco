@@ -4,7 +4,6 @@ import {
   useLocation,
   useNavigate,
   BrowserRouter,
-  HashRouter,
   Navigate,
   Routes,
   Route,
@@ -57,7 +56,6 @@ import { BackgroundWorker, WorkerMessage } from "./tasks/worker";
 import { ViewerInterop } from "./viewer/viewer-interop";
 import { Task } from "./tasks/task";
 import { objKeys } from "./util";
-import RouterBridge from "./ui/common/router-bridge"
 
 import "assets/rednatco.css";
 import "assets/output.css";
@@ -176,11 +174,20 @@ class DnatcoficationHandler {
     densityMapCoeffs: File | null,
     onSuccess: () => void
   ) {
+    console.log("fromCustomStructure called with:", {
+      coordsFile: coordsFile.name,
+      densityMaps: densityMaps.map(m => ({ name: m.file.name, kind: m.kind })),
+      densityMapCoeffs: densityMapCoeffs?.name ?? null
+    });
+
     densityMapFile = densityMaps;
     const coordsType = Coordinates.guessType(coordsFile);
     fileName = coordsFile.name;
+    console.log("Coordinates type guessed as:", coordsType);
+
     async function processCoordinatesFile(coordsFile: File, coordsType: any) {
       try {
+        console.log("Processing coordinates file asynchronously");
         const result = await Coordinates.fromFile(coordsFile, coordsType);
         if (result.success === "ok") {
           // Handle OkResult
@@ -190,13 +197,16 @@ class DnatcoficationHandler {
           };
           const textData = okResult.data.data;
           jsonData = textData;
+          console.log("Coordinates file processed successfully");
         }
       } catch (error) {
         console.error("Error processing coordinates file:", error);
       }
     }
     processCoordinatesFile(coordsFile, coordsType);
+
     if (coordsType === "unknown") {
+      console.log("Unknown coordinates type, showing error popup");
       Popup.create(
         <>
           {formatErrorText("Cannot process structure")}
@@ -206,7 +216,8 @@ class DnatcoficationHandler {
       return;
     }
 
-    const doTask = (coeffs: File | null) => {
+    const doTask = (coeffs: File | null, skipRscc: boolean = false) => {
+      console.log("doTask called with coeffs:", coeffs?.name ?? null, "skipRscc:", skipRscc);
       const task: Task<{
         coords: {
           file: File;
@@ -214,6 +225,7 @@ class DnatcoficationHandler {
         };
         densityMaps: { file: File; kind: DensityMap["kind"] }[];
         densityMapCoeffs: File | null;
+        skipRsccCalculation?: boolean;
         clsfResData: ClassificationResources.Data;
         alCtx: AnglesLengthsContext;
         nvCtx: NavalContext;
@@ -223,6 +235,7 @@ class DnatcoficationHandler {
           coords: { file: coordsFile, type: coordsType },
           densityMaps,
           densityMapCoeffs: coeffs,
+          skipRsccCalculation: skipRscc,
           clsfResData: ClassificationContext.data(),
           alCtx: AnglesLengths.context(),
           nvCtx: Naval.context(),
@@ -230,20 +243,38 @@ class DnatcoficationHandler {
         initialStatus: "",
       };
 
+      console.log("Calling loadStructure with task");
       this.loadStructure(task, onSuccess);
     };
 
-    if (densityMapCoeffs) {
+    // Check if RSCC calculation will be performed
+    // RSCC is calculated if there are density map coefficients OR density maps (2fo-fc/EM)
+    const willCalculateRscc = densityMapCoeffs !== null || densityMaps.length > 0;
+
+    if (willCalculateRscc) {
+      console.log("RSCC calculation will be performed, showing QuestionDialog");
+      const densityFileDescription = densityMapCoeffs
+        ? "a map coefficients file"
+        : densityMaps.length === 1
+          ? `a ${densityMaps[0].kind} density map`
+          : `${densityMaps.length} density maps`;
+
       QuestionDialog.create({
         caption: "Upload structure for external processing?",
         text: (
           <div>
-            You attached a map coefficients file to the structure.{" "}
+            You attached {densityFileDescription} to the structure.{" "}
             {GlobalConfig.data().displayedProductName} can use this information
-            to calculate additional validation information about the structure.
+            to calculate additional validation information (RSCC) about the structure.
             To do this calculation, {GlobalConfig.data().displayedProductName}{" "}
-            must upload your structure and the map coefficients to an external
-            server for processing.
+            must upload your structure and the density data to the external
+            datmos.org server for processing.
+            <div className="h-4" />
+            <div>
+              If you choose "No", the RSCC calculation will be skipped, but the
+              density maps will still be used for local visualization in Molstar
+              (no data will leave your computer).
+            </div>
             <div className="h-4" />
             Is this okay?
           </div>
@@ -252,9 +283,23 @@ class DnatcoficationHandler {
           { text: "Yes", code: 1 },
           { text: "No", code: 0 },
         ],
-        onAnswered: (code) => doTask(code === 1 ? densityMapCoeffs : null),
+        onAnswered: (code) => {
+          console.log("QuestionDialog answered with code:", code);
+          if (code === 1) {
+            // User accepted - proceed with RSCC calculation
+            console.log("User accepted RSCC calculation");
+            doTask(densityMapCoeffs, false);
+          } else {
+            // User declined - skip RSCC calculation but keep maps for visualization
+            console.log("User declined RSCC calculation, keeping maps for visualization only");
+            doTask(null, true); // Skip RSCC but keep densityMaps for visualization
+          }
+        },
       });
-    } else doTask(null);
+    } else {
+      console.log("No density data provided, calling doTask with null");
+      doTask(null);
+    }
   }
 
   fromPdbId(pdbId: string, dbId: string, onSuccess: () => void) {
@@ -658,7 +703,10 @@ function App(props: { initial: Initial }) {
               }
             />
             <Route path="list-of-conformers" element={<ConformersTab />} />
-            <Route path="about" element={<AboutTab />} />
+            <Route path="about" element={<AboutTab/>} >
+              <Route index element={<Navigate to="help" replace />} />
+              <Route path=":section" element={<AboutTab/>} />
+            </Route>
             <Route path="dnatco">
               <Route
                 path="annotation/*"
@@ -731,8 +779,8 @@ function InitializationError(props: { e: Error }) {
 
 async function bootstrap() {
   const config = await GlobalConfig.fetchConfigFile();
-
   const root = RDC.createRoot(document.getElementById("app")!);
+  
   try {
     const configData = GlobalConfig.load(config);
     for (const db of configData.userDatabases) UserRemoteDatabases.add(db);
@@ -754,18 +802,11 @@ async function bootstrap() {
       search: window.location.search,
     };
 
-    const app = configData.useHashRouter ? (
-      <HashRouter>
-        <App initial={initial} />
-      </HashRouter>
-    ) : (
+    root.render(
       <BrowserRouter>
-        <RouterBridge />
         <App initial={initial} />
       </BrowserRouter>
     );
-
-    root.render(app);
   } catch (e) {
     root.render(<InitializationError e={e as Error} />);
   }

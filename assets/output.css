@@ -26,6 +26,7 @@
     --default-font-family: var(--font-sans);
     --default-mono-font-family: var(--font-mono);
     --color-full-white: #ffffff;
+    --color-molstar-white: #fff;
     --color-primary-first: #30595c;
     --color-primary-first-disabled: rgba(49, 89, 92, 0.7);
     --color-secondary-first: #e89e33;
@@ -46,6 +47,8 @@
     --text-20px: 1.25rem;
     --text-22px: 1.375rem;
     --text-24px: 1.5rem;
+    --text-28px: 1.75rem;
+    --text-30px: 1.875rem;
     --text-34px: 2.125rem;
     --text-39px: 2.4375rem;
     --width-300px: 300px;
@@ -325,6 +328,9 @@
   }
   .mx-4 {
     margin-inline: calc(var(--spacing) * 4);
+  }
+  .mx-6 {
+    margin-inline: calc(var(--spacing) * 6);
   }
   .mx-auto {
     margin-inline: auto;
@@ -744,6 +750,9 @@
   .rounded-\[5px\] {
     border-radius: 5px;
   }
+  .rounded-full {
+    border-radius: calc(infinity * 1px);
+  }
   .rounded-lg {
     border-radius: var(--radius-lg);
   }
@@ -820,6 +829,9 @@
   }
   .bg-full-white {
     background-color: var(--color-full-white);
+  }
+  .bg-molstar-white {
+    background-color: var(--color-molstar-white);
   }
   .bg-primary-first {
     background-color: var(--color-primary-first);
@@ -909,6 +921,9 @@
   }
   .pt-3 {
     padding-top: calc(var(--spacing) * 3);
+  }
+  .pr-2 {
+    padding-right: calc(var(--spacing) * 2);
   }
   .text-center {
     text-align: center;
@@ -1188,11 +1203,6 @@
       display: flex;
     }
   }
-  .lg\:justify-between {
-    @media (width >= 64rem) {
-      justify-content: space-between;
-    }
-  }
   .xl\:absolute {
     @media (width >= 80rem) {
       position: absolute;
@@ -1231,6 +1241,11 @@
   .xl\:z-50 {
     @media (width >= 80rem) {
       z-index: 50;
+    }
+  }
+  .xl\:mx-auto {
+    @media (width >= 80rem) {
+      margin-inline: auto;
     }
   }
   .xl\:mt-\[20\%\] {

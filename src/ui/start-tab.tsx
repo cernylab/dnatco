@@ -83,7 +83,7 @@ class AnalyzeButton extends React.Component<{
         caption="Analyze"
         onClick={() => this.props.onClick()}
         disabled={!this.props.ready}
-        className="items-center flex justify-center transition-all ease-in-out w-full bg-primary-first text-16px text-secondary-first rounded-standard p-2 hover:bg-secondary-second"
+        className="items-center flex justify-center cursor-pointer transition-all ease-in-out w-full bg-primary-first text-16px text-secondary-first rounded-standard p-2 hover:bg-secondary-second"
         classNameDisabled="items-center flex justify-center rounded-standard w-full p-2 text-16px bg-primary-first-disabled text-white"
       />
     );
@@ -247,13 +247,29 @@ class DensityMapFiles extends React.Component<
 
   public handleAddFile() {
     console.log("handleAddFile was called");
-    const { inputs } = this.state;
-    inputs.forEach(({ selectedFile, selectedKind }) => {
-      if (selectedFile) {
-        const df: DensityMapFile = { file: selectedFile, kind: selectedKind };
-        this.props.onAddFile(df);
-      }
-    });
+    try {
+      const { inputs } = this.state;
+      console.log("Processing inputs:", inputs.map(i => ({ file: i.selectedFile?.name, kind: i.selectedKind })));
+
+      inputs.forEach(({ selectedFile, selectedKind }) => {
+        if (selectedFile) {
+          console.log(`Adding file: ${selectedFile.name} with kind: ${selectedKind}`);
+          const df: DensityMapFile = { file: selectedFile, kind: selectedKind };
+          this.props.onAddFile(df);
+          console.log(`Successfully added file: ${selectedFile.name}`);
+        }
+      });
+
+      console.log("handleAddFile completed successfully");
+    } catch (e) {
+      console.error("Error adding files:", e);
+      Popup.create(
+        <div className="text-secondary-third">
+          Error adding files: {e instanceof Error ? e.message : String(e)}
+        </div>
+      );
+      throw e; // Re-throw so actionCustomStructure can also handle it
+    }
   }
 
   private addInput = () => {
@@ -295,14 +311,27 @@ class DensityMapFiles extends React.Component<
 
   private removeInput = (index: number) => {
     const inputs = [...this.state.inputs];
-    const fileName = inputs[index].selectedFile?.name;
+    const fileToRemove = inputs[index].selectedFile;
+    const fileName = fileToRemove?.name;
 
+    // Remove from parent's densityMaps array if file exists
+    if (fileToRemove) {
+      const parentIndex = this.props.files.findIndex(
+        (df) => df.file === fileToRemove
+      );
+      if (parentIndex !== -1) {
+        this.props.onRemoveFile(parentIndex);
+      }
+    }
+
+    // Remove from local selectedFileNames tracking
     if (fileName) {
       const selectedFileNames = new Set(this.state.selectedFileNames);
       selectedFileNames.delete(fileName);
       this.setState({ selectedFileNames });
     }
 
+    // Remove from local inputs array
     inputs.splice(index, 1);
     this.setState({ inputs });
   };
@@ -548,27 +577,46 @@ export class StartTab extends React.Component<StartTab.Props, State> {
   }
 
   private actionCustomStructure() {
-    if (!this.state.coordsFile) {
+    console.log("actionCustomStructure called");
+    try {
+      if (!this.state.coordsFile) {
+        console.log("No coordinates file set");
+        Popup.create(
+          <div className="text-secondary-third">
+            You have not set any coordinates file
+          </div>
+        );
+        return;
+      }
+
+      console.log("Coordinates file:", this.state.coordsFile.name);
+      console.log("All density maps:", this.state.densityMaps.map(m => ({ name: m.file.name, kind: m.kind })));
+
+      const densityMaps = this.state.densityMaps.filter(
+        (x) => x.kind !== "coefficients"
+      ) as { file: File; kind: DensityMap["kind"] }[];
+      const densityMapCoeffs =
+        this.state.densityMaps.find((x) => x.kind === "coefficients")?.file ??
+        null;
+
+      console.log("Filtered density maps (non-coefficients):", densityMaps.map(m => ({ name: m.file.name, kind: m.kind })));
+      console.log("Density map coefficients:", densityMapCoeffs?.name ?? "null");
+
+      console.log("Calling onDoCustomStructure");
+      this.props.onDoCustomStructure(
+        this.state.coordsFile!,
+        densityMaps,
+        densityMapCoeffs
+      );
+      console.log("onDoCustomStructure completed");
+    } catch (e) {
+      console.error("Error processing custom structure:", e);
       Popup.create(
         <div className="text-secondary-third">
-          You have not set any coordinates file
+          Error processing files: {e instanceof Error ? e.message : String(e)}
         </div>
       );
-      return;
     }
-
-    const densityMaps = this.state.densityMaps.filter(
-      (x) => x.kind !== "coefficients"
-    ) as { file: File; kind: DensityMap["kind"] }[];
-    const densityMapCoeffs =
-      this.state.densityMaps.find((x) => x.kind === "coefficients")?.file ??
-      null;
-
-    this.props.onDoCustomStructure(
-      this.state.coordsFile!,
-      densityMaps,
-      densityMapCoeffs
-    );
   }
 
   private actionPdbId(db: string, pdbId: string) {
@@ -609,11 +657,20 @@ export class StartTab extends React.Component<StartTab.Props, State> {
   }
 
   private handleAnalyzeClick = () => {
-    if (this.state.database) {
-      this.actionPdbId(this.state.database, this.state.pdbId);
-    } else {
-      this.densityMapFilesRef.current?.handleAddFile();
-      this.actionCustomStructure();
+    try {
+      if (this.state.database) {
+        this.actionPdbId(this.state.database, this.state.pdbId);
+      } else {
+        this.densityMapFilesRef.current?.handleAddFile();
+        this.actionCustomStructure();
+      }
+    } catch (e) {
+      console.error("Error in analyze click handler:", e);
+      Popup.create(
+        <div className="text-secondary-third">
+          Error: {e instanceof Error ? e.message : String(e)}
+        </div>
+      );
     }
   };
 

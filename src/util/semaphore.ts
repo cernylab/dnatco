@@ -6,7 +6,7 @@ function semaphoreColor(v: number): Rgb {
     const r = Math.round(255 * (2 * v < 1 ? 2 * v : 1));
     const g = Math.round(255 * (1 - 2 * (v - Half > 0 ? v - Half : 0)));
 
-    return { r, g, b: 0 };
+    return Rgb(r, g, 0);
 }
 
 export function valueToSemaphore(v: number, greenValue: number, redValue: number) {

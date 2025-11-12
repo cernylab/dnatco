@@ -62,10 +62,7 @@ npm run serve-dev
 
 and navigate to [http://localhost:8118](http://localhost:8118) in your browser. Webpack internal server provides additional development conveniences such as hot reloading and nicer error reporting. Please see the notes below if you wish to use Webpack internal server for development.
 
-
-**NOTE:** Make sure that you have `useHashRouter` set to `true` in ReDNATCO configuration if you use Webpack internal server. Otherwise the navigation will not work correctly.
-
-**NOTE 2:** Webpack server does not provide the full functionality of ReDNATCO server. It is intended for development purposes only.
+**NOTE:** Webpack server does not provide the full functionality of ReDNATCO server. It is intended for development purposes only.
 
 ### Tool for offline use
 
@@ -269,10 +266,6 @@ ReDNATCO can be configured with a JSON configuration file. The file must be name
     //
     //   somewhere.net/#/app/something
     //
-    // Use of hash routing avoid issues when the browser tries to use the actual URL in the address bar,
-    // i. e. when the user refreshes the page. Unless the server knows how to deal with the /app
-    // endpoint correctly, this would result in 404s.
-    "useHashRouter": true
 
     //
     // Options used only by the Node.js binaries

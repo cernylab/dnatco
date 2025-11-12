@@ -1,7 +1,4 @@
 {
-
-    "useHashRouter": false,
-
     "previousStepColor": "#f0f",
     "currentStepColor": "#2f2",
     "nextStepColor": "#a0a",
@@ -40,12 +37,38 @@
     ],
     "anglesLengths": {
         "chartMarkerColor": "#000000",
-        "outlierColor": "#ff0000",
-        "navalMarkerColor": "#03b900",
+        "outlierColor": "#ff8a89",
+        "navalMarkerColor": "#6D74FF",
         "pGroups": [
-            { "threshold": 98, "color": "#6D74FF" },
-            { "threshold": 99.9, "color": "#ffff00" }
+            { "threshold": 95, "color": "#a8ff8a" },
+            { "threshold": 99.9, "color": "#fffa8a" }
         ]
     },
+    "basePairsLadder": {
+        "barRadius": 0.5,
+        "barScale": 1.0,
+        "cWWBallRadius": 0.6,
+        "cisBallRadius": 0.6,
+        "transBallRadius": 1.2,
+        "unpairedBallRadius": 1.2,
+        "showPairs": true,
+        "showUnpaired": true,
+        "showUnpairedBall": false,
+        "showcWWBall": true,
+        "showCisBall": true,
+        "showTransBall": true,
+        "showBrick": true,
+        "brickLength": 4.0,
+        "brickWidth": 2.0,
+        "brickHeight": 0.6
+    },
+    "ntcTubeAlpha": 0.5,
+    "pyramidAlpha": 0.5,
+    "pairingLadderAlpha": 0.5,
+    "showNtcTubeSegmentForSelectedResidues": false,
+    "cameraRadiusFactor": 3,
+    "cameraClippingRadius": 100,
+    "cameraClippingFar": true,
+    "cameraClippingMinNear": 5,
     "displayedProductName": "DNATCO"
 }

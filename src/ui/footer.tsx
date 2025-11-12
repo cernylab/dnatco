@@ -3,16 +3,9 @@ import { useEffect, useState } from 'react';
 import { Email } from './common/email';
 import { ElixirLogoImg, IbtLogoImg } from '../assets/images';
 import { Globals } from '../globals'; 
-import { useNavigate } from 'react-router';
+import { Link } from 'react-router';
 
 const Footer:React.FC = () => {
-    
-    const navigate = useNavigate();
-
-    const handleAboutClick = (selectedTab: string) => {
-        // Pass the selectedTab prop when navigating
-        navigate('/app/about', { state: { selectedTab } });
-      };
 
     const [compact, setCompact] = useState(window.innerWidth <1024);
     useEffect(() => {
@@ -28,28 +21,24 @@ const Footer:React.FC = () => {
                 <div className='flex flex-nowrap items-center justify-center space-x-3 lg:flex lg:justify-between mx-auto my-1 xl:max-w-[1280px] 2xl:max-w-[1440px]'>
                     <div className='flex justify-center'>
                         <div className='my-auto mx-1'>
-                            <div className='text-18px text-center'>© 2025</div>
+                            <div className='text-16px text-center'>© 2025</div>
                         </div>
                         {Globals.PrimaryContacts.map((c, idx) => (
                             <div className='my-auto mx-1' key={idx}>
-                                <div className='text-18px text-center'>
+                                <div className='text-16px text-center'>
                                     <Email email={c.email} subject='DNATCO'><span>{c.name}</span></Email>
                                 </div>
                             </div>
                         ))}
                     </div>
 
-
                     {compact && (
                         <div className='flex justify-center'>
                             <span className='px-3'>|</span>
-                            <div
-                                onClick={() => handleAboutClick('help')}
-                                className='hover-animation my-auto mx-3'
-                            >
-                                <a className='cursor-pointer text-18px'>
-                                    About
-                                </a>
+                            <div className='hover-animation my-auto mx-3'>
+                                <Link className='cursor-pointer text-16px' to='/app/about/help'>
+                                    Help
+                                </Link>
                             </div>
                             <span className='px-3'>|</span>
                         </div>
@@ -57,38 +46,29 @@ const Footer:React.FC = () => {
 
                     {!compact && (
                         <div className='flex justify-center'>
-                            <div
-                                onClick={() => handleAboutClick('how-to-cite')}
-                                className='hover-animation my-auto mx-3'
-                            >
-                                <a className='cursor-pointer text-18px'>
+                            <div className='hover-animation my-auto mx-3'>
+                                <Link className='cursor-pointer text-16px' to='/app/about/how-to-cite'>
                                     How to cite
-                                </a>
+                                </Link>
                             </div>
-                            <div
-                                onClick={() => handleAboutClick('help')}
-                                className='hover-animation my-auto mx-3'
-                            >
-                                <a className='cursor-pointer text-18px'>
+                            <div className='hover-animation my-auto mx-3'>
+                                <Link className='cursor-pointer text-16px' to='/app/about/help'>
                                     Help
-                                </a>
+                                </Link>
                             </div>
-                            <div
-                                onClick={() => handleAboutClick('contact')}
-                                className='hover-animation my-auto mx-3'>
-                                <a className='cursor-pointer text-18px'>
+                            <div className='hover-animation my-auto mx-3'>
+                                <Link className='cursor-pointer text-16px' to='/app/about/contact'>
                                     Contact
-                                </a>
+                                </Link>
                             </div>
                         </div>
                     )}
-
 
                     <div className='flex justify-center'>
                         {!compact && (
                             <div className='my-auto mx-2'>
                                 <div className='text-18px text-center'>
-                                    <div>Supported by Institute of Biotechnology & Elixir CZ</div>
+                                    <div>Supported by</div>
                                 </div>
                             </div>
                         )}

@@ -2,11 +2,10 @@ import { niceStepName } from './';
 import { Report } from '../../';
 import { Tables } from '../../styling';
 import { NTTable } from '../../nottex/primitives';
-import { NTRgba } from '../../nottex/util';
 import { NTMm, NTUnit } from '../../nottex/space';
 import { Cif } from '../../../cif';
 import { NdbStructNtcStep, NdbStructNtcStepSummary } from '../../../cif/categories/ndb-struct-ntc';
-import { nclr } from '../../../util/colors';
+import { nclr, NRgba } from '../../../util/colors';
 import { Common } from '../../../util/dnatco';
 import { valueToSemaphore } from '../../../util/semaphore';
 
@@ -86,7 +85,7 @@ export namespace StepTable {
 
     function rmsdCellColor(rmsd: number) {
         const clr = valueToSemaphore(rmsd, 0.0, 1.0);
-        return NTRgba(nclr(clr.r), nclr(clr.g), nclr(clr.b), 0.5);
+        return NRgba(nclr(clr.r), nclr(clr.g), nclr(clr.b), 0.5);
     }
 
     export function style<Output>(ctx: Report.Context<Output>): NTTable.Options {
@@ -98,7 +97,7 @@ export namespace StepTable {
         } else {
             return {
                 border: NTMm(0.33),
-                borderColor: NTRgba(0, 0, 0),
+                borderColor: NRgba(0, 0, 0),
                 hAlign: 'center',
                 padding: {
                     top: NTUnit.multiply(0.5, ctx.tDims.characterHeight),

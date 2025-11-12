@@ -4,8 +4,9 @@ import * as NTPrims from './primitives';
 import { NTPdf } from './pdf';
 import * as NTR from './renderables';
 import { NTUnit, NTXY, NTXYWH } from './space';
-import { NTcantorEncode, NTerror, NTwarning, NTBlackColor, NTRgba, NTboundingRect } from './util';
+import { NTcantorEncode, NTerror, NTwarning, NTBlackColor, NTboundingRect } from './util';
 import { replaceAll } from '../../util';
+import { NRgba } from '../../util/colors';
 
 type NTBoundary = {
     left: NTUnit,
@@ -208,7 +209,7 @@ function positionText(text: string, props: NTPrims.NTText, boundary: NTBoundary,
 }
 
 function spanningRectangles<ImgPayload, T>(
-    props: { backgroundColor: NTRgba | 'none', border: NTUnit, borderColor: NTRgba },
+    props: { backgroundColor: NRgba | 'none', border: NTUnit, borderColor: NRgba },
     xywh: NTXYWH,
     zIndex: number,
     ctx: NTRenderContext<ImgPayload, T>

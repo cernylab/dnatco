@@ -18,6 +18,7 @@ import { Exptl } from "../../cif/categories/experimental";
 import { Refine } from "../../cif/categories/refine";
 import { Dnatcofication } from "../../dnatco/dnatcofication";
 import { StepsMapper } from "../../dnatco/steps-mapper";
+import { BasePairsMapper } from "../../dnatco/base-pairs-mapper";
 import { Logger } from "../../log/logger";
 import { navPath, objKeys } from "../../util";
 import { getCifValue, Common } from "../../util/dnatco";
@@ -328,6 +329,7 @@ export function MainScreen(props: {
     structureSelection.steps = [...pieces.steps];
     structureSelection.residues = [...pieces.residues];
     structureSelection.atoms = [...pieces.atoms];
+    structureSelection.basePairs = [...pieces.basePairs];
 
     await displayer(
       pieces,
@@ -505,6 +507,7 @@ export function MainScreen(props: {
             steps: structureSelection.steps,
             residues: structureSelection.residues,
             atoms: structureSelection.atoms,
+            basePairs: structureSelection.basePairs,
             reconstruct: false,
           };
 
@@ -546,6 +549,15 @@ export function MainScreen(props: {
         highlightColor: GlobalConfig.data().highlightColor,
         highlightThickness: GlobalConfig.data().highlightThickness,
         hydogensInReferences: GlobalConfig.data().showHydrogensInReferences,
+        basePairsLadder: GlobalConfig.data().basePairsLadder,
+        ntcTubeAlpha: GlobalConfig.data().ntcTubeAlpha,
+        pyramidAlpha: GlobalConfig.data().pyramidAlpha,
+        pairingLadderAlpha: GlobalConfig.data().pairingLadderAlpha,
+        showNtcTubeSegmentForSelectedResidues: GlobalConfig.data().showNtcTubeSegmentForSelectedResidues,
+        cameraRadiusFactor: GlobalConfig.data().cameraRadiusFactor,
+        cameraClippingRadius: GlobalConfig.data().cameraClippingRadius,
+        cameraClippingFar: GlobalConfig.data().cameraClippingFar,
+        cameraClippingMinNear: GlobalConfig.data().cameraClippingMinNear,
       })
       .then(() => {
         subs.push(
@@ -575,23 +587,163 @@ export function MainScreen(props: {
 
         subs.push(
           props.viewerInterop.events.stepRequested.subscribe((name) => {
-            const mode = locationToDnatcoMode(navPath(window.location)); // See the BEWARE above
-            const view = Register.Views[mode.viewId];
-            if (view.granularity !== "two-residues") return;
+            // Switch to appropriate view when NtC tube/pyramid is clicked
+            const mode = locationToDnatcoMode(navPath(window.location));
 
-            const stepId = StepsMapper.byName(props.dnatcofication, name)?.id;
-            if (stepId !== undefined) {
-              const pieces = view.selectionMaker(
-                stepId,
-                InvalidResidue,
-                InvalidAtom,
-                structureSelection.steps,
-                structureSelection.residues,
-                structureSelection.atoms,
-                props.dnatcofication
-              );
-              changeSelection(pieces, view.selectionDisplayer);
+            // Only switch views in annotation mode or specific validation views
+            if (mode.master === 'annotation') {
+              const targetView = 'conformation';
+              const targetMode = 'annotation';
+
+              navigate(`/app/dnatco/${targetMode}/${targetView}`);
+
+              const view = Register.Views[targetView as ViewId];
+              const stepId = StepsMapper.byName(props.dnatcofication, name)?.id;
+              if (stepId !== undefined) {
+                const pieces = view.selectionMaker(
+                  stepId,
+                  InvalidResidue,
+                  InvalidAtom,
+                  structureSelection.steps,
+                  structureSelection.residues,
+                  structureSelection.atoms,
+                  props.dnatcofication
+                );
+                changeSelection(pieces, view.selectionDisplayer);
+              }
+            } else if (mode.master === 'validation') {
+              // In validation mode, only switch to backbone-quality when in specific views
+              const allowedViews = ['overall-quality', 'base-pairs', 'backbone-quality'];
+              if (allowedViews.includes(mode.viewId)) {
+                const targetView = 'backbone-quality';
+                const targetMode = 'validation';
+
+                navigate(`/app/dnatco/${targetMode}/${targetView}`);
+
+                const view = Register.Views[targetView as ViewId];
+                const stepId = StepsMapper.byName(props.dnatcofication, name)?.id;
+                if (stepId !== undefined) {
+                  const pieces = view.selectionMaker(
+                    stepId,
+                    InvalidResidue,
+                    InvalidAtom,
+                    structureSelection.steps,
+                    structureSelection.residues,
+                    structureSelection.atoms,
+                    props.dnatcofication
+                  );
+                  changeSelection(pieces, view.selectionDisplayer);
+                }
+              } else {
+                // Not in one of the allowed views - propagate selection to current view
+                const view = Register.Views[mode.viewId];
+                const stepId = StepsMapper.byName(props.dnatcofication, name)?.id;
+                if (stepId !== undefined) {
+                  const pieces = view.selectionMaker(
+                    stepId,
+                    InvalidResidue,
+                    InvalidAtom,
+                    structureSelection.steps,
+                    structureSelection.residues,
+                    structureSelection.atoms,
+                    props.dnatcofication
+                  );
+                  changeSelection(pieces, view.selectionDisplayer);
+                }
+              }
+            } else if (mode.master === 'refinement') {
+              // In refinement mode, propagate selection to current view
+              const view = Register.Views[mode.viewId];
+              const stepId = StepsMapper.byName(props.dnatcofication, name)?.id;
+              if (stepId !== undefined) {
+                const pieces = view.selectionMaker(
+                  stepId,
+                  InvalidResidue,
+                  InvalidAtom,
+                  structureSelection.steps,
+                  structureSelection.residues,
+                  structureSelection.atoms,
+                  props.dnatcofication
+                );
+                changeSelection(pieces, view.selectionDisplayer);
+              }
             }
+          })
+        );
+
+        subs.push(
+          props.viewerInterop.events.basePairRequested.subscribe((basePairSelection) => {
+            // Switch to base-pairs view when ladder stick is clicked
+            const mode = locationToDnatcoMode(navPath(window.location));
+
+            // Only switch views in annotation mode or specific validation views
+            if (mode.master === 'annotation') {
+              const targetMode = 'annotation';
+
+              navigate(`/app/dnatco/${targetMode}/base-pairs`);
+
+              const view = Register.Views['base-pairs'];
+
+              // Find the base pair by residue identifiers (chain and sequence)
+              const basePair = BasePairsMapper.findByResidues(
+                props.dnatcofication,
+                basePairSelection.asymId1,
+                basePairSelection.seqId1,
+                basePairSelection.insCode1,
+                basePairSelection.asymId2,
+                basePairSelection.seqId2,
+                basePairSelection.insCode2
+              );
+
+              if (basePair) {
+                const pieces = view.selectionMaker(
+                  basePair.id,
+                  InvalidResidue,
+                  InvalidAtom,
+                  structureSelection.steps,
+                  structureSelection.residues,
+                  structureSelection.atoms,
+                  props.dnatcofication
+                );
+                changeSelection(pieces, view.selectionDisplayer);
+              }
+            } else if (mode.master === 'validation') {
+              // In validation mode, only switch to base-pairs when in specific views
+              const allowedViews = ['overall-quality', 'base-pairs', 'backbone-quality'];
+              if (allowedViews.includes(mode.viewId)) {
+                const targetMode = 'validation';
+
+                navigate(`/app/dnatco/${targetMode}/base-pairs`);
+
+                const view = Register.Views['base-pairs'];
+
+                // Find the base pair by residue identifiers (chain and sequence)
+                const basePair = BasePairsMapper.findByResidues(
+                  props.dnatcofication,
+                  basePairSelection.asymId1,
+                  basePairSelection.seqId1,
+                  basePairSelection.insCode1,
+                  basePairSelection.asymId2,
+                  basePairSelection.seqId2,
+                  basePairSelection.insCode2
+                );
+
+                if (basePair) {
+                  const pieces = view.selectionMaker(
+                    basePair.id,
+                    InvalidResidue,
+                    InvalidAtom,
+                    structureSelection.steps,
+                    structureSelection.residues,
+                    structureSelection.atoms,
+                    props.dnatcofication
+                  );
+                  changeSelection(pieces, view.selectionDisplayer);
+                }
+              }
+            }
+            // In refinement mode (or any other mode), the selection will still work
+            // through the existing view's selection handler
           })
         );
 
@@ -603,6 +755,7 @@ export function MainScreen(props: {
               structureSelection.residues.length
             );
             structureSelection.atoms.splice(0, structureSelection.atoms.length);
+            structureSelection.basePairs.splice(0, structureSelection.basePairs.length);
 
             const mode = locationToDnatcoMode(navPath(window.location)); // See the BEWARE above
             const view = Register.Views[mode.viewId];
@@ -651,6 +804,7 @@ export function MainScreen(props: {
           steps: wipeSelection ? [] : [...structureSelection.steps],
           residues: wipeSelection ? [] : [...structureSelection.residues],
           atoms: wipeSelection ? [] : [...structureSelection.atoms],
+          basePairs: wipeSelection ? [] : [...structureSelection.basePairs],
           reconstruct: wipeSelection,
         };
 
@@ -669,6 +823,7 @@ export function MainScreen(props: {
         steps: [...structureSelection.steps],
         residues: [...structureSelection.residues],
         atoms: [...structureSelection.atoms],
+        basePairs: [...structureSelection.basePairs],
         reconstruct: true,
       };
       updateViewer(view, pieces, props.viewerInterop);

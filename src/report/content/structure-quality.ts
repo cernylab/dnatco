@@ -3,11 +3,10 @@ import { Layout } from '../layout';
 import { Tables } from '../styling';
 import { PDFUnit } from '../nottex/pdf';
 import { NTTable } from '../nottex/primitives';
-import { NTRgba } from '../nottex/util';
 import { NTUnit, NTXYWH } from '../nottex/space';
 import { NdbStructNtcOverall } from '../../cif/categories/ndb-struct-ntc';
 import { Dnatcofication, StepRmsdStats } from '../../dnatco/dnatcofication';
-import { nrgb } from '../../util/colors';
+import { nrgba } from '../../util/colors';
 import { AngstromSignChar } from '../../util';
 import { confalPercentile, getCifValue, Common } from '../../util/dnatco';
 import { UOffscreenCanvas } from '../../util/offscreen-canvas';
@@ -86,9 +85,8 @@ function rmsdStatsRow<Output>(stats: StepRmsdStats[], tbl: NTTable, mIdx: number
     const rmsdColors = stats.map((x, idx) => {
         const thrPrev = stats[idx - 1]?.rmsdThreshold ?? 0;
         const v = x.rmsdThreshold === -1 ? rmsdRed + 0.1 : thrPrev + (x.rmsdThreshold - thrPrev) / 2.0;
-        const rgb = nrgb(GappedSemaphore.toSemaphore(v, rmsdGreen, rmsdRed, GSMapping));
 
-        return NTRgba(rgb.r, rgb.g, rgb.b);
+        return nrgba(GappedSemaphore.toSemaphore(v, rmsdGreen, rmsdRed, GSMapping));
     });
 
     const dataRows = [];

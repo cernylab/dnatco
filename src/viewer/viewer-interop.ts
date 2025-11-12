@@ -12,6 +12,7 @@ export type ViewerEvents = {
     structuresDeselected: Subject<void>,
     stepRequested: Subject<string>,
     stepSelected: Subject<{ name: string }>,
+    basePairRequested: Subject<ViewerApi.Payloads.BasePairSelection>,
     structureLoaded: Subject<void>,
 }
 
@@ -27,6 +28,7 @@ export class ViewerInterop {
         structuresDeselected: this.ek.subject<void>(),
         stepRequested: this.ek.subject<string>(),
         stepSelected: this.ek.subject<{ name: string, rmsd?: number }>(),
+        basePairRequested: this.ek.subject<ViewerApi.Payloads.BasePairSelection>(),
         structureLoaded: this.ek.subject(),
     };
 
@@ -35,7 +37,20 @@ export class ViewerInterop {
             throw new Error('Viewer is not initialized yet');
         return this._api;
     }
-    async bind(viewerContainerId: string, options: { highlightColor: string, highlightThickness: number, hydogensInReferences: boolean }) {
+    async bind(viewerContainerId: string, options: {
+        highlightColor: string,
+        highlightThickness: number,
+        hydogensInReferences: boolean,
+        basePairsLadder?: ViewerApi.Options['basePairsLadder'],
+        ntcTubeAlpha?: number,
+        pyramidAlpha?: number,
+        pairingLadderAlpha?: number,
+        showNtcTubeSegmentForSelectedResidues?: boolean,
+        cameraRadiusFactor?: number,
+        cameraClippingRadius?: number,
+        cameraClippingFar?: boolean,
+        cameraClippingMinNear?: number,
+    }) {
         const highlightColor = options.highlightColor ? htmlColorAsNumber(options.highlightColor) : void 0;
 
         for (let attempt = 0; attempt < 5; attempt++) {
@@ -70,6 +85,8 @@ export class ViewerInterop {
                             this.events.stepRequested.next(ev.selection.name);
                         else if (ev.selection.type === 'residue')
                             this.events.residueRequested.next(ev.selection);
+                        else if (ev.selection.type === 'base-pair')
+                            this.events.basePairRequested.next(ev.selection);
                         else if (ev.selection.type === 'atom')
                             Logger.log(Logger.Severity.Debug, '"atom" request type is currently not handled');
                     } else if (ev.type === 'structure-loaded')
@@ -79,6 +96,15 @@ export class ViewerInterop {
                     highlightColor,
                     highlightThickness: options.highlightThickness,
                     hydrogensInReferences: options.hydogensInReferences ?? false,
+                    ...(options.basePairsLadder && { basePairsLadder: options.basePairsLadder }),
+                    ...(options.ntcTubeAlpha !== undefined && { ntcTubeAlpha: options.ntcTubeAlpha }),
+                    ...(options.pyramidAlpha !== undefined && { pyramidAlpha: options.pyramidAlpha }),
+                    ...(options.pairingLadderAlpha !== undefined && { pairingLadderAlpha: options.pairingLadderAlpha }),
+                    ...(options.showNtcTubeSegmentForSelectedResidues !== undefined && { showNtcTubeSegmentForSelectedResidues: options.showNtcTubeSegmentForSelectedResidues }),
+                    ...(options.cameraRadiusFactor !== undefined && { cameraRadiusFactor: options.cameraRadiusFactor }),
+                    ...(options.cameraClippingRadius !== undefined && { cameraClippingRadius: options.cameraClippingRadius }),
+                    ...(options.cameraClippingFar !== undefined && { cameraClippingFar: options.cameraClippingFar }),
+                    ...(options.cameraClippingMinNear !== undefined && { cameraClippingMinNear: options.cameraClippingMinNear }),
                 }
             );
 
