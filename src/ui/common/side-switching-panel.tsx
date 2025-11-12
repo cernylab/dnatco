@@ -155,7 +155,7 @@ export function SideSwitchingPanel<K extends string>(props: {
                         }}
                         title={permaCompact ? 'Show panel' : 'Hide panel'}
                     >
-                        {permaCompact ? '⮞' : '⮜'}
+                        {permaCompact ? '>>' : '<<'}
                     </button>
                 )}
 
@@ -182,7 +182,7 @@ export function SideSwitchingPanel<K extends string>(props: {
                         title={permaCompact ? 'Show panel' : 'Hide panel'}
                     >
                         <div className={'rdo-side-switching-panel-item-text'}>
-                            {permaCompact ? '⮞' : '⮜ Hide'}
+                            {permaCompact ? '>>' : '<< Hide'}
                         </div>
                     </button>
                 <div key='padder' className='rdo-side-switching-panel-padder' />
