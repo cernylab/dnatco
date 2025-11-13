@@ -586,7 +586,8 @@ export class PGroupSummary extends React.Component<
               navalRangeHigh: fig.layout?.xaxis?.range?.[1] as number ?? 0,
             });
           }}
-        onRelayout={(relayout) => {
+          onRelayout={(relayout) => {
+            // This seemingly ridiculous way to get the X axis range is necessary
             const [rangeLow , rangeHigh] = relayout["xaxis.range"]
                ? [relayout["xaxis.range"][0], relayout["xaxis.range"][1]] as [number, number]
                : [relayout["xaxis.range[0]"], relayout["xaxis.range[1]"]] as [number, number];
