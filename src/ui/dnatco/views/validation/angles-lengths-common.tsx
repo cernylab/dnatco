@@ -416,6 +416,13 @@ function NavalBar(props: {
   const highest = props.navalRangeHigh;
   const span = highest - lowest;
 
+  if (ranking.ofConcernLower > totalPreferredLower) {
+    console.warn(`ofConcernLower (${ranking.ofConcernLower}) is greater than totalPreferredLower ${totalPreferredLower}`);
+  }
+  if (totalPreferredUpper > ranking.ofConcernUpper) {
+    console.warn(`totalPreferredUpper (${totalPreferredUpper}) is greater than ofConcernUpper ${ranking.ofConcernUpper}`);
+  }
+
   const context = canvasRef.current?.getContext('2d');
   if (context) {
     if (span === 0) return;
