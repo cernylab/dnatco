@@ -589,8 +589,8 @@ export class PGroupSummary extends React.Component<
           onInitialized={(fig) => {
             this.setState({
               ...this.state,
-              navalRangeLow: fig.layout?.xaxis?.range?.[0] as number ?? 0,
-              navalRangeHigh: fig.layout?.xaxis?.range?.[1] as number ?? 0,
+              navalRangeLow: this.props.xUntransform?.(fig.layout?.xaxis?.range?.[0] as number ?? 0) ?? fig.layout?.xaxis?.range?.[0] as number,
+              navalRangeHigh: this.props.xUntransform?.(fig.layout?.xaxis?.range?.[1] as number ?? 0) ?? fig.layout?.xaxis?.range?.[1] as number,
             });
           }}
           onRelayout={(relayout) => {
