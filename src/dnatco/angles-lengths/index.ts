@@ -1,10 +1,13 @@
 import { Bin, Bins, isWireBins, toBins, WireBins } from './bin';
 import { Angles, Triplet, tripletTag } from './angles';
+import { isShiftedName, unshiftName } from './atoms';
 import { Grouping } from './grouping';
 import { Lengths, Pair, pairTag } from './lengths';
 import { Measurements } from './measurements';
 import { Naval, ZPrime, isNavalZPrime } from './naval';
 import { isWireReferenceSets, References, WireReferenceSets } from './reference-sets';
+import { type MappedNaval } from '../dnatcofication';
+import { type Validation } from '../naval/validation';
 import { Residues } from '../residues';
 import { VoidResult, ErrorResult, Result } from '../';
 import { GlobalConfig } from '../../global-config';
@@ -42,6 +45,26 @@ type PGroupData = Record<
     >
 >;
 type Resource = [base: Residues.ElementaryResidue, tag: string, file: string];
+
+export type NavalItem = {
+    csdPreferredLeft: number;
+    csdPreferredRight: number;
+    value: number;
+};
+export function NavalItem(item: Validation.ReportItem<Validation.AngleAtoms | Validation.BondAtoms>): NavalItem {
+    const threeSigma = 3 * item.target_sigma;
+
+    return {
+        csdPreferredLeft: item.target_value - threeSigma,
+        csdPreferredRight: item.target_value + threeSigma,
+        value: item.target_value,
+    };
+}
+const EmptyNavalItem: NavalItem = {
+    csdPreferredLeft: 0,
+    csdPreferredRight: 0,
+    value: 0,
+};
 
 export type NavalRankingData = {
     weightedMedian: number,
@@ -208,6 +231,20 @@ function checkReferenceData(data: object): asserts data is (WireBins & ZPrime & 
 
     if (data.from.length !== data.rs.bins.length)
         throw new Error(`Mismatching number of ProSco bins and reference set Bins (${data.from.length} vs. ${data.rs.bins}`);
+}
+
+function compareNavalAtom(
+    a: Validation.Atom,
+    name: string,
+    seqId: number,
+    altId: string
+) {
+    const altIdMatch = a.altloc === "" || altId === "" || a.altloc === altId;
+    const isShifted = isShiftedName(name);
+    const _name = isShifted ? unshiftName(name) : name;
+    const _seqId = isShifted ? seqId - 1 : seqId;
+
+    return a.name === _name && a.seqId === _seqId && altIdMatch;
 }
 
 async function fetchReferenceData(prefix: string, resources: Resource[], loaderFunc?: (subpath: string) => string) {
@@ -458,6 +495,10 @@ export namespace AnglesLengths {
         objKeys(ctx.lengthData).map((k) => LengthAverageData[k] = ctx.lengthData[k]);
         objKeys(ctx.anglePGroupData).map((k) => AnglePGroupData[k] = ctx.anglePGroupData[k]);
         objKeys(ctx.lengthPGroupData).map((k) => LengthPGroupData[k] = ctx.lengthPGroupData[k]);
+        objKeys(ctx.angleNavalRankings).map((k) => AngleNavalRankings[k] = ctx.angleNavalRankings[k]);
+        objKeys(ctx.lengthNavalRankings).map((k) => LengthNavalRankings[k] = ctx.lengthNavalRankings[k]);
+        objKeys(ctx.angleReferenceSets).map((k) => AngleReferenceSets[k] = ctx.angleReferenceSets[k]);
+        objKeys(ctx.lengthReferenceSets).map((k) => LengthReferenceSets[k] = ctx.lengthReferenceSets[k]);
         ctx.pGroups.map((x, idx) => PGroups[idx] = x);
         OutlierColor = ctx.outlierColor;
     }
@@ -590,6 +631,43 @@ export namespace AnglesLengths {
 
     export function pGroupThresholds() {
         return PGroups.map(x => x.threshold);
+    }
+
+    export function navalAngle(naval: MappedNaval, r: Measurements.Residue, triplet: Triplet) {
+        const [na, nb, nc] = triplet;
+        const niIdx = naval.anglesMapping
+            .get(r.modelNum)
+            ?.get(r.chain)
+            ?.get(r.seqId)
+            ?.find((idx) => {
+                const { a, b, c } = naval.angles[idx].atoms;
+                return (
+                    (compareNavalAtom(a, na, r.seqId, r.altId) || compareNavalAtom(a, nc, r.seqId, r.altId)) &&
+                    compareNavalAtom(b, nb, r.seqId, r.altId) &&
+                    (compareNavalAtom(c, na, r.seqId, r.altId) || compareNavalAtom(c, nc, r.seqId, r.altId))
+                );
+        }) ?? -1;
+
+        return niIdx === -1 ? EmptyNavalItem : NavalItem(naval.angles[niIdx]);
+    }
+
+    export function navalBond(naval: MappedNaval, r: Measurements.Residue, pair: Pair) {
+        const [na, nb] = pair;
+        const niIdx = naval.bondsMapping
+            .get(r.modelNum)
+            ?.get(r.chain)
+            ?.get(r.seqId)
+            ?.find((idx) => {
+                const rr = naval.bonds[idx];
+                const { a, b } = rr.atoms;
+
+                return (
+                    (compareNavalAtom(a, na, r.seqId, r.altId) || compareNavalAtom(a, nb, r.seqId, r.altId)) &&
+                    (compareNavalAtom(b, na, r.seqId, r.altId) || compareNavalAtom(b, nb, r.seqId, r.altId))
+                );
+            }) ?? -1;
+
+        return niIdx === -1 ? EmptyNavalItem : NavalItem(naval.bonds[niIdx]);
     }
 
     export function navalPreferredLowerBound(navalValue: number, pGroup: PGroup) {

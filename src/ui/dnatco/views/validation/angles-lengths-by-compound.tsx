@@ -23,7 +23,7 @@ import { AnglesLengths as DAnglesLengths } from "../../../../dnatco/angles-lengt
 import { tripletTag, Triplet } from "../../../../dnatco/angles-lengths/angles";
 import { pairTag, Pair } from "../../../../dnatco/angles-lengths/lengths";
 import { Measurements } from "../../../../dnatco/angles-lengths/measurements";
-import { Summarize } from "../../../../dnatco/angles-lengths/summarize";
+import { SummarizeProSco } from "../../../../dnatco/angles-lengths/summarize";
 import { Dnatcofication } from "../../../../dnatco/dnatcofication";
 import { Residues } from "../../../../dnatco/residues";
 import { GlobalConfig } from "../../../../global-config";
@@ -48,15 +48,15 @@ import { ViewerApi, ViewerInterop } from "../../../../viewer/viewer-interop";
 
 type DownloadableData = {
   angles: ALM.AngleStats[];
-  countsAngles: Summarize.CountsInGroup[];
+  countsAngles: SummarizeProSco.CountsInGroup[];
   lengths: ALM.LengthStats[];
-  countsLengths: Summarize.CountsInGroup[];
+  countsLengths: SummarizeProSco.CountsInGroup[];
 };
 function DownloadableData(
   angles: Record<string, ALM.CompoundStats<ALM.AngleStats>>,
-  countsAngles: Summarize.CountsInGroup[],
+  countsAngles: SummarizeProSco.CountsInGroup[],
   lengths: Record<string, ALM.CompoundStats<ALM.LengthStats>>,
-  countsLengths: Summarize.CountsInGroup[]
+  countsLengths: SummarizeProSco.CountsInGroup[]
 ): DownloadableData {
   return {
     angles: objKeys(angles).flatMap((k) =>
@@ -86,14 +86,14 @@ function getSelection(
 
 function makeAngleDownloadableData(
   angles: Record<string, ALM.CompoundStats<ALM.AngleStats>>,
-  counts: Summarize.CountsInGroup[]
+  counts: SummarizeProSco.CountsInGroup[]
 ) {
   return DownloadableData(angles, counts, {}, []);
 }
 
 function makeLengthDownloadableData(
   lengths: Record<string, ALM.CompoundStats<ALM.LengthStats>>,
-  counts: Summarize.CountsInGroup[]
+  counts: SummarizeProSco.CountsInGroup[]
 ) {
   return DownloadableData({}, [], lengths, counts);
 }
@@ -101,8 +101,8 @@ function makeLengthDownloadableData(
 function OverallStatsBar(props: {
   children: React.ReactNode;
   counts: {
-    angles: Summarize.CountsInGroup[];
-    lengths: Summarize.CountsInGroup[];
+    angles: SummarizeProSco.CountsInGroup[];
+    lengths: SummarizeProSco.CountsInGroup[];
   };
   name: string;
   style?: StandardLonghandProperties;
@@ -136,7 +136,7 @@ function Base<T extends ALM.AngleStats | ALM.LengthStats>(props: {
   vi: ViewerInterop;
   dlMaker: (
     stats: Record<string, ALM.CompoundStats<T>>,
-    counts: Summarize.CountsInGroup[]
+    counts: SummarizeProSco.CountsInGroup[]
   ) => DownloadableData;
   tainerRef: React.RefObject<HTMLDivElement>;
   winTracker: WindowsTracker;
@@ -175,8 +175,8 @@ function Base<T extends ALM.AngleStats | ALM.LengthStats>(props: {
             props.winTracker,
             props.base,
             AnglesLengthsCommon.substructureBarCaption(props.base, DAnglesLengths.pGroupColor(0)),
-            props.stats.overall,
-            Summarize.countsInGroups(props.stats.overall),
+            props.stats.overallProSco,
+            SummarizeProSco.countsInGroups(props.stats.overallProSco),
             props.colorsForCounts
           )}
         </div>
@@ -206,7 +206,7 @@ function Bases<T extends ALM.AngleStats | ALM.LengthStats>(props: {
   vi: ViewerInterop;
   dlMaker: (
     stats: Record<string, ALM.CompoundStats<T>>,
-    counts: Summarize.CountsInGroup[]
+    counts: SummarizeProSco.CountsInGroup[]
   ) => DownloadableData;
   tainerRef: React.RefObject<HTMLDivElement>;
   winTracker: WindowsTracker;
@@ -338,8 +338,8 @@ function Metric<T extends ALM.AngleStats | ALM.LengthStats>(props: {
               {props.base} {name}
             </div>,
             AnglesLengthsCommon.substructureBarCaption(name, DAnglesLengths.pGroupColor(0)),
-            props.stats.overall,
-            Summarize.countsInGroups(props.stats.overall),
+            props.stats.overallProSco,
+            SummarizeProSco.countsInGroups(props.stats.overallProSco),
             props.colorsForCounts
           )}
         </div>
@@ -931,10 +931,11 @@ export class AnglesLengthsByCompound extends View<View.Props> {
 
     const selected = getSelection(alm, modelNum, chain);
 
-    const overallAngles = selected.overallAngles;
-    const overallLengths = selected.overallLengths;
-    const countsAngles = Summarize.countsInGroups(overallAngles);
-    const countsLengths = Summarize.countsInGroups(overallLengths);
+    // TODO: Make it possible to use NAVAL instead
+    const overallAngles = selected.overallAnglesProSco;
+    const overallLengths = selected.overallLengthsProSco;
+    const countsAngles = SummarizeProSco.countsInGroups(overallAngles);
+    const countsLengths = SummarizeProSco.countsInGroups(overallLengths);
 
     const htmlColorsForStatsBar = new Array<string>();
     for (let idx = 0; idx < DAnglesLengths.pGroupCount(); idx++)

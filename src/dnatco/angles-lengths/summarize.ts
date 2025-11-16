@@ -3,18 +3,11 @@ import { Measurements } from './measurements';
 import { initedArray } from '../../util';
 
 export namespace Summarize {
-    export type CountsInGroup = {
-        threshold: number,
-        exclusive: number,
-        cumulative: number,
-        pGroupIdx: number|'outlier',
-    };
-
     export type Counts = {
         exclusive: number[],
         cumulative: number[],
     };
-    function Counts(nPGroups: number): Counts {
+    export function Counts(nPGroups: number): Counts {
         // +1 for outliers
         return {
             exclusive: initedArray(0, nPGroups + 1),
@@ -26,8 +19,17 @@ export namespace Summarize {
         angles: Counts;
         lengths: Counts;
     };
+}
 
-    function count(counts: Counts, nPGroups: number, pgrp?: AnglesLengths.PGroup) {
+export namespace SummarizeProSco {
+    export type CountsInGroup = {
+        threshold: number,
+        exclusive: number,
+        cumulative: number,
+        pGroupIdx: number|'outlier',
+    };
+
+    function count(counts: Summarize.Counts, nPGroups: number, pgrp?: AnglesLengths.PGroup) {
         let accumulateTo = pgrp ? pgrp.index : nPGroups;
         for (let idx = nPGroups; idx >= accumulateTo; idx--)
             counts.cumulative[idx]++;
@@ -37,7 +39,7 @@ export namespace Summarize {
 
     export function angles(angles: { angle: Measurements.BondAngle, base: ElementaryResidue }[]) {
         const nPGroups = AnglesLengths.pGroupCount();
-        const counts = Counts(nPGroups);
+        const counts = Summarize.Counts(nPGroups);
 
         for (const { angle, base } of angles)
             count(counts, nPGroups, AnglesLengths.anglePGroup(base, angle));
@@ -45,7 +47,7 @@ export namespace Summarize {
         return counts;
     }
 
-    export function countsInGroups(counts: Counts): Summarize.CountsInGroup[] {
+    export function countsInGroups(counts: Summarize.Counts): CountsInGroup[] {
         const thresholds = AnglesLengths.pGroupThresholds();
         const cig = [];
 
@@ -55,7 +57,7 @@ export namespace Summarize {
                 threshold: thr ?? 100,
                 exclusive: counts.exclusive[idx],
                 cumulative: counts.cumulative[idx],
-                pGroupIdx: (thr ? idx : 'outlier') as Summarize.CountsInGroup['pGroupIdx'],
+                pGroupIdx: (thr ? idx : 'outlier') as SummarizeProSco.CountsInGroup['pGroupIdx'],
             });
         }
 
@@ -64,7 +66,7 @@ export namespace Summarize {
 
     export function lengths(lengths: { length: Measurements.BondLength, base: ElementaryResidue }[]) {
         const nPGroups = AnglesLengths.pGroupCount();
-        const counts = Counts(nPGroups);
+        const counts = Summarize.Counts(nPGroups);
 
         for (const { length, base } of lengths)
             count(counts, nPGroups, AnglesLengths.lengthPGroup(base, length));
@@ -72,12 +74,11 @@ export namespace Summarize {
         return counts;
     }
 
-
-    export function residue(r: Measurements.Residue): Summary {
+    export function residue(r: Measurements.Residue): Summarize.Summary {
         const nPGroups = AnglesLengths.pGroupCount();
 
-        const angles = Counts(nPGroups);
-        const lengths = Counts(nPGroups);
+        const angles = Summarize.Counts(nPGroups);
+        const lengths = Summarize.Counts(nPGroups);
 
         for (const angle of r.bondAngles) {
             const pgrp = AnglesLengths.anglePGroup(r.compound, angle);
@@ -92,11 +93,11 @@ export namespace Summarize {
         return { angles, lengths };
     }
 
-    export function substructure(residues: Measurements.Residue[]): Summary {
+    export function substructure(residues: Measurements.Residue[]): Summarize.Summary {
         const nPGroups = AnglesLengths.pGroupCount();
 
-        const angles = Counts(nPGroups);
-        const lengths = Counts(nPGroups);
+        const angles = Summarize.Counts(nPGroups);
+        const lengths = Summarize.Counts(nPGroups);
 
         for (const r of residues) {
             const rs = residue(r);
@@ -108,6 +109,30 @@ export namespace Summarize {
                 lengths.cumulative[idx] += rs.lengths.cumulative[idx];
             }
         }
+
+        return { angles, lengths };
+    }
+}
+
+const NavalPGroupCount = 2; // Preferred, Allowed, OfConcern is outlier
+export namespace SummarizeNaval {
+    export function angles(angles: { angle: Measurements.BondAngle, base: ElementaryResidue }[]) {
+        // TODO: Implement
+
+        return Summarize.Counts(NavalPGroupCount);
+    }
+
+    export function lengths(lengths: { length: Measurements.BondLength, base: ElementaryResidue }[]) {
+        // TODO: Implement
+
+        return Summarize.Counts(NavalPGroupCount);
+    }
+
+    export function residue(r: Measurements.Residue): Summarize.Summary {
+        const angles = Summarize.Counts(NavalPGroupCount);
+        const lengths = Summarize.Counts(NavalPGroupCount);
+
+        // TODO: Implement
 
         return { angles, lengths };
     }

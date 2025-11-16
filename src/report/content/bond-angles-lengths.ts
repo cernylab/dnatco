@@ -7,7 +7,7 @@ import { NTMm, NTUnit, NTXYWH } from '../nottex/space';
 import { Dnatcofication } from '../../dnatco/dnatcofication';
 import { AnglesLengths } from '../../dnatco/angles-lengths';
 import { ByResidueHelpers } from '../../dnatco/angles-lengths/helpers';
-import { Summarize } from '../../dnatco/angles-lengths/summarize';
+import { SummarizeProSco } from '../../dnatco/angles-lengths/summarize';
 import { colorToRgb, nrgb, nrgba, NRgba } from '../../util/colors';
 import { InvalidChain } from '../../util/structure-selection';
 
@@ -23,7 +23,7 @@ function drawBarSegment(inset: NTInset, x: number, w: number, totalWidth: NTUnit
     inset.rect(xywh, { color }, ref);
 }
 
-function drawCountsBar<Output>(inset: NTInset, counts: Summarize.CountsInGroup[], mIdx: number, tag: string, ctx: Report.Context<Output>) {
+function drawProScoCountsBar<Output>(inset: NTInset, counts: SummarizeProSco.CountsInGroup[], mIdx: number, tag: string, ctx: Report.Context<Output>) {
     const H = NTUnit.multiply(2, ctx.tDims.characterHeight);
     const totalWidth = inset.xywh.width;
     const totalCount = counts.reduce((p, c) => p + c.exclusive, 0);
@@ -67,7 +67,7 @@ function drawCountsBar<Output>(inset: NTInset, counts: Summarize.CountsInGroup[]
     _inset.lineText(tag, { color: NRgba(1, 1, 1), font: { size: 14, style: 'bold' } });
 }
 
-function drawCountsTable<Output>(inset: NTInset | NTDocument<Output>, counts: Summarize.CountsInGroup[], tag: string, ctx: Report.Context<Output>) {
+function drawProScoCountsTable<Output>(inset: NTInset | NTDocument<Output>, counts: SummarizeProSco.CountsInGroup[], tag: string, ctx: Report.Context<Output>) {
     const tbl = inset.table(
         3,
         {
@@ -146,9 +146,9 @@ export namespace BondAnglesLengths {
         for (let mIdx = 0; mIdx < numModels; mIdx++) {
             const selectedIndices = ByResidueHelpers.selectionToIndices(ctx.dnatcofication, mIdx, InvalidChain);
             const selectedResidues = selectedIndices.map((x) => alm.residues[x]);
-            const summary = Summarize.substructure(selectedResidues);
+            const summary = SummarizeProSco.substructure(selectedResidues);
 
-            const countsLenghts = Summarize.countsInGroups(summary.lengths);
+            const countsLenghts = SummarizeProSco.countsInGroups(summary.lengths);
 
             if (numModels > 1) {
                 root.lineText(
@@ -164,13 +164,13 @@ export namespace BondAnglesLengths {
                 {},
                 'lengths-bar',
             );
-            drawCountsBar(inset, countsLenghts, mIdx, 'Lengths', ctx);
+            drawProScoCountsBar(inset, countsLenghts, mIdx, 'Lengths', ctx);
             root.breakLine();
-            drawCountsTable(root, countsLenghts, `lengths-tbl-${mIdx}`, ctx);
+            drawProScoCountsTable(root, countsLenghts, `lengths-tbl-${mIdx}`, ctx);
 
             root.breakLine();
 
-            const countsAngles = Summarize.countsInGroups(summary.angles);
+            const countsAngles = SummarizeProSco.countsInGroups(summary.angles);
 
             // --- ANGLES ---
             inset = root.inset(
@@ -178,9 +178,9 @@ export namespace BondAnglesLengths {
                 {},
                 'angles-bar',
             );
-            drawCountsBar(inset, countsAngles, mIdx, 'Angles', ctx);
+            drawProScoCountsBar(inset, countsAngles, mIdx, 'Angles', ctx);
             root.breakLine();
-            drawCountsTable(root, countsAngles, `angles-tbl-${mIdx}`, ctx);
+            drawProScoCountsTable(root, countsAngles, `angles-tbl-${mIdx}`, ctx);
 
             root.breakLine();
         }

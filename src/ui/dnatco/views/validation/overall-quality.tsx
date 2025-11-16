@@ -16,7 +16,7 @@ import {
   InvalidChain,
   InvalidModelIndex,
 } from "../../../../util/structure-selection";
-import { Summarize } from "../../../../dnatco/angles-lengths/summarize";
+import { SummarizeProSco } from "../../../../dnatco/angles-lengths/summarize";
 import { ALM, ALMCompoundAngleLength } from "../../../../dnatco/alm";
 import { doDownload, Downloader } from "../../../../browser-util/downloader";
 import { SerializeByCompound } from "../../../../dnatco/angles-lengths/serialize";
@@ -34,26 +34,26 @@ const GSMapping = GappedSemaphore.makeMapping([
 
 type DownloadableData = {
   angles: ALM.AngleStats[];
-  countsAngles: Summarize.CountsInGroup[];
+  countsAnglesProSco: SummarizeProSco.CountsInGroup[];
   lengths: ALM.LengthStats[];
-  countsLengths: Summarize.CountsInGroup[];
+  countsLengthsProSco: SummarizeProSco.CountsInGroup[];
 };
 
 function DownloadableData(
   angles: Record<string, ALM.CompoundStats<ALM.AngleStats>>,
-  countsAngles: Summarize.CountsInGroup[],
+  countsAnglesProSco: SummarizeProSco.CountsInGroup[],
   lengths: Record<string, ALM.CompoundStats<ALM.LengthStats>>,
-  countsLengths: Summarize.CountsInGroup[]
+  countsLengthsProSco: SummarizeProSco.CountsInGroup[]
 ): DownloadableData {
   return {
     angles: objKeys(angles).flatMap((k) =>
       Array.from(angles[k].byMetric.values()).map((x) => x.individual)
     ),
-    countsAngles,
+    countsAnglesProSco,
     lengths: objKeys(lengths).flatMap((k) =>
       Array.from(lengths[k].byMetric.values()).map((x) => x.individual)
     ),
-    countsLengths,
+    countsLengthsProSco,
   };
 }
 
@@ -64,9 +64,9 @@ const StatsDownloaders = [
     download(fileNameStem, data) {
       const text = SerializeByCompound.toCsv(
         data.angles,
-        data.countsAngles,
+        data.countsAnglesProSco,
         data.lengths,
-        data.countsLengths
+        data.countsLengthsProSco
       );
       doDownload(fileNameStem, text, this.fileType);
     },
@@ -77,9 +77,9 @@ const StatsDownloaders = [
     download(fileNameStem, data) {
       const text = SerializeByCompound.toJson(
         data.angles,
-        data.countsAngles,
+        data.countsAnglesProSco,
         data.lengths,
-        data.countsLengths
+        data.countsLengthsProSco
       );
       doDownload(fileNameStem, text, this.fileType);
     },
@@ -104,8 +104,8 @@ function getSelection(
 function OverallStatsBar(props: {
   children: React.ReactNode;
   counts: {
-    angles: Summarize.CountsInGroup[];
-    lengths: Summarize.CountsInGroup[];
+    angles: SummarizeProSco.CountsInGroup[];
+    lengths: SummarizeProSco.CountsInGroup[];
   };
   downloadableData: DownloadableData;
   downloaders: StatsDownloader[];
@@ -317,10 +317,10 @@ export class OverallQuality extends View<View.Props> {
 
     const selected = getSelection(alm, modelNum, chain);
 
-    const overallAngles = selected.overallAngles;
-    const overallLengths = selected.overallLengths;
-    const countsAngles = Summarize.countsInGroups(overallAngles);
-    const countsLengths = Summarize.countsInGroups(overallLengths);
+    const overallAnglesProSco = selected.overallAnglesProSco;
+    const overallLengthsProSco = selected.overallLengthsProSco;
+    const countsAngles = SummarizeProSco.countsInGroups(overallAnglesProSco);
+    const countsLengths = SummarizeProSco.countsInGroups(overallLengthsProSco);
 
     const htmlColorsForStatsBar = new Array<string>();
     for (let idx = 0; idx < DAnglesLengths.pGroupCount(); idx++)
@@ -376,7 +376,7 @@ export class OverallQuality extends View<View.Props> {
                 this.winTracker,
                 "Lengths",
                 AnglesLengthsCommon.substructureBarCaption("Lengths", DAnglesLengths.pGroupColor(0)),
-                overallLengths,
+                overallLengthsProSco,
                 countsLengths,
                 htmlColorsForStatsBar
               )}
@@ -386,7 +386,7 @@ export class OverallQuality extends View<View.Props> {
                 this.winTracker,
                 "Angles",
                 AnglesLengthsCommon.substructureBarCaption("Angles", DAnglesLengths.pGroupColor(0)),
-                overallAngles,
+                overallAnglesProSco,
                 countsAngles,
                 htmlColorsForStatsBar
               )}

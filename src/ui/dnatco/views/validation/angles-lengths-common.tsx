@@ -1,3 +1,4 @@
+import { PlotRelayoutEvent } from "plotly.js";
 import Plot, { Figure } from "react-plotly.js";
 import React from "react";
 import { Subject } from "rxjs";
@@ -25,11 +26,11 @@ import {
   unshiftName,
 } from "../../../../dnatco/angles-lengths/atoms";
 import { Bins } from "../../../../dnatco/angles-lengths/bin";
-import {  Pair } from "../../../../dnatco/angles-lengths/lengths";
+import { Pair } from "../../../../dnatco/angles-lengths/lengths";
 import { Measurements } from "../../../../dnatco/angles-lengths/measurements";
 import { Naval } from "../../../../dnatco/naval";
 import { Validation } from "../../../../dnatco/naval/validation";
-import { Summarize } from "../../../../dnatco/angles-lengths/summarize";
+import { Summarize, SummarizeProSco } from "../../../../dnatco/angles-lengths/summarize";
 import { GlobalConfig } from "../../../../global-config";
 import { htmlColorAsNumber, isWithin, replaceAll } from "../../../../util";
 import { colorToTuple, luminance, colorToHex } from "../../../../util/colors";
@@ -45,7 +46,6 @@ import {
   StructureSelection,
 } from "../../../../util/structure-selection";
 import { ViewerApi, ViewerInterop } from "../../../../viewer/viewer-interop";
-import { PlotRelayoutEvent } from "plotly.js";
 
 export const ColorIsDarkThreshold = 0.5;
 export const AngstromUnit = "\u00A0\u00C5";
@@ -696,7 +696,8 @@ export function ResidueName(props: {
 }
 
 export function SubstructureSummary(props: {
-  countsInGroups: Summarize.CountsInGroup[];
+    // FIXME: THIS IS A PROBLEM
+  countsInGroups: SummarizeProSco.CountsInGroup[];
 }) {
   const maxDecimals = Math.max(
     ...props.countsInGroups.map((x) => {
@@ -1257,8 +1258,9 @@ export namespace AnglesLengthsCommon {
     winTracker: WindowsTracker,
     winCaption: string | JSX.Element,
     caption: string | JSX.Element,
-    summaryCounts: Summarize.Counts,
-    countsInGroups: Summarize.CountsInGroup[],
+      summaryCounts: Summarize.Counts,
+      /// FIXME: THIS IS A PROBLEM
+    countsInGroups: SummarizeProSco.CountsInGroup[],
     colorsForCounts: string[],
     captionStyle?: React.CSSProperties
   ) {

@@ -440,6 +440,7 @@ export namespace Dnatcofication {
 
             Dnatcofier.destroyImported(llkaImported);
 
+            const mappedNaval = mapNaval(naval);
             const data: DnatcoficationData = {
                 isCustomStructure,
                 connectivities,
@@ -454,8 +455,8 @@ export namespace Dnatcofication {
                 averageConfals: ExtractInfo.averageConfals(steps),
                 stepRmsdStats: ExtractInfo.stepRmsdStats([0.5, 1.0], steps),
                 almByResidue: ALM.mapByResidue(anglesLengths),
-                almByCompound: ALM.mapByCompoundAngleLength(anglesLengths),
-                naval: mapNaval(naval),
+                almByCompound: ALM.mapByCompoundAngleLength(anglesLengths, mappedNaval),
+                naval: mappedNaval,
                 rscc: [],
                 nucleotideCounts,
             };

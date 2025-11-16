@@ -32,7 +32,7 @@ import { tripletTag, Triplet } from "../../../../dnatco/angles-lengths/angles";
 import { ByResidueHelpers } from "../../../../dnatco/angles-lengths/helpers";
 import { pairTag, Pair } from "../../../../dnatco/angles-lengths/lengths";
 import { Measurements } from "../../../../dnatco/angles-lengths/measurements";
-import { Summarize } from "../../../../dnatco/angles-lengths/summarize";
+import { Summarize, SummarizeProSco } from "../../../../dnatco/angles-lengths/summarize";
 import { GlobalConfig } from "../../../../global-config";
 import { parseIntStrict, sequence } from "../../../../util";
 import {
@@ -501,9 +501,10 @@ function BondLengthDetails(props: {
 
 export function OverallStatsBar(props: {
   children: React.ReactNode;
-  counts: {
-    angles: Summarize.CountsInGroup[];
-    lengths: Summarize.CountsInGroup[];
+    counts: {
+        // FIXME: This is a major problem
+    angles: SummarizeProSco.CountsInGroup[];
+    lengths: SummarizeProSco.CountsInGroup[];
   };
   name: string;
   residues: Measurements.Residue[];
@@ -528,8 +529,9 @@ interface ResidueElemProps {
   tainer: React.RefObject<HTMLDivElement>;
   d: Dnatcofication;
   colorsForStatsBar: string[];
-  countsAngles: Summarize.CountsInGroup[];
-  countsLenghts: Summarize.CountsInGroup[];
+  // FIXME: This is a major problem
+  countsAngles: SummarizeProSco.CountsInGroup[];
+  countsLenghts: SummarizeProSco.CountsInGroup[];
   outlierColor: ColorTuple;
   pgrpIndices: number[];
   residue: Measurements.Residue;
@@ -618,8 +620,9 @@ function ResidueHeader(props: {
   stats: ALM.ResidueStats;
   structureName: string;
   summary: Summarize.Summary;
-  countsAngles: Summarize.CountsInGroup[];
-  countsLengths: Summarize.CountsInGroup[];
+  // FIXME: This is a major problem
+  countsAngles: SummarizeProSco.CountsInGroup[];
+  countsLengths: SummarizeProSco.CountsInGroup[];
   colorsForStatsBar: string[];
   winTracker: WindowsTracker;
 }) {
@@ -717,7 +720,7 @@ class Residue extends React.Component<
             residue={this.props.residue}
             residueIdentifyingName={this.props.residueIdentifyingName}
             stats={this.props.stats}
-            summary={this.props.stats.summary}
+            summary={this.props.stats.summaryProSco} // HERE WE NEED TO PASS A NAVAL SUMMARY TOO, IF REQUESTED
             structureName={this.props.structureName}
             countsAngles={this.props.countsAngles}
             countsLengths={this.props.countsLenghts}
@@ -963,8 +966,9 @@ export class AnglesLengthsByResidue extends View<
 
       const _r = r[idx];
       const _s = s[idx];
-      const countsAngles = Summarize.countsInGroups(_s.summary.angles);
-      const countsLenghts = Summarize.countsInGroups(_s.summary.lengths);
+      // TODO: Allow use of NAVAL stats too
+      const countsAngles = SummarizeProSco.countsInGroups(_s.summaryProSco.angles);
+      const countsLenghts = SummarizeProSco.countsInGroups(_s.summaryProSco.lengths);
       const residueName = (
         <ResidueName r={_r} multipleModels={multipleModels} />
       );
@@ -1329,7 +1333,8 @@ export class AnglesLengthsByResidue extends View<
     const selectedResidues = selectedIndices.map((x) => alm.residues[x]);
     const selectedResidueStats = selectedIndices.map((x) => alm.stats[x]);
 
-    const summary = Summarize.substructure(selectedResidues);
+    // TODO: Allow use of NAVAL stats instead
+    const summary = SummarizeProSco.substructure(selectedResidues);
     const pgrpIndices = sequence(0, DAnglesLengths.pGroupCount() - 1);
 
     const htmlColorsForStatsBar = new Array<string>();
@@ -1341,8 +1346,9 @@ export class AnglesLengthsByResidue extends View<
       rgbToHex(colorToRgb(DAnglesLengths.outlierColor()))
     );
 
-    const countsAngles = Summarize.countsInGroups(summary.angles);
-    const countsLenghts = Summarize.countsInGroups(summary.lengths);
+    // TODO: Allow use of NAVAL stats instead
+    const countsAngles = SummarizeProSco.countsInGroups(summary.angles);
+    const countsLenghts = SummarizeProSco.countsInGroups(summary.lengths);
 
     const percentileOptions = [
       { caption: "Of Concern", value: "" },
