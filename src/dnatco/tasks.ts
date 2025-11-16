@@ -121,9 +121,9 @@ export const Tasks = {
 
             ctx.status = 'Reading data';
             const coordsResult = await Coordinates.fromFile(payload.coords.file, payload.coords.type);
-            const densityMaps = await tryGetDensityMaps(payload.densityMaps);
+            const densityMapsResults = await tryGetDensityMaps(payload.densityMaps);
 
-            const data = await tryIngestData(coordsResult, densityMaps, payload.coords.file.name, payload.clsfResData, payload.alCtx, payload.nvCtx, true, configData, ctx);
+            const data = await tryIngestData(coordsResult, densityMapsResults, payload.coords.file.name, payload.clsfResData, payload.alCtx, payload.nvCtx, true, configData, ctx);
             if (!data)
                 return;
 
@@ -132,6 +132,15 @@ export const Tasks = {
                 console.log('RSCC calculation skipped by user request');
                 ctx.events.finished.next({ state: 'succeeded', data });
                 return;
+            }
+
+            // Build a map of file -> detected type from the processed density maps
+            const fileTypeMap = new Map<File, DensityMap['type']>();
+            for (let i = 0; i < payload.densityMaps.length; i++) {
+                const result = densityMapsResults[i];
+                if (isOk(result) && result.data.length > 0) {
+                    fileTypeMap.set(payload.densityMaps[i].file, result.data[0].type);
+                }
             }
 
             // Determine which file to use for RSCC calculation
@@ -144,9 +153,17 @@ export const Tasks = {
                 mapKind = 'coefficients';
             } else if (payload.densityMaps.length > 0) {
                 // If no MTZ, use density maps in priority order: 2fo-fc > em
-                // Note: fo-fc maps are only for visualization, not for RSCC calculation
-                const map2fofc = payload.densityMaps.find(m => m.kind === '2fo-fc');
-                const mapEm = payload.densityMaps.find(m => m.kind === 'em');
+                // Note: fo-fc maps and DSN6 maps are only for visualization, not for RSCC calculation
+                const map2fofc = payload.densityMaps.find(m => {
+                    if (m.kind !== '2fo-fc') return false;
+                    const type = fileTypeMap.get(m.file);
+                    return type !== 'dsn6'; // Exclude DSN6 files from RSCC
+                });
+                const mapEm = payload.densityMaps.find(m => {
+                    if (m.kind !== 'em') return false;
+                    const type = fileTypeMap.get(m.file);
+                    return type !== 'dsn6'; // Exclude DSN6 files from RSCC
+                });
 
                 if (map2fofc) {
                     rsccFile = map2fofc.file;
@@ -155,7 +172,7 @@ export const Tasks = {
                     rsccFile = mapEm.file;
                     mapKind = 'em';
                 }
-                // fo-fc maps are skipped - only used for visualization
+                // fo-fc maps and DSN6 maps are skipped - only used for visualization
             }
 
             if (rsccFile) {
