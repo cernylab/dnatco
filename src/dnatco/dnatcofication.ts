@@ -454,7 +454,7 @@ export namespace Dnatcofication {
                 densityMaps,
                 averageConfals: ExtractInfo.averageConfals(steps),
                 stepRmsdStats: ExtractInfo.stepRmsdStats([0.5, 1.0], steps),
-                almByResidue: ALM.mapByResidue(anglesLengths),
+                almByResidue: ALM.mapByResidue(anglesLengths, mappedNaval),
                 almByCompound: ALM.mapByCompoundAngleLength(anglesLengths, mappedNaval),
                 naval: mappedNaval,
                 rscc: [],

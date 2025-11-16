@@ -50,7 +50,7 @@ function aggregateWithParent(parent: Summarize.Counts, subaggregation: Summarize
     accumulateArray(parent.exclusive, subaggregation.exclusive);
 }
 
-function processAggregation(aggregation: Map<any, ALM.ByCompound>) {
+function processAggregation(aggregation: Map<any, ALM.ByCompound>, naval: MappedNaval) {
     for (const alm of aggregation.values()) {
         // Go over all bases for the given model
         for (const k of objKeys(alm.angles)) {
@@ -68,14 +68,14 @@ function processAggregation(aggregation: Map<any, ALM.ByCompound>) {
 
                 // Go over all values for the given bond angle
                 for (const a of x.individual.angles)
-                    aggre.push({ angle: a.angle, base: x.individual.base });
+                    aggre.push({ angle: a.angle, r: x.individual.r });
 
                 // ProSco
                 x.overallProSco = SummarizeProSco.angles(aggre);
                 aggregateWithParent(angles.overallProSco, x.overallProSco);
 
                 // Naval
-                x.overallNaval = SummarizeNaval.angles(aggre);
+                x.overallNaval = SummarizeNaval.angles(aggre, naval);
                 aggregateWithParent(angles.overallNaval, x.overallNaval);
             }
 
@@ -88,17 +88,20 @@ function processAggregation(aggregation: Map<any, ALM.ByCompound>) {
                 haveLengths = true;
                 const aggre = [];
 
-                if (x.individual.base !== k)
-                    throw new Error(`Assertion falure ${x.individual.base} !== ${k}`);
+                if (x.individual.r.compound !== k)
+                    throw new Error(`Assertion falure ${x.individual.r.compound } !== ${k}`);
 
                 // Go over all values for the given bond angle
-                for (const l of x.individual.lengths) {
-                    aggre.push({ length: l.length, base: x.individual.base });
-                }
+                for (const l of x.individual.lengths)
+                    aggre.push({ length: l.length, r: x.individual.r });
 
                 // ProSco
                 x.overallProSco = SummarizeProSco.lengths(aggre);
                 aggregateWithParent(lengths.overallProSco, x.overallProSco);
+
+                // NAVAL
+                x.overallNaval = SummarizeNaval.lengths(aggre, naval);
+                aggregateWithParent(lengths.overallNaval, x.overallNaval);
             }
 
             // Add counts for this "subaggregation" to its parent aggregation
@@ -135,7 +138,7 @@ function getBondLength(tag: string, lengths: Measurements.BondLength[]) {
 
 export namespace ALM {
     export type AngleStats = {
-        base: ElementaryResidue,
+        r: Measurements.Residue,
         angles: {
             angle: Measurements.BondAngle,
             residue: Measurements.Residue,
@@ -144,15 +147,15 @@ export namespace ALM {
             navalRankingClass: NavalRankingClass,
         }[],
     }
-    function AngleStats(base: ElementaryResidue): AngleStats {
+    function AngleStats(r: Measurements.Residue): AngleStats {
         return {
-            base,
+            r,
             angles: [],
         };
     }
 
     export type LengthStats = {
-        base: ElementaryResidue,
+        r: Measurements.Residue,
         lengths: {
             length: Measurements.BondLength,
             residue: Measurements.Residue,
@@ -161,9 +164,9 @@ export namespace ALM {
             navalRankingClass: NavalRankingClass,
         }[],
     }
-    function LengthStats(base: ElementaryResidue): LengthStats {
+    function LengthStats(r: Measurements.Residue): LengthStats {
         return {
-            base,
+            r,
             lengths: [],
         };
     }
@@ -227,22 +230,22 @@ export namespace ALM {
         overallNaval: Summarize.Counts,
         individual: T,
     }
-    function AngleMetricStats(base: ElementaryResidue, triplet: Triplet): MetricStats<AngleStats> {
+    function AngleMetricStats(r: Measurements.Residue, triplet: Triplet): MetricStats<AngleStats> {
         return {
             type: 'angle',
             identifier: triplet,
             overallProSco: { exclusive: [], cumulative: [] },
             overallNaval: { exclusive: [], cumulative: [] },
-            individual: AngleStats(base ),
+            individual: AngleStats(r),
         };
     }
-    function LengthMetricStats(base: ElementaryResidue, pair: Pair): MetricStats<LengthStats> {
+    function LengthMetricStats(r: Measurements.Residue, pair: Pair): MetricStats<LengthStats> {
         return {
             type: 'length',
             identifier: pair,
             overallProSco: { exclusive: [], cumulative: [] },
             overallNaval: { exclusive: [], cumulative: [] },
-            individual: LengthStats(base),
+            individual: LengthStats(r),
         };
     }
 
@@ -312,13 +315,13 @@ export namespace ALM {
                 let statsC;
 
                 if (!almM.byMetric.has(tag)) {
-                    statsM = AngleMetricStats(comp, angle)
+                    statsM = AngleMetricStats(r, angle)
                     almM.byMetric.set(tag, statsM);
                 } else
                     statsM = almM.byMetric.get(tag)!;
 
                 if (!almC.byMetric.has(tag)) {
-                    statsC = AngleMetricStats(comp, angle);
+                    statsC = AngleMetricStats(r, angle);
                     almC.byMetric.set(tag, statsC);
                 } else
                     statsC = almC.byMetric.get(tag)!;
@@ -361,13 +364,13 @@ export namespace ALM {
                 let statsC;
 
                 if (!almM.byMetric.has(tag)) {
-                    statsM = LengthMetricStats(comp, length);
+                    statsM = LengthMetricStats(r, length);
                     almM.byMetric.set(tag, statsM);
                 } else
                     statsM = almM.byMetric.get(tag)!;
 
                 if (!almC.byMetric.has(tag)) {
-                    statsC = LengthMetricStats(comp, length);
+                    statsC = LengthMetricStats(r, length);
                     almC.byMetric.set(tag, statsC);
                 } else
                     statsC = almC.byMetric.get(tag)!;
@@ -405,10 +408,10 @@ export namespace ALM {
          * so we can calculate summary stats.
          */
 
-        processAggregation(models);
+        processAggregation(models, naval);
         for (const _chains of chains.values()) {
             // Chains are mapped by model nubmer on the top level so we need this indirection
-            processAggregation(_chains);
+            processAggregation(_chains, naval);
         }
 
         /*
@@ -428,7 +431,7 @@ export namespace ALM {
                                 const src = x.angles[k].byMetric.get(metric)!;
 
                                 if (!superAggre.angles[k].byMetric.has(metric))
-                                    superAggre.angles[k].byMetric.set(metric, AngleMetricStats(k, src.identifier));
+                                    superAggre.angles[k].byMetric.set(metric, AngleMetricStats(src.individual.r, src.identifier));
                                 const dst = superAggre.angles[k].byMetric.get(metric)!
 
                                 accumulateArray(dst[method].cumulative, src[method].cumulative);
@@ -447,7 +450,7 @@ export namespace ALM {
                                 const src = x.lengths[k].byMetric.get(metric)!;
 
                                 if (!superAggre.lengths[k].byMetric.has(metric))
-                                    superAggre.lengths[k].byMetric.set(metric, LengthMetricStats(k, src.identifier));
+                                    superAggre.lengths[k].byMetric.set(metric, LengthMetricStats(src.individual.r, src.identifier));
                                 const dst = superAggre.lengths[k].byMetric.get(metric)!
 
                                 accumulateArray(dst[method].cumulative, src[method].cumulative);
@@ -469,7 +472,7 @@ export namespace ALM {
         return { models, chains };
     }
 
-    export function mapByResidue(residues: Measurements.Residue[]): ALMByResidue {
+    export function mapByResidue(residues: Measurements.Residue[], naval: MappedNaval): ALMByResidue {
         const models = new Map<number, number[]>();
         const chains = new Map<number, Map<string, number[]>>();
         const stats = [] as ResidueStats[];
@@ -516,7 +519,7 @@ export namespace ALM {
                 lengths.push({ pGroup: pgrp, bin: maybeBin });
             }
 
-            stats.push({ angles, lengths, summaryProSco: SummarizeProSco.residue(r), summaryNaval: SummarizeNaval.residue(r) });
+            stats.push({ angles, lengths, summaryProSco: SummarizeProSco.residue(r), summaryNaval: SummarizeNaval.residue(r, naval) });
         }
 
         return { models, chains, residues, stats };

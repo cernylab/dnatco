@@ -1,4 +1,4 @@
-import { AnglesLengths, ElementaryResidue } from './';
+import { type ElementaryResidue, AnglesLengths } from './';
 import { Triplet } from './angles';
 import { Pair } from './lengths';
 import { Measurements } from './measurements';
@@ -160,7 +160,7 @@ export namespace SerializeByCompound {
 
         // We need to map the input arrays out to compoud -> metric mapping again to get nicely structured JSONs.
         for (const a of angles) {
-            const dst = outAngles[a.base];
+            const dst = outAngles[a.r.compound];
             for (const x of a.angles) {
                 const key = angleName(x.angle.triplet);
                 if (!dst.has(key))
@@ -172,7 +172,7 @@ export namespace SerializeByCompound {
             }
         }
         for (const l of lengths) {
-            const dst = outLengths[l.base];
+            const dst = outLengths[l.r.compound];
             for (const x of l.lengths) {
                 const key = lengthName(x.length.pair);
                 if (!dst.has(key))
