@@ -455,6 +455,7 @@ class DnatcoficationHandler {
 type Initial = {
   pathname: string;
   search: string;
+  hash: string;
 };
 
 function App(props: { initial: Initial }) {
@@ -594,6 +595,58 @@ function App(props: { initial: Initial }) {
 
     // Make sure we run this only once
     setInitialHandlingDone(true);
+
+    // Check for MAXIT file transfer via hash
+    const hash = props.initial.hash;
+
+    if (hash && hash.startsWith('#maxit=')) {
+      const token = hash.substring(7); // Remove '#maxit='
+
+      // Create async function to handle the fetch
+      (async () => {
+        try {
+          // Fetch the transfer data from MAXIT server
+          const response = await fetch(`https://maxit.datmos.org/get_transfer.php?token=${token}`);
+
+          if (!response.ok) {
+            throw new Error(`Server returned ${response.status}: ${response.statusText}`);
+          }
+
+          const result = await response.json();
+
+          if (result.status === 'success' && result.cifData && result.filename) {
+            const { cifData, filename } = result;
+
+            // Create a File object from the received data
+            const blob = new Blob([cifData], { type: 'chemical/x-mmcif' });
+            const file = new File([blob], filename, { type: 'chemical/x-mmcif' });
+
+            // Clear the hash from the URL
+            window.history.replaceState(null, '', window.location.pathname + window.location.search);
+
+            // Trigger file upload as if user selected it
+            Logger.log(
+              Logger.Severity.Info,
+              `Loading file from MAXIT: ${filename}`
+            );
+
+            // Use the file upload handler with empty density maps
+            dh.fromCustomStructure(file, [], null, () => {
+              setAppMode("structure");
+              navigate("/app/dnatco/annotation");
+            });
+          } else {
+            throw new Error(result.message || 'Invalid response from server');
+          }
+        } catch (e) {
+          Logger.log(
+            Logger.Severity.Error,
+            `Failed to load file from MAXIT: ${e}`
+          );
+        }
+      })();
+      return;
+    }
 
     const params = Net.paramsFromUrl(Params, props.initial.search);
     if (params.cifcode) {

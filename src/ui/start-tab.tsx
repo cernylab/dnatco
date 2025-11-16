@@ -129,7 +129,8 @@ class Coordinates extends React.Component<Coordinates.Props> {
           {customFile ? (
             <>
               <div className="text-center w-full p-1 px-3 text-13px font-roboto-bold bg-secondary-second text-primary-first rounded-standard mb-2">
-                We advise to check your file by{" "}
+                The primary coordinate format used by DNATCO is mmCIF. 
+                Before uploading your data, we recommend checking or converting your file using your local {" "}
                 <a
                   className="hover:text-secondary-third underline"
                   href="https://sw-tools.rcsb.org/apps/MAXIT/index.html"
@@ -137,8 +138,15 @@ class Coordinates extends React.Component<Coordinates.Props> {
                 >
                   MAXIT
                 </a>{" "}
-                before uploading. Only CCP4 and DSN6 files are currently
-                supported.
+                installation or the {" "}
+                <a
+                  className="hover:text-secondary-third underline"
+                  href="https://maxit.datmos.org"
+                  target="_blank"
+                >
+                  maxit.datmos.org
+                </a>{" "}
+                service. If you upload a PDB file instead, DNATCO will apply its internal, limited PDB-to-mmCIF conversion (i.e., without relying on external tools).
               </div>
               <div className="flex">
                 <div className="flex flex-col mb-2">
@@ -353,6 +361,16 @@ class DensityMapFiles extends React.Component<
           {openModal && (
             <div className="absolute top-0 left-0 z-50 w-full h-full bg-test">
               <div className="relative p-6 mt-[10%] bg-primary-first rounded-standard text-white w-[625px] h-[400px] overflow-y-scroll m-auto">
+                <div className="mb-4 text-14px text-secondary-second">
+                  <p className="mb-2">Upload density maps for visualization and RSCC validation. Supported formats:</p>
+                  <ul className="list-disc ml-5 mb-2">
+                    <li><strong>MTZ files</strong> (.mtz): Structure factors for RSCC calculation (most accurate for crystallographic data)</li>
+                    <li><strong>CCP4/MRC maps</strong> (.ccp4, .map, .mrc): Pre-calculated density maps for both crystallographic and cryo-EM structures</li>
+                    <li><strong>DSN6 files</strong> (.dsn6): Legacy format for visualization only</li>
+                  </ul>
+                  <p className="mb-2">Select map type from the dropdown. Use <strong>Remove</strong> to delete unwanted files before clicking Done.</p>
+                  <p className="text-12px italic">For detailed format information, see Help &gt; Density Maps.</p>
+                </div>
                 <div>
                   {inputs.map((input, index) => (
                     <div key={index} className="mb-2">

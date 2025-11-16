@@ -3,6 +3,22 @@ import * as RDC from "react-dom/client";
 import { Popup } from "./popup";
 import { formatErrorText } from "../util";
 
+// Email link component for bot protection
+const EmailLink: React.FC<{ user: string; domain: string; subject?: string; className?: string; children: React.ReactNode }> = ({ user, domain, subject, className, children }) => {
+  const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
+    const email = `${user}@${domain}`;
+    const mailtoUrl = subject ? `mailto:${email}?Subject=${subject}` : `mailto:${email}`;
+    window.location.href = mailtoUrl;
+  };
+
+  return (
+    <a className={className} href="#" onClick={handleClick} style={{ cursor: 'pointer' }}>
+      {children}
+    </a>
+  );
+};
+
 export class PopupCustomFile extends React.Component<PopupCustomFile.Props> {
   private selfRef = React.createRef<HTMLDivElement>();
 
@@ -70,31 +86,39 @@ export class PopupCustomFile extends React.Component<PopupCustomFile.Props> {
         className="absolute top-0 left-0 w-screen h-screen z-999 bg-test flex items-center justify-center"
         tabIndex={0}
       >
-        <div className="bg-primary-first flex flex-col p-6 rounded-standard max-w-[50%] text-white">
+        <div className="bg-primary-first flex flex-col p-6 rounded-standard max-w-[60%] max-h-[80%] text-white">
           <div className="text-xl font-bold mb-4">Error Processing Structure</div>
-          {canRepair
-            ? (
-              <div className="mb-4">
-                <div className="mb-4">
-                  Cannot process structure. Your file is not formatted according to
-                  PDB/mmCIF standards. We can try to repair the file by uploading to our
-                  server, which will attempt to fix it.
-                </div>
-                <div className="text-red-400 mb-4">
-                  Error: {this.props.errorMessage}
-                </div>
-                <div className="text-sm">
-                  <strong>Warning:</strong> This will upload your structure to an external server (maxit.datmos.org).
-                </div>
-                <div className="h-4" />
+          <div className="overflow-y-auto pr-2 flex-1 mb-4">
+            {canRepair
+              ? (
                 <div>
-                  Do you want to repair your file?
+                  <div className="mb-4">
+                    Cannot process structure. Your file is not formatted according to
+                    PDB/mmCIF standards. We can try to repair the file by uploading to our
+                    server, which will attempt to fix it.
+                  </div>
+                  <div className="text-red-400 mb-4 p-3 bg-red-900 bg-opacity-20 rounded border border-red-500 max-h-[200px] overflow-y-auto">
+                    <strong>Error:</strong> {this.props.errorMessage}
+                  </div>
+                  <div className="text-sm">
+                    <strong>Warning:</strong> This will upload your structure to an external server (maxit.datmos.org).
+                  </div>
+                  <div className="h-4" />
+                  <div>
+                    Do you want to repair your file?
+                  </div>
                 </div>
-              </div>
-            )
-            : <div className="text-red-500 mb-4">{this.props.errorMessage}</div>
-          }
-          <div className="flex justify-end gap-4">
+              )
+              : <div className="text-red-500 p-3 bg-red-900 bg-opacity-20 rounded border border-red-500 max-h-[400px] overflow-y-auto whitespace-pre-wrap break-words">{this.props.errorMessage}</div>
+            }
+          </div>
+          <div className="text-xs text-gray-400 mb-2 pb-2 border-b border-gray-600">
+            If you believe this is a bug, please report it to{" "}
+            <EmailLink user="jiri.cerny" domain="ibt.cas.cz" subject="DNATCO" className="text-blue-400 hover:text-blue-300 underline">
+              DNATCO authors
+            </EmailLink>
+          </div>
+          <div className="flex justify-end gap-4 pt-2">
             {canRepair && (
               <button
                 onClick={() => this.postToDatabase(this.props.jsonData)}

@@ -174,14 +174,300 @@ export const about = [
     }
 ]
 
+export const densityMaps = [
+    {
+        headline: 'Density Maps and Structure Factors',
+        subHeadlineText: 'DNATCO supports multiple density map formats for structure validation. Understanding which format to use and how they are processed helps optimize your validation workflow.',
+        sections: [
+            {
+                id: 'supportedFormats',
+                headline: 'Supported Formats',
+                paragraphs: [
+                    {
+                        type: 'paragraph',
+                        text: 'DNATCO accepts the following density data formats:'
+                    },
+                    {
+                        type: 'paragraph',
+                        text: 'MTZ Files (.mtz): Crystallographic structure factors containing reflection data and map coefficients. Processed using phenix.real_space_correlation. Format specification: https://www.ccp4.ac.uk/html/mtzformat.html'
+                    },
+                    {
+                        type: 'paragraph',
+                        text: 'CCP4/MRC Map Files (.ccp4, .map, .mrc): Pre-calculated electron density maps for both crystallographic (2Fo-Fc, Fo-Fc) and cryo-EM structures. Processed using phenix.map_model_cc. Format specification: https://www.ccp4.ac.uk/html/maplib.html'
+                    },
+                    {
+                        type: 'paragraph',
+                        text: 'DSN6 Files (.dsn6): Legacy density map format, primarily for visualization only.'
+                    },
+                ],
+            },
+            {
+                id: 'fileTypeDetection',
+                headline: 'Automatic File Type Detection',
+                paragraphs: [
+                    {
+                        type: 'paragraph',
+                        text: 'DNATCO automatically detects the file type based on binary signatures:'
+                    },
+                    {
+                        type: 'paragraph',
+                        text: 'MTZ files: Identified by "MTZ " magic bytes at file start (bytes 0-3: 0x4D 0x54 0x5A 0x20)'
+                    },
+                    {
+                        type: 'paragraph',
+                        text: 'CCP4/MRC maps: Identified by "MAP " marker at bytes 208-211 (bytes 208-211: 0x4D 0x41 0x50 0x20)'
+                    },
+                    {
+                        type: 'paragraph',
+                        text: 'The appropriate validation method is selected automatically based on detection.'
+                    },
+                ],
+            },
+            {
+                id: 'rsccCalculation',
+                headline: 'RSCC Calculation Methods',
+                paragraphs: [
+                    {
+                        type: 'paragraph',
+                        text: 'Real-Space Correlation Coefficient (RSCC) measures the agreement between atomic model and experimental density. DNATCO uses different Phenix programs depending on the file format:'
+                    },
+                    {
+                        type: 'paragraph',
+                        text: 'For MTZ Files (Structure Factors):'
+                    },
+                    {
+                        type: 'paragraph',
+                        text: '• Program: phenix.real_space_correlation'
+                    },
+                    {
+                        type: 'paragraph',
+                        text: '• Purpose: Calculates maps from structure factors and correlates them with the model'
+                    },
+                    {
+                        type: 'paragraph',
+                        text: '• Best for: Crystallographic data with reflection data'
+                    },
+                    {
+                        type: 'paragraph',
+                        text: '• Parameters: detail=atom, resolution_factor=1./8'
+                    },
+                    {
+                        type: 'paragraph',
+                        text: 'For CCP4/MRC Map Files:'
+                    },
+                    {
+                        type: 'paragraph',
+                        text: '• Program: phenix.map_model_cc'
+                    },
+                    {
+                        type: 'paragraph',
+                        text: '• Purpose: Directly correlates pre-calculated density maps with the model'
+                    },
+                    {
+                        type: 'paragraph',
+                        text: '• Best for: Both crystallographic maps (2Fo-Fc, Fo-Fc) and cryo-EM density maps'
+                    },
+                    {
+                        type: 'paragraph',
+                        text: '• Parameters: compute.cc_per_atom=True, print_cc_per_atom=True, resolution=<value> (for EM maps)'
+                    },
+                ],
+            },
+            {
+                id: 'recommendedFormats',
+                headline: 'Format Recommendations',
+                paragraphs: [
+                    {
+                        type: 'paragraph',
+                        text: 'For RSCC Calculation (Validation):'
+                    },
+                    {
+                        type: 'paragraph',
+                        text: '• Preferred: MTZ files for crystallographic structures (most accurate, uses original reflection data)'
+                    },
+                    {
+                        type: 'paragraph',
+                        text: '• Alternative: CCP4/MRC maps work for both crystallographic and EM structures'
+                    },
+                    {
+                        type: 'paragraph',
+                        text: '• EM structures: Must use CCP4/MRC map format with resolution parameter'
+                    },
+                    {
+                        type: 'paragraph',
+                        text: 'For Visualization Only:'
+                    },
+                    {
+                        type: 'paragraph',
+                        text: '• CCP4/MRC maps: Displayed in Mol* viewer alongside structure'
+                    },
+                    {
+                        type: 'paragraph',
+                        text: '• DSN6 maps: Legacy format, visualization only (no RSCC calculation)'
+                    },
+                    {
+                        type: 'paragraph',
+                        text: '• Multiple maps: You can provide different map types (2Fo-Fc, Fo-Fc, EM) simultaneously'
+                    },
+                ],
+            },
+            {
+                id: 'uploadingMaps',
+                headline: 'Uploading Density Data',
+                paragraphs: [
+                    {
+                        type: 'paragraph',
+                        text: 'When adding maps in the upload dialog:'
+                    },
+                    {
+                        type: 'paragraph',
+                        text: '1. Click "Add Files" button to open the map selection modal'
+                    },
+                    {
+                        type: 'paragraph',
+                        text: '2. Select map type from dropdown (2fo-fc, fo-fc, EM map, or coefficients)'
+                    },
+                    {
+                        type: 'paragraph',
+                        text: '3. Choose your file (MTZ or CCP4/MRC format)'
+                    },
+                    {
+                        type: 'paragraph',
+                        text: '4. Add additional maps if needed using "+ Add file" button'
+                    },
+                    {
+                        type: 'paragraph',
+                        text: '5. Click "Done" when finished'
+                    },
+                    {
+                        type: 'paragraph',
+                        text: 'Important: Use the "Remove" button to delete unwanted files. Removed files are cleared from processing - they will not be included in validation or visualization.'
+                    },
+                    {
+                        type: 'paragraph',
+                        text: 'Map Type Selection:'
+                    },
+                    {
+                        type: 'paragraph',
+                        text: '• 2fo-fc: Standard crystallographic electron density map'
+                    },
+                    {
+                        type: 'paragraph',
+                        text: '• fo-fc: Difference density map showing discrepancies'
+                    },
+                    {
+                        type: 'paragraph',
+                        text: '• EM map: Cryo-EM density maps'
+                    },
+                    {
+                        type: 'paragraph',
+                        text: '• coefficients: MTZ file containing structure factors and map coefficients for RSCC calculation'
+                    },
+                ],
+            },
+            {
+                id: 'dataProcessing',
+                headline: 'How Maps Are Processed',
+                paragraphs: [
+                    {
+                        type: 'paragraph',
+                        text: 'Client-Side Processing:'
+                    },
+                    {
+                        type: 'paragraph',
+                        text: '• Visualization maps (CCP4/MRC, DSN6) are processed in your browser'
+                    },
+                    {
+                        type: 'paragraph',
+                        text: '• Files are parsed locally and displayed in Mol* viewer'
+                    },
+                    {
+                        type: 'paragraph',
+                        text: '• No data is sent to servers for visualization'
+                    },
+                    {
+                        type: 'paragraph',
+                        text: 'Server-Side Processing (RSCC Calculation):'
+                    },
+                    {
+                        type: 'paragraph',
+                        text: '• When RSCC calculation is requested, density data is sent to the Phenix server'
+                    },
+                    {
+                        type: 'paragraph',
+                        text: '• File type is automatically detected by binary signature'
+                    },
+                    {
+                        type: 'paragraph',
+                        text: '• Appropriate Phenix program is invoked (real_space_correlation or map_model_cc)'
+                    },
+                    {
+                        type: 'paragraph',
+                        text: '• Per-atom correlation coefficients are calculated and returned'
+                    },
+                    {
+                        type: 'paragraph',
+                        text: '• Temporary files are deleted immediately after processing'
+                    },
+                ],
+            },
+            {
+                id: 'technicalDetails',
+                headline: 'Technical Details',
+                paragraphs: [
+                    {
+                        type: 'paragraph',
+                        text: 'Configuration Requirements:'
+                    },
+                    {
+                        type: 'paragraph',
+                        text: '• Phenix installation with both phenix.real_space_correlation and phenix.map_model_cc'
+                    },
+                    {
+                        type: 'paragraph',
+                        text: '• Scratch directory for temporary file processing (/tmp/phenix_rednatco by default)'
+                    },
+                    {
+                        type: 'paragraph',
+                        text: 'File Extensions:'
+                    },
+                    {
+                        type: 'paragraph',
+                        text: '• MTZ files: .mtz extension, stored as refls.mtz during processing'
+                    },
+                    {
+                        type: 'paragraph',
+                        text: '• CCP4/MRC maps: .ccp4, .map, .mrc extensions, stored as map.ccp4 during processing'
+                    },
+                    {
+                        type: 'paragraph',
+                        text: 'Performance:'
+                    },
+                    {
+                        type: 'paragraph',
+                        text: '• MTZ processing: Slower (must calculate maps from reflections) but most accurate'
+                    },
+                    {
+                        type: 'paragraph',
+                        text: '• CCP4/MRC processing: Faster (uses pre-calculated maps) but requires properly prepared maps'
+                    },
+                ],
+            },
+        ],
+    }
+]
+
 export const home = [
     {
         headline: 'Home page',
         paragraphs: [
             'Data Input: Enter a PDB ID or upload a PDB/mmCIF file',
-            'Optional Maps: Fo–Fc, 2Fo–Fc, EM maps or map coefficients',
+            'Optional Maps: Fo–Fc, 2Fo–Fc, EM maps or map coefficients. See Help > Density Maps for detailed format information.',
             'Next Steps: Annotation, Validation, or Refinement',
-            'Requirements: Standard atom names (PDB ≥ 3.1). Omits steps missing δ to δ+1 or χ torsions. Modified residues with standard nomenclature are accepted. For non‑standard residues or NMR/MD data, contact the DNATCO team.'
+            'Requirements: Standard atom names (PDB ≥ 3.1). Omits steps missing δ to δ+1 or χ torsions. Modified residues with standard nomenclature are accepted. For non‑standard residues or NMR/MD data, contact the DNATCO team.',
+            'User-Provided Structures: When uploading custom PDB/mmCIF files, DNATCO processes them locally in your browser. If the file cannot be parsed or contains geometry issues, you will be prompted to repair it using the MAXIT converter (maxit.datmos.org).',
+            'MAXIT Integration: Files with parsing or geometry errors can be automatically sent to maxit.datmos.org for standardization and repair. MAXIT validates structure geometry, corrects formatting issues, and returns a standardized mmCIF file that DNATCO can process. After successful conversion, you can either download the repaired file or directly analyze it in DNATCO.',
+            'Data Privacy: User-uploaded files are processed client-side in your browser whenever possible. If MAXIT repair is required, your file will be temporarily uploaded to maxit.datmos.org for processing. All files on the MAXIT server are automatically deleted immediately after conversion. If your data is confidential or unpublished, please be aware of this temporary server-side processing before using the repair feature.'
         ]
     }
 ]

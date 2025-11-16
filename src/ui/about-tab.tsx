@@ -9,6 +9,22 @@ import { useLocation, useNavigate, useParams } from 'react-router';
 import { useState, useEffect, useMemo } from 'react';
 import { ReactNode } from 'react';
 
+// Email link component for bot protection
+const EmailLink: React.FC<{ user: string; domain: string; subject?: string; children: React.ReactNode }> = ({ user, domain, subject, children }) => {
+    const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+        e.preventDefault();
+        const email = `${user}@${domain}`;
+        const mailtoUrl = subject ? `mailto:${email}?Subject=${subject}` : `mailto:${email}`;
+        window.location.href = mailtoUrl;
+    };
+
+    return (
+        <a className='rdo-link' href="#" onClick={handleClick} style={{ cursor: 'pointer' }}>
+            {children}
+        </a>
+    );
+};
+
 const Tabs = [
     ['how-to-cite', { caption: 'How to cite' }],
     ['help', { caption: 'Help' }],
@@ -25,8 +41,8 @@ function Contact() {
                     ©
                     Michal Malý <span className='rdo-sup'>1</span> &amp;
                     Lada Biedermannová <span className='rdo-sup'>2</span> &amp;
-                    <a className='rdo-link' href='mailto:jiri.cerny-at-ibt.cas.cz?Subject=DNATCO'>Jiří Černý</a><span className='rdo-sup'>1</span> &amp;
-                    <a className='rdo-link' href='mailto:bohdan.schneider-at-gmail.com?Subject=DNATCO'>Bohdan Schneider</a> <span className='rdo-sup'>2</span>
+                    <EmailLink user="jiri.cerny" domain="ibt.cas.cz" subject="DNATCO">Jiří Černý</EmailLink><span className='rdo-sup'>1</span> &amp;
+                    <EmailLink user="bohdan.schneider" domain="gmail.com" subject="DNATCO">Bohdan Schneider</EmailLink> <span className='rdo-sup'>2</span>
                 </div>
 
                 <div className='mb-2'>
