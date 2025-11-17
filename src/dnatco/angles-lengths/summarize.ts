@@ -1,7 +1,8 @@
-import { AnglesLengths, NavalRankingClass } from './';
+import { AnglesLengths, NavalPGroupCount, NavalRankingClass } from './';
 import { Measurements } from './measurements';
 import { MappedNaval } from '../dnatcofication';
 import { initedArray } from '../../util';
+import { M } from '../../util/math';
 
 export namespace Summarize {
     export type Counts = {
@@ -119,48 +120,51 @@ export namespace SummarizeProSco {
     }
 }
 
-const NavalPGroupCount = 2; // Preferred, Allowed, OfConcern is outlier
-const NavalRankingClassToIndex: Record<NavalRankingClass, number> = {
-    'preferred': 0,
-    'allowed': 1,
-    'of-concern': 2,
-};
-
 function rankNavalAngle(naval: MappedNaval, r: Measurements.Residue, angle: Measurements.BondAngle) {
     const ranking = AnglesLengths.angleNavalRanking(r.compound, angle);
     const navalAngle =  AnglesLengths.navalAngle(naval, r, angle.triplet);
     const pgrp = AnglesLengths.anglePGroup(r.compound, angle);
 
-    return AnglesLengths.navalRankingClass(
+    const ret = AnglesLengths.navalRankingClass(
         angle.angle,
         ranking,
-        navalAngle.csdPreferredLeft,
-        navalAngle.csdPreferredRight,
+        M.d2r(navalAngle.csdPreferredLeft),
+        M.d2r(navalAngle.csdPreferredRight),
         pgrp
     );
+
+    console.log(ranking, angle.angle, ret);
+
+    return ret;
 }
 
 function rankNavalLength(naval: MappedNaval, r: Measurements.Residue, length: Measurements.BondLength) {
     const ranking = AnglesLengths.lengthNavalRanking(r.compound, length);
-    const navalAngle =  AnglesLengths.navalBond(naval, r, length.pair);
+    const navalBond =  AnglesLengths.navalBond(naval, r, length.pair);
     const pgrp = AnglesLengths.lengthPGroup(r.compound, length);
 
     return AnglesLengths.navalRankingClass(
         length.length,
         ranking,
-        navalAngle.csdPreferredLeft,
-        navalAngle.csdPreferredRight,
+        navalBond.csdPreferredLeft,
+        navalBond.csdPreferredRight,
         pgrp
     );
 }
 
 export namespace SummarizeNaval {
+    export type CountsInGroup = {
+        exclusive: number,
+        cumulative: number,
+        class: NavalRankingClass,
+    };
+
     export function angles(angles: { angle: Measurements.BondAngle, r: Measurements.Residue }[], naval: MappedNaval) {
         const counts = Summarize.Counts(NavalPGroupCount);
 
         for (const { angle, r } of angles) {
             const navalRankingClass = rankNavalAngle(naval, r, angle);
-            countWithEnd(counts, NavalPGroupCount, NavalRankingClassToIndex[navalRankingClass]);
+            countWithEnd(counts, AnglesLengths.NavalRankingClassToIndex[navalRankingClass], NavalPGroupCount);
         }
 
         return counts;
@@ -171,10 +175,26 @@ export namespace SummarizeNaval {
 
         for (const { length, r } of lengths) {
             const navalRankingClass = rankNavalLength(naval, r, length);
-            countWithEnd(counts, NavalPGroupCount, NavalRankingClassToIndex[navalRankingClass]);
+            countWithEnd(counts, AnglesLengths.NavalRankingClassToIndex[navalRankingClass], NavalPGroupCount);
         }
 
         return counts;
+    }
+
+    export function countsInGroups(counts: Summarize.Counts): CountsInGroup[] {
+        const cig = [];
+
+        for (const cls of ['preferred', 'allowed', 'of-concern'] as const) {
+            cig.push({
+                exclusive: counts.exclusive[AnglesLengths.NavalRankingClassToIndex[cls]],
+                cumulative: counts.cumulative[AnglesLengths.NavalRankingClassToIndex[cls]],
+                class: cls,
+            });
+        }
+
+        console.log(counts);
+
+        return cig;
     }
 
     export function residue(r: Measurements.Residue, naval: MappedNaval): Summarize.Summary {
@@ -183,12 +203,30 @@ export namespace SummarizeNaval {
 
         for (const angle of r.bondAngles) {
             const navalRankingClass = rankNavalAngle(naval, r, angle);
-            countWithEnd(angles, NavalPGroupCount, NavalRankingClassToIndex[navalRankingClass]);
+            countWithEnd(angles, AnglesLengths.NavalRankingClassToIndex[navalRankingClass], NavalPGroupCount);
         }
 
         for (const length of r.bondLengths) {
             const navalRankingClass = rankNavalLength(naval, r, length);
-            countWithEnd(lengths, NavalPGroupCount, NavalRankingClassToIndex[navalRankingClass]);
+            countWithEnd(lengths, AnglesLengths.NavalRankingClassToIndex[navalRankingClass], NavalPGroupCount);
+        }
+
+        return { angles, lengths };
+    }
+
+    export function substructure(residues: Measurements.Residue[], naval: MappedNaval): Summarize.Summary {
+        const angles = Summarize.Counts(NavalPGroupCount);
+        const lengths = Summarize.Counts(NavalPGroupCount);
+
+        for (const r of residues) {
+            const rs = residue(r, naval);
+            for (let idx = 0; idx <= NavalPGroupCount; idx++) {
+                angles.exclusive[idx] += rs.angles.exclusive[idx];
+                angles.cumulative[idx] += rs.angles.cumulative[idx];
+
+                lengths.exclusive[idx] += rs.lengths.exclusive[idx];
+                lengths.cumulative[idx] += rs.lengths.cumulative[idx];
+            }
         }
 
         return { angles, lengths };

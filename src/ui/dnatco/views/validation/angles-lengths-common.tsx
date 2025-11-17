@@ -30,7 +30,7 @@ import { Pair } from "../../../../dnatco/angles-lengths/lengths";
 import { Measurements } from "../../../../dnatco/angles-lengths/measurements";
 import { Naval } from "../../../../dnatco/naval";
 import { Validation } from "../../../../dnatco/naval/validation";
-import { Summarize, SummarizeProSco } from "../../../../dnatco/angles-lengths/summarize";
+import { Summarize, SummarizeNaval, SummarizeProSco } from "../../../../dnatco/angles-lengths/summarize";
 import { GlobalConfig } from "../../../../global-config";
 import { htmlColorAsNumber, isWithin, replaceAll } from "../../../../util";
 import { colorToTuple, luminance, colorToHex } from "../../../../util/colors";
@@ -695,9 +695,44 @@ export function ResidueName(props: {
   return <div>{...inner}</div>;
 }
 
-export function SubstructureSummary(props: {
-    // FIXME: THIS IS A PROBLEM
-  countsInGroups: SummarizeProSco.CountsInGroup[];
+function SubstructureSummaryNaval(props: {
+  countsInGroups: SummarizeNaval.CountsInGroup[],
+}) {
+  const total =
+    props.countsInGroups[props.countsInGroups.length - 1].cumulative;
+
+  return (
+    <div className="grid gap-x-4" style={{ gridTemplateColumns: 'auto auto auto' }}>
+      <div />
+      <div className="font-700 text-center flex justify-center col-start-2 col-span-2">
+        Counts
+      </div>
+
+      <div className="font-700">Class</div>
+      <div className="font-700">Exclusive</div>
+      <div className="font-700">Cumulative</div>
+      {props.countsInGroups.map((x, idx) => {
+        const clr = DAnglesLengths.navalRankingClassColor(x.class);
+        const perc = 100 * (x.cumulative / total);
+
+        console.log(x.class, perc);
+
+        return (
+          <React.Fragment key={idx}>
+            <div style={{ backgroundColor: colorStyle(colorToTuple(clr)), width: '1em' }} />
+            <div className="text-right">{x.exclusive}</div>
+            <div className="text-right">{`${x.cumulative}\u00A0(${perc
+              .toFixed(2)
+              .padStart(6)}\u00A0%)`}</div>
+          </React.Fragment>
+        );
+      })}
+    </div>
+  );
+}
+
+function SubstructureSummaryProSco(props: {
+  countsInGroups: SummarizeProSco.CountsInGroup[],
 }) {
   const maxDecimals = Math.max(
     ...props.countsInGroups.map((x) => {
@@ -740,6 +775,22 @@ export function SubstructureSummary(props: {
       })}
     </div>
   );
+}
+
+export function SubstructureSummary(props: {
+  countsInGroups: {
+    kind: 'naval',
+    counts: SummarizeNaval.CountsInGroup[],
+  } | {
+    kind: 'prosco',
+    counts: SummarizeProSco.CountsInGroup[]
+  }
+}) {
+  if (props.countsInGroups.kind === 'naval') {
+    return <SubstructureSummaryNaval countsInGroups={props.countsInGroups.counts} />
+  } else if (props.countsInGroups.kind === 'prosco') {
+    return <SubstructureSummaryProSco countsInGroups={props.countsInGroups.counts} />
+  }
 }
 
 export class WindowsTracker {
@@ -1258,9 +1309,14 @@ export namespace AnglesLengthsCommon {
     winTracker: WindowsTracker,
     winCaption: string | JSX.Element,
     caption: string | JSX.Element,
-      summaryCounts: Summarize.Counts,
-      /// FIXME: THIS IS A PROBLEM
-    countsInGroups: SummarizeProSco.CountsInGroup[],
+    summaryCounts: Summarize.Counts,
+    countsInGroups: {
+      kind: 'naval',
+      counts: SummarizeNaval.CountsInGroup[],
+    } | {
+      kind: 'prosco',
+        counts: SummarizeProSco.CountsInGroup[]
+    },
     colorsForCounts: string[],
     captionStyle?: React.CSSProperties
   ) {

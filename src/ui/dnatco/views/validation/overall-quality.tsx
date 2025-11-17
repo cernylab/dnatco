@@ -7,16 +7,17 @@ import { StatsBar } from "../../stats-bar";
 import { Cif } from "../../../../cif";
 import { NdbStructNtcOverall } from "../../../../cif/categories/ndb-struct-ntc";
 import { StepRmsdStats as DnatcoStepRmsdStats } from "../../../../dnatco/dnatcofication";
-import { AnglesLengths as DAnglesLengths } from "../../../../dnatco/angles-lengths";
+import { AnglesLengths as DAnglesLengths, NavalRankingClasses } from "../../../../dnatco/angles-lengths";
 import { AnglesLengthsCommon } from "./angles-lengths-common";
 import { confalPercentile } from "../../../../util/dnatco";
+import { GlobalConfig } from "../../../../global-config";
 import { GappedSemaphore } from "../../../../util/semaphore";
 import { Dnatcofication } from "../../../../dnatco/dnatcofication";
 import {
   InvalidChain,
   InvalidModelIndex,
 } from "../../../../util/structure-selection";
-import { SummarizeProSco } from "../../../../dnatco/angles-lengths/summarize";
+import { SummarizeNaval, SummarizeProSco } from "../../../../dnatco/angles-lengths/summarize";
 import { ALM, ALMCompoundAngleLength } from "../../../../dnatco/alm";
 import { doDownload, Downloader } from "../../../../browser-util/downloader";
 import { SerializeByCompound } from "../../../../dnatco/angles-lengths/serialize";
@@ -103,10 +104,6 @@ function getSelection(
 
 function OverallStatsBar(props: {
   children: React.ReactNode;
-  counts: {
-    angles: SummarizeProSco.CountsInGroup[];
-    lengths: SummarizeProSco.CountsInGroup[];
-  };
   downloadableData: DownloadableData;
   downloaders: StatsDownloader[];
   name: string;
@@ -317,19 +314,32 @@ export class OverallQuality extends View<View.Props> {
 
     const selected = getSelection(alm, modelNum, chain);
 
-    const overallAnglesProSco = selected.overallAnglesProSco;
-    const overallLengthsProSco = selected.overallLengthsProSco;
-    const countsAngles = SummarizeProSco.countsInGroups(overallAnglesProSco);
-    const countsLengths = SummarizeProSco.countsInGroups(overallLengthsProSco);
+    const sumVar = GlobalConfig.data().anglesLengths.summaryVariant;
+
+    const [overallAngles, overallLengths] = sumVar === 'naval'
+        ? [selected.overallAnglesNaval, selected.overallLengthsNaval]
+        : [selected.overallAnglesProSco, selected.overallLengthsProSco];
+
+    // These are currently only passed to download
+    const countsAnglesProSco = SummarizeProSco.countsInGroups(selected.overallAnglesProSco);
+    const countsLengthsProSco = SummarizeProSco.countsInGroups(selected.overallLengthsProSco);
 
     const htmlColorsForStatsBar = new Array<string>();
-    for (let idx = 0; idx < DAnglesLengths.pGroupCount(); idx++)
+    if (sumVar === 'naval') {
+      for (const cls of NavalRankingClasses) {
+        htmlColorsForStatsBar.push(
+          rgbToHex(colorToRgb(DAnglesLengths.navalRankingClassColor(cls)))
+        );
+      }
+    } else if (sumVar === 'prosco') {
+      for (let idx = 0; idx < DAnglesLengths.pGroupCount(); idx++)
+        htmlColorsForStatsBar.push(
+          rgbToHex(colorToRgb(DAnglesLengths.pGroupColor(idx)))
+        );
       htmlColorsForStatsBar.push(
-        rgbToHex(colorToRgb(DAnglesLengths.pGroupColor(idx)))
+        rgbToHex(colorToRgb(DAnglesLengths.outlierColor()))
       );
-    htmlColorsForStatsBar.push(
-      rgbToHex(colorToRgb(DAnglesLengths.outlierColor()))
-    );
+    }
 
     return (
       <div
@@ -354,12 +364,11 @@ export class OverallQuality extends View<View.Props> {
         </div>
 
         <OverallStatsBar
-          counts={{ angles: countsAngles, lengths: countsLengths }}
           downloadableData={DownloadableData(
             selected.angles,
-            countsAngles,
+            countsAnglesProSco,
             selected.lengths,
-            countsLengths
+            countsLengthsProSco
           )}
           downloaders={StatsDownloaders}
           name={AnglesLengthsCommon.selectionName(
@@ -376,8 +385,10 @@ export class OverallQuality extends View<View.Props> {
                 this.winTracker,
                 "Lengths",
                 AnglesLengthsCommon.substructureBarCaption("Lengths", DAnglesLengths.pGroupColor(0)),
-                overallLengthsProSco,
-                countsLengths,
+                overallLengths,
+                sumVar === 'naval'
+                  ? { kind: 'naval', counts: SummarizeNaval.countsInGroups(overallLengths) }
+                  : { kind: 'prosco', counts: SummarizeProSco.countsInGroups(overallLengths) },
                 htmlColorsForStatsBar
               )}
             </div>
@@ -386,8 +397,10 @@ export class OverallQuality extends View<View.Props> {
                 this.winTracker,
                 "Angles",
                 AnglesLengthsCommon.substructureBarCaption("Angles", DAnglesLengths.pGroupColor(0)),
-                overallAnglesProSco,
-                countsAngles,
+                overallAngles,
+                sumVar === 'naval'
+                  ? { kind: 'naval', counts: SummarizeNaval.countsInGroups(overallAngles) }
+                  : { kind: 'prosco', counts: SummarizeProSco.countsInGroups(overallAngles) },
                 htmlColorsForStatsBar
               )}
             </div>

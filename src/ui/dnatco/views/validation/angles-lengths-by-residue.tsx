@@ -27,12 +27,12 @@ import { Window } from "../../../common/window";
 import { MagnifyingGlassImg, TriangleDownImg } from "../../../../assets/images";
 import { ALM } from "../../../../dnatco/alm";
 import { Dnatcofication } from "../../../../dnatco/dnatcofication";
-import { AnglesLengths as DAnglesLengths, NavalRankingData } from "../../../../dnatco/angles-lengths";
+import { AnglesLengths as DAnglesLengths,NavalRankingClasses, NavalRankingData } from "../../../../dnatco/angles-lengths";
 import { tripletTag, Triplet } from "../../../../dnatco/angles-lengths/angles";
 import { ByResidueHelpers } from "../../../../dnatco/angles-lengths/helpers";
 import { pairTag, Pair } from "../../../../dnatco/angles-lengths/lengths";
 import { Measurements } from "../../../../dnatco/angles-lengths/measurements";
-import { Summarize, SummarizeProSco } from "../../../../dnatco/angles-lengths/summarize";
+import { Summarize, SummarizeNaval, SummarizeProSco } from "../../../../dnatco/angles-lengths/summarize";
 import { GlobalConfig } from "../../../../global-config";
 import { parseIntStrict, sequence } from "../../../../util";
 import {
@@ -501,11 +501,6 @@ function BondLengthDetails(props: {
 
 export function OverallStatsBar(props: {
   children: React.ReactNode;
-    counts: {
-        // FIXME: This is a major problem
-    angles: SummarizeProSco.CountsInGroup[];
-    lengths: SummarizeProSco.CountsInGroup[];
-  };
   name: string;
   residues: Measurements.Residue[];
   stats: ALM.ResidueStats[];
@@ -529,9 +524,15 @@ interface ResidueElemProps {
   tainer: React.RefObject<HTMLDivElement>;
   d: Dnatcofication;
   colorsForStatsBar: string[];
-  // FIXME: This is a major problem
-  countsAngles: SummarizeProSco.CountsInGroup[];
-  countsLenghts: SummarizeProSco.CountsInGroup[];
+  counts: {
+    kind: 'naval',
+    angles: SummarizeNaval.CountsInGroup[];
+    lengths: SummarizeNaval.CountsInGroup[];
+  } | {
+    kind: 'prosco',
+    angles: SummarizeProSco.CountsInGroup[];
+    lengths: SummarizeProSco.CountsInGroup[];
+  },
   outlierColor: ColorTuple;
   pgrpIndices: number[];
   residue: Measurements.Residue;
@@ -620,9 +621,15 @@ function ResidueHeader(props: {
   stats: ALM.ResidueStats;
   structureName: string;
   summary: Summarize.Summary;
-  // FIXME: This is a major problem
-  countsAngles: SummarizeProSco.CountsInGroup[];
-  countsLengths: SummarizeProSco.CountsInGroup[];
+  counts: {
+    kind: 'naval',
+    angles: SummarizeNaval.CountsInGroup[];
+    lengths: SummarizeNaval.CountsInGroup[];
+  } | {
+    kind: 'prosco',
+    angles: SummarizeProSco.CountsInGroup[];
+    lengths: SummarizeProSco.CountsInGroup[];
+  }
   colorsForStatsBar: string[];
   winTracker: WindowsTracker;
 }) {
@@ -630,21 +637,35 @@ function ResidueHeader(props: {
   const r = props.residue;
 
   const lastLengthsColor = React.useMemo(() => {
-    let idx = props.countsLengths.length - 1;
+    let idx = props.counts.lengths.length - 1;
     for (; idx > 0; idx--) {
-      if (props.countsLengths[idx].exclusive > 0) break;
+      if (props.counts.lengths[idx].exclusive > 0) break;
     }
 
-    return DAnglesLengths.pGroupColor(idx);
-  }, [props.countsLengths]);
+    switch (props.counts.kind) {
+      case 'naval': {
+        const cls = DAnglesLengths.IndexToNavalRankingClass[idx as 0 | 1 | 2];
+        return DAnglesLengths.navalRankingClassColor(cls);
+      }
+      case 'prosco':
+        return DAnglesLengths.pGroupColor(idx);
+    }
+  }, [props.counts]);
   const lastAnglesColor = React.useMemo(() => {
-    let idx = props.countsAngles.length - 1;
+    let idx = props.counts.angles.length - 1;
     for (; idx > 0; idx--) {
-      if (props.countsAngles[idx].exclusive > 0) break;
+      if (props.counts.angles[idx].exclusive > 0) break;
     }
 
-    return DAnglesLengths.pGroupColor(idx);
-  }, [props.countsAngles]);
+    switch (props.counts.kind) {
+      case 'naval': {
+        const cls = DAnglesLengths.IndexToNavalRankingClass[idx as 0 | 1 | 2];
+        return DAnglesLengths.navalRankingClassColor(cls);
+      }
+      case 'prosco':
+        return DAnglesLengths.pGroupColor(idx);
+    }
+  }, [props.counts]);
 
   return (
     <div
@@ -658,7 +679,6 @@ function ResidueHeader(props: {
       </div>
 
       <OverallStatsBar
-        counts={{ angles: props.countsAngles, lengths: props.countsLengths }}
         name={AnglesLengthsCommon.residueIdentifyingName(
           props.structureName,
           r
@@ -673,7 +693,9 @@ function ResidueHeader(props: {
               props.caption,
               AnglesLengthsCommon.substructureBarCaption("L", lastLengthsColor),
               props.summary.lengths,
-              props.countsLengths,
+              props.counts.kind === 'naval'
+                ? { kind: 'naval', counts: props.counts.lengths }
+                : { kind: 'prosco', counts: props.counts.lengths },
               props.colorsForStatsBar,
               { right: "var(--h2-gap)" }
             )}
@@ -684,7 +706,9 @@ function ResidueHeader(props: {
               props.caption,
               AnglesLengthsCommon.substructureBarCaption("A", lastAnglesColor),
               props.summary.angles,
-              props.countsAngles,
+              props.counts.kind === 'naval'
+                ? { kind: 'naval', counts: props.counts.angles }
+                : { kind: 'prosco', counts: props.counts.angles },
               props.colorsForStatsBar,
               { right: "var(--h2-gap)" }
             )}
@@ -720,10 +744,13 @@ class Residue extends React.Component<
             residue={this.props.residue}
             residueIdentifyingName={this.props.residueIdentifyingName}
             stats={this.props.stats}
-            summary={this.props.stats.summaryProSco} // HERE WE NEED TO PASS A NAVAL SUMMARY TOO, IF REQUESTED
+            summary={
+              this.props.counts.kind === 'naval'
+              ? this.props.stats.summaryNaval
+                : this.props.stats.summaryProSco
+            }
             structureName={this.props.structureName}
-            countsAngles={this.props.countsAngles}
-            countsLengths={this.props.countsLenghts}
+            counts={this.props.counts}
             colorsForStatsBar={this.props.colorsForStatsBar}
             winTracker={this.props.winTracker}
           />
@@ -958,6 +985,8 @@ export class AnglesLengthsByResidue extends View<
     const s = this.props.dnatcofication.data.almByResidue.stats;
     const outlierColor = colorToTuple(DAnglesLengths.outlierColor());
 
+    const sumVar = GlobalConfig.data().anglesLengths.summaryVariant;
+
     const mapping = new Map<string, React.RefObject<Residue>>();
     const elems = new Array<JSX.Element>();
     let adx = 0;
@@ -966,9 +995,6 @@ export class AnglesLengthsByResidue extends View<
 
       const _r = r[idx];
       const _s = s[idx];
-      // TODO: Allow use of NAVAL stats too
-      const countsAngles = SummarizeProSco.countsInGroups(_s.summaryProSco.angles);
-      const countsLenghts = SummarizeProSco.countsInGroups(_s.summaryProSco.lengths);
       const residueName = (
         <ResidueName r={_r} multipleModels={multipleModels} />
       );
@@ -986,8 +1012,19 @@ export class AnglesLengthsByResidue extends View<
           ref={ref}
           tainer={tainer}
           d={this.props.dnatcofication}
-          countsAngles={countsAngles}
-          countsLenghts={countsLenghts}
+          counts={
+            sumVar === 'naval'
+              ? {
+                kind: 'naval',
+                angles: SummarizeNaval.countsInGroups(_s.summaryNaval.angles),
+                lengths: SummarizeNaval.countsInGroups(_s.summaryNaval.lengths),
+              }
+              : {
+                kind: 'prosco',
+                angles: SummarizeProSco.countsInGroups(_s.summaryNaval.angles),
+                lengths: SummarizeProSco.countsInGroups(_s.summaryNaval.lengths),
+              }
+          }
           outlierColor={outlierColor}
           pgrpIndices={pgrpIndices}
           residue={_r}
@@ -1333,22 +1370,28 @@ export class AnglesLengthsByResidue extends View<
     const selectedResidues = selectedIndices.map((x) => alm.residues[x]);
     const selectedResidueStats = selectedIndices.map((x) => alm.stats[x]);
 
-    // TODO: Allow use of NAVAL stats instead
-    const summary = SummarizeProSco.substructure(selectedResidues);
+    const sumVar = GlobalConfig.data().anglesLengths.summaryVariant;
+    const summary = sumVar === 'naval'
+      ? SummarizeNaval.substructure(selectedResidues, this.props.dnatcofication.data.naval)
+      : SummarizeProSco.substructure(selectedResidues);
     const pgrpIndices = sequence(0, DAnglesLengths.pGroupCount() - 1);
 
     const htmlColorsForStatsBar = new Array<string>();
-    for (let idx = 0; idx < DAnglesLengths.pGroupCount(); idx++)
+    if (sumVar === 'naval') {
+      for (const cls of NavalRankingClasses) {
+        htmlColorsForStatsBar.push(
+          rgbToHex(colorToRgb(DAnglesLengths.navalRankingClassColor(cls)))
+        );
+      }
+    } else if (sumVar === 'prosco') {
+      for (let idx = 0; idx < DAnglesLengths.pGroupCount(); idx++)
+        htmlColorsForStatsBar.push(
+          rgbToHex(colorToRgb(DAnglesLengths.pGroupColor(idx)))
+        );
       htmlColorsForStatsBar.push(
-        rgbToHex(colorToRgb(DAnglesLengths.pGroupColor(idx)))
+        rgbToHex(colorToRgb(DAnglesLengths.outlierColor()))
       );
-    htmlColorsForStatsBar.push(
-      rgbToHex(colorToRgb(DAnglesLengths.outlierColor()))
-    );
-
-    // TODO: Allow use of NAVAL stats instead
-    const countsAngles = SummarizeProSco.countsInGroups(summary.angles);
-    const countsLenghts = SummarizeProSco.countsInGroups(summary.lengths);
+    }
 
     const percentileOptions = [
       { caption: "Of Concern", value: "" },
@@ -1407,7 +1450,6 @@ export class AnglesLengthsByResidue extends View<
           )}
         </div>
         <OverallStatsBar
-          counts={{ angles: countsAngles, lengths: countsLenghts }}
           name={AnglesLengthsCommon.selectionName(
             this.props.dnatcofication,
             multipleModels,
@@ -1424,7 +1466,9 @@ export class AnglesLengthsByResidue extends View<
                 "Lengths",
                 AnglesLengthsCommon.substructureBarCaption("Lengths", DAnglesLengths.pGroupColor(0)),
                 summary.lengths,
-                countsLenghts,
+                sumVar === 'naval'
+                  ? { kind: 'naval', counts: SummarizeNaval.countsInGroups(summary.lengths) }
+                  : { kind: 'prosco', counts: SummarizeProSco.countsInGroups(summary.lengths) },
                 htmlColorsForStatsBar
               )}
             </div>
@@ -1434,7 +1478,9 @@ export class AnglesLengthsByResidue extends View<
                 "Angles",
                 AnglesLengthsCommon.substructureBarCaption("Angles", DAnglesLengths.pGroupColor(0)),
                 summary.angles,
-                countsAngles,
+                sumVar === 'naval'
+                  ? { kind: 'naval', counts: SummarizeNaval.countsInGroups(summary.angles) }
+                  : { kind: 'prosco', counts: SummarizeProSco.countsInGroups(summary.angles) },
                 htmlColorsForStatsBar
               )}
             </div>

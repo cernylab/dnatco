@@ -91,7 +91,10 @@ type ReferenceSets = Record<
 
 const ProScoAllowedThreshold = 0.05;
 
-export type NavalRankingClass = 'preferred' | 'allowed' | 'of-concern';
+export const NavalRankingClasses = [ 'preferred', 'allowed', 'of-concern' ] as const;
+export type NavalRankingClass = typeof NavalRankingClasses[number];
+
+export const NavalPGroupCount = 2; // Preferred, Allowed, OfConcern is outlier
 
 const AngleAverageData: AverageData = {
     'A': new Map(),
@@ -405,6 +408,20 @@ function setReferenceSets(target: ReferenceSets, source: ReferenceSets) {
 export namespace AnglesLengths {
     export type PGroup = ReturnType<typeof getPGroup>;
     export type PGroupData = NonNullable<ReturnType<typeof lengthPGroupData>>;
+
+    export const NavalRankingClassToIndex: Record<NavalRankingClass, 0 | 1 | 2> = {
+        'preferred': 0,
+        'allowed': 1,
+        'of-concern': 2,
+    };
+    export const IndexToNavalRankingClass: Record<
+        typeof NavalRankingClassToIndex[keyof typeof NavalRankingClassToIndex],
+        NavalRankingClass
+    > = {
+        0: 'preferred',
+        1: 'allowed',
+        2: 'of-concern',
+    };
 
     export function context(): AnglesLengthsContext {
         return {
