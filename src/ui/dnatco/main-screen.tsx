@@ -609,7 +609,11 @@ export function MainScreen(props: {
                   structureSelection.atoms,
                   props.dnatcofication
                 );
-                changeSelection(pieces, view.selectionDisplayer);
+                // Wait for React to render the new tab before triggering Molstar updates and scroll
+                // This ensures the table container is laid out before we try to scroll to the highlighted row
+                requestAnimationFrame(() => {
+                  changeSelection(pieces, view.selectionDisplayer);
+                });
               }
             } else if (mode.master === 'validation') {
               // In validation mode, only switch to backbone-quality when in specific views

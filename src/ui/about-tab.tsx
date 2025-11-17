@@ -4,7 +4,7 @@ import { Link } from './common/link';
 import { SideSwitchingPanel } from './common/side-switching-panel';
 import { CasLogoImg, IbtLogoImg } from '../assets/images';
 import { ConformersFile } from '../assets/misc';
-import { about, annotation, browse, home, refinement, validation } from '../help-tags';
+import { about, annotation, browse, densityMaps, home, refinement, validation } from '../help-tags';
 import { useLocation, useNavigate, useParams } from 'react-router';
 import { useState, useEffect, useMemo } from 'react';
 import { ReactNode } from 'react';
@@ -20,7 +20,7 @@ const EmailLink: React.FC<{ user: string; domain: string; subject?: string; chil
 
     return (
         <a className='rdo-link' href="#" onClick={handleClick} style={{ cursor: 'pointer' }}>
-            {children}
+            ✉ {children}
         </a>
     );
 };
@@ -37,15 +37,21 @@ function Contact() {
     return (
         <_Help.Container>
             <div>
-                <div className='mb-2'>
-                    ©
-                    Michal Malý <span className='rdo-sup'>1</span> &amp;
-                    Lada Biedermannová <span className='rdo-sup'>2</span> &amp;
-                    <EmailLink user="jiri.cerny" domain="ibt.cas.cz" subject="DNATCO">Jiří Černý</EmailLink><span className='rdo-sup'>1</span> &amp;
-                    <EmailLink user="bohdan.schneider" domain="gmail.com" subject="DNATCO">Bohdan Schneider</EmailLink> <span className='rdo-sup'>2</span>
+                <div className='mb-4'>
+                    {/* <h3 className='font-700 text-18px mb-2 uppercase'>Contact</h3> */}
+                    <div className='mb-2'>
+                        <EmailLink user="jiri.cerny" domain="ibt.cas.cz" subject="DNATCO">Jiří Černý</EmailLink><span className='rdo-sup'>1</span> &amp; <EmailLink user="bohdan.schneider" domain="gmail.com" subject="DNATCO">Bohdan Schneider</EmailLink><span className='rdo-sup'>2</span>
+                    </div>
                 </div>
 
-                <div className='mb-2'>
+                <div className='mb-4'>
+                    <h3 className='font-700 text-18px mb-2 uppercase'>Contributors</h3>
+                    <div className='mb-2'>
+                        Michal Malý<span className='rdo-sup'>1</span>, Paulína Božíková<span className='rdo-sup'>1</span>, Lada Biedermannová<span className='rdo-sup'>2</span>, Terezie Prchalová<span className='rdo-sup'>1,2</span>, Jakub Svoboda<span className='rdo-sup'>2</span>, Daniel Šrom<span className='rdo-sup'>1</span>
+                    </div>
+                </div>
+
+                <div className='mb-4'>
                     <div>
                         <span className='rdo-sup'>1</span> <a className='rdo-link' href='https://www.ibt.cas.cz/en/research/laboratory-of-structural-bioinformatics-of-proteins/' target='_blank'>Laboratory of Structural Bioinformatics of Proteins</a>, Institute of Biotechnology, Czech Academy of Sciences
                     </div>
@@ -187,7 +193,26 @@ function Help() {
         paragraphs: page.paragraphs.map(paragraph => paragraph)
     }))
 
+    const displayDensityMaps = densityMaps.map(page => ({
+        headline: page.headline,
+        subHeadlineText: page.subHeadlineText,
+        sections: page.sections.map(section => ({
+            id: section.id,
+            headline: section.headline,
+            paragraphs: section.paragraphs
+        }))
+    }))
+
     function display(display: any): ReactNode {
+        const [expandedSections, setExpandedSections] = React.useState<{[key: string]: boolean}>({});
+
+        const toggleSection = (sectionId: string) => {
+            setExpandedSections(prev => ({
+                ...prev,
+                [sectionId]: !prev[sectionId]
+            }));
+        };
+
         return (
             <>
                 {display.map((page:any, index:any) => (
@@ -202,30 +227,47 @@ function Help() {
                                 {page.subHeadlineText}
                             </div>
                         </div>
-                        {page.sections.map((section:any, idx:any) => (
-                            <div key={index + '-' + idx}  id={section?.id} className='flex border-t-secondary-second border-t pt-3 mb-8'>
-                                <div className='w-[25%]'>
-                                    <h3 className='font-700 text-18px mb-2 uppercase'>
-                                        {section.headline}
-                                    </h3>
-                                </div>
-                                <div className='w-[75%] text-16px mb-2 text-justify'>
-                                    {section.paragraphs.map((item: any, itemIdx: any) => (
-                                        <div key={itemIdx}>
-                                            {item.type === 'paragraph' && (
-                                                <>
-                                                    <p>{item.text}</p>
-                                                    <div className='h-3'></div>
-                                                </>
-                                            )}
-                                            {item.type === 'image' && (
-                                                <img src={item.url} alt={`Image ${itemIdx}`} className={`${item.width} my-4`} />
-                                            )}
+                        {page.sections.map((section:any, idx:any) => {
+                            const sectionId = `${index}-${idx}`;
+                            const isExpanded = expandedSections[sectionId] ?? true; // Default to expanded
+
+                            return (
+                                <div key={sectionId} id={section?.id} className='mb-4'>
+                                    <div
+                                        className='flex pt-3 pb-2 cursor-pointer hover:bg-gray-50 ml-8'
+                                        onClick={() => toggleSection(sectionId)}
+                                    >
+                                        <div className='w-[25%] pl-4'>
+                                            <h3 className='font-700 text-16px mb-2 uppercase flex items-center'>
+                                                <span className='mr-2'>{isExpanded ? '▼' : '▶'}</span>
+                                                {section.headline}
+                                            </h3>
                                         </div>
-                                    ))}
+                                        <div className='w-[75%]'></div>
+                                    </div>
+                                    {isExpanded && (
+                                        <div className='flex ml-8 pl-8 pt-2 pb-4'>
+                                            <div className='w-[25%]'></div>
+                                            <div className='w-[75%] text-16px text-justify'>
+                                                {section.paragraphs.map((item: any, itemIdx: any) => (
+                                                    <div key={itemIdx}>
+                                                        {item.type === 'paragraph' && (
+                                                            <>
+                                                                <p>{item.text}</p>
+                                                                <div className='h-3'></div>
+                                                            </>
+                                                        )}
+                                                        {item.type === 'image' && (
+                                                            <img src={item.url} alt={`Image ${itemIdx}`} className={`${item.width} my-4`} />
+                                                        )}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </>
                 ))}
             </>
@@ -259,6 +301,7 @@ function Help() {
     }
 
     const aboutSection = display(displayAbout);
+    const densityMapsSection = display(displayDensityMaps);
     const homeSection = displayTabs(displayHome);
     const annotationSection = displayTabs(displayAnnotation);
     const validationSection = displayTabs(displayValidation);
@@ -268,6 +311,7 @@ function Help() {
     return (
         <div>
             <div>{aboutSection}</div>
+            <div>{densityMapsSection}</div>
             <div>{homeSection}</div>
             <div>{annotationSection}</div>
             <div>{validationSection}</div>

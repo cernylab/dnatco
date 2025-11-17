@@ -4,6 +4,7 @@ import { EquiBox } from './common/equibox';
 import { BasePushButton } from './common/push-button';
 import { GridThreeUpImg } from '../assets/images';
 import { DnatcoLogoImg } from '../assets/images';
+import { Link, useLocation } from 'react-router';
 
 const MinimumWidthForStandardBar = 1000;
 
@@ -121,15 +122,25 @@ function NavigationBarCompact<TK extends string>(props: {
     selectedTab: TK,
 }) {
     const [hamburgerOpen, setHamburgerOpen] = React.useState(false);
-    const selected = props.tabs[props.selectedTab]
+    const selected = props.tabs[props.selectedTab];
+    const location = useLocation();
+
+    // Check if we're in a DNATCO analysis view where we want to preserve Mol* state
+    const isInAnalysisView = location.pathname.match(/^\/app\/dnatco\/(annotation|validation|refinement|downloads)/);
 
     return (
         <div className='navigation-mobile'>
             <div className='flex flex-row justify-between mx-4 items-center'>
                 <div>
-                    <a href='/'>
-                        <img className='w-28' src={DnatcoLogoImg}/>
-                    </a>
+                    {isInAnalysisView ? (
+                        <a href='/' target='_blank' rel='noopener noreferrer'>
+                            <img className='w-28' src={DnatcoLogoImg}/>
+                        </a>
+                    ) : (
+                        <Link to='/'>
+                            <img className='w-28' src={DnatcoLogoImg}/>
+                        </Link>
+                    )}
                 </div>
                 <div className='flex'>
                     <div>
@@ -179,12 +190,23 @@ function NavigationBarStandard<TK extends string>(props: {
     tabs: Tabs<TK>,
     selectedTab: TK,
 }) {
+    const location = useLocation();
+
+    // Check if we're in a DNATCO analysis view where we want to preserve Mol* state
+    const isInAnalysisView = location.pathname.match(/^\/app\/dnatco\/(annotation|validation|refinement|downloads)/);
+
     return (
         <div className='w-full navigation-desktop flex justify-around items-center my-2'>
             <div>
-                <a href='/'>
-                    <img className='w-24' src={DnatcoLogoImg} alt='dnatco logo'/>
-                </a>
+                {isInAnalysisView ? (
+                    <a href='/' target='_blank' rel='noopener noreferrer'>
+                        <img className='w-24' src={DnatcoLogoImg} alt='dnatco logo'/>
+                    </a>
+                ) : (
+                    <Link to='/'>
+                        <img className='w-24' src={DnatcoLogoImg} alt='dnatco logo'/>
+                    </Link>
+                )}
             </div>
             <EquiBox
                 padding={33}

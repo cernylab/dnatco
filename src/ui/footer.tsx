@@ -2,10 +2,14 @@ import * as React from 'react';
 import { useEffect, useState } from 'react';
 import { Email } from './common/email';
 import { ElixirLogoImg, IbtLogoImg } from '../assets/images';
-import { Globals } from '../globals'; 
-import { Link } from 'react-router';
+import { Globals } from '../globals';
+import { Link, useLocation } from 'react-router';
 
 const Footer:React.FC = () => {
+    const location = useLocation();
+
+    // Check if we're in a DNATCO analysis view where we want to preserve Mol* state
+    const isInAnalysisView = location.pathname.match(/^\/app\/dnatco\/(annotation|validation|refinement|downloads)/);
 
     const [compact, setCompact] = useState(window.innerWidth <1024);
     useEffect(() => {
@@ -36,9 +40,15 @@ const Footer:React.FC = () => {
                         <div className='flex justify-center'>
                             <span className='px-3'>|</span>
                             <div className='hover-animation my-auto mx-3'>
-                                <Link className='cursor-pointer text-16px' to='/app/about/help'>
-                                    Help
-                                </Link>
+                                {isInAnalysisView ? (
+                                    <a className='cursor-pointer text-16px' href='/app/about/help' target='_blank' rel='noopener noreferrer'>
+                                        Help
+                                    </a>
+                                ) : (
+                                    <Link className='cursor-pointer text-16px' to='/app/about/help'>
+                                        Help
+                                    </Link>
+                                )}
                             </div>
                             <span className='px-3'>|</span>
                         </div>
@@ -47,19 +57,37 @@ const Footer:React.FC = () => {
                     {!compact && (
                         <div className='flex justify-center'>
                             <div className='hover-animation my-auto mx-3'>
-                                <Link className='cursor-pointer text-16px' to='/app/about/how-to-cite'>
-                                    How to cite
-                                </Link>
+                                {isInAnalysisView ? (
+                                    <a className='cursor-pointer text-16px' href='/app/about/how-to-cite' target='_blank' rel='noopener noreferrer'>
+                                        How to cite
+                                    </a>
+                                ) : (
+                                    <Link className='cursor-pointer text-16px' to='/app/about/how-to-cite'>
+                                        How to cite
+                                    </Link>
+                                )}
                             </div>
                             <div className='hover-animation my-auto mx-3'>
-                                <Link className='cursor-pointer text-16px' to='/app/about/help'>
-                                    Help
-                                </Link>
+                                {isInAnalysisView ? (
+                                    <a className='cursor-pointer text-16px' href='/app/about/help' target='_blank' rel='noopener noreferrer'>
+                                        Help
+                                    </a>
+                                ) : (
+                                    <Link className='cursor-pointer text-16px' to='/app/about/help'>
+                                        Help
+                                    </Link>
+                                )}
                             </div>
                             <div className='hover-animation my-auto mx-3'>
-                                <Link className='cursor-pointer text-16px' to='/app/about/contact'>
-                                    Contact
-                                </Link>
+                                {isInAnalysisView ? (
+                                    <a className='cursor-pointer text-16px' href='/app/about/contact' target='_blank' rel='noopener noreferrer'>
+                                        Contact
+                                    </a>
+                                ) : (
+                                    <Link className='cursor-pointer text-16px' to='/app/about/contact'>
+                                        Contact
+                                    </Link>
+                                )}
                             </div>
                         </div>
                     )}
