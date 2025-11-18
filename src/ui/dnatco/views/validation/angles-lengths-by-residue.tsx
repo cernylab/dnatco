@@ -7,7 +7,6 @@ import {
   ColorIsDarkThreshold,
   DegreesUnit,
   FloatingCue,
-  NavalItem,
   PGroupSummary,
   Prosco,
   ResidueName,
@@ -27,7 +26,11 @@ import { Window } from "../../../common/window";
 import { MagnifyingGlassImg, TriangleDownImg } from "../../../../assets/images";
 import { ALM } from "../../../../dnatco/alm";
 import { Dnatcofication } from "../../../../dnatco/dnatcofication";
-import { AnglesLengths as DAnglesLengths,NavalRankingClasses, NavalRankingData } from "../../../../dnatco/angles-lengths";
+import {
+  AnglesLengths as DAnglesLengths,
+  NavalItem, NavalRankingClasses,
+  NavalRankingData
+} from "../../../../dnatco/angles-lengths";
 import { tripletTag, Triplet } from "../../../../dnatco/angles-lengths/angles";
 import { ByResidueHelpers } from "../../../../dnatco/angles-lengths/helpers";
 import { pairTag, Pair } from "../../../../dnatco/angles-lengths/lengths";
@@ -154,7 +157,7 @@ function renderBondAngleDetail(
     structureName,
     residue
   )}_${AnglesLengthsCommon.fileNameFriendlyTag(tripletTag(bondAngle.triplet))}`;
-  const ni = AnglesLengthsCommon.getNavalAngle(d, residue, bondAngle.triplet);
+  const ni = DAnglesLengths.navalAngle(d.data.naval, residue, bondAngle.triplet);
   const nrank = DAnglesLengths.angleNavalRanking(residue.compound, bondAngle);
 
   return (
@@ -198,7 +201,7 @@ function renderBondLengthDetail(
     structureName,
     residue
   )}_${AnglesLengthsCommon.fileNameFriendlyTag(pairTag(bondLength.pair))}`;
-  const ni = AnglesLengthsCommon.getNavalBond(d, residue, bondLength.pair);
+  const ni = DAnglesLengths.navalBond(d.data.naval, residue, bondLength.pair);
   const nrank = DAnglesLengths.lengthNavalRanking(residue.compound, bondLength);
 
   return (

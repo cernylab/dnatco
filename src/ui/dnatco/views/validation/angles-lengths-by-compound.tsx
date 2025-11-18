@@ -446,8 +446,8 @@ function AngleMetricDetails(props: {
             const doUnhighlight = () =>
               props.vi.api.command(ViewerApi.Commands.Unhighlight());
 
-            const ni = AnglesLengthsCommon.getNavalAngle(
-              props.d,
+            const ni = DAnglesLengths.navalAngle(
+              props.d.data.naval,
               item.residue,
               item.angle.triplet
             );
@@ -660,8 +660,8 @@ function LengthMetricDetails(props: {
             const doUnhighlight = () =>
               props.vi.api.command(ViewerApi.Commands.Unhighlight());
 
-            const ni = AnglesLengthsCommon.getNavalBond(
-              props.d,
+            const ni = DAnglesLengths.navalBond(
+              props.d.data.naval,
               item.residue,
               item.length.pair
             );

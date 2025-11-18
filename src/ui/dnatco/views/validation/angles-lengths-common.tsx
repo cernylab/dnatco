@@ -28,8 +28,6 @@ import {
 import { Bins } from "../../../../dnatco/angles-lengths/bin";
 import { Pair } from "../../../../dnatco/angles-lengths/lengths";
 import { Measurements } from "../../../../dnatco/angles-lengths/measurements";
-import { Naval } from "../../../../dnatco/naval";
-import { Validation } from "../../../../dnatco/naval/validation";
 import { Summarize, SummarizeNaval, SummarizeProSco } from "../../../../dnatco/angles-lengths/summarize";
 import { GlobalConfig } from "../../../../global-config";
 import { htmlColorAsNumber, isWithin, replaceAll } from "../../../../util";
@@ -55,30 +53,6 @@ export const RightwardsArrowWithBar = "\u21A6";
 
 const PairBondNameCache: Map<string, React.ReactElement> = new Map();
 const TripletBondNameCache: Map<string, React.ReactElement> = new Map();
-
-export type NavalItem = {
-  csdPreferredLeft: number;
-  csdPreferredRight: number;
-  value: number;
-  quality: Naval.Quality | "none";
-};
-export function NavalItem(
-  item: Validation.ReportItem<Validation.AngleAtoms | Validation.BondAtoms>
-): NavalItem {
-  const threeSigma = 3 * item.target_sigma;
-  return {
-    csdPreferredLeft: item.target_value - threeSigma,
-    csdPreferredRight: item.target_value + threeSigma,
-    value: item.target_value,
-    quality: Naval.quality(item),
-  };
-}
-const EmptyNavalItem: NavalItem = {
-  csdPreferredLeft: 0,
-  csdPreferredRight: 0,
-  value: 0,
-  quality: "none",
-};
 
 type AveragesChartDownloader = Downloader<Serialization.Serializable>;
 const AveragesChartDownloaders = [
@@ -906,20 +880,6 @@ export namespace AnglesLengthsCommon {
     );
   }
 
-  function compareNavalAtom(
-    a: Validation.Atom,
-    name: string,
-    seqId: number,
-    altId: string
-  ) {
-    const altIdMatch = a.altloc === "" || altId === "" || a.altloc === altId;
-    const isShifted = isShiftedName(name);
-    const _name = isShifted ? unshiftName(name) : name;
-    const _seqId = isShifted ? seqId - 1 : seqId;
-
-    return a.name === _name && a.seqId === _seqId && altIdMatch;
-  }
-
   function makeBondName(bond: Pair | Triplet) {
     const toks = bond.map((x) =>
       isShiftedName(x) ? (
@@ -1141,56 +1101,6 @@ export namespace AnglesLengthsCommon {
 
   export function fileNameFriendlyTag(tag: string) {
     return replaceAll(replaceAll(tag, "^", "_"), "'", "p");
-  }
-
-  export function getNavalAngle(
-    d: Dnatcofication,
-    r: Measurements.Residue,
-    triplet: Triplet
-  ) {
-    const [na, nb, nc] = triplet;
-    const niIdx =
-      d.data.naval.anglesMapping
-        .get(r.modelNum)
-        ?.get(r.chain)
-        ?.get(r.seqId)
-        ?.find((idx) => {
-          const { a, b, c } = d.data.naval.angles[idx].atoms;
-          return (
-            (compareNavalAtom(a, na, r.seqId, r.altId) ||
-              compareNavalAtom(a, nc, r.seqId, r.altId)) &&
-            compareNavalAtom(b, nb, r.seqId, r.altId) &&
-            (compareNavalAtom(c, na, r.seqId, r.altId) ||
-              compareNavalAtom(c, nc, r.seqId, r.altId))
-          );
-        }) ?? -1;
-    return niIdx === -1
-      ? EmptyNavalItem
-      : NavalItem(d.data.naval.angles[niIdx]);
-  }
-
-  export function getNavalBond(
-    d: Dnatcofication,
-    r: Measurements.Residue,
-    pair: Pair
-  ) {
-    const [na, nb] = pair;
-    const niIdx =
-      d.data.naval.bondsMapping
-        .get(r.modelNum)
-        ?.get(r.chain)
-        ?.get(r.seqId)
-        ?.find((idx) => {
-          const rr = d.data.naval.bonds[idx];
-          const { a, b } = rr.atoms;
-          return (
-            (compareNavalAtom(a, na, r.seqId, r.altId) ||
-              compareNavalAtom(a, nb, r.seqId, r.altId)) &&
-            (compareNavalAtom(b, na, r.seqId, r.altId) ||
-              compareNavalAtom(b, nb, r.seqId, r.altId))
-          );
-        }) ?? -1;
-    return niIdx === -1 ? EmptyNavalItem : NavalItem(d.data.naval.bonds[niIdx]);
   }
 
   export function getSelection(props: View.Props) {
