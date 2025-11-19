@@ -31,7 +31,7 @@ import { Measurements } from "../../../../dnatco/angles-lengths/measurements";
 import { Summarize, SummarizeNaval, SummarizeProSco } from "../../../../dnatco/angles-lengths/summarize";
 import { GlobalConfig } from "../../../../global-config";
 import { htmlColorAsNumber, isWithin, replaceAll } from "../../../../util";
-import { colorToTuple, luminance, colorToHex } from "../../../../util/colors";
+import { colorToTuple, luminance, colorToHex, ColorTuple } from "../../../../util/colors";
 import { FileTypes } from "../../../../util/file-type";
 import { M } from "../../../../util/math";
 import { Serialization } from "../../../../util/serialization";
@@ -53,6 +53,27 @@ export const RightwardsArrowWithBar = "\u21A6";
 
 const PairBondNameCache: Map<string, React.ReactElement> = new Map();
 const TripletBondNameCache: Map<string, React.ReactElement> = new Map();
+
+export function measuredItemColor(
+  value: number,
+  navalRanking: NavalRankingData,
+  csdPreferredLower: number,
+  csdPreferredUpper: number,
+  pGroup: DAnglesLengths.PGroup,
+  outlierColor: ColorTuple
+) {
+  const sumVar = GlobalConfig.data().anglesLengths.summaryVariant;
+
+  return sumVar === 'naval'
+    ? colorToTuple(DAnglesLengths.navalRankingClassColor(DAnglesLengths.navalRankingClass(
+        value,
+        navalRanking,
+        csdPreferredLower,
+        csdPreferredUpper,
+        pGroup
+    )))
+    : pGroup ? colorToTuple(pGroup.color) : outlierColor;
+}
 
 type AveragesChartDownloader = Downloader<Serialization.Serializable>;
 const AveragesChartDownloaders = [

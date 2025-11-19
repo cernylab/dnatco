@@ -11,6 +11,7 @@ import {
   Prosco,
   ResidueName,
   WindowsTracker,
+  measuredItemColor,
 } from "./angles-lengths-common";
 import { AnglesLengthsDisplayOrder } from "./angles-lengths-display-order";
 import { View } from "../view";
@@ -240,9 +241,14 @@ function BondAngleDetails(props: {
   onAtomsClicked?: (r: Measurements.Residue, triplet: Triplet) => void;
 }) {
   const ba = props.bondAngle;
-  const clr = props.pGroup
-    ? colorToTuple(props.pGroup.color)
-    : props.outlierColor;
+  const clr = measuredItemColor(
+    props.bondAngle.angle,
+    props.navalRanking,
+    M.d2r(props.navalItem.csdPreferredLeft),
+    M.d2r(props.navalItem.csdPreferredRight),
+    props.pGroup,
+    props.outlierColor
+  );
 
   const nrankCls = DAnglesLengths.navalRankingClass(
     ba.angle,
@@ -369,7 +375,7 @@ function BondLengthDetails(props: {
   maybeBin: ALM.MaybeBin;
   navalItem: NavalItem;
   navalRanking: NavalRankingData;
-  outlierColor: [r: number, g: number, b: number];
+  outlierColor: ColorTuple;
   pGroup: DAnglesLengths.PGroup;
   pGroupDatas: DAnglesLengths.PGroupData[];
   residue: Measurements.Residue;
@@ -380,9 +386,14 @@ function BondLengthDetails(props: {
   onAtomsClicked?: (r: Measurements.Residue, pair: Pair) => void;
 }) {
   const bl = props.bondLength;
-  const clr = props.pGroup
-    ? colorToTuple(props.pGroup.color)
-    : props.outlierColor;
+  const clr = measuredItemColor(
+    props.bondLength.length,
+    props.navalRanking,
+    props.navalItem.csdPreferredLeft,
+    props.navalItem.csdPreferredRight,
+    props.pGroup,
+    props.outlierColor
+  );
   const nrankCls = DAnglesLengths.navalRankingClass(
     bl.length,
     props.navalRanking,

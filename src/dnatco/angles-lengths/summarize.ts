@@ -192,8 +192,6 @@ export namespace SummarizeNaval {
             });
         }
 
-        console.log(counts);
-
         return cig;
     }
 

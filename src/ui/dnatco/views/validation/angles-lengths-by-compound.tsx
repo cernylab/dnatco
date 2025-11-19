@@ -10,6 +10,7 @@ import {
   Prosco,
   ResidueName as CommonResidueName,
   WindowsTracker,
+  measuredItemColor
 } from "./angles-lengths-common";
 import { AnglesLengthsDisplayOrder } from './angles-lengths-display-order';
 import { View } from "../view";
@@ -19,7 +20,11 @@ import { CollapsibleVertical } from "../../../common/collapsible-vertical";
 import { Window } from "../../../common/window";
 import { colorStyle } from "../../../util";
 import { ALM, ALMCompoundAngleLength } from "../../../../dnatco/alm";
-import { AnglesLengths as DAnglesLengths, NavalPGroupCount, NavalRankingClasses } from "../../../../dnatco/angles-lengths";
+import {
+    AnglesLengths as DAnglesLengths,
+    NavalPGroupCount,
+    NavalRankingClasses
+} from "../../../../dnatco/angles-lengths";
 import { tripletTag, Triplet } from "../../../../dnatco/angles-lengths/angles";
 import { pairTag, Pair } from "../../../../dnatco/angles-lengths/lengths";
 import { Measurements } from "../../../../dnatco/angles-lengths/measurements";
@@ -312,6 +317,7 @@ function Metric<T extends ALM.AngleStats | ALM.LengthStats>(props: {
     collapseDetail: () => collapsibleRef?.current?.collapseExpand("collapse"),
     winTracker: props.winTracker,
   };
+
   const details =
     props.stats.type === "angle" ? (
       <AngleMetricDetails
@@ -463,9 +469,14 @@ function AngleMetricDetails(props: {
               ? item.bin.binIndex
               : -1;
 
-            const clr = item.pGroup
-              ? colorToTuple(item.pGroup.color)
-              : props.outlierColor;
+            const clr = measuredItemColor(
+              item.angle.angle,
+              nrank,
+              M.d2r(ni.csdPreferredLeft),
+              M.d2r(ni.csdPreferredRight),
+              item.pGroup,
+              props.outlierColor
+            );
             const pGroupDatas = props.pgrpIndices.map(
               (idx) =>
                 DAnglesLengths.anglePGroupData(
@@ -677,9 +688,14 @@ function LengthMetricDetails(props: {
               ? item.bin.binIndex
               : -1;
 
-            const clr = item.pGroup
-              ? colorToTuple(item.pGroup.color)
-              : props.outlierColor;
+            const clr = measuredItemColor(
+              item.length.length,
+              nrank,
+              ni.csdPreferredLeft,
+              ni.csdPreferredRight,
+              item.pGroup,
+              props.outlierColor
+            );
             const pGroupDatas = props.pgrpIndices.map(
               (idx) =>
                 DAnglesLengths.lengthPGroupData(
