@@ -1,5 +1,5 @@
-import { PlotData } from "plotly.js";
-import Plot from "react-plotly.js";
+import { PlotRelayoutEvent } from "plotly.js";
+import Plot, { Figure } from "react-plotly.js";
 import React from "react";
 import { Subject } from "rxjs";
 import { View } from "../view";
@@ -7,7 +7,6 @@ import { Colors } from "../../colors";
 import { StatsBar } from "../../stats-bar";
 import { SelectedPieces } from "../../structure-selection";
 import { Icon } from "../../../common/icon";
-import { ToggleButton } from "../../../common/push-button";
 import { Tooltip } from "../../../common/tooltip";
 import { Window } from "../../../common/window";
 import { colorStyle } from "../../../util";
@@ -16,22 +15,23 @@ import { doDownload, Downloader } from "../../../../browser-util/downloader";
 import { ALM } from "../../../../dnatco/alm";
 import { Dnatcofication } from "../../../../dnatco/dnatcofication";
 import {
-  AnglesLengths as DAnglesLengths,
+    AnglesLengths as DAnglesLengths,
+    NavalRankingClass,
+    NavalRankingData
 } from "../../../../dnatco/angles-lengths";
 import { Triplet } from "../../../../dnatco/angles-lengths/angles";
+import { Reference } from "../../../../dnatco/angles-lengths/reference-sets";
 import {
   isShiftedName,
   unshiftName,
 } from "../../../../dnatco/angles-lengths/atoms";
 import { Bins } from "../../../../dnatco/angles-lengths/bin";
-import {  Pair } from "../../../../dnatco/angles-lengths/lengths";
+import { Pair } from "../../../../dnatco/angles-lengths/lengths";
 import { Measurements } from "../../../../dnatco/angles-lengths/measurements";
-import { Naval } from "../../../../dnatco/naval";
-import { Validation } from "../../../../dnatco/naval/validation";
-import { Summarize } from "../../../../dnatco/angles-lengths/summarize";
+import { Summarize, SummarizeNaval, SummarizeProSco } from "../../../../dnatco/angles-lengths/summarize";
 import { GlobalConfig } from "../../../../global-config";
 import { htmlColorAsNumber, isWithin, replaceAll } from "../../../../util";
-import { colorToTuple, luminance, ColorTuple } from "../../../../util/colors";
+import { colorToTuple, luminance, colorToHex, ColorTuple } from "../../../../util/colors";
 import { FileTypes } from "../../../../util/file-type";
 import { M } from "../../../../util/math";
 import { Serialization } from "../../../../util/serialization";
@@ -46,35 +46,34 @@ import {
 import { ViewerApi, ViewerInterop } from "../../../../viewer/viewer-interop";
 
 export const ColorIsDarkThreshold = 0.5;
+export const AngstromUnit = "\u00A0\u00C5";
+export const DegreesUnit = "\u00B0";
+export const LeftwardsArrowWithBar = "\u21A4";
+export const RightwardsArrowWithBar = "\u21A6";
 
 const PairBondNameCache: Map<string, React.ReactElement> = new Map();
 const TripletBondNameCache: Map<string, React.ReactElement> = new Map();
 
-const EmptyPlotPoints = new Array<number>();
+export function measuredItemColor(
+  value: number,
+  navalRanking: NavalRankingData,
+  csdPreferredLower: number,
+  csdPreferredUpper: number,
+  pGroup: DAnglesLengths.PGroup,
+  outlierColor: ColorTuple
+) {
+  const sumVar = GlobalConfig.data().anglesLengths.summaryVariant;
 
-export type NavalItem = {
-  csdPreferredLeft: number;
-  csdPreferredRight: number;
-  value: number;
-  quality: Naval.Quality | "none";
-};
-export function NavalItem(
-  item: Validation.ReportItem<Validation.AngleAtoms | Validation.BondAtoms>
-): NavalItem {
-  const threeSigma = 3 * item.target_sigma;
-  return {
-    csdPreferredLeft: item.target_value - threeSigma,
-    csdPreferredRight: item.target_value + threeSigma,
-    value: item.target_value,
-    quality: Naval.quality(item),
-  };
+  return sumVar === 'naval'
+    ? colorToTuple(DAnglesLengths.navalRankingClassColor(DAnglesLengths.navalRankingClass(
+        value,
+        navalRanking,
+        csdPreferredLower,
+        csdPreferredUpper,
+        pGroup
+    )))
+    : pGroup ? colorToTuple(pGroup.color) : outlierColor;
 }
-const EmptyNavalItem: NavalItem = {
-  csdPreferredLeft: 0,
-  csdPreferredRight: 0,
-  value: 0,
-  quality: "none",
-};
 
 type AveragesChartDownloader = Downloader<Serialization.Serializable>;
 const AveragesChartDownloaders = [
@@ -132,12 +131,15 @@ export class AveragesChart extends React.Component<{
   bins: Bins;
   pGroupDatas: DAnglesLengths.PGroupData[];
   mark: number;
-  naval: NavalItem;
+  ofConcernLowerMark: number;
+  ofConcernUpperMark: number;
   xTitle: string;
   yTitle: string;
   xTransform?: (x: number) => number;
   yTransform?: (y: number) => number;
   downloadFileName?: string;
+  onInitialized?: (fig: Readonly<Figure>) => void;
+  onRelayout?: (relayout: Readonly<PlotRelayoutEvent>) => void;
 }> {
   private binsToPGroupIndices(
     bins: Bins,
@@ -165,51 +167,40 @@ export class AveragesChart extends React.Component<{
     return indices;
   }
 
-  private makeNavalLine(
-    x: number,
-    relativeYMax: number,
-    text: string,
-    color: ColorTuple,
-    yMax: number,
-    xt: number[]
-  ): Partial<PlotData> {
-    return {
-      x: this.props.naval.quality !== "none" ? [x] : EmptyPlotPoints,
-      y:
-        this.props.naval.quality !== "none"
-          ? [yMax * relativeYMax]
-          : EmptyPlotPoints,
-      type: "bar",
-      width: 2 * (xt[1] - xt[0]),
-      marker: {
-        color: `rgb(${color[0]}, ${color[1]}, ${color[2]})`,
-      },
-      hoverinfo: "text",
-      hovertext: text,
-      hoveron: "fills",
-      showlegend: false,
-    };
+    shouldComponentUpdate(nextProps: Readonly<{ bins: Bins; pGroupDatas: DAnglesLengths.PGroupData[]; mark: number; ofConcernLowerMark: number; ofConcernUpperMark: number; xTitle: string; yTitle: string; xTransform?: (x: number) => number; yTransform?: (y: number) => number; downloadFileName?: string; onInitialized?: (fig: Readonly<Figure>) => void; onRelayout?: (relayout: Readonly<PlotRelayoutEvent>) => void; }>, nextState: Readonly<{}>, nextContext: any): boolean {
+        return (
+            nextProps.bins !== this.props.bins ||
+            nextProps.pGroupDatas !== this.props.pGroupDatas ||
+            nextProps.mark !== this.props.mark ||
+            nextProps.ofConcernLowerMark !== this.props.ofConcernLowerMark ||
+            nextProps.ofConcernUpperMark !== this.props.ofConcernUpperMark ||
+            nextProps.xTitle !== this.props.xTitle ||
+            nextProps.yTitle !== this.props.yTitle ||
+            nextProps.xTransform !== this.props.xTransform ||
+            nextProps.yTransform !== this.props.yTransform ||
+            nextProps.downloadFileName !== this.props.downloadFileName
+        );
   }
 
   render() {
     const markerColorTup = colorToTuple(
       htmlColorAsNumber(GlobalConfig.data().anglesLengths.chartMarkerColor) ?? 0
     );
-    const navalColorTup = colorToTuple(
-      htmlColorAsNumber(GlobalConfig.data().anglesLengths.navalMarkerColor) ??
-        16744576
-    );
+
     const outlierColor = DAnglesLengths.outlierColor();
     const pGroupIndices = this.binsToPGroupIndices(
       this.props.bins,
       this.props.pGroupDatas
     );
-
+    const ofConcernColor = (() => {
+      const tup = colorToTuple(DAnglesLengths.navalRankingClassColor('of-concern'));
+      return `rgb(${tup[0]}, ${tup[1]}, ${tup[2]})`;
+    })();
     const color = pGroupIndices.map((pgIdx) => {
       const tup = colorToTuple(
         pgIdx === -1 ? outlierColor : DAnglesLengths.pGroupColor(pgIdx)
       );
-      return `$rgb(${tup[0]}, ${tup[1]}, ${tup[2]})`;
+      return `rgb(${tup[0]}, ${tup[1]}, ${tup[2]})`;
     });
 
     const tm = this.props.xTransform
@@ -225,14 +216,8 @@ export class AveragesChart extends React.Component<{
     );
     const yMax = Math.max(...yt);
 
-    const xtFrom =
-      this.props.naval.quality !== "none"
-        ? Math.min(xt[0], this.props.naval.csdPreferredLeft)
-        : xt[0];
-    const xtTo =
-      this.props.naval.quality !== "none"
-        ? Math.max(xt[xt.length - 1], this.props.naval.csdPreferredRight)
-        : xt[xt.length - 1];
+    const xtFrom = xt[0];
+    const xtTo = xt[xt.length - 1];
     const xAxisMargin = (xtTo - xtFrom) * 0.05;
     const xRange = [
       (xtFrom > tm ? tm : xtFrom) - xAxisMargin,
@@ -321,30 +306,32 @@ export class AveragesChart extends React.Component<{
               hoveron: "fills",
               showlegend: false,
             },
-            this.makeNavalLine(
-              this.props.naval.value,
-              0.75,
-              "Naval target value",
-              navalColorTup,
-              yMax,
-              xt
-            ),
-            this.makeNavalLine(
-              this.props.naval.csdPreferredLeft,
-              0.5,
-              "Naval CSD-preferred lower bound",
-              navalColorTup,
-              yMax,
-              xt
-            ),
-            this.makeNavalLine(
-              this.props.naval.csdPreferredRight,
-              0.5,
-              "Naval CSD-preferred upper bound",
-              navalColorTup,
-              yMax,
-              xt
-            ),
+            {
+              x: [this.props.xTransform?.(this.props.ofConcernLowerMark) ?? this.props.ofConcernLowerMark],
+              y: [yMax * 0.33],
+              type: "bar",
+              width: 2 * (xt[1] - xt[0]),
+              marker: {
+                color: ofConcernColor,
+              },
+              hoverinfo: "text",
+              hovertext: "NA-VAL Of Concern Lower",
+              hoveron: "fills",
+              showlegend: false,
+            },
+            {
+              x: [this.props.xTransform?.(this.props.ofConcernUpperMark) ?? this.props.ofConcernUpperMark],
+              y: [yMax * 0.33],
+              type: "bar",
+              width: 2 * (xt[1] - xt[0]),
+              marker: {
+                color: ofConcernColor,
+              },
+              hoverinfo: "text",
+              hovertext: "NA-VAL Of Concern Upper",
+              hoveron: "fills",
+              showlegend: false,
+            },
           ]}
           layout={{
             autosize: true,
@@ -360,12 +347,15 @@ export class AveragesChart extends React.Component<{
           config={{
             displayModeBar: false,
             responsive: true,
-            scrollZoom: true,
+                  scrollZoom: true,
+                  autosizable: true
           }}
           style={{
-            margin: 0,
-            height: "450px",
+              margin: 0,
+              height: '450px',
           }}
+          onInitialized={(fig, _elem) => this.props.onInitialized?.(fig)}
+          onRelayout={(evt) => this.props.onRelayout?.(evt)}
         />
       </div>
     );
@@ -393,149 +383,181 @@ export function FloatingCue(props: {
   } else return <div className="invisible" />;
 }
 
+function NavalBar(props: {
+  pGroup: DAnglesLengths.PGroup;
+  value: number,
+  navalRanking: NavalRankingData;
+  navalRangeLow: number,
+  navalRangeHigh: number,
+  navalPreferredLower: number,
+  navalPreferredUpper: number,
+}) {
+  const ofConcernClr = React.useMemo(() => colorToHex(DAnglesLengths.navalRankingClassColor('of-concern')), []);
+  const allowedClr = React.useMemo(() => colorToHex(DAnglesLengths.navalRankingClassColor('allowed')), []);
+  const preferredClr = React.useMemo(() => colorToHex(DAnglesLengths.navalRankingClassColor('preferred')), []);
+
+  const totalPreferredLower = React.useMemo(() => (
+    DAnglesLengths.navalPreferredLowerBound(props.navalPreferredLower, props.pGroup)
+  ), [props.pGroup]);
+  const totalPreferredUpper = React.useMemo(() => (
+    DAnglesLengths.navalPreferredUpperBound(props.navalPreferredUpper, props.pGroup)
+  ), [props.pGroup]);
+
+  const canvasRef = React.useRef<HTMLCanvasElement | null>(null);
+
+  const ranking = props.navalRanking;
+
+  const lowest = props.navalRangeLow;
+  const highest = props.navalRangeHigh;
+  const span = highest - lowest;
+
+  if (ranking.ofConcernLower > totalPreferredLower) {
+    console.warn(`ofConcernLower (${ranking.ofConcernLower}) is greater than totalPreferredLower ${totalPreferredLower}`);
+  }
+  if (totalPreferredUpper > ranking.ofConcernUpper) {
+    console.warn(`totalPreferredUpper (${totalPreferredUpper}) is greater than ofConcernUpper ${ranking.ofConcernUpper}`);
+  }
+
+  const context = canvasRef.current?.getContext('2d');
+  if (context) {
+    if (span === 0) return;
+
+    const w = context.canvas.width;
+    const h = context.canvas.height;
+
+    const ofConcernLower = w * (ranking.ofConcernLower - lowest) / span;
+    if (ofConcernLower > 0) {
+      context.fillStyle = ofConcernClr;
+      context.fillRect(0, 0, ofConcernLower, h);
+    }
+
+    const preferredLower = w * (totalPreferredLower - lowest) / span;
+    context.fillStyle = allowedClr;
+    context.fillRect(ofConcernLower, 0, preferredLower - ofConcernLower, 32);
+
+    const preferredUpper = w * (totalPreferredUpper - lowest) / span;
+    context.fillStyle = preferredClr;
+    context.fillRect(preferredLower, 0, preferredUpper - preferredLower, 32);
+
+    const ofConcernUpper = w * (ranking.ofConcernUpper - lowest) / span;
+    context.fillStyle = allowedClr;
+    context.fillRect(preferredUpper, 0, ofConcernUpper - preferredUpper, 32);
+
+    if (ofConcernUpper < w) {
+      context.fillStyle = ofConcernClr;
+      context.fillRect(ofConcernUpper, 0, w - ofConcernUpper, 32);
+    }
+
+    const valueMarker = w * (props.value - lowest) / span;
+    context.fillStyle = '#000000';
+    context.fillRect(valueMarker - 2, 0, 4, 32);
+  }
+
+  return (
+    <canvas ref={canvasRef} width={canvasRef.current?.width ?? 450} height={32}>
+    </canvas>
+  );
+}
+
 export type PGroupSummaryProps = {
   bins: Bins;
   pGroup: DAnglesLengths.PGroup;
   pGroupDatas: DAnglesLengths.PGroupData[];
+  maybeBin: ALM.MaybeBin,
   rangeFormatter: (v: number) => string;
   residueName: JSX.Element;
   value: number;
   valueFormatter: (v: number) => string;
-  naval: NavalItem;
+  navalPreferredLower: number,
+  navalPreferredUpper: number,
+  navalRanking: NavalRankingData;
+  navalRankingClass: NavalRankingClass;
+  nearestReferenceLower: Reference | undefined;
+  nearestReferenceUpper: Reference | undefined;
   xTitle: string;
   yTitle: string;
   suffix?: string;
   xTransform?: (x: number) => number;
   yTransform?: (y: number) => number;
+  xUntransform?: (x: number) => number;
   downloadFileName?: string;
   highlighter: () => void;
   vi: ViewerInterop;
 };
 export class PGroupSummary extends React.Component<
   PGroupSummaryProps,
-  { mode: "chart" | "details" }
+  {
+    mode: "chart" | "details",
+    navalTainer: HTMLDivElement | null,
+    navalRangeLow: number,
+    navalRangeHigh: number,
+  }
 > {
   constructor(props: PGroupSummaryProps) {
     super(props);
 
     this.state = {
       mode: "chart",
+      navalTainer: null,
+      navalRangeLow: 0,
+      navalRangeHigh: 0,
     };
   }
 
-  private makeToggleButton(caption: string, mode: typeof this.state.mode) {
-    return (
-      <ToggleButton
-        caption={caption}
-        onClick={(e) => {
-          e.stopPropagation();
-          e.nativeEvent.stopImmediatePropagation();
-          if (mode !== this.state.mode) this.setState({ ...this.state, mode });
-        }}
-        selected={this.state.mode === mode}
-      />
-    );
-  }
-
-  private renderChart() {
-    return (
-      <AveragesChart
-        bins={this.props.bins}
-        mark={this.props.value}
-        naval={this.props.naval}
-        pGroupDatas={this.props.pGroupDatas}
-        xTitle={this.props.xTitle}
-        yTitle={this.props.yTitle}
-        xTransform={this.props.xTransform}
-        yTransform={this.props.yTransform}
-        downloadFileName={this.props.downloadFileName}
-      />
-    );
-  }
-
-  private renderNaval() {
-    return (
-      <>
-        <div className="font-700 col-span-2 whitespace-nowrap">
-          Naval quality
-        </div>
-        <div>
-          {this.props.naval.quality === "none"
-            ? "N/A"
-            : Naval.QualityName[this.props.naval.quality]}
-        </div>
-      </>
-    );
-  }
-
-  private renderPercentile() {
-    if (!this.props.pGroup) {
-      return (
-        <div className="grid grid-cols-3 gap-x-4">
-          <div className="col-span-2" />
-          {this.renderPGroup()}
-          <div className="h-4 col-span-3" />
-          {this.renderNaval()}
-        </div>
-      );
-    }
-
-    return (
-      <div className="grid grid-cols-3 gap-x-4">
-        <div className="font-700">From</div>
-        <div className="font-700">To</div>
-        <div className="font-700 whitespace-nowrap">Probability (%)</div>
-        {this.props.pGroup.groupedBins.map((x, idx) => {
-          const strg = isWithin(this.props.value, x) ? "font-700" : "";
-          const from = this.props.rangeFormatter(x.from);
-          const to = this.props.rangeFormatter(x.to);
-
-          return (
-            <React.Fragment key={idx}>
-              <div className={`text-right ${strg}`}>{`${from}${
-                this.props.suffix ?? ""
-              }`}</div>
-              <div className={`text-right ${strg}`}>{`${to}${
-                this.props.suffix ?? ""
-              }`}</div>
-              <div className={`text-right ${strg}`}>
-                {(x.probability * 100).toFixed(2)}
-              </div>
-            </React.Fragment>
-          );
-        })}
-        <div className="h-4 col-span-3" />
-        <div className="font-700 col-span-2">Percentile</div>
-        {this.renderPGroup()}
-        <div className="h-4 col-span-3" />
-        {this.renderNaval()}
-      </div>
-    );
-  }
-
-  private renderMain() {
-    switch (this.state.mode) {
-      case "chart":
-        return this.renderChart();
-      case "details":
-        return this.renderPercentile();
+  private navalRankingClassName() {
+    switch (this.props.navalRankingClass) {
+      case 'of-concern': return 'Of concern';
+      case 'allowed': return 'Allowed';
+      case 'preferred': return 'Preferred';
     }
   }
 
-  private renderPGroup() {
-    const clr = colorToTuple(
-      this.props.pGroup
-        ? this.props.pGroup.color
-        : DAnglesLengths.outlierColor()
-    );
-    const text = this.props.pGroup
-      ? this.props.pGroup.threshold.toFixed(4)
-      : "Outlier";
+  private renderSummary() {
+    const proscoColor = colorToHex(this.props.pGroup?.color ?? DAnglesLengths.outlierColor());
+
+    const nearestLower = this.props.nearestReferenceLower;
+    const nearestUpper = this.props.nearestReferenceUpper;
 
     return (
-      <div className="grid [grid-template-columns:1em_1fr]">
-        <div style={{ backgroundColor: colorStyle(clr) }} />
-        <div className="text-right">{text}</div>
+      <div className="flex flex-row gap-4 font-bold">
+          <div className="gap-2" style={{ display: 'grid', gridTemplateColumns: 'auto auto auto auto', alignItems: 'center' }}>
+          <div>NA-VAL</div>
+          <div></div>
+          <div style={{
+            width: '1rem',
+            height: '1rem',
+            backgroundColor: colorToHex(DAnglesLengths.navalRankingClassColor(this.props.navalRankingClass))
+          }} />
+          <div>{this.navalRankingClassName()}</div>
+
+          <div>ProSco</div>
+          <div><Prosco bin={this.props.maybeBin} /></div>
+          <div style={{
+            width: '1rem',
+            height: '1rem',
+            backgroundColor: proscoColor
+          }} />
+          <div>{this.props.pGroup?.name ?? DAnglesLengths.outlierName()}</div>
+        </div>
+
+        <div style={{ flex: '1' }} />
+
+        <div className="flex flex-row gap-2">
+            <div>RS18</div>
+            <div className="gap-2" style={{ display: 'grid', gridTemplateColumns: 'auto auto auto auto auto' }}>
+                <div>{LeftwardsArrowWithBar}</div>
+                <div>{nearestLower?.[1].toUpperCase() ?? ''}</div>
+                <div>{nearestLower?.[3] ?? ''}</div>
+                <div>{nearestLower?.[4] ?? ''}</div>
+                <div>{nearestLower?.[6] ?? ''}</div>
+
+                <div>{RightwardsArrowWithBar}</div>
+                <div>{nearestUpper?.[1].toUpperCase() ?? ''}</div>
+                <div>{nearestUpper?.[3] ?? ''}</div>
+                <div>{nearestUpper?.[4] ?? ''}</div>
+                <div>{nearestUpper?.[6] ?? ''}</div>
+            </div>
+        </div>
       </div>
     );
   }
@@ -546,26 +568,55 @@ export class PGroupSummary extends React.Component<
 
   render() {
     return (
-      <div>
+      <div className="flex flex-col w-full h-full">
         <div className="h-2" />
-        <div className="flex">
-          <div className="flex">
-            <div className="flex-1">
-              {this.makeToggleButton("Chart", "chart")}
-            </div>
-            <div className="flex-1">
-              {this.makeToggleButton("Details", "details")}
-            </div>
-          </div>
-          <div className="flex-1" />
-          <div className="rdo-text-large">
-            {this.props.valueFormatter(this.props.value)}
-            {this.props.suffix}
-          </div>
-        </div>
+        <AveragesChart
+          bins={this.props.bins}
+          mark={this.props.value}
+          ofConcernLowerMark={this.props.navalRanking.ofConcernLower}
+          ofConcernUpperMark={this.props.navalRanking.ofConcernUpper}
+          pGroupDatas={this.props.pGroupDatas}
+          xTitle={this.props.xTitle}
+          yTitle={this.props.yTitle}
+          xTransform={this.props.xTransform}
+          yTransform={this.props.yTransform}
+          downloadFileName={this.props.downloadFileName}
+          onInitialized={(fig) => {
+            this.setState({
+              ...this.state,
+              navalRangeLow: this.props.xUntransform?.(fig.layout?.xaxis?.range?.[0] as number ?? 0) ?? fig.layout?.xaxis?.range?.[0] as number,
+              navalRangeHigh: this.props.xUntransform?.(fig.layout?.xaxis?.range?.[1] as number ?? 0) ?? fig.layout?.xaxis?.range?.[1] as number,
+            });
+          }}
+          onRelayout={(relayout) => {
+            // This seemingly ridiculous way to get the X axis range is necessary
+            const [rangeLow , rangeHigh] = relayout["xaxis.range"]
+               ? [relayout["xaxis.range"][0], relayout["xaxis.range"][1]] as [number, number]
+               : [relayout["xaxis.range[0]"], relayout["xaxis.range[1]"]] as [number, number];
+
+            if (!!rangeLow && !!rangeHigh) {
+              this.setState({
+                ...this.state,
+                navalRangeLow: this.props.xUntransform?.(rangeLow) ?? rangeLow,
+                navalRangeHigh: this.props.xUntransform?.(rangeHigh) ?? rangeHigh
+              });
+            }
+          }}
+        />
 
         <div className="h-2" />
-        {this.renderMain()}
+        <NavalBar
+          pGroup={this.props.pGroup}
+          navalRanking={this.props.navalRanking}
+          value={this.props.value}
+          navalRangeLow={this.state.navalRangeLow}
+          navalRangeHigh={this.state.navalRangeHigh}
+          navalPreferredLower={this.props.navalPreferredLower}
+          navalPreferredUpper={this.props.navalPreferredUpper}
+        />
+
+        <div className="h-2" />
+        {this.renderSummary()}
       </div>
     );
   }
@@ -639,8 +690,44 @@ export function ResidueName(props: {
   return <div>{...inner}</div>;
 }
 
-export function SubstructureSummary(props: {
-  countsInGroups: Summarize.CountsInGroup[];
+function SubstructureSummaryNaval(props: {
+  countsInGroups: SummarizeNaval.CountsInGroup[],
+}) {
+  const total =
+    props.countsInGroups[props.countsInGroups.length - 1].cumulative;
+
+  return (
+    <div className="grid gap-x-4" style={{ gridTemplateColumns: 'auto auto auto' }}>
+      <div />
+      <div className="font-700 text-center flex justify-center col-start-2 col-span-2">
+        Counts
+      </div>
+
+      <div className="font-700">Class</div>
+      <div className="font-700">Exclusive</div>
+      <div className="font-700">Cumulative</div>
+      {props.countsInGroups.map((x, idx) => {
+        const clr = DAnglesLengths.navalRankingClassColor(x.class);
+        const perc = 100 * (x.cumulative / total);
+
+        console.log(x.class, perc);
+
+        return (
+          <React.Fragment key={idx}>
+            <div style={{ backgroundColor: colorStyle(colorToTuple(clr)), width: '1em' }} />
+            <div className="text-right">{x.exclusive}</div>
+            <div className="text-right">{`${x.cumulative}\u00A0(${perc
+              .toFixed(2)
+              .padStart(6)}\u00A0%)`}</div>
+          </React.Fragment>
+        );
+      })}
+    </div>
+  );
+}
+
+function SubstructureSummaryProSco(props: {
+  countsInGroups: SummarizeProSco.CountsInGroup[],
 }) {
   const maxDecimals = Math.max(
     ...props.countsInGroups.map((x) => {
@@ -683,6 +770,22 @@ export function SubstructureSummary(props: {
       })}
     </div>
   );
+}
+
+export function SubstructureSummary(props: {
+  countsInGroups: {
+    kind: 'naval',
+    counts: SummarizeNaval.CountsInGroup[],
+  } | {
+    kind: 'prosco',
+    counts: SummarizeProSco.CountsInGroup[]
+  }
+}) {
+  if (props.countsInGroups.kind === 'naval') {
+    return <SubstructureSummaryNaval countsInGroups={props.countsInGroups.counts} />
+  } else if (props.countsInGroups.kind === 'prosco') {
+    return <SubstructureSummaryProSco countsInGroups={props.countsInGroups.counts} />
+  }
 }
 
 export class WindowsTracker {
@@ -798,20 +901,6 @@ export namespace AnglesLengthsCommon {
     );
   }
 
-  function compareNavalAtom(
-    a: Validation.Atom,
-    name: string,
-    seqId: number,
-    altId: string
-  ) {
-    const altIdMatch = a.altloc === "" || altId === "" || a.altloc === altId;
-    const isShifted = isShiftedName(name);
-    const _name = isShifted ? unshiftName(name) : name;
-    const _seqId = isShifted ? seqId - 1 : seqId;
-
-    return a.name === _name && a.seqId === _seqId && altIdMatch;
-  }
-
   function makeBondName(bond: Pair | Triplet) {
     const toks = bond.map((x) =>
       isShiftedName(x) ? (
@@ -835,13 +924,24 @@ export namespace AnglesLengthsCommon {
 
   export function pGroupWindowTitle(
     residueName: JSX.Element,
-    metricName: JSX.Element
+    metricName: JSX.Element,
+    proscoPGroup: DAnglesLengths.PGroup,
+    navalRankingClass: NavalRankingClass,
+    value: string,
   ) {
+    const proscoColor = colorToHex(proscoPGroup?.color ?? DAnglesLengths.outlierColor());
+    const navalColor = colorToHex(DAnglesLengths.navalRankingClassColor(navalRankingClass));
+
     return (
-      <div className="font-700 flex flex-row gap-1 items-center">
+      <div className="font-700 flex flex-row gap-1 items-center whitespace-nowrap">
         {residueName}
         <div>|</div>
         {metricName}
+
+        <div style={{ backgroundColor: proscoColor, width: '1rem', height: '1rem' }} />
+        <div style={{ backgroundColor: navalColor, width: '1rem', height: '1rem' }} />
+
+        <div>{value}</div>
       </div>
     );
   }
@@ -1024,56 +1124,6 @@ export namespace AnglesLengthsCommon {
     return replaceAll(replaceAll(tag, "^", "_"), "'", "p");
   }
 
-  export function getNavalAngle(
-    d: Dnatcofication,
-    r: Measurements.Residue,
-    triplet: Triplet
-  ) {
-    const [na, nb, nc] = triplet;
-    const niIdx =
-      d.data.naval.anglesMapping
-        .get(r.modelNum)
-        ?.get(r.chain)
-        ?.get(r.seqId)
-        ?.find((idx) => {
-          const { a, b, c } = d.data.naval.angles[idx].atoms;
-          return (
-            (compareNavalAtom(a, na, r.seqId, r.altId) ||
-              compareNavalAtom(a, nc, r.seqId, r.altId)) &&
-            compareNavalAtom(b, nb, r.seqId, r.altId) &&
-            (compareNavalAtom(c, na, r.seqId, r.altId) ||
-              compareNavalAtom(c, nc, r.seqId, r.altId))
-          );
-        }) ?? -1;
-    return niIdx === -1
-      ? EmptyNavalItem
-      : NavalItem(d.data.naval.angles[niIdx]);
-  }
-
-  export function getNavalBond(
-    d: Dnatcofication,
-    r: Measurements.Residue,
-    pair: Pair
-  ) {
-    const [na, nb] = pair;
-    const niIdx =
-      d.data.naval.bondsMapping
-        .get(r.modelNum)
-        ?.get(r.chain)
-        ?.get(r.seqId)
-        ?.find((idx) => {
-          const rr = d.data.naval.bonds[idx];
-          const { a, b } = rr.atoms;
-          return (
-            (compareNavalAtom(a, na, r.seqId, r.altId) ||
-              compareNavalAtom(a, nb, r.seqId, r.altId)) &&
-            (compareNavalAtom(b, na, r.seqId, r.altId) ||
-              compareNavalAtom(b, nb, r.seqId, r.altId))
-          );
-        }) ?? -1;
-    return niIdx === -1 ? EmptyNavalItem : NavalItem(d.data.naval.bonds[niIdx]);
-  }
-
   export function getSelection(props: View.Props) {
     const modelIdx = props.structureSelection.modelIndex;
     const chain =
@@ -1191,7 +1241,13 @@ export namespace AnglesLengthsCommon {
     winCaption: string | JSX.Element,
     caption: string | JSX.Element,
     summaryCounts: Summarize.Counts,
-    countsInGroups: Summarize.CountsInGroup[],
+    countsInGroups: {
+      kind: 'naval',
+      counts: SummarizeNaval.CountsInGroup[],
+    } | {
+      kind: 'prosco',
+        counts: SummarizeProSco.CountsInGroup[]
+    },
     colorsForCounts: string[],
     captionStyle?: React.CSSProperties
   ) {

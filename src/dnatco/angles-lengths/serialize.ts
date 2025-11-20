@@ -1,8 +1,8 @@
-import { AnglesLengths, ElementaryResidue } from './';
+import { type ElementaryResidue, AnglesLengths } from './';
 import { Triplet } from './angles';
 import { Pair } from './lengths';
 import { Measurements } from './measurements';
-import { Summarize } from './summarize';
+import { SummarizeProSco } from './summarize';
 import { ALM } from '../alm';
 import { filterObject, objKeys } from '../../util';
 import { Serialization } from '../../util/serialization';
@@ -48,7 +48,7 @@ function residueWithDetails(r: Measurements.Residue, details: Detail[]): Residue
     };
 }
 
-function statsToSerializable(counts: Summarize.CountsInGroup[], kind: 'a' | 'l'): Serialization.Serializable {
+function proScoStatsToSerializable(counts: SummarizeProSco.CountsInGroup[], kind: 'a' | 'l'): Serialization.Serializable {
     const tags = ['kind', 'percentile', 'cumulative_count', 'exclusive_count'];
     const values = new Array<(number|string)[]>();
 
@@ -103,20 +103,30 @@ export namespace SerializeByCompound {
         return { tags, values };
     }
 
-    export function toCsv(angles: ALM.AngleStats[], countsAngles: Summarize.CountsInGroup[], lengths: ALM.LengthStats[], countsLengths: Summarize.CountsInGroup[]) {
-        const statsAngles = Serialization.toCsv(statsToSerializable(countsAngles, 'a'));
-        const statsLengths = Serialization.toCsv(statsToSerializable(countsLengths, 'l'));
+    export function toCsv(
+        angles: ALM.AngleStats[],
+        proScoCountsAngles: SummarizeProSco.CountsInGroup[],
+        lengths: ALM.LengthStats[],
+        proScoCountsLengths: SummarizeProSco.CountsInGroup[]
+    ) {
+        const proScoStatsAngles = Serialization.toCsv(proScoStatsToSerializable(proScoCountsAngles, 'a'));
+        const proScoStatsLengths = Serialization.toCsv(proScoStatsToSerializable(proScoCountsLengths, 'l'));
         const outAngles = Serialization.toCsv(anglesToSerializable(angles));
         const outLengths = Serialization.toCsv(lengthsToSerializable(lengths));
 
-        return statsLengths + '\n' + statsAngles + '\n' + outLengths + '\n' + outAngles;
+        return proScoStatsLengths + '\n' + proScoStatsAngles + '\n' + outLengths + '\n' + outAngles;
     }
 
-    export function toJson(angles: ALM.AngleStats[], countsAngles: Summarize.CountsInGroup[], lengths: ALM.LengthStats[], countsLengths: Summarize.CountsInGroup[]) {
+    export function toJson(
+        angles: ALM.AngleStats[],
+        proScoCountsAngles: SummarizeProSco.CountsInGroup[],
+        lengths: ALM.LengthStats[],
+        proScoCountsLengths: SummarizeProSco.CountsInGroup[]
+    ) {
         type Stats = { percentile: number|null, cumulativeCount: number, exclusiveCount: number };
 
-        const anglesStats: Stats[] = countsAngles.map(x => ({ percentile: x.threshold, cumulativeCount: x.cumulative, exclusiveCount: x.exclusive }));
-        const lengthsStats: Stats[] = countsLengths.map(x => ({ percentile: x.threshold, cumulativeCount: x.cumulative, exclusiveCount: x.exclusive }));
+        const proScoAnglesStats: Stats[] = proScoCountsAngles.map(x => ({ percentile: x.threshold, cumulativeCount: x.cumulative, exclusiveCount: x.exclusive }));
+        const proScoLengthsStats: Stats[] = proScoCountsLengths.map(x => ({ percentile: x.threshold, cumulativeCount: x.cumulative, exclusiveCount: x.exclusive }));
 
         type OutStats<T extends ALM.AngleStats['angles'] | ALM.LengthStats['lengths']> = {
             stats: Omit<T[0], 'residue'>,
@@ -150,7 +160,7 @@ export namespace SerializeByCompound {
 
         // We need to map the input arrays out to compoud -> metric mapping again to get nicely structured JSONs.
         for (const a of angles) {
-            const dst = outAngles[a.base];
+            const dst = outAngles[a.r.compound];
             for (const x of a.angles) {
                 const key = angleName(x.angle.triplet);
                 if (!dst.has(key))
@@ -158,11 +168,11 @@ export namespace SerializeByCompound {
                 const stats = dst.get(key)!;
 
                 const outResidue = filterObject(x.residue, objKeys(x.residue, ['bondAngles', 'bondLengths']));
-                stats.push({ stats: filterObject(x, ['angle', 'bin', 'pGroup']), residue: outResidue });
+                stats.push({ stats: filterObject(x, ['angle', 'bin', 'pGroup', 'navalRankingClass']), residue: outResidue });
             }
         }
         for (const l of lengths) {
-            const dst = outLengths[l.base];
+            const dst = outLengths[l.r.compound];
             for (const x of l.lengths) {
                 const key = lengthName(x.length.pair);
                 if (!dst.has(key))
@@ -170,7 +180,7 @@ export namespace SerializeByCompound {
                 const stats = dst.get(key)!;
 
                 const outResidue = filterObject(x.residue, objKeys(x.residue, ['bondAngles', 'bondLengths']));
-                stats.push({ stats: filterObject(x, ['length', 'bin', 'pGroup']), residue: outResidue });
+                stats.push({ stats: filterObject(x, ['length', 'bin', 'pGroup', 'navalRankingClass']), residue: outResidue });
             }
         }
 
@@ -178,8 +188,8 @@ export namespace SerializeByCompound {
         const demappedOutLengths = objKeys(outLengths).map((base) => ({ [base]: Array.from(outLengths[base].entries()).map(([metric, values]) => ({ [metric]: values })) }));
 
         return JSON.stringify({
-            anglesStats,
-            lengthsStats,
+            proScoAnglesStats,
+            proScoLengthsStats,
             angles: demappedOutAngles,
             lengths: demappedOutLengths,
         });
@@ -234,20 +244,30 @@ export namespace SerializeByResidue {
         return { tags, values };
     }
 
-    export function toCsv(countsAngles: Summarize.CountsInGroup[], countsLengths: Summarize.CountsInGroup[], residues: Measurements.Residue[], stats: ALM.ResidueStats[]) {
-        const statsAngles = Serialization.toCsv(statsToSerializable(countsAngles, 'a'));
-        const statsLengths = Serialization.toCsv(statsToSerializable(countsLengths, 'l'));
+    export function toCsv(
+        proScoCountsAngles: SummarizeProSco.CountsInGroup[],
+        proScoCountsLengths: SummarizeProSco.CountsInGroup[],
+        residues: Measurements.Residue[],
+        stats: ALM.ResidueStats[]
+    ) {
+        const proScoStatsAngles = Serialization.toCsv(proScoStatsToSerializable(proScoCountsAngles, 'a'));
+        const proScoStatsLengths = Serialization.toCsv(proScoStatsToSerializable(proScoCountsLengths, 'l'));
         const angles = Serialization.toCsv(anglesToSerializable(residues, stats));
         const lengths = Serialization.toCsv(lengthsToSerializable(residues, stats));
 
-        return statsLengths + '\n' + statsAngles + '\n' + lengths + '\n' + angles;
+        return proScoStatsLengths + '\n' + proScoStatsAngles + '\n' + lengths + '\n' + angles;
     }
 
-    export function toJson(countsAngles: Summarize.CountsInGroup[], countsLengths: Summarize.CountsInGroup[], residues: Measurements.Residue[], stats: ALM.ResidueStats[]) {
+    export function toJson(
+        countsAngles: SummarizeProSco.CountsInGroup[],
+        countsLengths: SummarizeProSco.CountsInGroup[],
+        residues: Measurements.Residue[],
+        stats: ALM.ResidueStats[]
+    ) {
         type Stats = { percentile: number|null, cumulativeCount: number, exclusiveCount: number };
 
-        const anglesStats: Stats[] = countsAngles.map(x => ({ percentile: x.threshold, cumulativeCount: x.cumulative, exclusiveCount: x.exclusive }));
-        const lengthsStats: Stats[] = countsLengths.map(x => ({ percentile: x.threshold, cumulativeCount: x.cumulative, exclusiveCount: x.exclusive }));
+        const proScoAnglesStats: Stats[] = countsAngles.map(x => ({ percentile: x.threshold, cumulativeCount: x.cumulative, exclusiveCount: x.exclusive }));
+        const proScoLengthsStats: Stats[] = countsLengths.map(x => ({ percentile: x.threshold, cumulativeCount: x.cumulative, exclusiveCount: x.exclusive }));
 
         const angles = new Array<Residue>();
         const lengths = new Array<Residue>();
@@ -268,8 +288,8 @@ export namespace SerializeByResidue {
         }
 
         return JSON.stringify({
-            anglesStats,
-            lengthsStats,
+            proScoAnglesStats,
+            proScoLengthsStats,
             angles,
             lengths,
         });

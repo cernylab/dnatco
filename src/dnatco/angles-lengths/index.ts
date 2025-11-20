@@ -1,8 +1,13 @@
-import { Bin, Bins, isWireBins, toBins } from './bin';
+import { Bin, Bins, isWireBins, toBins, WireBins } from './bin';
 import { Angles, Triplet, tripletTag } from './angles';
+import { isShiftedName, unshiftName } from './atoms';
 import { Grouping } from './grouping';
 import { Lengths, Pair, pairTag } from './lengths';
 import { Measurements } from './measurements';
+import { Naval, ZPrime, isNavalZPrime } from './naval';
+import { isWireReferenceSets, References, WireReferenceSets } from './reference-sets';
+import { type MappedNaval } from '../dnatcofication';
+import { type Validation } from '../naval/validation';
 import { Residues } from '../residues';
 import { VoidResult, ErrorResult, Result } from '../';
 import { GlobalConfig } from '../../global-config';
@@ -40,6 +45,56 @@ type PGroupData = Record<
     >
 >;
 type Resource = [base: Residues.ElementaryResidue, tag: string, file: string];
+
+export type NavalItem = {
+    csdPreferredLeft: number;
+    csdPreferredRight: number;
+    value: number;
+};
+export function NavalItem(item: Validation.ReportItem<Validation.AngleAtoms | Validation.BondAtoms>): NavalItem {
+    const threeSigma = 3 * item.target_sigma;
+
+    return {
+        csdPreferredLeft: item.target_value - threeSigma,
+        csdPreferredRight: item.target_value + threeSigma,
+        value: item.target_value,
+    };
+}
+const EmptyNavalItem: NavalItem = {
+    csdPreferredLeft: 0,
+    csdPreferredRight: 0,
+    value: 0,
+};
+
+export type NavalRankingData = {
+    weightedMedian: number,
+    scaleFactorLower: number,
+    scaleFactorUpper: number,
+    ofConcernLower: number,
+    ofConcernUpper: number,
+};
+type NavalRanking = Record<
+    ElementaryResidue,
+    Map<
+        string, // Angle or length tag
+        NavalRankingData
+    >
+>;
+
+type ReferenceSets = Record<
+    ElementaryResidue,
+    Map<
+        string, // Angle or length tag
+        References[]
+    >
+>;
+
+const ProScoAllowedThreshold = 0.05;
+
+export const NavalRankingClasses = [ 'preferred', 'allowed', 'of-concern' ] as const;
+export type NavalRankingClass = typeof NavalRankingClasses[number];
+
+export const NavalPGroupCount = 2; // Preferred, Allowed, OfConcern is outlier
 
 const AngleAverageData: AverageData = {
     'A': new Map(),
@@ -89,6 +144,54 @@ const LengthPGroupData: PGroupData = {
     'DU': new Map(),
 };
 
+const LengthNavalRankings: NavalRanking = {
+    'A': new Map(),
+    'C': new Map(),
+    'G': new Map(),
+    'U': new Map(),
+    'DA': new Map(),
+    'DC': new Map(),
+    'DG': new Map(),
+    'DT': new Map(),
+    'DU': new Map(),
+};
+
+const AngleNavalRankings: NavalRanking = {
+    'A': new Map(),
+    'C': new Map(),
+    'G': new Map(),
+    'U': new Map(),
+    'DA': new Map(),
+    'DC': new Map(),
+    'DG': new Map(),
+    'DT': new Map(),
+    'DU': new Map(),
+};
+
+const LengthReferenceSets: ReferenceSets = {
+    'A': new Map(),
+    'C': new Map(),
+    'G': new Map(),
+    'U': new Map(),
+    'DA': new Map(),
+    'DC': new Map(),
+    'DG': new Map(),
+    'DT': new Map(),
+    'DU': new Map(),
+};
+
+const AngleReferenceSets: ReferenceSets = {
+    'A': new Map(),
+    'C': new Map(),
+    'G': new Map(),
+    'U': new Map(),
+    'DA': new Map(),
+    'DC': new Map(),
+    'DG': new Map(),
+    'DT': new Map(),
+    'DU': new Map(),
+};
+
 export type AnglesLengthsContext = {
     angleData: AverageData;
     lengthData: AverageData;
@@ -96,32 +199,96 @@ export type AnglesLengthsContext = {
     lengthPGroupData: PGroupData;
     pGroups: PGroup[];
     outlierColor: number;
-}
+    outlierName: string;
+    angleNavalRankings: NavalRanking;
+    lengthNavalRankings: NavalRanking;
+    angleReferenceSets: ReferenceSets;
+    lengthReferenceSets: ReferenceSets;
+};
 
-type PGroup = { threshold: number, color: number };
+type PGroup = { threshold: number, color: number, name: string };
 const PGroups = new Array<PGroup>();
 let OutlierColor = 0;
+let OutlierName = 'Outlier';
+let NavalPrefferedColor = 0x0000FF00;
+let NavalAllowedColor   = 0x00FFFF00;
+let NavalOfConcernColor = 0x00FF0000;
 
-async function fetchAverages(prefix: string, resources: Resource[], loaderFunc?: (subpath: string) => string) {
+function checkReferenceData(data: object): asserts data is (WireBins & ZPrime & WireReferenceSets) {
+    if (!isWireBins(data))
+        throw new Error('Invalid bond angle or length object type');
+
+    for (let idx = 0; idx < data.from.length; idx++) {
+        if (data.from[idx] >= data.to[idx])
+            throw new Error('Bin has invalid range');
+
+        if (data.binprob[idx] < 0.0)
+            throw new Error('Bin has invalid probability');
+    }
+
+    if (!isNavalZPrime(data))
+        throw new Error('Invalid Naval classification object type');
+
+    if (!isWireReferenceSets(data))
+        throw new Error('Invalid Reference Sets object type');
+
+    if (data.from.length !== data.rs.bins.length)
+        throw new Error(`Mismatching number of ProSco bins and reference set Bins (${data.from.length} vs. ${data.rs.bins}`);
+}
+
+function compareNavalAtom(
+    a: Validation.Atom,
+    name: string,
+    seqId: number,
+    altId: string
+) {
+    const altIdMatch = a.altloc === "" || altId === "" || a.altloc === altId;
+    const isShifted = isShiftedName(name);
+    const _name = isShifted ? unshiftName(name) : name;
+    const _seqId = isShifted ? seqId - 1 : seqId;
+
+    return a.name === _name && a.seqId === _seqId && altIdMatch;
+}
+
+async function fetchReferenceData(prefix: string, resources: Resource[], loaderFunc?: (subpath: string) => string) {
     const averages = [] as Average[];
+    const navalRankings = {
+        'A': new Map(),
+        'C': new Map(),
+        'G': new Map(),
+        'U': new Map(),
+        'DA': new Map(),
+        'DC': new Map(),
+        'DG': new Map(),
+        'DT': new Map(),
+        'DU': new Map(),
+    };
+    const referenceSets = {
+        'A': new Map(),
+        'C': new Map(),
+        'G': new Map(),
+        'U': new Map(),
+        'DA': new Map(),
+        'DC': new Map(),
+        'DG': new Map(),
+        'DT': new Map(),
+        'DU': new Map(),
+    };
 
     if (loaderFunc) {
         for (const [base, tag, file] of resources) {
             const text = loaderFunc(`${prefix}/${file}`);
 
-            const wireBins = JSON.parse(text);
-            if (!isWireBins(wireBins))
-                throw new Error('Invalid bond angle or length object type');
+            const data = JSON.parse(text);
+            checkReferenceData(data);
 
-            for (let idx = 0; idx < wireBins.from.length; idx++) {
-                if (wireBins.from[idx] >= wireBins.to[idx])
-                    throw new Error('Bin has invalid range');
+            averages.push([base, tag, toBins(data)]);
 
-                if (wireBins.binprob[idx] < 0.0)
-                    throw new Error('Bin has invalid probability');
-            }
+            const z = data.zprime;
+            const naval = Naval(z.weightedMedian, z.scaleFactorLower, z.scaleFactorUpper, z.ofConcernLower, z.ofConcernUpper);
+            navalRankings[base].set(tag, naval);
 
-            averages.push([base, tag, toBins(wireBins)]);
+            referenceSets[base].set(tag, data.rs.bins);
         }
     } else {
         const requests = [] as [Residues.ElementaryResidue, string, Promise<Response>][];
@@ -135,30 +302,27 @@ async function fetchAverages(prefix: string, resources: Resource[], loaderFunc?:
             if (!resp.ok)
                 throw new Error(`Bad server response: ${resp.statusText}`);
 
-            const wireBins = await resp.json();
-            if (!isWireBins(wireBins))
-                throw new Error('Invalid bond angle or length object type');
+            const data = await resp.json();
+            checkReferenceData(data);
 
-            for (let idx = 0; idx < wireBins.from.length; idx++) {
-                if (wireBins.from[idx] >= wireBins.to[idx])
-                    throw new Error('Bin has invalid range');
+            averages.push([base, tag, toBins(data)]);
 
-                if (wireBins.binprob[idx] < 0.0)
-                    throw new Error('Bin has invalid probability');
-            }
+            const z = data.zprime;
+            const naval = Naval(z.weightedMedian, z.scaleFactorLower, z.scaleFactorUpper, z.ofConcernLower, z.ofConcernUpper);
+            navalRankings[base].set(tag, naval);
 
-            averages.push([base, tag, toBins(wireBins)]);
+            referenceSets[base].set(tag, data.rs.bins);
         }
     }
 
-    return averages;
+    return { averages, navalRankings, referenceSets };
 }
 
 function fileName(base: ElementaryResidue, data: { kind: 'length', v: Pair } | { kind: 'angle', v: Triplet }) {
     return `${base}_${data.kind}_${data.v.map(x => x.replace("'", "p")).join('_')}_prosco.json`;
 }
 
-function getBin(bins: Bins, value: number): Bin|'below'|'above' {
+function getBinIndex(bins: Bins, value: number): number|'below'|'above' {
     let left = 0;
     let right = bins.length - 1;
 
@@ -169,7 +333,7 @@ function getBin(bins: Bins, value: number): Bin|'below'|'above' {
         const pos = isWithinTri(value, b);
 
         if (pos === 0) {
-            return b;
+            return idx;
         } else if (pos < 0) {
             if (idx === right)
                 return 'below';
@@ -179,6 +343,17 @@ function getBin(bins: Bins, value: number): Bin|'below'|'above' {
                 return 'above';
             left = idx;
         }
+    }
+}
+
+function getBin(bins: Bins, value: number): Bin|'below'|'above' {
+    const v = getBinIndex(bins, value);
+    switch (v) {
+        case 'above':
+        case 'below':
+            return v;
+        default:
+            return bins[v];
     }
 }
 
@@ -218,9 +393,35 @@ function setPGroupData(pgroups: typeof PGroups, data: PGroupData, averages: Aver
     }
 }
 
+function setNavalRankings(target: NavalRanking, source: NavalRanking) {
+    for (const base of objKeys(source)) {
+        target[base] = source[base];
+    }
+}
+
+function setReferenceSets(target: ReferenceSets, source: ReferenceSets) {
+    for (const base of objKeys(source)) {
+        target[base] = source[base];
+    }
+}
+
 export namespace AnglesLengths {
     export type PGroup = ReturnType<typeof getPGroup>;
     export type PGroupData = NonNullable<ReturnType<typeof lengthPGroupData>>;
+
+    export const NavalRankingClassToIndex: Record<NavalRankingClass, 0 | 1 | 2> = {
+        'preferred': 0,
+        'allowed': 1,
+        'of-concern': 2,
+    };
+    export const IndexToNavalRankingClass: Record<
+        typeof NavalRankingClassToIndex[keyof typeof NavalRankingClassToIndex],
+        NavalRankingClass
+    > = {
+        0: 'preferred',
+        1: 'allowed',
+        2: 'of-concern',
+    };
 
     export function context(): AnglesLengthsContext {
         return {
@@ -230,7 +431,12 @@ export namespace AnglesLengths {
             lengthPGroupData: { ...LengthPGroupData },
             pGroups: [...PGroups],
             outlierColor: OutlierColor,
-        }
+            outlierName: OutlierName,
+            angleNavalRankings: { ...AngleNavalRankings },
+            lengthNavalRankings: { ...LengthNavalRankings },
+            angleReferenceSets: { ...AngleReferenceSets },
+            lengthReferenceSets: { ...LengthReferenceSets },
+        };
     }
 
     export async function initialize(loaderFunc?: (subpath: string) => string): Promise<Result<void>> {
@@ -245,21 +451,39 @@ export namespace AnglesLengths {
             if (!color)
                 throw new Error(`${pgrp.color} is not a valid HTML color string`);
 
-            PGroups.push({ threshold, color });
+            PGroups.push({ threshold, color, name: pgrp.name });
         }
         if (PGroups.length === 0)
             throw new Error('No probability intervals');
 
         PGroups.sort((a, b) => a.threshold - b.threshold);
         OutlierColor = htmlColorAsNumber(GlobalConfig.data().anglesLengths.outlierColor) ?? 0;
+        OutlierName = GlobalConfig.data().anglesLengths.outlierName;
+
+        const tryColor = (color: number | undefined) => {
+            if (!color)
+                throw new Error(`${color} is not a valid HTML color string`);
+            return color
+        };
+        NavalPrefferedColor = tryColor(htmlColorAsNumber(GlobalConfig.data().anglesLengths.navalPreferredColor));
+        NavalAllowedColor = tryColor(htmlColorAsNumber(GlobalConfig.data().anglesLengths.navalAllowedColor));
+        NavalOfConcernColor = tryColor(htmlColorAsNumber(GlobalConfig.data().anglesLengths.navalOfConcernColor));
 
         try {
-            const angleAverages = await fetchAverages(
+            const {
+                averages: angleAverages,
+                navalRankings: angleNavalRankings,
+                referenceSets: angleReferenceSets
+            } = await fetchReferenceData(
                 prefix,
                 iterate(Angles).flatMap(([base, triplets]) => triplets.map(t => ([base, tripletTag(t), fileName(base, { kind: 'angle', v: t })] as Resource))),
                 loaderFunc
             );
-            const lengthAverages = await fetchAverages(
+            const {
+                averages: lengthAverages,
+                navalRankings: lengthNavalRankings,
+                referenceSets: lengthReferenceSets
+            } = await fetchReferenceData(
                 prefix,
                 iterate(Lengths).flatMap(([base, pairs]) => pairs.map(p => ([base, pairTag(p), fileName(base, { kind: 'length', v: p })] as Resource))),
                 loaderFunc
@@ -270,6 +494,12 @@ export namespace AnglesLengths {
 
             setPGroupData(PGroups, AnglePGroupData, angleAverages);
             setPGroupData(PGroups, LengthPGroupData, lengthAverages);
+
+            setNavalRankings(AngleNavalRankings, angleNavalRankings);
+            setNavalRankings(LengthNavalRankings, lengthNavalRankings);
+
+            setReferenceSets(AngleReferenceSets, angleReferenceSets);
+            setReferenceSets(LengthReferenceSets, lengthReferenceSets);
 
             return VoidResult();
         } catch (e) {
@@ -282,6 +512,10 @@ export namespace AnglesLengths {
         objKeys(ctx.lengthData).map((k) => LengthAverageData[k] = ctx.lengthData[k]);
         objKeys(ctx.anglePGroupData).map((k) => AnglePGroupData[k] = ctx.anglePGroupData[k]);
         objKeys(ctx.lengthPGroupData).map((k) => LengthPGroupData[k] = ctx.lengthPGroupData[k]);
+        objKeys(ctx.angleNavalRankings).map((k) => AngleNavalRankings[k] = ctx.angleNavalRankings[k]);
+        objKeys(ctx.lengthNavalRankings).map((k) => LengthNavalRankings[k] = ctx.lengthNavalRankings[k]);
+        objKeys(ctx.angleReferenceSets).map((k) => AngleReferenceSets[k] = ctx.angleReferenceSets[k]);
+        objKeys(ctx.lengthReferenceSets).map((k) => LengthReferenceSets[k] = ctx.lengthReferenceSets[k]);
         ctx.pGroups.map((x, idx) => PGroups[idx] = x);
         OutlierColor = ctx.outlierColor;
     }
@@ -297,6 +531,31 @@ export namespace AnglesLengths {
             return void 0;
 
         return getBin(bins, angle.angle);
+    }
+
+    export function angleBinIndex(base: ElementaryResidue, angle: Measurements.BondAngle) {
+        const bins = AngleAverageData[base].get(tripletTag(angle.triplet));
+        if (!bins)
+            return -1
+
+        return getBinIndex(bins, angle.angle);
+    }
+
+    export function angleBinFromIndex(base: ElementaryResidue, angle: Measurements.BondAngle, binIndex: number | 'above' | 'below') {
+        if (binIndex === 'above' || binIndex === 'below') return binIndex;
+
+        const bins = AngleAverageData[base].get(tripletTag(angle.triplet));
+        if (!bins)
+            return void 0;
+
+        return bins[binIndex];
+    }
+
+    export function angleNavalRanking(base: ElementaryResidue, angle: Measurements.BondAngle) {
+        const n = AngleNavalRankings[base].get(tripletTag(angle.triplet));
+        if (!n) throw new Error(`No Naval ranking for angle of ${base} - ${angle.triplet}`);
+
+        return n;
     }
 
     export function anglePGroup(base: ElementaryResidue, angle: Measurements.BondAngle) {
@@ -317,6 +576,24 @@ export namespace AnglesLengths {
             return void 0;
 
         return getBin(bins, length.length);
+    }
+
+    export function lengthBinIndex(base: ElementaryResidue, length: Measurements.BondLength) {
+        const bins = LengthAverageData[base].get(pairTag(length.pair));
+        if (!bins)
+            return -1
+
+        return getBinIndex(bins, length.length);
+    }
+
+    export function lengthBinFromIndex(base: ElementaryResidue, length: Measurements.BondLength, binIndex: number | 'above' | 'below') {
+        if (binIndex === 'above' || binIndex === 'below') return binIndex;
+
+        const bins = LengthAverageData[base].get(pairTag(length.pair));
+        if (!bins)
+            return void 0;
+
+        return bins[binIndex];
     }
 
     export function anglePGroupData(idx: number, base: ElementaryResidue, triplet: Triplet) {
@@ -341,6 +618,13 @@ export namespace AnglesLengths {
         return LengthAverageData[base].get(tag);
     }
 
+    export function lengthNavalRanking(base: ElementaryResidue, length: Measurements.BondLength) {
+        const n = LengthNavalRankings[base].get(pairTag(length.pair));
+        if (!n) throw new Error(`No Naval data for length of ${base} - ${length.pair}`);
+
+        return n;
+    }
+
     export function lengthPGroupData(idx: number, base: ElementaryResidue, pair: Pair) {
         const tag = pairTag(pair);
         return LengthPGroupData[base].get(tag)?.[idx];
@@ -348,6 +632,10 @@ export namespace AnglesLengths {
 
     export function outlierColor() {
         return OutlierColor;
+    }
+
+    export function outlierName() {
+        return OutlierName;
     }
 
     export function pGroupColor(idx: number) {
@@ -360,5 +648,163 @@ export namespace AnglesLengths {
 
     export function pGroupThresholds() {
         return PGroups.map(x => x.threshold);
+    }
+
+    export function navalAngle(naval: MappedNaval, r: Measurements.Residue, triplet: Triplet) {
+        const [na, nb, nc] = triplet;
+        const niIdx = naval.anglesMapping
+            .get(r.modelNum)
+            ?.get(r.chain)
+            ?.get(r.seqId)
+            ?.find((idx) => {
+                const { a, b, c } = naval.angles[idx].atoms;
+                return (
+                    (compareNavalAtom(a, na, r.seqId, r.altId) || compareNavalAtom(a, nc, r.seqId, r.altId)) &&
+                    compareNavalAtom(b, nb, r.seqId, r.altId) &&
+                    (compareNavalAtom(c, na, r.seqId, r.altId) || compareNavalAtom(c, nc, r.seqId, r.altId))
+                );
+        }) ?? -1;
+
+        return niIdx === -1 ? EmptyNavalItem : NavalItem(naval.angles[niIdx]);
+    }
+
+    export function navalBond(naval: MappedNaval, r: Measurements.Residue, pair: Pair) {
+        const [na, nb] = pair;
+        const niIdx = naval.bondsMapping
+            .get(r.modelNum)
+            ?.get(r.chain)
+            ?.get(r.seqId)
+            ?.find((idx) => {
+                const rr = naval.bonds[idx];
+                const { a, b } = rr.atoms;
+
+                return (
+                    (compareNavalAtom(a, na, r.seqId, r.altId) || compareNavalAtom(a, nb, r.seqId, r.altId)) &&
+                    (compareNavalAtom(b, na, r.seqId, r.altId) || compareNavalAtom(b, nb, r.seqId, r.altId))
+                );
+            }) ?? -1;
+
+        return niIdx === -1 ? EmptyNavalItem : NavalItem(naval.bonds[niIdx]);
+    }
+
+    export function navalPreferredLowerBound(navalValue: number, pGroup: PGroup) {
+        if (!pGroup) return navalValue;
+
+        for (const bin of pGroup.groupedBins) {
+            if (bin.from > navalValue) {
+                // Naval value is more permissive than ProSco
+                return navalValue;
+            }
+
+            if (bin.prosco >= ProScoAllowedThreshold) {
+                // ProSco value is more permissive than Naval
+                return bin.from;
+            }
+        }
+
+        // We should not get here
+        return navalValue;
+    }
+
+    export function navalPreferredUpperBound(navalValue: number, pGroup: PGroup) {
+        if (!pGroup) return navalValue;
+
+        for (let idx = pGroup.groupedBins.length - 1; idx >= 0; idx--) {
+            const bin = pGroup.groupedBins[idx];
+
+            if (bin.to < navalValue) {
+                // Naval value is more permissive than ProSco
+                return navalValue;
+            }
+
+            if (bin.prosco >= ProScoAllowedThreshold) {
+                // ProSco value is more permissive than Naval
+                return bin.to;
+            }
+        }
+
+        // We should not get here
+        return navalValue;
+    }
+
+    export function navalRankingClass(
+        value: number,
+        navalRanking: NavalRankingData,
+        navalValueLower: number,
+        navalValueUpper: number,
+        pGroup: PGroup
+    ): NavalRankingClass {
+        const preferredLower = navalPreferredLowerBound(navalValueLower, pGroup);
+        const preferredUpper = navalPreferredUpperBound(navalValueUpper, pGroup);
+
+        if (value <= navalRanking.ofConcernLower) return 'of-concern';
+        else if (value >= navalRanking.ofConcernUpper) return 'of-concern';
+        else if (value <= preferredLower || value >= preferredUpper) return 'allowed';
+
+        return 'preferred';
+    }
+
+    export function navalRankingClassColor(cls: NavalRankingClass) {
+        switch (cls) {
+            case 'of-concern': return NavalOfConcernColor;
+            case 'allowed': return NavalAllowedColor;
+            case 'preferred': return NavalPrefferedColor;
+        }
+    }
+
+    export function nearestAngleReferenceLower(binIndex: number, base: ElementaryResidue, triplet: Triplet) {
+        if (binIndex < 0) return void 0;
+
+        const refs = AngleReferenceSets[base].get(tripletTag(triplet));
+        if (!refs) return void 0;
+
+        for (let idx = binIndex; idx >= 0; idx--) {
+            const candidate = refs[idx][0];
+            if (candidate) return candidate;
+        }
+
+        return void 0;
+    }
+
+    export function nearestAngleReferenceUpper(binIndex: number, base: ElementaryResidue, triplet: Triplet) {
+        if (binIndex < 0) return void 0;
+
+        const refs = AngleReferenceSets[base].get(tripletTag(triplet));
+        if (!refs) return void 0;
+
+        for (let idx = binIndex; idx < refs.length; idx++) {
+            const candidate = refs[idx][0];
+            if (candidate) return candidate;
+        }
+
+        return void 0;
+    }
+
+    export function nearestLengthReferenceLower(binIndex: number, base: ElementaryResidue, pair: Pair) {
+        if (binIndex < 0) return void 0;
+
+        const refs = LengthReferenceSets[base].get(pairTag(pair));
+        if (!refs) return void 0;
+
+        for (let idx = binIndex; idx >= 0; idx--) {
+            const candidate = refs[idx][0];
+            if (candidate) return candidate;
+        }
+
+        return void 0;
+    }
+
+    export function nearestLengthReferenceUpper(binIndex: number, base: ElementaryResidue, pair: Pair) {
+        if (binIndex < 0) return void 0;
+
+        const refs = LengthReferenceSets[base].get(pairTag(pair));
+        if (!refs) return void 0;
+
+        for (let idx = binIndex; idx < refs.length; idx++) {
+            const candidate = refs[idx][0];
+            if (candidate) return candidate;
+        }
+
+        return void 0;
     }
 }

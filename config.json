@@ -22,26 +22,20 @@
     "expectedParametersFingerprint": "466a5115d59a4b1cd691d7e8f4f7b0aa8a39879fb048f2368692c54935ab2912",
 
     "userDatabases": [
-        {
-            "id": "rednatco",
-            "name": "DNATCO annotated",
-            "coords": {
-                "link": "/db/coordinates/${pdbId}_v41C35A23.cif.gz",
-                "type": "cif",
-                "gzipped": true,
-                "idTransformation": "lower-case"
-            },
-            "densityMaps": [
-            ]
-        }
     ],
+
     "anglesLengths": {
-        "chartMarkerColor": "#000000",
         "outlierColor": "#ff8a89",
+        "outlierName": "Outlier",
+        "chartMarkerColor": "#000000",
         "navalMarkerColor": "#6D74FF",
+        "navalPreferredColor": "#00FF00",
+        "navalAllowedColor": "#FFFF00",
+        "navalOfConcernColor": "#FF0000",
         "pGroups": [
-            { "threshold": 95, "color": "#a8ff8a" },
-            { "threshold": 99.9, "color": "#fffa8a" }
+            { "threshold": 89, "color": "#a8ff8a", "name": "Rare" },
+            { "threshold": 95, "color": "#a8ff8a", "name": "Dunno" },
+            { "threshold": 99.9, "color": "#fffa8a", "name": "OK" }
         ]
     },
     "basePairsLadder": {

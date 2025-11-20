@@ -91,12 +91,11 @@ function Header(props: {
     <div
       className={`${
         isExpanded ? "w-full" : "w-max"
-      } items-center border-b-[0.1px] border-primary-first flex flex-row justify-between`}
+      } items-center border-b-[0.1px] border-primary-first flex flex-row justify-between cursor-move mr-4`}
+      ref={hdrRef}
     >
-      <div ref={hdrRef} className="cursor-move mr-4">
-        {title}
-      </div>
-      <div className="flex">
+      {title}
+      <div className="flex" style={{ cursor: 'default' }}>
         <div
           onClick={() => {
             const ce = !isExpanded;

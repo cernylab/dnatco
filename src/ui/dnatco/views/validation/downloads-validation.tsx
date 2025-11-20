@@ -9,7 +9,7 @@ import { FileTypes } from "../../../../util/file-type";
 import { Naval } from "../../../../dnatco/naval";
 import { doDownload } from "../../../../browser-util/downloader";
 import { Serialization } from "../../../../util/serialization";
-import { Summarize } from "../../../../dnatco/angles-lengths/summarize";
+import { SummarizeProSco } from "../../../../dnatco/angles-lengths/summarize";
 import {
   SerializeByResidue,
   SerializeByCompound,
@@ -58,21 +58,21 @@ function downloadAnglesLengthsByResidue(
   d: Dnatcofication
 ) {
   const residues = d.data.almByResidue.residues;
-  const summary = Summarize.substructure(residues);
+  const proScoSummary = SummarizeProSco.substructure(residues);
 
-  const countsAngles = Summarize.countsInGroups(summary.angles);
-  const countsLenghts = Summarize.countsInGroups(summary.lengths);
+  const proScoCountsAngles = SummarizeProSco.countsInGroups(proScoSummary.angles);
+  const proScoCountsLenghts = SummarizeProSco.countsInGroups(proScoSummary.lengths);
   const text =
     fileType === "csv"
       ? SerializeByResidue.toCsv(
-          countsAngles,
-          countsLenghts,
+          proScoCountsAngles,
+          proScoCountsLenghts,
           residues,
           d.data.almByResidue.stats
         )
       : SerializeByResidue.toJson(
-          countsAngles,
-          countsLenghts,
+          proScoCountsAngles,
+          proScoCountsLenghts,
           residues,
           d.data.almByResidue.stats
         );
@@ -95,8 +95,8 @@ function downloadAnglesLengthsByCompound(
   );
   if (!data) return;
 
-  const countsAngles = Summarize.countsInGroups(data.overallAngles);
-  const countsLengths = Summarize.countsInGroups(data.overallLengths);
+  const proScoCountsAngles = SummarizeProSco.countsInGroups(data.overallAnglesProSco);
+  const proScoCountsLengths = SummarizeProSco.countsInGroups(data.overallLengthsProSco);
 
   const angles = objKeys(data.angles).flatMap((k) =>
     Array.from(data.angles[k].byMetric.values()).map((x) => x.individual)
@@ -107,12 +107,12 @@ function downloadAnglesLengthsByCompound(
 
   const text =
     fileType === "csv"
-      ? SerializeByCompound.toCsv(angles, countsAngles, lengths, countsLengths)
+      ? SerializeByCompound.toCsv(angles, proScoCountsAngles, lengths, proScoCountsLengths)
       : SerializeByCompound.toJson(
           angles,
-          countsAngles,
+          proScoCountsAngles,
           lengths,
-          countsLengths
+          proScoCountsLengths
         );
 
   doDownload(
