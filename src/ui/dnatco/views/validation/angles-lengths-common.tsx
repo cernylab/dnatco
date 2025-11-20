@@ -392,6 +392,7 @@ function NavalBar(props: {
   navalPreferredLower: number,
   navalPreferredUpper: number,
 }) {
+  const markerClr = React.useMemo(() => colorToHex(htmlColorAsNumber(GlobalConfig.data().anglesLengths.navalMarkerColor) ?? 0), []);
   const ofConcernClr = React.useMemo(() => colorToHex(DAnglesLengths.navalRankingClassColor('of-concern')), []);
   const allowedClr = React.useMemo(() => colorToHex(DAnglesLengths.navalRankingClassColor('allowed')), []);
   const preferredClr = React.useMemo(() => colorToHex(DAnglesLengths.navalRankingClassColor('preferred')), []);
@@ -449,7 +450,7 @@ function NavalBar(props: {
     }
 
     const valueMarker = w * (props.value - lowest) / span;
-    context.fillStyle = '#000000';
+    context.fillStyle = markerClr;
     context.fillRect(valueMarker - 2, 0, 4, 32);
   }
 
