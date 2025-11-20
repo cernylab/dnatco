@@ -170,6 +170,9 @@ ReDNATCO can be configured with a JSON configuration file. The file must be name
         // groups listed below
         "outlierColor": "#ff0000",
 
+        // Name of the interval(s) that does not belong to any ProSco probability group
+        "outlierName": "Outlier",
+
         // Probability groups.
         // Probability group is defined by a "threshold" and "color".
         // The "threshold" is effectively the statistical percentile. The higher the value,
@@ -180,11 +183,24 @@ ReDNATCO can be configured with a JSON configuration file. The file must be name
         // Value of "threshold" must be within (0; 100).
         // Value of "color" sets the color used in graphical representations of the probability groups.
         "pGroups": [
-            { "threshold": 80, "color": "#006eee" },
-            { "threshold": 95, "color": "#00ff00" },
-            { "threshold": 99, "color": "#ffff00" },
-            { "threshold": 99.9, "color": "#ffaa00" }
-        ]
+            { "threshold": 80, "color": "#006eee", "name": "A" },
+            { "threshold": 95, "color": "#00ff00", "name": "B" },
+            { "threshold": 99, "color": "#ffff00", "name": "C" },
+            { "threshold": 99.9, "color": "#ffaa00", "name": "D" }
+        ],
+
+        // Color of the marker that denotes the actual bond angle/length in the ProSco chart
+        "chartMarkerColor": string,
+
+        // Color of the "Preferred" NA-VAL interval
+        "navalPreferredColor": "#00FF00",
+        // Color of the "Allowed" NA-VAL interval
+        "navalAllowedColor": "#FFFF00",
+        // Color of the "Of Concern" NA-VAL interval
+        "navalOfConcernColor": "#FF0000",
+
+        // Whether to display summary information with NA-VAL or ProSco metrics
+        "summaryVariant": "naval" | "prosco"
     },
 
     // --- Configuration of user databases ---
