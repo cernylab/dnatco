@@ -198,6 +198,8 @@ ReDNATCO can be configured with a JSON configuration file. The file must be name
         "navalAllowedColor": "#FFFF00",
         // Color of the "Of Concern" NA-VAL interval
         "navalOfConcernColor": "#FF0000",
+        // Color of the marker of the actual value on the NA-VAL bar
+        "navalMarkerColor": "000000",
 
         // Whether to display summary information with NA-VAL or ProSco metrics
         "summaryVariant": "naval" | "prosco"
