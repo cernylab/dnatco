@@ -248,7 +248,28 @@ function createLib(name, productionBuild, outDir, extraConfig) {
     };
 }
 
+function createServerApp(projName, name, productionBuild, outDir, config) {
+    if (productionBuild)
+        console.log('Building for production...');
+    else
+        console.log('Building for development');
+
+    return {
+        node: false,
+        target: 'node',
+        entry: {
+            app: path.resolve(__dirname, `lib/${projName}/${name}.js`),
+        },
+        output: {
+            filename: `${name}.js`,
+            path: path.resolve(__dirname, outDir)
+        },
+        ...config,
+    };
+}
+
 module.exports = {
     createApp,
     createLib,
+    createServerApp,
 };

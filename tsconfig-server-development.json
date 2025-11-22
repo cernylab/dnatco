@@ -3,10 +3,8 @@
         "declaration": true,
         "declarationMap": true,
         "incremental": true,
-        "lib": [ "es6", "es2016", "dom" ],
-        "module": "es2020",
-        "target": "es6",
-        "jsx": "react",
+        "module": "CommonJS",
+        "target": "es5",
 
         "alwaysStrict": true,
         "noImplicitThis": true,
@@ -21,20 +19,16 @@
         "inlineSourceMap": true,
         "inlineSources": true,
 
-        "outDir": "lib",
+	"skipLibCheck": true,
+
+        "outDir": "lib/server",
         "rootDirs": [
             "src",
-            "molstar/src/apps/rednatco",
-            "tscif/src"
+            "tscif/src",
+            "tspdb/src"
         ],
 
         "baseUrl": ".",
-        "paths": {
-            "assets/*": [ "assets" ],
-            "viewer-api": [ "molstar/src/apps/rednatco/api.ts" ],
-            "viewer-filters": [ "molstar/src/apps/rednatco/filters.ts" ]
-        }
     },
-    "include": [ "src/**/*", "tailwind.config.js" ],
-    "exclude": [ "src/node-util/**/*" ]
+    "include": [ "src/server/**/*" ],
 }
