@@ -7,7 +7,7 @@ import { StatsBar } from "../../stats-bar";
 import { Cif } from "../../../../cif";
 import { NdbStructNtcOverall } from "../../../../cif/categories/ndb-struct-ntc";
 import { StepRmsdStats as DnatcoStepRmsdStats } from "../../../../dnatco/dnatcofication";
-import { AnglesLengths as DAnglesLengths, NavalRankingClasses } from "../../../../dnatco/angles-lengths";
+import { AnglesLengths as DAnglesLengths, NavalRankingClasses, ProScoGroup, ProScoGroups } from "../../../../dnatco/angles-lengths";
 import { AnglesLengthsCommon } from "./angles-lengths-common";
 import { confalPercentile } from "../../../../util/dnatco";
 import { GlobalConfig } from "../../../../global-config";
@@ -35,16 +35,16 @@ const GSMapping = GappedSemaphore.makeMapping([
 
 type DownloadableData = {
   angles: ALM.AngleStats[];
-  countsAnglesProSco: SummarizeProSco.CountsInGroup[];
+  countsAnglesProSco: Record<ProScoGroup | 'outlier',  SummarizeProSco.CountsInGroup>;
   lengths: ALM.LengthStats[];
-  countsLengthsProSco: SummarizeProSco.CountsInGroup[];
+  countsLengthsProSco: Record<ProScoGroup | 'outlier', SummarizeProSco.CountsInGroup>;
 };
 
 function DownloadableData(
   angles: Record<string, ALM.CompoundStats<ALM.AngleStats>>,
-  countsAnglesProSco: SummarizeProSco.CountsInGroup[],
+  countsAnglesProSco: Record<ProScoGroup | 'outlier', SummarizeProSco.CountsInGroup>,
   lengths: Record<string, ALM.CompoundStats<ALM.LengthStats>>,
-  countsLengthsProSco: SummarizeProSco.CountsInGroup[]
+  countsLengthsProSco: Record<ProScoGroup | 'outlier', SummarizeProSco.CountsInGroup>
 ): DownloadableData {
   return {
     angles: objKeys(angles).flatMap((k) =>
@@ -332,9 +332,9 @@ export class OverallQuality extends View<View.Props> {
         );
       }
     } else if (sumVar === 'prosco') {
-      for (let idx = 0; idx < DAnglesLengths.pGroupCount(); idx++)
+      for (const grp of ProScoGroups)
         htmlColorsForStatsBar.push(
-          rgbToHex(colorToRgb(DAnglesLengths.pGroupColor(idx)))
+          rgbToHex(colorToRgb(DAnglesLengths.pGroupColor(grp)))
         );
       htmlColorsForStatsBar.push(
         rgbToHex(colorToRgb(DAnglesLengths.outlierColor()))
@@ -384,7 +384,7 @@ export class OverallQuality extends View<View.Props> {
               {AnglesLengthsCommon.renderSubstructureStats(
                 this.winTracker,
                 "Lengths",
-                AnglesLengthsCommon.substructureBarCaption("Lengths", DAnglesLengths.pGroupColor(0)),
+                AnglesLengthsCommon.substructureBarCaption("Lengths", DAnglesLengths.pGroupColor('common')),
                 overallLengths,
                 sumVar === 'naval'
                   ? { kind: 'naval', counts: SummarizeNaval.countsInGroups(overallLengths) }
@@ -396,7 +396,7 @@ export class OverallQuality extends View<View.Props> {
               {AnglesLengthsCommon.renderSubstructureStats(
                 this.winTracker,
                 "Angles",
-                AnglesLengthsCommon.substructureBarCaption("Angles", DAnglesLengths.pGroupColor(0)),
+                AnglesLengthsCommon.substructureBarCaption("Angles", DAnglesLengths.pGroupColor('common')),
                 overallAngles,
                 sumVar === 'naval'
                   ? { kind: 'naval', counts: SummarizeNaval.countsInGroups(overallAngles) }

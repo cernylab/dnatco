@@ -332,6 +332,7 @@ export namespace ALM {
                 const bin = AnglesLengths.angleBinFromIndex(comp, a, binIndex) ?? 'no-data';
                 const maybeBin = asMaybeBin(bin, binIndex);
                 // NAVAL
+                const angleAvgs = AnglesLengths.angleAverages(comp, a.triplet);
                 const navalAngle = AnglesLengths.navalAngle(naval, r, angle);
                 const navalRanking = AnglesLengths.angleNavalRanking(comp, a);
                 const navalRankingClass = AnglesLengths.navalRankingClass(
@@ -339,7 +340,7 @@ export namespace ALM {
                     navalRanking,
                     navalAngle.csdPreferredLeft,
                     navalAngle.csdPreferredRight,
-                    pGroup
+                    angleAvgs
                 );
 
                 const ang = {
@@ -381,6 +382,7 @@ export namespace ALM {
                 const bin = AnglesLengths.lengthBinFromIndex(comp, l, binIndex) ?? 'no-data';
                 const maybeBin = asMaybeBin(bin, binIndex);
                 // NAVAL
+                const lengthAvgs = AnglesLengths.lengthAverages(comp, l.pair);
                 const navalBond = AnglesLengths.navalBond(naval, r, length);
                 const navalRanking = AnglesLengths.lengthNavalRanking(comp, l);
                 const navalRankingClass = AnglesLengths.navalRankingClass(
@@ -388,7 +390,7 @@ export namespace ALM {
                     navalRanking,
                     navalBond.csdPreferredLeft,
                     navalBond.csdPreferredRight,
-                    pGroup
+                    lengthAvgs
                 );
 
                 const len = {

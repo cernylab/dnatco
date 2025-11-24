@@ -5,7 +5,7 @@ import { NTDocument } from '../nottex/document';
 import { NTFont, NTHAlignment, NTInset, NTTable } from '../nottex/primitives';
 import { NTMm, NTUnit, NTXYWH } from '../nottex/space';
 import { Dnatcofication } from '../../dnatco/dnatcofication';
-import { AnglesLengths } from '../../dnatco/angles-lengths';
+import { AnglesLengths, ProScoGroup, ProScoGroups } from '../../dnatco/angles-lengths';
 import { ByResidueHelpers } from '../../dnatco/angles-lengths/helpers';
 import { SummarizeProSco } from '../../dnatco/angles-lengths/summarize';
 import { colorToRgb, nrgb, nrgba, NRgba } from '../../util/colors';
@@ -23,14 +23,15 @@ function drawBarSegment(inset: NTInset, x: number, w: number, totalWidth: NTUnit
     inset.rect(xywh, { color }, ref);
 }
 
-function drawProScoCountsBar<Output>(inset: NTInset, counts: SummarizeProSco.CountsInGroup[], mIdx: number, tag: string, ctx: Report.Context<Output>) {
+function drawProScoCountsBar<Output>(inset: NTInset, counts: Record<ProScoGroup | 'outlier', SummarizeProSco.CountsInGroup>, mIdx: number, tag: string, ctx: Report.Context<Output>) {
+    const grps = [...ProScoGroups, 'outlier'] as const;
     const H = NTUnit.multiply(2, ctx.tDims.characterHeight);
     const totalWidth = inset.xywh.width;
-    const totalCount = counts.reduce((p, c) => p + c.exclusive, 0);
+    const totalCount = grps.map((g) => counts[g]).reduce((p, c) => p + c.exclusive, 0);
 
     let x = 0;
-    for (let idx = 0; idx < AnglesLengths.pGroupCount(); idx++) {
-        const w = counts[idx].exclusive / totalCount;
+    for (const grp of grps) {
+        const w = counts[grp].exclusive / totalCount;
 
         drawBarSegment(
             inset,
@@ -38,7 +39,7 @@ function drawProScoCountsBar<Output>(inset: NTInset, counts: SummarizeProSco.Cou
             w,
             totalWidth,
             H,
-            AnglesLengths.pGroupColor(idx),
+            AnglesLengths.pGroupColor(grp),
             `${tag}-${mIdx}`
         );
 
@@ -67,7 +68,7 @@ function drawProScoCountsBar<Output>(inset: NTInset, counts: SummarizeProSco.Cou
     _inset.lineText(tag, { color: NRgba(1, 1, 1), font: { size: 14, style: 'bold' } });
 }
 
-function drawProScoCountsTable<Output>(inset: NTInset | NTDocument<Output>, counts: SummarizeProSco.CountsInGroup[], tag: string, ctx: Report.Context<Output>) {
+function drawProScoCountsTable<Output>(inset: NTInset | NTDocument<Output>, counts: Record<ProScoGroup | 'outlier', SummarizeProSco.CountsInGroup>, tag: string, ctx: Report.Context<Output>) {
     const tbl = inset.table(
         3,
         {
@@ -85,18 +86,18 @@ function drawProScoCountsTable<Output>(inset: NTInset | NTDocument<Output>, coun
 
     const boxXywh = NTXYWH.create(NTUnit.zero(), NTUnit.zero(), NTUnit.multiply(6, ctx.tDims.characterWidth), ctx.tDims.characterHeight);
     const clrXywh = NTXYWH.create(NTUnit.zero(), NTUnit.zero(), NTUnit.multiply(1, ctx.tDims.characterWidth), ctx.tDims.characterHeight);
-    const outlierC = counts[counts.length - 1];
-    for (let idx = 0; idx < AnglesLengths.pGroupCount(); idx++) {
-        const c = counts[idx];
-        const rectClr = colorToRgb(AnglesLengths.pGroupColor(idx));
+    const outlierC = counts.outlier
+    for (const grp of ProScoGroups) {
+        const c = counts[grp];
+        const rectClr = colorToRgb(AnglesLengths.pGroupColor(grp));
         const rectNClr = nrgb(rectClr);
         const box = tbl.getBox(boxXywh);
-        const ref = `${tag}-${idx}`;
+        const ref = `${tag}-${grp}`;
         if (ctx.mode === 'textual')
             box.lineText(Colors.colorToGlyph(rectClr), {}, ref);
         else
             box.rect(clrXywh, { color: NRgba(rectNClr.r, rectNClr.g, rectNClr.b) }, ref);
-        box.lineText(c.threshold.toFixed(1), CountCellText, ref);
+        box.lineText(grp, CountCellText, ref);
 
         tbl.addRow([
             NTTable.Cell.box(box),
@@ -116,7 +117,7 @@ function drawProScoCountsTable<Output>(inset: NTInset | NTDocument<Output>, coun
         box.lineText(Colors.colorToGlyph(rectClr), {}, ref);
     else
         box.rect(clrXywh, { color: rectNClr }, ref);
-    box.lineText(outlierC.threshold.toFixed(1), CountCellText, ref);
+    box.lineText(outlierC.pGroup, CountCellText, ref);
 
     tbl.addRow([
         NTTable.Cell.box(box),

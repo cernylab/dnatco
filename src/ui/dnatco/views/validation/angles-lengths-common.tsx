@@ -17,7 +17,9 @@ import { Dnatcofication } from "../../../../dnatco/dnatcofication";
 import {
     AnglesLengths as DAnglesLengths,
     NavalRankingClass,
-    NavalRankingData
+    NavalRankingData,
+    ProScoGroup,
+    ProScoGroups
 } from "../../../../dnatco/angles-lengths";
 import { Triplet } from "../../../../dnatco/angles-lengths/angles";
 import { Reference } from "../../../../dnatco/angles-lengths/reference-sets";
@@ -30,7 +32,7 @@ import { Pair } from "../../../../dnatco/angles-lengths/lengths";
 import { Measurements } from "../../../../dnatco/angles-lengths/measurements";
 import { Summarize, SummarizeNaval, SummarizeProSco } from "../../../../dnatco/angles-lengths/summarize";
 import { GlobalConfig } from "../../../../global-config";
-import { htmlColorAsNumber, isWithin, replaceAll } from "../../../../util";
+import { htmlColorAsNumber, isWithin, objKeys, replaceAll } from "../../../../util";
 import { colorToTuple, luminance, colorToHex, ColorTuple } from "../../../../util/colors";
 import { FileTypes } from "../../../../util/file-type";
 import { M } from "../../../../util/math";
@@ -60,7 +62,8 @@ export function measuredItemColor(
   csdPreferredLower: number,
   csdPreferredUpper: number,
   pGroup: DAnglesLengths.PGroup,
-  outlierColor: ColorTuple
+  outlierColor: ColorTuple,
+  bins: Bins | undefined
 ) {
   const sumVar = GlobalConfig.data().anglesLengths.summaryVariant;
 
@@ -70,9 +73,9 @@ export function measuredItemColor(
         navalRanking,
         csdPreferredLower,
         csdPreferredUpper,
-        pGroup
+        bins
     )))
-    : pGroup ? colorToTuple(pGroup.color) : outlierColor;
+    : pGroup ? colorToTuple(DAnglesLengths.pGroupColor(pGroup.pGroup)) : outlierColor
 }
 
 type AveragesChartDownloader = Downloader<Serialization.Serializable>;
@@ -129,7 +132,7 @@ export function AnglesLengthsBar(props: {
 
 export class AveragesChart extends React.Component<{
   bins: Bins;
-  pGroupDatas: DAnglesLengths.PGroupData[];
+  pGroupDatas: Record<ProScoGroup, DAnglesLengths.PGroupData>,
   mark: number;
   ofConcernLowerMark: number;
   ofConcernUpperMark: number;
@@ -141,45 +144,42 @@ export class AveragesChart extends React.Component<{
   onInitialized?: (fig: Readonly<Figure>) => void;
   onRelayout?: (relayout: Readonly<PlotRelayoutEvent>) => void;
 }> {
-  private binsToPGroupIndices(
+  private binsToPGroups(
     bins: Bins,
-    pGroupDatas: DAnglesLengths.PGroupData[]
+    pGroupDatas: Record<ProScoGroup, DAnglesLengths.PGroupData>
   ) {
-    const allGroupedBins = pGroupDatas.flatMap((x, idx) =>
-      x.groupedBins.map((bin) => ({ bin: bin, pGroupIdx: idx }))
+    const allGroupedBins = objKeys(pGroupDatas).flatMap((k) =>
+      pGroupDatas[k].flatMap((bin) => ({ bin: bin, pGroup: k }))
     );
 
-    const indices = [];
-    for (const b of bins) {
+    const pGroups = new Array<ProScoGroup>();
+    next: for (const b of bins) {
       const mid = b.from + (b.to - b.from) / 2;
 
-      let pgIdx = -1;
       for (const gb of allGroupedBins) {
         if (isWithin(mid, gb.bin)) {
-          pgIdx = gb.pGroupIdx;
-          break;
+          pGroups.push(gb.pGroup);
+          continue next;
         }
       }
-
-      indices.push(pgIdx);
     }
 
-    return indices;
+    return pGroups;
   }
 
-    shouldComponentUpdate(nextProps: Readonly<{ bins: Bins; pGroupDatas: DAnglesLengths.PGroupData[]; mark: number; ofConcernLowerMark: number; ofConcernUpperMark: number; xTitle: string; yTitle: string; xTransform?: (x: number) => number; yTransform?: (y: number) => number; downloadFileName?: string; onInitialized?: (fig: Readonly<Figure>) => void; onRelayout?: (relayout: Readonly<PlotRelayoutEvent>) => void; }>, nextState: Readonly<{}>, nextContext: any): boolean {
-        return (
-            nextProps.bins !== this.props.bins ||
-            nextProps.pGroupDatas !== this.props.pGroupDatas ||
-            nextProps.mark !== this.props.mark ||
-            nextProps.ofConcernLowerMark !== this.props.ofConcernLowerMark ||
-            nextProps.ofConcernUpperMark !== this.props.ofConcernUpperMark ||
-            nextProps.xTitle !== this.props.xTitle ||
-            nextProps.yTitle !== this.props.yTitle ||
-            nextProps.xTransform !== this.props.xTransform ||
-            nextProps.yTransform !== this.props.yTransform ||
-            nextProps.downloadFileName !== this.props.downloadFileName
-        );
+  shouldComponentUpdate(nextProps: Readonly<{ bins: Bins; pGroupDatas: Record<ProScoGroup, DAnglesLengths.PGroupData>; mark: number; ofConcernLowerMark: number; ofConcernUpperMark: number; xTitle: string; yTitle: string; xTransform?: (x: number) => number; yTransform?: (y: number) => number; downloadFileName?: string; onInitialized?: (fig: Readonly<Figure>) => void; onRelayout?: (relayout: Readonly<PlotRelayoutEvent>) => void; }>, nextState: Readonly<{}>, nextContext: any): boolean {
+    return (
+      nextProps.bins !== this.props.bins ||
+      nextProps.pGroupDatas !== this.props.pGroupDatas ||
+      nextProps.mark !== this.props.mark ||
+      nextProps.ofConcernLowerMark !== this.props.ofConcernLowerMark ||
+      nextProps.ofConcernUpperMark !== this.props.ofConcernUpperMark ||
+      nextProps.xTitle !== this.props.xTitle ||
+      nextProps.yTitle !== this.props.yTitle ||
+      nextProps.xTransform !== this.props.xTransform ||
+      nextProps.yTransform !== this.props.yTransform ||
+      nextProps.downloadFileName !== this.props.downloadFileName
+    );
   }
 
   render() {
@@ -187,8 +187,7 @@ export class AveragesChart extends React.Component<{
       htmlColorAsNumber(GlobalConfig.data().anglesLengths.chartMarkerColor) ?? 0
     );
 
-    const outlierColor = DAnglesLengths.outlierColor();
-    const pGroupIndices = this.binsToPGroupIndices(
+    const pGroups = this.binsToPGroups(
       this.props.bins,
       this.props.pGroupDatas
     );
@@ -196,10 +195,8 @@ export class AveragesChart extends React.Component<{
       const tup = colorToTuple(DAnglesLengths.navalRankingClassColor('of-concern'));
       return `rgb(${tup[0]}, ${tup[1]}, ${tup[2]})`;
     })();
-    const color = pGroupIndices.map((pgIdx) => {
-      const tup = colorToTuple(
-        pgIdx === -1 ? outlierColor : DAnglesLengths.pGroupColor(pgIdx)
-      );
+    const color = pGroups.map((grp) => {
+      const tup = colorToTuple(DAnglesLengths.pGroupColor(grp));
       return `rgb(${tup[0]}, ${tup[1]}, ${tup[2]})`;
     });
 
@@ -246,7 +243,7 @@ export class AveragesChart extends React.Component<{
 
                   const _xt = [...xt];
                   const _yt = [...yt];
-                  const _pGroupIndices = [...pGroupIndices];
+                  const _pGroups: (ProScoGroup | 'outlier')[] = [...pGroups];
 
                   if (!markInRange) {
                     const bf = this.props.bins[0];
@@ -254,18 +251,18 @@ export class AveragesChart extends React.Component<{
                     if (this.props.mark < bf.from) {
                       _xt.unshift(tm);
                       _yt.unshift(0);
-                      _pGroupIndices.unshift(-1);
+                      _pGroups.unshift('outlier');
                       actual.unshift(yMax);
                     } else {
                       _xt.push(tm);
                       _yt.push(0);
-                      _pGroupIndices.push(-1);
+                      _pGroups.push('outlier');
                       actual.push(yMax);
                     }
                   }
 
-                  const tags = ["x", "y", "pGroupIndex", "actual"];
-                  const values = [_xt, _yt, _pGroupIndices, actual];
+                  const tags = ["x", "y", "pGroup", "actual"];
+                  const values = [_xt, _yt, _pGroups, actual];
 
                   dl.download(
                     this.props.downloadFileName ?? "angle_length_prob_chart",
@@ -347,8 +344,8 @@ export class AveragesChart extends React.Component<{
           config={{
             displayModeBar: false,
             responsive: true,
-                  scrollZoom: true,
-                  autosizable: true
+            scrollZoom: true,
+            autosizable: true
           }}
           style={{
               margin: 0,
@@ -384,7 +381,7 @@ export function FloatingCue(props: {
 }
 
 function NavalBar(props: {
-  pGroup: DAnglesLengths.PGroup;
+  bins: Bins,
   value: number,
   navalRanking: NavalRankingData;
   navalRangeLow: number,
@@ -398,11 +395,11 @@ function NavalBar(props: {
   const preferredClr = React.useMemo(() => colorToHex(DAnglesLengths.navalRankingClassColor('preferred')), []);
 
   const totalPreferredLower = React.useMemo(() => (
-    DAnglesLengths.navalPreferredLowerBound(props.navalPreferredLower, props.pGroup)
-  ), [props.pGroup]);
+    DAnglesLengths.navalPreferredLowerBound(props.navalPreferredLower, props.bins)
+  ), [props.bins]);
   const totalPreferredUpper = React.useMemo(() => (
-    DAnglesLengths.navalPreferredUpperBound(props.navalPreferredUpper, props.pGroup)
-  ), [props.pGroup]);
+    DAnglesLengths.navalPreferredUpperBound(props.navalPreferredUpper, props.bins)
+  ), [props.bins]);
 
   const canvasRef = React.useRef<HTMLCanvasElement | null>(null);
 
@@ -463,7 +460,7 @@ function NavalBar(props: {
 export type PGroupSummaryProps = {
   bins: Bins;
   pGroup: DAnglesLengths.PGroup;
-  pGroupDatas: DAnglesLengths.PGroupData[];
+  pGroupDatas: Record<ProScoGroup, DAnglesLengths.PGroupData>;
   maybeBin: ALM.MaybeBin,
   rangeFormatter: (v: number) => string;
   residueName: JSX.Element;
@@ -514,7 +511,9 @@ export class PGroupSummary extends React.Component<
   }
 
   private renderSummary() {
-    const proscoColor = colorToHex(this.props.pGroup?.color ?? DAnglesLengths.outlierColor());
+    const proscoColor = colorToHex(this.props.pGroup
+      ? DAnglesLengths.pGroupColor(this.props.pGroup.pGroup)
+      : DAnglesLengths.outlierColor());
 
     const nearestLower = this.props.nearestReferenceLower;
     const nearestUpper = this.props.nearestReferenceUpper;
@@ -538,7 +537,7 @@ export class PGroupSummary extends React.Component<
             height: '1rem',
             backgroundColor: proscoColor
           }} />
-          <div>{this.props.pGroup?.name ?? DAnglesLengths.outlierName()}</div>
+          <div>{this.props.pGroup?.pGroup ?? DAnglesLengths.outlierName()}</div>
         </div>
 
         <div style={{ flex: '1' }} />
@@ -607,7 +606,7 @@ export class PGroupSummary extends React.Component<
 
         <div className="h-2" />
         <NavalBar
-          pGroup={this.props.pGroup}
+          bins={this.props.bins}
           navalRanking={this.props.navalRanking}
           value={this.props.value}
           navalRangeLow={this.state.navalRangeLow}
@@ -711,8 +710,6 @@ function SubstructureSummaryNaval(props: {
         const clr = DAnglesLengths.navalRankingClassColor(x.class);
         const perc = 100 * (x.cumulative / total);
 
-        console.log(x.class, perc);
-
         return (
           <React.Fragment key={idx}>
             <div style={{ backgroundColor: colorStyle(colorToTuple(clr)), width: '1em' }} />
@@ -728,18 +725,12 @@ function SubstructureSummaryNaval(props: {
 }
 
 function SubstructureSummaryProSco(props: {
-  countsInGroups: SummarizeProSco.CountsInGroup[],
+  countsInGroups: Record<ProScoGroup | 'outlier', SummarizeProSco.CountsInGroup>,
 }) {
-  const maxDecimals = Math.max(
-    ...props.countsInGroups.map((x) => {
-      const s = x.threshold.toString();
-      const dot = s.indexOf(".");
-      return dot >= 0 ? s.substring(dot + 1).length : 0;
-    })
-  );
+  const grps = [...ProScoGroups, 'outlier'] as const;
   const outlierColor = DAnglesLengths.outlierColor();
   const total =
-    props.countsInGroups[props.countsInGroups.length - 1].cumulative;
+    props.countsInGroups.outlier.cumulative;
 
   return (
     <div className="grid gap-x-4 [grid-template-columns:1em_auto_auto_auto]">
@@ -751,12 +742,9 @@ function SubstructureSummaryProSco(props: {
       <div className="font-700 col-span-2">Percentile</div>
       <div className="font-700">Exclusive</div>
       <div className="font-700">Cumulative</div>
-      {props.countsInGroups.map((x, idx) => {
-        const thr =
-          x.pGroupIdx === "outlier"
-            ? "OfConcern"
-            : x.threshold.toFixed(maxDecimals);
-        const clr = DAnglesLengths.pGroupColor(idx) ?? outlierColor;
+      {grps.map(g => props.countsInGroups[g]).map((x, idx) => {
+        const thr = x.pGroup;
+        const clr = DAnglesLengths.pGroupColor(x.pGroup) ?? outlierColor;
         const perc = 100 * (x.cumulative / total);
         return (
           <React.Fragment key={idx}>
@@ -779,7 +767,7 @@ export function SubstructureSummary(props: {
     counts: SummarizeNaval.CountsInGroup[],
   } | {
     kind: 'prosco',
-    counts: SummarizeProSco.CountsInGroup[]
+    counts: Record<ProScoGroup | 'outlier', SummarizeProSco.CountsInGroup>
   }
 }) {
   if (props.countsInGroups.kind === 'naval') {
@@ -930,7 +918,7 @@ export namespace AnglesLengthsCommon {
     navalRankingClass: NavalRankingClass,
     value: string,
   ) {
-    const proscoColor = colorToHex(proscoPGroup?.color ?? DAnglesLengths.outlierColor());
+    const proscoColor = colorToHex(DAnglesLengths.pGroupColor(proscoPGroup?.pGroup ?? 'outlier'));
     const navalColor = colorToHex(DAnglesLengths.navalRankingClassColor(navalRankingClass));
 
     return (
@@ -1247,7 +1235,7 @@ export namespace AnglesLengthsCommon {
       counts: SummarizeNaval.CountsInGroup[],
     } | {
       kind: 'prosco',
-        counts: SummarizeProSco.CountsInGroup[]
+      counts: Record<ProScoGroup | 'outlier', SummarizeProSco.CountsInGroup>
     },
     colorsForCounts: string[],
     captionStyle?: React.CSSProperties

@@ -6,7 +6,7 @@ import { NTUnit, NTXYWH } from '../../nottex/space';
 import { ALM } from '../../../dnatco/alm';
 import { Triplet } from '../../../dnatco/angles-lengths/angles';
 import { isShiftedName, unshiftName } from '../../../dnatco/angles-lengths/atoms';
-import { AnglesLengths } from '../../../dnatco/angles-lengths';
+import { AnglesLengths, ProScoGroup } from '../../../dnatco/angles-lengths';
 import { Measurements } from '../../../dnatco/angles-lengths/measurements';
 import { ByResidueHelpers } from '../../../dnatco/angles-lengths/helpers';
 import { Pair } from '../../../dnatco/angles-lengths/lengths';
@@ -74,7 +74,7 @@ function drawAnglesLengths<Output, BL extends (Measurements.BondAngle | Measurem
 
     const xywh = NTXYWH.create(NTUnit.zero(), NTUnit.zero(), NTUnit.multiply(1, ctx.tDims.characterWidth), ctx.tDims.characterHeight);
     for (const al of angleLengthData) {
-        const rgb = colorToRgb(al.pGroup?.color ?? AnglesLengths.outlierColor());
+        const rgb = colorToRgb(al.pGroup ? AnglesLengths.pGroupColor(al.pGroup.pGroup) : AnglesLengths.outlierColor());
         const clr = nrgba(rgb);
 
         const clrCell = ctx.mode === 'textual'
@@ -168,7 +168,7 @@ export function drawWorstAnglesLengths<Output, G extends keyof ByResidueHelpers.
     gather: G,
     residues: Measurements.Residue[],
     stats: ALM.ResidueStats[],
-    threshold: number|'outlier',
+    threshold: ProScoGroup|'outlier',
     root: NTDocument<Output>,
     ctx: Report.Context<Output>
 ) {

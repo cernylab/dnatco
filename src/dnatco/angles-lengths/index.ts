@@ -1,4 +1,4 @@
-import { Bin, Bins, isWireBins, toBins, WireBins } from './bin';
+import { Bin, Bins, isBinValid, isWireBins, toBins, WireBins } from './bin';
 import { Angles, Triplet, tripletTag } from './angles';
 import { isShiftedName, unshiftName } from './atoms';
 import { Grouping } from './grouping';
@@ -34,14 +34,14 @@ type AverageData = Record<
 >;
 
 /**
- * Aggregated probabilities for a particular bond angle or lenght of a particular base
- * computed from the thresholds specified by PGroups.
+ *  @nocheckin
+ *  NO NO NO - Document what it actually is
  */
 type PGroupData = Record<
     ElementaryResidue,
     Map<
         string, // Angle or length tag
-        { pgroup: PGroup, groupedBins: Bin[] }[]
+        Record<ProScoGroup, Bin[]>
     >
 >;
 type Resource = [base: Residues.ElementaryResidue, tag: string, file: string];
@@ -61,9 +61,9 @@ export function NavalItem(item: Validation.ReportItem<Validation.AngleAtoms | Va
     };
 }
 const EmptyNavalItem: NavalItem = {
-    csdPreferredLeft: 0,
-    csdPreferredRight: 0,
-    value: 0,
+    csdPreferredLeft: -1,
+    csdPreferredRight: -1,
+    value: -1,
 };
 
 export type NavalRankingData = {
@@ -89,7 +89,10 @@ type ReferenceSets = Record<
     >
 >;
 
-const ProScoAllowedThreshold = 0.05;
+export const ProScoCommonBottomThreshold = 0.05;
+
+export const ProScoGroups = [ 'common', 'rare', 'ambiguous', 'unique' ] as const;
+export type ProScoGroup = typeof ProScoGroups[number];
 
 export const NavalRankingClasses = [ 'preferred', 'allowed', 'of-concern' ] as const;
 export type NavalRankingClass = typeof NavalRankingClasses[number];
@@ -197,7 +200,7 @@ export type AnglesLengthsContext = {
     lengthData: AverageData;
     anglePGroupData: PGroupData;
     lengthPGroupData: PGroupData;
-    pGroups: PGroup[];
+    pGroupColors: typeof PGroupColors;
     outlierColor: number;
     outlierName: string;
     angleNavalRankings: NavalRanking;
@@ -206,13 +209,17 @@ export type AnglesLengthsContext = {
     lengthReferenceSets: ReferenceSets;
 };
 
-type PGroup = { threshold: number, color: number, name: string };
-const PGroups = new Array<PGroup>();
 let OutlierColor = 0;
 let OutlierName = 'Outlier';
 let NavalPrefferedColor = 0x0000FF00;
 let NavalAllowedColor   = 0x00FFFF00;
 let NavalOfConcernColor = 0x00FF0000;
+let PGroupColors: Record<ProScoGroup, number> = {
+    unique: 0x00FF0000,
+    ambiguous: 0x00CCCC00,
+    rare: 0x00FFFF00,
+    common: 0x0000FF00,
+};
 
 function checkReferenceData(data: object): asserts data is (WireBins & ZPrime & WireReferenceSets) {
     if (!isWireBins(data))
@@ -357,15 +364,15 @@ function getBin(bins: Bins, value: number): Bin|'below'|'above' {
     }
 }
 
-function getPGroup(data: { pgroup: PGroup, groupedBins: Bins }[], value: number) {
-    for (let idx = 0; idx < data.length; idx++) {
-        const pgrp = data[idx];
-        for (const b of pgrp.groupedBins) {
+function getPGroup(data: Record<ProScoGroup, Bin[]>, value: number) {
+    for (const k of ProScoGroups) {
+        const groupedBins = data[k];
+
+        for (const b of groupedBins) {
             if (isWithin(value, b)) {
                 return {
-                    ...pgrp.pgroup,
-                    groupedBins: pgrp.groupedBins,
-                    index: idx
+                    pGroup: k,
+                    groupedBins,
                 };
             }
         }
@@ -380,16 +387,34 @@ function setAverages(data: AverageData, averages: Average[]) {
     }
 }
 
-function setPGroupData(pgroups: typeof PGroups, data: PGroupData, averages: Average[]) {
+function setPGroupData(data: PGroupData, averages: Average[], referenceSets: ReferenceSets) {
     for (const [base, tag, bins] of averages) {
-        for (const pgrp of pgroups) {
-            const pgbins = Grouping.aggregate(bins, pgrp.threshold / 100.0);
+        const rs = referenceSets[base].get(tag)!;
+        const nReferences = rs.reduce((p, c) => p + c.length, 0);
+        const rareBottomThreshold = 1.0 / nReferences;
 
-            const bond = data[base].get(tag) ?? [];
-
-            bond.push({ pgroup: pgrp, groupedBins: pgbins });
-            data[base].set(tag, bond);
+        if (GlobalConfig.data().anglesLengths.debugProScoGrouping) {
+            console.log(base, tag, rareBottomThreshold, nReferences);
         }
+
+        const {
+            lowerUnique,
+            upperUnique,
+            ambiguous,
+            rare,
+            common
+        } = Grouping.aggregate(bins, rareBottomThreshold);
+
+        const unique = [];
+        if (isBinValid(lowerUnique)) unique.push(lowerUnique);
+        if (isBinValid(upperUnique)) unique.push(upperUnique);
+
+        data[base].set(tag, {
+            unique,
+            ambiguous,
+            rare,
+            common
+        });
     }
 }
 
@@ -429,7 +454,7 @@ export namespace AnglesLengths {
             lengthData: { ...LengthAverageData },
             anglePGroupData: { ...AnglePGroupData },
             lengthPGroupData: { ...LengthPGroupData },
-            pGroups: [...PGroups],
+            pGroupColors: { ...PGroupColors },
             outlierColor: OutlierColor,
             outlierName: OutlierName,
             angleNavalRankings: { ...AngleNavalRankings },
@@ -443,20 +468,15 @@ export namespace AnglesLengths {
         const prefix = `${GlobalConfig.data().pathPrefix}/angles_lengths`;
 
         for (const pgrp of GlobalConfig.data().anglesLengths.pGroups) {
-            const threshold = pgrp.threshold;
-            if (threshold <= 0.0 || threshold >= 100.0)
-                throw new Error(`Threshold value ${threshold} is not in the expected range (0 - 100)`);
-
+            if (!ProScoGroups.includes(pgrp.name as ProScoGroup))
+                throw new Error(`${pgrp.name} is not a valid ProSco group name`);
             const color = htmlColorAsNumber(pgrp.color);
             if (!color)
                 throw new Error(`${pgrp.color} is not a valid HTML color string`);
 
-            PGroups.push({ threshold, color, name: pgrp.name });
+            PGroupColors[pgrp.name as ProScoGroup] = color;
         }
-        if (PGroups.length === 0)
-            throw new Error('No probability intervals');
 
-        PGroups.sort((a, b) => a.threshold - b.threshold);
         OutlierColor = htmlColorAsNumber(GlobalConfig.data().anglesLengths.outlierColor) ?? 0;
         OutlierName = GlobalConfig.data().anglesLengths.outlierName;
 
@@ -492,8 +512,8 @@ export namespace AnglesLengths {
             setAverages(AngleAverageData, angleAverages);
             setAverages(LengthAverageData, lengthAverages);
 
-            setPGroupData(PGroups, AnglePGroupData, angleAverages);
-            setPGroupData(PGroups, LengthPGroupData, lengthAverages);
+            setPGroupData(AnglePGroupData, angleAverages, angleReferenceSets);
+            setPGroupData(LengthPGroupData, lengthAverages, lengthReferenceSets);
 
             setNavalRankings(AngleNavalRankings, angleNavalRankings);
             setNavalRankings(LengthNavalRankings, lengthNavalRankings);
@@ -516,7 +536,7 @@ export namespace AnglesLengths {
         objKeys(ctx.lengthNavalRankings).map((k) => LengthNavalRankings[k] = ctx.lengthNavalRankings[k]);
         objKeys(ctx.angleReferenceSets).map((k) => AngleReferenceSets[k] = ctx.angleReferenceSets[k]);
         objKeys(ctx.lengthReferenceSets).map((k) => LengthReferenceSets[k] = ctx.lengthReferenceSets[k]);
-        ctx.pGroups.map((x, idx) => PGroups[idx] = x);
+        ctx.pGroupColors = { ...ctx.pGroupColors };
         OutlierColor = ctx.outlierColor;
     }
 
@@ -596,9 +616,9 @@ export namespace AnglesLengths {
         return bins[binIndex];
     }
 
-    export function anglePGroupData(idx: number, base: ElementaryResidue, triplet: Triplet) {
+    export function anglePGroupData(group: ProScoGroup, base: ElementaryResidue, triplet: Triplet) {
         const tag = tripletTag(triplet);
-        return AnglePGroupData[base].get(tag)?.[idx];
+        return AnglePGroupData[base].get(tag)?.[group];
     }
 
     export function lengthPGroup(base: ElementaryResidue, length: Measurements.BondLength) {
@@ -625,9 +645,9 @@ export namespace AnglesLengths {
         return n;
     }
 
-    export function lengthPGroupData(idx: number, base: ElementaryResidue, pair: Pair) {
+    export function lengthPGroupData(group: ProScoGroup, base: ElementaryResidue, pair: Pair) {
         const tag = pairTag(pair);
-        return LengthPGroupData[base].get(tag)?.[idx];
+        return LengthPGroupData[base].get(tag)?.[group]
     }
 
     export function outlierColor() {
@@ -638,16 +658,9 @@ export namespace AnglesLengths {
         return OutlierName;
     }
 
-    export function pGroupColor(idx: number) {
-        return PGroups[idx]?.color;
-    }
-
-    export function pGroupCount() {
-        return PGroups.length;
-    }
-
-    export function pGroupThresholds() {
-        return PGroups.map(x => x.threshold);
+    export function pGroupColor(group: ProScoGroup | 'outlier') {
+        if (group === 'outlier') return outlierColor();
+        return PGroupColors[group];
     }
 
     export function navalAngle(naval: MappedNaval, r: Measurements.Residue, triplet: Triplet) {
@@ -687,16 +700,16 @@ export namespace AnglesLengths {
         return niIdx === -1 ? EmptyNavalItem : NavalItem(naval.bonds[niIdx]);
     }
 
-    export function navalPreferredLowerBound(navalValue: number, pGroup: PGroup) {
-        if (!pGroup) return navalValue;
+    export function navalPreferredLowerBound(navalValue: number, bins?: Bins) {
+        if (!bins) return navalValue;
 
-        for (const bin of pGroup.groupedBins) {
+        for (const bin of bins) {
             if (bin.from > navalValue) {
                 // Naval value is more permissive than ProSco
                 return navalValue;
             }
 
-            if (bin.prosco >= ProScoAllowedThreshold) {
+            if (bin.prosco >= ProScoCommonBottomThreshold) {
                 // ProSco value is more permissive than Naval
                 return bin.from;
             }
@@ -706,18 +719,18 @@ export namespace AnglesLengths {
         return navalValue;
     }
 
-    export function navalPreferredUpperBound(navalValue: number, pGroup: PGroup) {
-        if (!pGroup) return navalValue;
+    export function navalPreferredUpperBound(navalValue: number, bins?: Bins) {
+        if (!bins) return navalValue;
 
-        for (let idx = pGroup.groupedBins.length - 1; idx >= 0; idx--) {
-            const bin = pGroup.groupedBins[idx];
+        for (let idx = bins.length - 1; idx >= 0; idx--) {
+            const bin = bins[idx];
 
             if (bin.to < navalValue) {
                 // Naval value is more permissive than ProSco
                 return navalValue;
             }
 
-            if (bin.prosco >= ProScoAllowedThreshold) {
+            if (bin.prosco >= ProScoCommonBottomThreshold) {
                 // ProSco value is more permissive than Naval
                 return bin.to;
             }
@@ -732,10 +745,10 @@ export namespace AnglesLengths {
         navalRanking: NavalRankingData,
         navalValueLower: number,
         navalValueUpper: number,
-        pGroup: PGroup
+        bins?: Bins,
     ): NavalRankingClass {
-        const preferredLower = navalPreferredLowerBound(navalValueLower, pGroup);
-        const preferredUpper = navalPreferredUpperBound(navalValueUpper, pGroup);
+        const preferredLower = navalPreferredLowerBound(navalValueLower, bins);
+        const preferredUpper = navalPreferredUpperBound(navalValueUpper, bins);
 
         if (value <= navalRanking.ofConcernLower) return 'of-concern';
         else if (value >= navalRanking.ofConcernUpper) return 'of-concern';

@@ -30,7 +30,9 @@ import { Dnatcofication } from "../../../../dnatco/dnatcofication";
 import {
   AnglesLengths as DAnglesLengths,
   NavalItem, NavalRankingClasses,
-  NavalRankingData
+  NavalRankingData,
+  ProScoGroup,
+  ProScoGroups,
 } from "../../../../dnatco/angles-lengths";
 import { tripletTag, Triplet } from "../../../../dnatco/angles-lengths/angles";
 import { ByResidueHelpers } from "../../../../dnatco/angles-lengths/helpers";
@@ -38,7 +40,7 @@ import { pairTag, Pair } from "../../../../dnatco/angles-lengths/lengths";
 import { Measurements } from "../../../../dnatco/angles-lengths/measurements";
 import { Summarize, SummarizeNaval, SummarizeProSco } from "../../../../dnatco/angles-lengths/summarize";
 import { GlobalConfig } from "../../../../global-config";
-import { parseIntStrict, sequence } from "../../../../util";
+import { parseIntStrict } from "../../../../util";
 import {
   colorToRgb,
   colorToTuple,
@@ -84,7 +86,6 @@ function makeAngleDetails(props: ResidueDetailsProps) {
           props.residueName,
           props.structureName,
           props.outlierColor,
-          props.pgrpIndices,
           props.vi,
           props.winTracker
         )}
@@ -124,7 +125,6 @@ function makeLengthDetails(props: ResidueDetailsProps) {
           props.residueName,
           props.structureName,
           props.outlierColor,
-          props.pgrpIndices,
           props.vi,
           props.winTracker
         )}
@@ -145,15 +145,14 @@ function renderBondAngleDetail(
   residueName: JSX.Element,
   structureName: string,
   outlierColor: [r: number, g: number, b: number],
-  pgrpIndices: number[],
   vi: ViewerInterop,
   winTracker: WindowsTracker,
   onAtomsClicked?: (r: Measurements.Residue, triplet: Triplet) => void
 ) {
-  const pgrpDatas = pgrpIndices.map(
-    (idx) =>
-      DAnglesLengths.anglePGroupData(idx, residue.compound, bondAngle.triplet)!
-  );
+  const pgrpDatas = Object.fromEntries(
+    ProScoGroups.map(grp => [grp, DAnglesLengths.anglePGroupData(grp, residue.compound, bondAngle.triplet)!])
+  ) as Record<ProScoGroup, DAnglesLengths.PGroupData>;
+
   const dlName = `${AnglesLengthsCommon.residueIdentifyingName(
     structureName,
     residue
@@ -189,15 +188,14 @@ function renderBondLengthDetail(
   residueName: JSX.Element,
   structureName: string,
   outlierColor: [r: number, g: number, b: number],
-  pgrpIndices: number[],
   vi: ViewerInterop,
   winTracker: WindowsTracker,
   onAtomsClicked?: (r: Measurements.Residue, pair: Pair) => void
 ) {
-  const pgrpDatas = pgrpIndices.map(
-    (idx) =>
-      DAnglesLengths.lengthPGroupData(idx, residue.compound, bondLength.pair)!
-  );
+  const pgrpDatas = Object.fromEntries(
+    ProScoGroups.map(x => [x, DAnglesLengths.lengthPGroupData(x, residue.compound, bondLength.pair)!])
+  ) as Record<ProScoGroup, DAnglesLengths.PGroupData>;
+
   const dlName = `${AnglesLengthsCommon.residueIdentifyingName(
     structureName,
     residue
@@ -232,7 +230,7 @@ function BondAngleDetails(props: {
   navalRanking: NavalRankingData;
   outlierColor: [r: number, g: number, b: number];
   pGroup: DAnglesLengths.PGroup;
-  pGroupDatas: DAnglesLengths.PGroupData[];
+  pGroupDatas: Record<ProScoGroup, DAnglesLengths.PGroupData>;
   residue: Measurements.Residue;
   residueName: JSX.Element;
   vi: ViewerInterop;
@@ -247,7 +245,8 @@ function BondAngleDetails(props: {
     M.d2r(props.navalItem.csdPreferredLeft),
     M.d2r(props.navalItem.csdPreferredRight),
     props.pGroup,
-    props.outlierColor
+    props.outlierColor,
+    DAnglesLengths.angleAverages(props.residue.compound, ba.triplet)
   );
 
   const nrankCls = DAnglesLengths.navalRankingClass(
@@ -255,7 +254,7 @@ function BondAngleDetails(props: {
     props.navalRanking,
     M.d2r(props.navalItem.csdPreferredLeft),
     M.d2r(props.navalItem.csdPreferredRight),
-    props.pGroup
+    DAnglesLengths.angleAverages(props.residue.compound, ba.triplet)
   );
   const binIndex = ALM.maybeBinHasValue(props.maybeBin)
     ? props.maybeBin.binIndex
@@ -377,7 +376,7 @@ function BondLengthDetails(props: {
   navalRanking: NavalRankingData;
   outlierColor: ColorTuple;
   pGroup: DAnglesLengths.PGroup;
-  pGroupDatas: DAnglesLengths.PGroupData[];
+  pGroupDatas: Record<ProScoGroup, DAnglesLengths.PGroupData>;
   residue: Measurements.Residue;
   residueName: JSX.Element;
   vi: ViewerInterop;
@@ -392,14 +391,15 @@ function BondLengthDetails(props: {
     props.navalItem.csdPreferredLeft,
     props.navalItem.csdPreferredRight,
     props.pGroup,
-    props.outlierColor
+    props.outlierColor,
+    DAnglesLengths.lengthAverages(props.residue.compound, props.bondLength.pair)
   );
   const nrankCls = DAnglesLengths.navalRankingClass(
     bl.length,
     props.navalRanking,
     props.navalItem.csdPreferredLeft,
     props.navalItem.csdPreferredRight,
-    props.pGroup
+    DAnglesLengths.lengthAverages(props.residue.compound, props.bondLength.pair)
   );
   const binIndex = ALM.maybeBinHasValue(props.maybeBin)
     ? props.maybeBin.binIndex
@@ -473,7 +473,7 @@ function BondLengthDetails(props: {
                 props.navalRanking,
                 props.navalItem.csdPreferredLeft,
                 props.navalItem.csdPreferredRight,
-                props.pGroup
+                DAnglesLengths.lengthAverages(props.residue.compound, props.bondLength.pair)
               ),
               `${props.bondLength.length.toFixed(3)} ${AngstromUnit}`
             ),
@@ -544,11 +544,10 @@ interface ResidueElemProps {
     lengths: SummarizeNaval.CountsInGroup[];
   } | {
     kind: 'prosco',
-    angles: SummarizeProSco.CountsInGroup[];
-    lengths: SummarizeProSco.CountsInGroup[];
+    angles: Record<ProScoGroup | 'outlier', SummarizeProSco.CountsInGroup>;
+    lengths: Record<ProScoGroup | 'outlier', SummarizeProSco.CountsInGroup>;
   },
   outlierColor: ColorTuple;
-  pgrpIndices: number[];
   residue: Measurements.Residue;
   residueName: JSX.Element;
   residueIdentifyingName: string;
@@ -641,9 +640,9 @@ function ResidueHeader(props: {
     lengths: SummarizeNaval.CountsInGroup[];
   } | {
     kind: 'prosco',
-    angles: SummarizeProSco.CountsInGroup[];
-    lengths: SummarizeProSco.CountsInGroup[];
-  }
+    angles: Record<ProScoGroup | 'outlier', SummarizeProSco.CountsInGroup>;
+    lengths: Record<ProScoGroup | 'outlier', SummarizeProSco.CountsInGroup>;
+  };
   colorsForStatsBar: string[];
   winTracker: WindowsTracker;
 }) {
@@ -651,33 +650,47 @@ function ResidueHeader(props: {
   const r = props.residue;
 
   const lastLengthsColor = React.useMemo(() => {
-    let idx = props.counts.lengths.length - 1;
-    for (; idx > 0; idx--) {
-      if (props.counts.lengths[idx].exclusive > 0) break;
-    }
-
     switch (props.counts.kind) {
       case 'naval': {
+        let idx = props.counts.lengths.length - 1;
+        for (; idx > 0; idx--) {
+          if (props.counts.lengths[idx].exclusive > 0) break;
+        }
         const cls = DAnglesLengths.IndexToNavalRankingClass[idx as 0 | 1 | 2];
         return DAnglesLengths.navalRankingClassColor(cls);
       }
-      case 'prosco':
-        return DAnglesLengths.pGroupColor(idx);
+      case 'prosco': {
+        let grp = 'outlier' as ProScoGroup | 'outlier';
+        for (const _grp of [...ProScoGroups, 'outlier'] as const) {
+          if (props.counts.lengths[_grp].exclusive > 0) {
+             grp = _grp;
+             break;
+          }
+        }
+        return DAnglesLengths.pGroupColor(grp);
+      }
     }
   }, [props.counts]);
   const lastAnglesColor = React.useMemo(() => {
-    let idx = props.counts.angles.length - 1;
-    for (; idx > 0; idx--) {
-      if (props.counts.angles[idx].exclusive > 0) break;
-    }
-
     switch (props.counts.kind) {
       case 'naval': {
+        let idx = props.counts.angles.length - 1;
+        for (; idx > 0; idx--) {
+          if (props.counts.angles[idx].exclusive > 0) break;
+        }
         const cls = DAnglesLengths.IndexToNavalRankingClass[idx as 0 | 1 | 2];
         return DAnglesLengths.navalRankingClassColor(cls);
       }
-      case 'prosco':
-        return DAnglesLengths.pGroupColor(idx);
+      case 'prosco': {
+        let grp = 'outlier' as ProScoGroup | 'outlier';
+        for (const _grp of [...ProScoGroups, 'outlier'] as const) {
+          if (props.counts.angles[_grp].exclusive > 0) {
+             grp = _grp;
+             break;
+          }
+        }
+        return DAnglesLengths.pGroupColor(grp);
+      }
     }
   }, [props.counts]);
 
@@ -688,7 +701,7 @@ function ResidueHeader(props: {
       id={props.residueIdentifyingName}
     >
         <div className={
-            `${luminance(DAnglesLengths.pGroupColor(0)) < ColorIsDarkThreshold ?  "text-white" : "" } font-bold top-0 left-2 absolute z-1`}>
+            `${luminance(DAnglesLengths.pGroupColor('common')) < ColorIsDarkThreshold ?  "text-white" : "" } font-bold top-0 left-2 absolute z-1`}>
         {props.caption}
       </div>
 
@@ -907,9 +920,9 @@ export class AnglesLengthsByResidue extends View<
   View.Props,
   {
     maxWorstAngles: number;
-    worstAnglesThreshold: string;
+    worstAnglesThreshold: ProScoGroup | 'outlier';
     maxWorstLengths: number;
-    worstLengthsThreshold: string;
+    worstLengthsThreshold: ProScoGroup | 'outlier';
     shownResiduesLimit: number;
   }
 > {
@@ -978,9 +991,9 @@ export class AnglesLengthsByResidue extends View<
 
     this.state = {
       maxWorstAngles: GlobalConfig.data().anglesLengths.maxWorst,
-      worstAnglesThreshold: "",
+      worstAnglesThreshold: "outlier",
       maxWorstLengths: GlobalConfig.data().anglesLengths.maxWorst,
-      worstLengthsThreshold: "",
+      worstLengthsThreshold: "outlier",
       shownResiduesLimit: 100,
     };
   }
@@ -989,7 +1002,6 @@ export class AnglesLengthsByResidue extends View<
     tainer: React.RefObject<HTMLDivElement>,
     indices: number[],
     multipleModels: boolean,
-    pgrpIndices: number[],
     colorsForStatsBar: string[],
     maxResidues: number,
     loadNext: () => void,
@@ -1040,7 +1052,6 @@ export class AnglesLengthsByResidue extends View<
               }
           }
           outlierColor={outlierColor}
-          pgrpIndices={pgrpIndices}
           residue={_r}
           residueName={residueName}
           residueIdentifyingName={identResName}
@@ -1075,7 +1086,7 @@ export class AnglesLengthsByResidue extends View<
     residues: Measurements.Residue[],
     stats: ALM.ResidueStats[],
     maxCount: number,
-    threshold: number | "outlier",
+    threshold: ProScoGroup | "outlier",
     structureName: string,
     multipleModels: boolean,
     winTracker: WindowsTracker
@@ -1088,7 +1099,6 @@ export class AnglesLengthsByResidue extends View<
       maxCount
     );
     const outlierColor = colorToTuple(DAnglesLengths.outlierColor());
-    const pgrpIndices = sequence(0, DAnglesLengths.pGroupCount() - 1);
 
     const rgb = hexToRgb(GlobalConfig.data().currentStepColor);
     const backgroundColorSelected = Rgba(rgb.r, rgb.g, rgb.b, 0.5);
@@ -1146,7 +1156,6 @@ export class AnglesLengthsByResidue extends View<
                   residueName,
                   structureName,
                   outlierColor,
-                  pgrpIndices,
                   this.props.viewerInterop,
                   winTracker,
                   onAtomsClicked
@@ -1163,7 +1172,7 @@ export class AnglesLengthsByResidue extends View<
     residues: Measurements.Residue[],
     stats: ALM.ResidueStats[],
     maxCount: number,
-    threshold: number | "outlier",
+    threshold: ProScoGroup | "outlier",
     structureName: string,
     multipleModels: boolean,
     winTracker: WindowsTracker
@@ -1176,7 +1185,6 @@ export class AnglesLengthsByResidue extends View<
       maxCount
     );
     const outlierColor = colorToTuple(DAnglesLengths.outlierColor());
-    const pgrpIndices = sequence(0, DAnglesLengths.pGroupCount() - 1);
 
     const rgb = hexToRgb(GlobalConfig.data().currentStepColor);
     const backgroundColorSelected = Rgba(rgb.r, rgb.g, rgb.b, 0.5);
@@ -1234,7 +1242,6 @@ export class AnglesLengthsByResidue extends View<
                   residueName,
                   structureName,
                   outlierColor,
-                  pgrpIndices,
                   this.props.viewerInterop,
                   winTracker,
                   onAtomsClicked
@@ -1388,7 +1395,6 @@ export class AnglesLengthsByResidue extends View<
     const summary = sumVar === 'naval'
       ? SummarizeNaval.substructure(selectedResidues, this.props.dnatcofication.data.naval)
       : SummarizeProSco.substructure(selectedResidues);
-    const pgrpIndices = sequence(0, DAnglesLengths.pGroupCount() - 1);
 
     const htmlColorsForStatsBar = new Array<string>();
     if (sumVar === 'naval') {
@@ -1398,24 +1404,23 @@ export class AnglesLengthsByResidue extends View<
         );
       }
     } else if (sumVar === 'prosco') {
-      for (let idx = 0; idx < DAnglesLengths.pGroupCount(); idx++)
+      for (const grp of ProScoGroups)
         htmlColorsForStatsBar.push(
-          rgbToHex(colorToRgb(DAnglesLengths.pGroupColor(idx)))
+          rgbToHex(colorToRgb(DAnglesLengths.pGroupColor(grp)))
         );
       htmlColorsForStatsBar.push(
         rgbToHex(colorToRgb(DAnglesLengths.outlierColor()))
       );
     }
 
-    const percentileOptions = [
-      { caption: "Of Concern", value: "" },
-      ...DAnglesLengths.pGroupThresholds()
-        .reverse()
-        .map((thr) => {
-          const v = thr.toString();
-          return { caption: v, value: v };
-        }),
-    ];
+    // FIXME: We need a NA-VAL variant too
+
+    const percentileOptions = Array([...ProScoGroups, 'outlier'] as const)
+      .reverse()
+      .map((thr) => {
+        const v = thr.toString();
+        return { caption: v, value: v };
+      });
 
     const mkHeader = (text: string) => {
       return {
@@ -1445,7 +1450,6 @@ export class AnglesLengthsByResidue extends View<
       this.residuesTainerRef,
       selectedIndices,
       multipleModels,
-      pgrpIndices,
       htmlColorsForStatsBar,
       this.state.shownResiduesLimit,
       this.increaseShownResiduesLimit,
@@ -1478,7 +1482,7 @@ export class AnglesLengthsByResidue extends View<
               {AnglesLengthsCommon.renderSubstructureStats(
                 this.winTracker,
                 "Lengths",
-                AnglesLengthsCommon.substructureBarCaption("Lengths", DAnglesLengths.pGroupColor(0)),
+                AnglesLengthsCommon.substructureBarCaption("Lengths", DAnglesLengths.pGroupColor('common')),
                 summary.lengths,
                 sumVar === 'naval'
                   ? { kind: 'naval', counts: SummarizeNaval.countsInGroups(summary.lengths) }
@@ -1490,7 +1494,7 @@ export class AnglesLengthsByResidue extends View<
               {AnglesLengthsCommon.renderSubstructureStats(
                 this.winTracker,
                 "Angles",
-                AnglesLengthsCommon.substructureBarCaption("Angles", DAnglesLengths.pGroupColor(0)),
+                AnglesLengthsCommon.substructureBarCaption("Angles", DAnglesLengths.pGroupColor('common')),
                 summary.angles,
                 sumVar === 'naval'
                   ? { kind: 'naval', counts: SummarizeNaval.countsInGroups(summary.angles) }
@@ -1599,7 +1603,7 @@ export class AnglesLengthsByResidue extends View<
                     options={percentileOptions}
                     value={this.state.worstLengthsThreshold}
                     onChange={(v) =>
-                      this.setState({ ...this.state, worstLengthsThreshold: v })
+                      this.setState({ ...this.state, worstLengthsThreshold: v as ProScoGroup | 'outlier' })
                     }
                   />
                 </NamedListItem>
@@ -1621,9 +1625,7 @@ export class AnglesLengthsByResidue extends View<
                     selectedResidues,
                     selectedResidueStats,
                     this.state.maxWorstLengths,
-                    this.state.worstLengthsThreshold
-                      ? parseFloat(this.state.worstLengthsThreshold)
-                      : "outlier",
+                    this.state.worstLengthsThreshold,
                     AnglesLengthsCommon.structureIdentifyingName(
                       this.props.dnatcofication
                     ),
@@ -1648,7 +1650,7 @@ export class AnglesLengthsByResidue extends View<
                     options={percentileOptions}
                     value={this.state.worstAnglesThreshold}
                     onChange={(v) =>
-                      this.setState({ ...this.state, worstAnglesThreshold: v })
+                      this.setState({ ...this.state, worstAnglesThreshold: v as ProScoGroup | 'outlier' })
                     }
                   />
                 </NamedListItem>
@@ -1670,9 +1672,7 @@ export class AnglesLengthsByResidue extends View<
                     selectedResidues,
                     selectedResidueStats,
                     this.state.maxWorstAngles,
-                    this.state.worstAnglesThreshold
-                      ? parseFloat(this.state.worstAnglesThreshold)
-                      : "outlier",
+                    this.state.worstAnglesThreshold,
                     AnglesLengthsCommon.structureIdentifyingName(
                       this.props.dnatcofication
                     ),

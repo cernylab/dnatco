@@ -1,4 +1,4 @@
-import { AnglesLengths } from './';
+import { AnglesLengths, ProScoGroup, ProScoGroups } from './';
 import { Bin } from './bin';
 import { Measurements } from './measurements';
 import { ALM } from '../alm';
@@ -43,7 +43,15 @@ export namespace ByResidueHelpers {
         },
 
     };
-    export function gatherWorst<T extends keyof GatherWorst>(gather: T, residues: Measurements.Residue[], stats: ALM.ResidueStats[], threshold: number|'outlier', maxCount: number | 'all') {
+
+    function cmpProScoGroup(a: ProScoGroup, b: ProScoGroup) {
+        const iA = ProScoGroups.indexOf(a);
+        const iB = ProScoGroups.indexOf(b);
+
+        return iA - iB;
+    }
+    // FIXME: This uses ProSco metrics but we want NA-VAL metrics too
+    export function gatherWorst<T extends keyof GatherWorst>(gather: T, residues: Measurements.Residue[], stats: ALM.ResidueStats[], threshold: ProScoGroup|'outlier', maxCount: number | 'all') {
         type PT = ReturnType<GatherWorst[T]['bond']>[number];
         const worst = new Array<{
             bond: PT,
@@ -60,9 +68,9 @@ export namespace ByResidueHelpers {
             for (let jdx = 0; jdx < r.bondLengths.length; jdx++) {
                 const x = getter.bond(r)[jdx];
                 const ls = getter.stats(s, jdx);
-                const thr: typeof threshold = ls.pGroup?.threshold ?? 'outlier';
+                const thr: typeof threshold = ls.pGroup?.pGroup ?? 'outlier';
 
-                if (thr === 'outlier' || (threshold !== 'outlier' && thr >= threshold)) {
+                if (thr === 'outlier' || (threshold !== 'outlier' && cmpProScoGroup(thr, threshold) >= 0)) {
                     let kdx = 0;
                     for (; kdx < worst.length; kdx++) {
                         if (compareMaybeBins(ls.bin, worst[kdx].maybeBin) <= 0)
