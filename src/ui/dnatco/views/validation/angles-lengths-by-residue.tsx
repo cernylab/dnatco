@@ -1415,7 +1415,7 @@ export class AnglesLengthsByResidue extends View<
 
     // FIXME: We need a NA-VAL variant too
 
-    const percentileOptions = Array([...ProScoGroups, 'outlier'] as const)
+    const categoryOptions = Array.from([...ProScoGroups, 'outlier'])
       .reverse()
       .map((thr) => {
         const v = thr.toString();
@@ -1598,9 +1598,9 @@ export class AnglesLengthsByResidue extends View<
           >
             <div className="overflow-scroll">
               <NamedList sizing="min-content" rowSpacing="half">
-                <NamedListItem name="Percentile">
+                <NamedListItem name="Category">
                   <ComboBox
-                    options={percentileOptions}
+                    options={categoryOptions}
                     value={this.state.worstLengthsThreshold}
                     onChange={(v) =>
                       this.setState({ ...this.state, worstLengthsThreshold: v as ProScoGroup | 'outlier' })
@@ -1645,9 +1645,9 @@ export class AnglesLengthsByResidue extends View<
           >
             <div className="overflow-scroll">
               <NamedList sizing="min-content" rowSpacing="half">
-                <NamedListItem name="Percentile">
+                <NamedListItem name="Category">
                   <ComboBox
-                    options={percentileOptions}
+                    options={categoryOptions}
                     value={this.state.worstAnglesThreshold}
                     onChange={(v) =>
                       this.setState({ ...this.state, worstAnglesThreshold: v as ProScoGroup | 'outlier' })
