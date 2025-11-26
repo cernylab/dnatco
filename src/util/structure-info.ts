@@ -42,10 +42,16 @@ export function primaryPublication(d: Dnatcofication) {
 
 export function resolution(d: Dnatcofication) {
     const method = getCifValue(d, Exptl, 'method');
+    const refineResolution = getCifValue(d, Refine, 'ls_d_res_high');
+
     if (Common.MethodsWithCommonResolution.includes(method)) {
-        return `High: ${getCifValue(d, Refine, 'ls_d_res_high')?.toFixed(1) ?? Common.NA} Å, Low: (${getCifValue(d, Refine, 'ls_d_res_low')?.toFixed(1) ?? Common.NA})`;
+        return `High: ${refineResolution?.toFixed(1) ?? Common.NA} Å, Low: (${getCifValue(d, Refine, 'ls_d_res_low')?.toFixed(1) ?? Common.NA})`;
     } else if (method === 'electron microscopy') {
         return `${getCifValue(d, Em3dReconstruction, 'resolution')?.toFixed(3) ?? Common.NA} (${getCifValue(d, Em3dReconstruction, 'resolution_method')})`;
-    } else
+    } else if (refineResolution !== undefined) {
+        // Method is unknown but resolution is available (e.g., from PDB file with REMARK 2)
+        return `${refineResolution.toFixed(1)} Å, unknown method`;
+    } else {
         return Common.NA;
+    }
 }

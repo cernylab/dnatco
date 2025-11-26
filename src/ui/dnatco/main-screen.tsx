@@ -213,11 +213,13 @@ function Inner(props: {
 
 function Resolution(props: { d: Dnatcofication }) {
   const method = getCifValue(props.d, Exptl, "method");
+  const refineResolution = getCifValue(props.d, Refine, "ls_d_res_high");
+
   if (Common.MethodsWithCommonResolution.includes(method)) {
     return (
       <div className="flex my-auto">
         <div className="mr-1">
-          {getCifValue(props.d, Refine, "ls_d_res_high")?.toFixed(1) ?? "N/A"} Å
+          {refineResolution?.toFixed(1) ?? "N/A"} Å
         </div>
         <div className="flex">
           <div>(Low:{"\u00A0"}</div>
@@ -235,6 +237,15 @@ function Resolution(props: { d: Dnatcofication }) {
           {getCifValue(props.d, Em3dReconstruction, "resolution")?.toFixed(3) ??
             "N/A"}
         </span>
+      </div>
+    );
+  } else if (refineResolution !== undefined) {
+    // Method is unknown but resolution is available (e.g., from PDB file with REMARK 2)
+    return (
+      <div className="flex my-auto">
+        <div className="mr-1">
+          {refineResolution.toFixed(1)} Å
+        </div>
       </div>
     );
   } else {
