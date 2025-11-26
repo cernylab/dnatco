@@ -11,15 +11,16 @@ export namespace UntypicalAnglesLengths {
     export function add<Output>(ctx: Report.Context<Output>) {
         const root = ctx.ntDoc;
 
-        Layout.sectionHeader('Most untypical bond Lengths & Angles', ctx);
-        root.paragraphText('List of bond lengths and angles within the outlier probability category', { hAlign: ctx.mode === 'textual' ? 'left' : 'center' });
-
-        const numModels = Dnatcofication.Structure.numberOfModels(ctx.dnatcofication);
-        const alm = ctx.dnatcofication.data.almByResidue;
         const metrics =  GlobalConfig.data().anglesLengths.summaryVariant;
         const threshold = metrics === 'naval'
             ? 'of-concern'
             : 'outlier';
+
+        Layout.sectionHeader('Most untypical bond Lengths & Angles', ctx);
+        root.paragraphText(`List of bond lengths and angles within the ${threshold} category (${metrics === 'naval' ? 'NA-VAL' : 'ProSco'})`, { hAlign: ctx.mode === 'textual' ? 'left' : 'center' });
+
+        const numModels = Dnatcofication.Structure.numberOfModels(ctx.dnatcofication);
+        const alm = ctx.dnatcofication.data.almByResidue;
 
         for (let mIdx = 0; mIdx < numModels; mIdx++) {
             const indices = ByResidueHelpers.selectionToIndices(ctx.dnatcofication, mIdx, InvalidChain);
