@@ -92,6 +92,28 @@ function isMtzFile(data: Uint8Array): boolean {
     return data[0] === 0x4D && data[1] === 0x54 && data[2] === 0x5A && data[3] === 0x20;
 }
 
+function isSfCifFile(data: Uint8Array): boolean {
+    // Structure factor CIF files are text files that:
+    // 1. Start with 'data_' (CIF format)
+    // 2. Contain reflection data categories like '_refln'
+    // They are used like MTZ files for phenix.real_space_correlation
+
+    // Check if it's a text file starting with typical CIF markers
+    if (data.length < 100)
+        return false;
+
+    // Convert first portion to string for text-based detection
+    const header = Buffer.from(data.slice(0, Math.min(4096, data.length))).toString('utf8');
+
+    // Check for CIF data block marker
+    if (!header.includes('data_'))
+        return false;
+
+    // Check for structure factor specific categories
+    // SF-CIF files contain reflection data
+    return header.includes('_refln') || header.includes('_diffrn_refln');
+}
+
 function isCcp4MapFile(data: Uint8Array): boolean {
     // CCP4/MRC map files have specific format markers
     // Check for typical CCP4 map characteristics (this is a simplified check)
@@ -110,7 +132,7 @@ function isCcp4MapFile(data: Uint8Array): boolean {
     }
 
     // If MTZ check failed and file is binary, assume it's a map
-    return !isMtzFile(data);
+    return !isMtzFile(data) && !isSfCifFile(data);
 }
 
 export namespace PhenixRsccCalc {
@@ -127,10 +149,11 @@ export namespace PhenixRsccCalc {
 
         // Detect file type first
         const isMtz = isMtzFile(densityData);
-        const isMap = !isMtz && isCcp4MapFile(densityData);
+        const isSfCif = !isMtz && isSfCifFile(densityData);
+        const isMap = !isMtz && !isSfCif && isCcp4MapFile(densityData);
 
         // Determine which Phenix program to use based on file type
-        // Only MTZ files use real_space_correlation
+        // MTZ and SF-CIF files use real_space_correlation
         // CCP4/MRC maps (both EM and 2fo-fc) use map_model_cc
         const useMapModelCc = isMap;
         const exec = useMapModelCc ? config.execMapModelCc : config.execRealSpace;
@@ -143,6 +166,8 @@ export namespace PhenixRsccCalc {
             // Write with appropriate extension
             if (isMtz) {
                 densityDataPath = path.join(dataDir, 'refls.mtz');
+            } else if (isSfCif) {
+                densityDataPath = path.join(dataDir, 'refls-sf.cif');
             } else if (isMap) {
                 densityDataPath = path.join(dataDir, 'map.ccp4');
             } else {

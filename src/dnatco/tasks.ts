@@ -65,7 +65,8 @@ async function tryGetRscc(coords: File, densityFile: File, mapKind: string, reso
         Dnatcofication.addRscc(data, r.payload);
         ctx.events.finished.next({ state: 'succeeded', data });
     } else {
-        ctx.events.finished.next({ state: 'failed', message: r.message ?? 'Unknown error' });
+        // RSCC calculation failed - report as failed but include data so the app can continue
+        ctx.events.finished.next({ state: 'failed', data, message: `RSCC calculation failed: ${r.message ?? 'Unknown error'}` });
     }
 }
 

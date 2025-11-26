@@ -1,6 +1,12 @@
 import * as React from "react";
 import * as RDC from "react-dom/client";
 
+interface PopupProps {
+  parentElement: HTMLElement;
+  children?: React.ReactNode;
+  onDismiss?: () => void;
+}
+
 // Email link component for bot protection
 const EmailLink: React.FC<{ user: string; domain: string; subject?: string; className?: string; children: React.ReactNode }> = ({ user, domain, subject, className, children }) => {
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
@@ -17,11 +23,14 @@ const EmailLink: React.FC<{ user: string; domain: string; subject?: string; clas
   );
 };
 
-export class Popup extends React.Component<Popup.Props> {
+export class Popup extends React.Component<PopupProps> {
   private selfRef = React.createRef<HTMLDivElement>();
 
   private dismiss() {
     document.body.removeChild(this.props.parentElement);
+    if (this.props.onDismiss) {
+      this.props.onDismiss();
+    }
   }
 
   componentDidMount() {
@@ -63,16 +72,13 @@ export class Popup extends React.Component<Popup.Props> {
 }
 
 export namespace Popup {
-  export interface Props {
-    parentElement: HTMLElement;
-    children?: React.ReactNode;
-  }
+  export type Props = PopupProps;
 
-  export function create(children: React.ReactNode) {
+  export function create(children: React.ReactNode, onDismiss?: () => void) {
     const tainer = document.createElement("div");
     document.body.appendChild(tainer);
 
     const reactRoot = RDC.createRoot(tainer!);
-    reactRoot.render(<Popup parentElement={tainer}>{children}</Popup>);
+    reactRoot.render(<Popup parentElement={tainer} onDismiss={onDismiss}>{children}</Popup>);
   }
 }

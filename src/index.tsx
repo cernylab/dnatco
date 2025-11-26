@@ -402,37 +402,69 @@ class DnatcoficationHandler {
         this.ingestionInProgress = false;
 
         if (data.finished.state === "failed") {
-          let errorMessage = data.finished.message ?? "Unspecified error";
+          // Check if data is present despite failure - this means it's a non-fatal error (e.g., RSCC calculation failed)
+          if (data.finished.data) {
+            // Non-fatal failure: show warning popup, then continue with data after dismiss
+            const warningMessage = data.finished.message ?? "Unknown warning";
+            Logger.log(Logger.Severity.Warning, warningMessage);
 
-          if (
-            errorMessage ===
-            "Error: Failed to classify steps: LLKA_E_NOTHING_TO_CLASSIFY"
-          ) {
-            errorMessage = "Structure does not any contain nucleic acid";
-          }
+            const finishedData = data.finished.data;
+            Popup.create(
+              <>
+                <div className="text-red-400 p-3 bg-red-900 bg-opacity-20 rounded border border-red-500 max-h-[200px] overflow-y-auto whitespace-pre-wrap">
+                  {warningMessage}
+                </div>
+              </>,
+              () => {
+                // Continue with the data after popup is dismissed
+                this.dnatcofication.setData(finishedData);
 
-          PopupCustomFile.create(
-            (repairedData) => {
-              const cifFileName = fileName.replace(/\.[^.]+$/, ".cif");
-              if (repairedData) {
-                const fileContent = repairedData;
-                const fileBlob = new Blob([fileContent], {
-                  type: "chemical/x-cif",
-                });
-                const file = new File([fileBlob], cifFileName, {
-                  type: "chemical/x-cif",
-                });
+                const tEnd = performance.now();
+                Logger.log(
+                  Logger.Severity.Info,
+                  `Total structure ingestion time was ${(
+                    (tEnd - tStart) /
+                    1000
+                  ).toFixed(3)} sec`
+                );
 
-                this.fromCustomStructure(file, densityMapFile, null, () => {
-                  onSuccess();
-                });
+                onSuccess();
               }
-              jsonData = null;
-              densityMapFile = null;
-            },
-            errorMessage,
-            jsonData
-          );
+            );
+          } else {
+            // Fatal failure: show error dialog
+            let errorMessage = data.finished.message ?? "Unspecified error";
+
+            if (
+              errorMessage ===
+              "Error: Failed to classify steps: LLKA_E_NOTHING_TO_CLASSIFY"
+            ) {
+              errorMessage = "Structure does not contain enough nucleic acid residues";
+            }
+
+            PopupCustomFile.create(
+              (repairedData) => {
+                const cifFileName = fileName.replace(/\.[^.]+$/, ".cif");
+                if (repairedData) {
+                  const fileContent = repairedData;
+                  const fileBlob = new Blob([fileContent], {
+                    type: "chemical/x-cif",
+                  });
+                  const file = new File([fileBlob], cifFileName, {
+                    type: "chemical/x-cif",
+                  });
+
+                  this.fromCustomStructure(file, densityMapFile, null, () => {
+                    onSuccess();
+                  });
+                }
+                jsonData = null;
+                densityMapFile = null;
+              },
+              errorMessage,
+              jsonData
+            );
+          }
         } else if (data.finished.state === "succeeded") {
           this.dnatcofication.setData(data.finished.data!);
 

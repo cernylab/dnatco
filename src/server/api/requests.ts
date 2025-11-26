@@ -5,7 +5,7 @@ export namespace Requests {
         coords: '',
         coordsType: '',
         coeffs: '',
-        resolution: void 0 as (number | undefined),
+        resolution: 0,
     };
     export type Rscc = typeof Rscc;
 
