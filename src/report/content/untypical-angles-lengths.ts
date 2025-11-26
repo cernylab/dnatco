@@ -4,6 +4,7 @@ import { Layout } from '../layout';
 import { Fonts } from '../styling';
 import { ByResidueHelpers } from '../../dnatco/angles-lengths/helpers';
 import { Dnatcofication } from '../../dnatco/dnatcofication';
+import { GlobalConfig } from '../../global-config';
 import { InvalidChain } from '../../util/structure-selection';
 
 export namespace UntypicalAnglesLengths {
@@ -15,6 +16,10 @@ export namespace UntypicalAnglesLengths {
 
         const numModels = Dnatcofication.Structure.numberOfModels(ctx.dnatcofication);
         const alm = ctx.dnatcofication.data.almByResidue;
+        const metrics =  GlobalConfig.data().anglesLengths.summaryVariant;
+        const threshold = metrics === 'naval'
+            ? 'of-concern'
+            : 'outlier';
 
         for (let mIdx = 0; mIdx < numModels; mIdx++) {
             const indices = ByResidueHelpers.selectionToIndices(ctx.dnatcofication, mIdx, InvalidChain);
@@ -26,11 +31,11 @@ export namespace UntypicalAnglesLengths {
 
             // --- LENGTHS ---
             root.lineText('Lengths', { font: { style: 'bold' }, hAlign: ctx.mode === 'textual' ? 'left' : 'center' });
-            drawWorstAnglesLengths('lengths', residues, residueStats, 'outlier', ctx.ntDoc, ctx);
+            drawWorstAnglesLengths('lengths', ctx.dnatcofication, residues, residueStats, metrics, threshold, ctx.ntDoc, ctx);
 
             // --- ANGLES ---
             root.lineText('Angles', { font: { style: 'bold' }, hAlign: ctx.mode === 'textual' ? 'left' : 'center' });
-            drawWorstAnglesLengths('angles', residues, residueStats, 'outlier', ctx.ntDoc, ctx);
+            drawWorstAnglesLengths('angles', ctx.dnatcofication, residues, residueStats, metrics, threshold, ctx.ntDoc, ctx);
         }
 
         if (ctx.generator === 'web') {

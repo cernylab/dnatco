@@ -920,9 +920,9 @@ export class AnglesLengthsByResidue extends View<
   View.Props,
   {
     maxWorstAngles: number;
-    worstAnglesThreshold: ProScoGroup | 'outlier';
+    worstAnglesThreshold: string;
     maxWorstLengths: number;
-    worstLengthsThreshold: ProScoGroup | 'outlier';
+    worstLengthsThreshold: string;
     shownResiduesLimit: number;
   }
 > {
@@ -989,11 +989,15 @@ export class AnglesLengthsByResidue extends View<
   constructor(props: View.Props) {
     super(props);
 
+    const thr = GlobalConfig.data().anglesLengths.summaryVariant === "naval"
+      ? "of-concern"
+      : "outlier";
+
     this.state = {
       maxWorstAngles: GlobalConfig.data().anglesLengths.maxWorst,
-      worstAnglesThreshold: "outlier",
+      worstAnglesThreshold: thr,
       maxWorstLengths: GlobalConfig.data().anglesLengths.maxWorst,
-      worstLengthsThreshold: "outlier",
+      worstLengthsThreshold: thr,
       shownResiduesLimit: 100,
     };
   }
@@ -1085,13 +1089,16 @@ export class AnglesLengthsByResidue extends View<
   private renderWorstAngles(
     residues: Measurements.Residue[],
     stats: ALM.ResidueStats[],
+    metrics: "prosco" | "naval",
     maxCount: number,
-    threshold: ProScoGroup | "outlier",
+    threshold: string,
     structureName: string,
     multipleModels: boolean,
     winTracker: WindowsTracker
   ) {
     const worst = ByResidueHelpers.gatherWorst(
+      this.props.dnatcofication.data.naval,
+      metrics,
       "angles",
       residues,
       stats,
@@ -1171,13 +1178,16 @@ export class AnglesLengthsByResidue extends View<
   private renderWorstLengths(
     residues: Measurements.Residue[],
     stats: ALM.ResidueStats[],
+    metrics: "prosco" | "naval",
     maxCount: number,
-    threshold: ProScoGroup | "outlier",
+    threshold: string,
     structureName: string,
     multipleModels: boolean,
     winTracker: WindowsTracker
   ) {
     const worst = ByResidueHelpers.gatherWorst(
+      this.props.dnatcofication.data.naval,
+      metrics,
       "lengths",
       residues,
       stats,
@@ -1413,14 +1423,14 @@ export class AnglesLengthsByResidue extends View<
       );
     }
 
-    // FIXME: We need a NA-VAL variant too
-
-    const categoryOptions = Array.from([...ProScoGroups, 'outlier'])
-      .reverse()
-      .map((thr) => {
-        const v = thr.toString();
-        return { caption: v, value: v };
-      });
+    const categoryOptions = (sumVar === 'naval'
+      ? Array.from([...NavalRankingClasses])
+      : Array.from([...ProScoGroups, 'outlier']))
+    .reverse()
+    .map((thr) => {
+      const v = thr.toString();
+      return { caption: v, value: v };
+    });
 
     const mkHeader = (text: string) => {
       return {
@@ -1603,7 +1613,7 @@ export class AnglesLengthsByResidue extends View<
                     options={categoryOptions}
                     value={this.state.worstLengthsThreshold}
                     onChange={(v) =>
-                      this.setState({ ...this.state, worstLengthsThreshold: v as ProScoGroup | 'outlier' })
+                      this.setState({ ...this.state, worstLengthsThreshold: v as any })
                     }
                   />
                 </NamedListItem>
@@ -1624,8 +1634,9 @@ export class AnglesLengthsByResidue extends View<
                   {this.renderWorstLengths(
                     selectedResidues,
                     selectedResidueStats,
+                    sumVar,
                     this.state.maxWorstLengths,
-                    this.state.worstLengthsThreshold,
+                    this.state.worstLengthsThreshold as any,
                     AnglesLengthsCommon.structureIdentifyingName(
                       this.props.dnatcofication
                     ),
@@ -1650,7 +1661,7 @@ export class AnglesLengthsByResidue extends View<
                     options={categoryOptions}
                     value={this.state.worstAnglesThreshold}
                     onChange={(v) =>
-                      this.setState({ ...this.state, worstAnglesThreshold: v as ProScoGroup | 'outlier' })
+                      this.setState({ ...this.state, worstAnglesThreshold: v })
                     }
                   />
                 </NamedListItem>
@@ -1671,8 +1682,9 @@ export class AnglesLengthsByResidue extends View<
                   {this.renderWorstAngles(
                     selectedResidues,
                     selectedResidueStats,
+                    sumVar,
                     this.state.maxWorstAngles,
-                    this.state.worstAnglesThreshold,
+                    this.state.worstAnglesThreshold as any,
                     AnglesLengthsCommon.structureIdentifyingName(
                       this.props.dnatcofication
                     ),

@@ -6,7 +6,7 @@ import { NTUnit, NTXYWH } from '../../nottex/space';
 import { ALM } from '../../../dnatco/alm';
 import { Triplet } from '../../../dnatco/angles-lengths/angles';
 import { isShiftedName, unshiftName } from '../../../dnatco/angles-lengths/atoms';
-import { AnglesLengths, ProScoGroup } from '../../../dnatco/angles-lengths';
+import { AnglesLengths } from '../../../dnatco/angles-lengths';
 import { Measurements } from '../../../dnatco/angles-lengths/measurements';
 import { ByResidueHelpers } from '../../../dnatco/angles-lengths/helpers';
 import { Pair } from '../../../dnatco/angles-lengths/lengths';
@@ -14,6 +14,7 @@ import { AngstromSignChar } from '../../../util';
 import { colorToRgb, nrgba } from '../../../util/colors';
 import { M } from '../../../util/math';
 import { AnglesLengthsDisplayOrder } from '../../../ui/dnatco/views/validation/angles-lengths-display-order';
+import { Dnatcofication } from 'src/dnatco/dnatcofication';
 
 type AngleLengthToDraw<BL extends (Measurements.BondAngle | Measurements.BondLength)> = {
     bond: BL,
@@ -166,13 +167,15 @@ export function drawAllAnglesLengths<Output, G extends keyof ByResidueHelpers.Ga
 
 export function drawWorstAnglesLengths<Output, G extends keyof ByResidueHelpers.GatherWorst>(
     gather: G,
+    d: Dnatcofication,
     residues: Measurements.Residue[],
     stats: ALM.ResidueStats[],
-    threshold: ProScoGroup|'outlier',
+    metrics: 'prosco' | 'naval',
+    threshold: string,
     root: NTDocument<Output>,
     ctx: Report.Context<Output>
 ) {
-    const worst = ByResidueHelpers.gatherWorst(gather, residues, stats, threshold, 'all');
+    const worst = ByResidueHelpers.gatherWorst(d.data.naval,  metrics, gather, residues, stats, threshold, 'all');
 
     drawAnglesLengths(gather, worst, root, ctx);
 }
