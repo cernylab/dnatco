@@ -189,11 +189,11 @@ export const densityMaps = [
                     },
                     {
                         type: 'paragraph',
-                        text: 'MTZ Files (.mtz): Crystallographic structure factors containing reflection data and map coefficients. Processed using phenix.real_space_correlation. Format specification: https://www.ccp4.ac.uk/html/mtzformat.html'
+                        text: 'MTZ Files (.mtz): Reciprocal-space data. Processed using phenix.real_space_correlation. MTZ format [specification](https://www.ccp4.ac.uk/html/mtzformat.html).'
                     },
                     {
                         type: 'paragraph',
-                        text: 'CCP4/MRC Map Files (.ccp4, .map, .mrc): Pre-calculated electron density maps for both crystallographic (2Fo-Fc, Fo-Fc) and cryo-EM structures. Processed using phenix.map_model_cc. Format specification: https://www.ccp4.ac.uk/html/maplib.html'
+                        text: 'CCP4/MRC Map Files (.ccp4, .map, .mrc): Pre-calculated real-space density maps for crystallographic (2Fo-Fc) or cryo-EM structures. Processed using phenix.map_model_cc. CCP4 MAP format [specification](https://www.ccp4.ac.uk/html/maplib.html).'
                     },
                     {
                         type: 'paragraph',
@@ -233,19 +233,11 @@ export const densityMaps = [
                     },
                     {
                         type: 'paragraph',
-                        text: 'For MTZ Files (Structure Factors):'
+                        text: 'For MTZ Files:'
                     },
                     {
                         type: 'paragraph',
                         text: '• Program: phenix.real_space_correlation'
-                    },
-                    {
-                        type: 'paragraph',
-                        text: '• Purpose: Calculates maps from structure factors and correlates them with the model'
-                    },
-                    {
-                        type: 'paragraph',
-                        text: '• Best for: Crystallographic data with reflection data'
                     },
                     {
                         type: 'paragraph',
@@ -261,15 +253,7 @@ export const densityMaps = [
                     },
                     {
                         type: 'paragraph',
-                        text: '• Purpose: Directly correlates pre-calculated density maps with the model'
-                    },
-                    {
-                        type: 'paragraph',
-                        text: '• Best for: Both crystallographic maps (2Fo-Fc, Fo-Fc) and cryo-EM density maps'
-                    },
-                    {
-                        type: 'paragraph',
-                        text: '• Parameters: compute.cc_per_atom=True, print_cc_per_atom=True, resolution=<value> (for EM maps)'
+                        text: '• Parameters: compute.cc_per_atom=True, print_cc_per_atom=True, resolution=<value>'
                     },
                 ],
             },
@@ -283,7 +267,7 @@ export const densityMaps = [
                     },
                     {
                         type: 'paragraph',
-                        text: '• Preferred: MTZ files for crystallographic structures (most accurate, uses original reflection data)'
+                        text: '• Preferred: MTZ files for crystallographic structures'
                     },
                     {
                         type: 'paragraph',
@@ -291,7 +275,7 @@ export const densityMaps = [
                     },
                     {
                         type: 'paragraph',
-                        text: '• EM structures: Must use CCP4/MRC map format with resolution parameter'
+                        text: '• When using a CCP4/MRC map for RSCC calculations, the coordinate file must include the resolution, and this resolution should match the one used to generate the map.'
                     },
                     {
                         type: 'paragraph',
@@ -391,11 +375,7 @@ export const densityMaps = [
                     },
                     {
                         type: 'paragraph',
-                        text: '• When RSCC calculation is requested, density data is sent to the Phenix server'
-                    },
-                    {
-                        type: 'paragraph',
-                        text: '• File type is automatically detected by binary signature'
+                        text: '• When RSCC calculation is requested, density data is sent to the DNATCO server'
                     },
                     {
                         type: 'paragraph',
@@ -408,48 +388,6 @@ export const densityMaps = [
                     {
                         type: 'paragraph',
                         text: '• Temporary files are deleted immediately after processing'
-                    },
-                ],
-            },
-            {
-                id: 'technicalDetails',
-                headline: 'Technical Details',
-                paragraphs: [
-                    {
-                        type: 'paragraph',
-                        text: 'Configuration Requirements:'
-                    },
-                    {
-                        type: 'paragraph',
-                        text: '• Phenix installation with both phenix.real_space_correlation and phenix.map_model_cc'
-                    },
-                    {
-                        type: 'paragraph',
-                        text: '• Scratch directory for temporary file processing (/tmp/phenix_rednatco by default)'
-                    },
-                    {
-                        type: 'paragraph',
-                        text: 'File Extensions:'
-                    },
-                    {
-                        type: 'paragraph',
-                        text: '• MTZ files: .mtz extension, stored as refls.mtz during processing'
-                    },
-                    {
-                        type: 'paragraph',
-                        text: '• CCP4/MRC maps: .ccp4, .map, .mrc extensions, stored as map.ccp4 during processing'
-                    },
-                    {
-                        type: 'paragraph',
-                        text: 'Performance:'
-                    },
-                    {
-                        type: 'paragraph',
-                        text: '• MTZ processing: Slower (must calculate maps from reflections) but most accurate'
-                    },
-                    {
-                        type: 'paragraph',
-                        text: '• CCP4/MRC processing: Faster (uses pre-calculated maps) but requires properly prepared maps'
                     },
                 ],
             },

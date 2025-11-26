@@ -364,12 +364,22 @@ class DensityMapFiles extends React.Component<
                 <div className="mb-4 text-14px text-secondary-second">
                   <p className="mb-2">Upload density maps for visualization and RSCC validation. Supported formats:</p>
                   <ul className="list-disc ml-5 mb-2">
-                    <li><strong>MTZ files</strong> (.mtz): Structure factors for RSCC calculation (most accurate for crystallographic data)</li>
-                    <li><strong>CCP4/MRC maps</strong> (.ccp4, .map, .mrc): Pre-calculated density maps for both crystallographic and cryo-EM structures</li>
+                    <li><strong>MTZ files</strong> (.mtz): Reciprocal-space data in MTZ format for RSCC calculation</li>
+                    <li><strong>CCP4/MRC maps</strong> (.ccp4, .map, .mrc): Pre-calculated real-space density maps for both crystallographic and cryo-EM structures</li>
                     <li><strong>DSN6 files</strong> (.dsn6): Legacy format for visualization only</li>
                   </ul>
-                  <p className="mb-2">Select map type from the dropdown. Use <strong>Remove</strong> to delete unwanted files before clicking Done.</p>
-                  <p className="text-12px italic">For detailed format information, see Help &gt; Density Maps.</p>
+                  <p className="mb-2">Select density type from the dropdown. Use <strong>Remove</strong> to delete unwanted files before clicking Done.</p>
+                  <p className="text-12px italic">The MTZ and 2Fo-Fc data can be used for structure validation based on model to map RSCC.</p>
+                  <p className="text-12px italic">For detailed format information, see {" "}
+                    <a
+                      className="hover:text-secondary-third underline"
+                      href="/app/about/help#supportedFormats"
+                      target="_blank"
+                    >
+                    Density Maps
+                    </a>{" "}
+                  Help section.
+                  </p>
                 </div>
                 <div>
                   {inputs.map((input, index) => (
