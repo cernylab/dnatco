@@ -37,14 +37,13 @@ function drawCountsBar<Output>(
     tag: string,
     ctx: Report.Context<Output>
 ) {
-    const grps = [...ProScoGroups, 'outlier'] as const;
     const H = NTUnit.multiply(2, ctx.tDims.characterHeight);
     const totalWidth = inset.xywh.width;
-    const totalCount = counts.kind === 'prosco'
-        ? grps.map((g) => counts.counts[g]).reduce((p, c) => p + c.exclusive, 0)
-        : counts.counts.reduce((p, c) => p + c.exclusive, 0);
 
     if (counts.kind === 'prosco') {
+        const grps = [...ProScoGroups, 'outlier'] as const;
+        const totalCount = grps.map((g) => counts.counts[g]).reduce((p, c) => p + c.exclusive, 0)
+
         let x = 0;
         for (const grp of grps) {
             const w = counts.counts[grp].exclusive / totalCount;
@@ -72,6 +71,8 @@ function drawCountsBar<Output>(
             `${tag}-${mIdx}`
         );
     } else if (counts.kind === 'naval') {
+        const totalCount = counts.counts.reduce((p, c) => p + c.exclusive, 0);
+
         let x = 0;
         for (let gdx = 0; gdx < NavalRankingClasses.length; gdx++) {
             const cls = NavalRankingClasses[gdx];
