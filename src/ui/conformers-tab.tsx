@@ -2,6 +2,7 @@ import React from "react";
 import { ContourPlots } from "./contour-plots";
 import { Help } from "./help";
 import { SearchConformers } from "./search-conformers";
+import { ReferenceSets } from "./reference-sets";
 import { DynamicTable as DynamicTableComp } from "./common/dynamic-table";
 import { InProgress } from "./common/in-progress";
 import { NamedList, NamedListItem } from "./common/named-list";
@@ -37,6 +38,10 @@ const Tabs = [
   [
     "contour-plots",
     { caption: "Contour plots", title: "RSCC vs. Cartesian RMSD" },
+  ],
+  [
+    "reference-sets",
+    { caption: "Reference Sets", title: "Reference Sets" },
   ],
   ["help", { caption: "Help", title: "Help" }],
 ] as const;
@@ -695,6 +700,8 @@ export class ConformersTab extends React.Component<ConformersTab.Props, State> {
         return <TableOfConformers />;
       case "contour-plots":
         return <ContourPlots />;
+      case "reference-sets":
+        return <ReferenceSets />;
       case "help":
         return <HelpTab />;
     }

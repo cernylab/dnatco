@@ -9,6 +9,74 @@ import { useLocation, useNavigate, useParams } from 'react-router';
 import { useState, useEffect, useMemo } from 'react';
 import { ReactNode } from 'react';
 
+// Parses markdown-style links in text: [text](url) for external, [text](#id) for internal
+function renderTextWithLinks(text: string): ReactNode {
+    // Regex to match [text](url) pattern
+    const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
+    const parts: ReactNode[] = [];
+    let lastIndex = 0;
+    let match;
+    let key = 0;
+
+    while ((match = linkRegex.exec(text)) !== null) {
+        // Add text before the link
+        if (match.index > lastIndex) {
+            parts.push(text.substring(lastIndex, match.index));
+        }
+
+        const linkText = match[1];
+        const linkUrl = match[2];
+
+        if (linkUrl.startsWith('#')) {
+            // Internal link - scroll to section
+            const targetId = linkUrl.substring(1);
+            parts.push(
+                <a
+                    key={key++}
+                    href={linkUrl}
+                    className="rdo-link underline cursor-pointer"
+                    onClick={(e) => {
+                        e.preventDefault();
+                        const el = document.getElementById(targetId);
+                        if (el) {
+                            el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        }
+                    }}
+                >
+                    {linkText}
+                </a>
+            );
+        } else {
+            // External link - open in new tab
+            parts.push(
+                <a
+                    key={key++}
+                    href={linkUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="rdo-link underline cursor-pointer"
+                >
+                    {linkText}
+                </a>
+            );
+        }
+
+        lastIndex = match.index + match[0].length;
+    }
+
+    // Add remaining text after last link
+    if (lastIndex < text.length) {
+        parts.push(text.substring(lastIndex));
+    }
+
+    // If no links found, return original text
+    if (parts.length === 0) {
+        return text;
+    }
+
+    return <>{parts}</>;
+}
+
 // Email link component for bot protection
 const EmailLink: React.FC<{ user: string; domain: string; subject?: string; children: React.ReactNode }> = ({ user, domain, subject, children }) => {
     const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
@@ -253,7 +321,7 @@ function Help() {
                                                     <div key={itemIdx}>
                                                         {item.type === 'paragraph' && (
                                                             <>
-                                                                <p>{item.text}</p>
+                                                                <p>{renderTextWithLinks(item.text)}</p>
                                                                 <div className='h-3'></div>
                                                             </>
                                                         )}
@@ -288,7 +356,7 @@ function Help() {
                             <div className='h-3'></div>
                             {page.paragraphs.map((paragraph: any, idx: any) => (
                                 <div key={idx}>
-                                    {paragraph}
+                                    {renderTextWithLinks(paragraph)}
                                     <div className='h-3'></div>
                                 </div>
                             ))}
