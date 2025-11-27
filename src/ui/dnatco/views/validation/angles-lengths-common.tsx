@@ -136,6 +136,8 @@ export class AveragesChart extends React.Component<{
   mark: number;
   ofConcernLowerMark: number;
   ofConcernUpperMark: number;
+  csdPreferredLeftMark: number;
+  csdPreferredRightMark: number;
   xTitle: string;
   yTitle: string;
   xTransform?: (x: number) => number;
@@ -167,13 +169,15 @@ export class AveragesChart extends React.Component<{
     return pGroups;
   }
 
-  shouldComponentUpdate(nextProps: Readonly<{ bins: Bins; pGroupDatas: Record<ProScoGroup, DAnglesLengths.PGroupData>; mark: number; ofConcernLowerMark: number; ofConcernUpperMark: number; xTitle: string; yTitle: string; xTransform?: (x: number) => number; yTransform?: (y: number) => number; downloadFileName?: string; onInitialized?: (fig: Readonly<Figure>) => void; onRelayout?: (relayout: Readonly<PlotRelayoutEvent>) => void; }>, nextState: Readonly<{}>, nextContext: any): boolean {
+  shouldComponentUpdate(nextProps: Readonly<{ bins: Bins; pGroupDatas: Record<ProScoGroup, DAnglesLengths.PGroupData>; mark: number; ofConcernLowerMark: number; ofConcernUpperMark: number; csdPreferredLeftMark: number; csdPreferredRightMark: number; xTitle: string; yTitle: string; xTransform?: (x: number) => number; yTransform?: (y: number) => number; downloadFileName?: string; onInitialized?: (fig: Readonly<Figure>) => void; onRelayout?: (relayout: Readonly<PlotRelayoutEvent>) => void; }>, nextState: Readonly<{}>, nextContext: any): boolean {
     return (
       nextProps.bins !== this.props.bins ||
       nextProps.pGroupDatas !== this.props.pGroupDatas ||
       nextProps.mark !== this.props.mark ||
       nextProps.ofConcernLowerMark !== this.props.ofConcernLowerMark ||
       nextProps.ofConcernUpperMark !== this.props.ofConcernUpperMark ||
+      nextProps.csdPreferredLeftMark !== this.props.csdPreferredLeftMark ||
+      nextProps.csdPreferredRightMark !== this.props.csdPreferredRightMark ||
       nextProps.xTitle !== this.props.xTitle ||
       nextProps.yTitle !== this.props.yTitle ||
       nextProps.xTransform !== this.props.xTransform ||
@@ -326,6 +330,32 @@ export class AveragesChart extends React.Component<{
               },
               hoverinfo: "text",
               hovertext: "NA-VAL Of Concern Upper",
+              hoveron: "fills",
+              showlegend: false,
+            },
+            {
+              x: [this.props.xTransform?.(this.props.csdPreferredLeftMark) ?? this.props.csdPreferredLeftMark],
+              y: [yMax * 0.43],
+              type: "bar",
+              width: 2 * (xt[1] - xt[0]),
+              marker: {
+                color: "rgb(255, 210, 29)",
+              },
+              hoverinfo: "text",
+              hovertext: "CSD preferred left",
+              hoveron: "fills",
+              showlegend: false,
+            },
+            {
+              x: [this.props.xTransform?.(this.props.csdPreferredRightMark) ?? this.props.csdPreferredRightMark],
+              y: [yMax * 0.43],
+              type: "bar",
+              width: 2 * (xt[1] - xt[0]),
+              marker: {
+                color: "rgb(255, 210, 29)",
+              },
+              hoverinfo: "text",
+              hovertext: "CSD preferred right",
               hoveron: "fills",
               showlegend: false,
             },
@@ -575,6 +605,8 @@ export class PGroupSummary extends React.Component<
           mark={this.props.value}
           ofConcernLowerMark={this.props.navalRanking.ofConcernLower}
           ofConcernUpperMark={this.props.navalRanking.ofConcernUpper}
+          csdPreferredLeftMark={this.props.navalPreferredLower}
+          csdPreferredRightMark={this.props.navalPreferredUpper}
           pGroupDatas={this.props.pGroupDatas}
           xTitle={this.props.xTitle}
           yTitle={this.props.yTitle}
