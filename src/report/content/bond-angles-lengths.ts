@@ -176,7 +176,7 @@ function drawCountsTable<Output>(
             box.lineText(Colors.colorToGlyph(rectClr), {}, ref);
         else
             box.rect(clrXywh, { color: rectNClr }, ref);
-        box.lineText(outlierC.pGroup, CountCellText, ref);
+        box.lineText(AnglesLengths.outlierName(), CountCellText, ref);
 
         tbl.addRow([
             NTTable.Cell.box(box),
