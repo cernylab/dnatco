@@ -14,7 +14,7 @@ import { AngstromSignChar } from '../../../util';
 import { colorToRgb, nrgba } from '../../../util/colors';
 import { M } from '../../../util/math';
 import { AnglesLengthsDisplayOrder } from '../../../ui/dnatco/views/validation/angles-lengths-display-order';
-import { Dnatcofication } from 'src/dnatco/dnatcofication';
+import { Dnatcofication, MappedNaval } from 'src/dnatco/dnatcofication';
 
 type AngleLengthToDraw<BL extends (Measurements.BondAngle | Measurements.BondLength)> = {
     bond: BL,
@@ -59,6 +59,8 @@ function residueName(r: Measurements.Residue) {
 
 function drawAnglesLengths<Output, BL extends (Measurements.BondAngle | Measurements.BondLength), G extends keyof ByResidueHelpers.GatherWorst>(
     gathered: G,
+    naval: MappedNaval,
+    metrics: 'naval' | 'prosco',
     angleLengthData: AngleLengthToDraw<BL>[],
     root: NTDocument<Output>,
     ctx: Report.Context<Output>
@@ -75,7 +77,25 @@ function drawAnglesLengths<Output, BL extends (Measurements.BondAngle | Measurem
 
     const xywh = NTXYWH.create(NTUnit.zero(), NTUnit.zero(), NTUnit.multiply(1, ctx.tDims.characterWidth), ctx.tDims.characterHeight);
     for (const al of angleLengthData) {
-        const rgb = colorToRgb(al.pGroup ? AnglesLengths.pGroupColor(al.pGroup.pGroup) : AnglesLengths.outlierColor());
+        let rgb;
+        if (metrics === 'naval') {
+            let nrankCls;
+            if (gathered === 'lengths') {
+                const bl = al.bond as Measurements.BondLength;
+                const ni = AnglesLengths.navalBond(naval, al.residue, bl.pair);
+                const nrank = AnglesLengths.lengthNavalRanking(al.residue.compound, bl);
+                nrankCls = AnglesLengths.navalRankingClass(bl.length, nrank, ni.csdPreferredLeft, ni.csdPreferredRight, AnglesLengths.lengthAverages(al.residue.compound, bl.pair));
+            } else {
+                const ba = al.bond as Measurements.BondAngle;
+                const ni = AnglesLengths.navalAngle(naval, al.residue, ba.triplet);
+                const nrank = AnglesLengths.angleNavalRanking(al.residue.compound, ba);
+                nrankCls = AnglesLengths.navalRankingClass(ba.angle, nrank, ni.csdPreferredLeft, ni.csdPreferredRight, AnglesLengths.angleAverages(al.residue.compound, ba.triplet));
+            }
+
+            rgb = colorToRgb(AnglesLengths.navalRankingClassColor(nrankCls));
+        } else {
+            rgb = colorToRgb(al.pGroup ? AnglesLengths.pGroupColor(al.pGroup.pGroup) : AnglesLengths.outlierColor());
+        }
         const clr = nrgba(rgb);
 
         const clrCell = ctx.mode === 'textual'
@@ -152,16 +172,18 @@ function gatherAllLengths(residues: Measurements.Residue[], stats: ALM.ResidueSt
 export function drawAllAnglesLengths<Output, G extends keyof ByResidueHelpers.GatherWorst>(
     gather: G,
     residues: Measurements.Residue[],
+    d: Dnatcofication,
+    metrics: 'naval' | 'prosco',
     stats: ALM.ResidueStats[],
     root: NTDocument<Output>,
     ctx: Report.Context<Output>
 ) {
     if (gather === 'angles') {
         const anglesToDraw = gatherAllAngles(residues, stats);
-        drawAnglesLengths(gather, anglesToDraw, root, ctx);
+        drawAnglesLengths(gather, d.data.naval, metrics, anglesToDraw, root, ctx);
     } else {
         const lengthsToDraw = gatherAllLengths(residues, stats);
-        drawAnglesLengths(gather, lengthsToDraw, root, ctx);
+        drawAnglesLengths(gather, d.data.naval, metrics, lengthsToDraw, root, ctx);
     }
 }
 
@@ -170,12 +192,12 @@ export function drawWorstAnglesLengths<Output, G extends keyof ByResidueHelpers.
     d: Dnatcofication,
     residues: Measurements.Residue[],
     stats: ALM.ResidueStats[],
-    metrics: 'prosco' | 'naval',
+    metrics: 'naval' | 'prosco',
     threshold: string,
     root: NTDocument<Output>,
     ctx: Report.Context<Output>
 ) {
-    const worst = ByResidueHelpers.gatherWorst(d.data.naval,  metrics, gather, residues, stats, threshold, 'all');
+    const worst = ByResidueHelpers.gatherWorst(d.data.naval, metrics, gather, residues, stats, threshold, 'all');
 
-    drawAnglesLengths(gather, worst, root, ctx);
+    drawAnglesLengths(gather, d.data.naval, metrics, worst, root, ctx);
 }

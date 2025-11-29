@@ -8,7 +8,6 @@ import * as NTR from './renderables';
 import { NTMetric, NTWH, NTXYWH, NTUnit } from './space';
 import { NTboundingRect, NTerror } from './util';
 import { Fonts } from '../fonts';
-import { Logger } from '../../log/logger';
 
 function area(xywh: NTXYWH<number>): [x: number, y: number, w: number, h: number] {
     return [
