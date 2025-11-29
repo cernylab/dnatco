@@ -129,7 +129,14 @@ function drawCountsTable<Output>(
         NTTable.Cell.lineText('Cumulative', tbl, { font: Tables.HeaderFont }),
     ]);
 
-    const boxXywh = NTXYWH.create(NTUnit.zero(), NTUnit.zero(), NTUnit.multiply(6, ctx.tDims.characterWidth), ctx.tDims.characterHeight);
+    let clrBoxOffset;
+    if (counts.kind === 'naval') {
+        clrBoxOffset = Math.max(...NavalRankingClasses.map(x => x.length));
+    } else {
+        clrBoxOffset = Math.max(...ProScoGroups.map(x => x.length));
+    }
+
+    const boxXywh = NTXYWH.create(NTUnit.zero(), NTUnit.zero(), NTUnit.multiply(clrBoxOffset, ctx.tDims.characterWidth), ctx.tDims.characterHeight);
     const clrXywh = NTXYWH.create(NTUnit.zero(), NTUnit.zero(), NTUnit.multiply(1, ctx.tDims.characterWidth), ctx.tDims.characterHeight);
 
     if (counts.kind === 'prosco') {
