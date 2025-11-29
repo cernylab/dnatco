@@ -8,6 +8,7 @@ import * as NTR from './renderables';
 import { NTMetric, NTWH, NTXYWH, NTUnit } from './space';
 import { NTboundingRect, NTerror } from './util';
 import { Fonts } from '../fonts';
+import { Logger } from '../../log/logger';
 
 function area(xywh: NTXYWH<number>): [x: number, y: number, w: number, h: number] {
     return [
@@ -269,7 +270,7 @@ export class NTPdfDocument extends NTDocument<Uint8Array> {
                             borderColor: NTPdf.rgb(r.borderColor),
                             borderOpacity: r.borderColor.a,
                             color: r.color !== 'none' ? NTPdf.rgb(r.color) : void 0,
-                            opacity: r.color !== 'none' ? r.color.a : void 0,
+                            opacity: r.color !== 'none' ? (1 - r.color.a) : void 0,
                         });
                     } else if (NTR.NTRenderableText.is(r)) {
                         page.drawText(r.text, {
