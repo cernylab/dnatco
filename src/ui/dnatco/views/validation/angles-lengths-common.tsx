@@ -453,6 +453,8 @@ function NavalBar(props: {
     const w = context.canvas.width;
     const h = context.canvas.height;
 
+      console.log(w, h);
+
     const ofConcernLower = w * (ranking.ofConcernLower - lowest) / span;
     if (ofConcernLower > 0) {
       context.fillStyle = ofConcernClr;
@@ -482,7 +484,7 @@ function NavalBar(props: {
   }
 
   return (
-    <canvas ref={canvasRef} width={canvasRef.current?.width ?? 450} height={32}>
+    <canvas ref={canvasRef} width={Math.round(canvasRef.current?.width ?? 1000)} height={32} style={{ height: '32px' }}>
     </canvas>
   );
 }
