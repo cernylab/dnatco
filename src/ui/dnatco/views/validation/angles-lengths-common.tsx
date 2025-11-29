@@ -725,13 +725,13 @@ function SubstructureSummaryNaval(props: {
     props.countsInGroups[props.countsInGroups.length - 1].cumulative;
 
   return (
-    <div className="grid gap-x-4" style={{ gridTemplateColumns: 'auto auto auto' }}>
+    <div className="grid gap-x-4" style={{ gridTemplateColumns: '1em auto auto auto' }}>
       <div />
       <div className="font-700 text-center flex justify-center col-start-2 col-span-2">
         Counts
       </div>
 
-      <div className="font-700">Class</div>
+      <div className="font-700 col-span-2">Class</div>
       <div className="font-700">Exclusive</div>
       <div className="font-700">Cumulative</div>
       {props.countsInGroups.map((x, idx) => {
@@ -741,6 +741,7 @@ function SubstructureSummaryNaval(props: {
         return (
           <React.Fragment key={idx}>
             <div style={{ backgroundColor: colorStyle(colorToTuple(clr)), width: '1em' }} />
+            <div style={{ whiteSpace: 'nowrap' }} >{DAnglesLengths.navalRankingClassName(x.class)}</div>
             <div className="text-right">{x.exclusive}</div>
             <div className="text-right">{`${x.cumulative}\u00A0(${perc
               .toFixed(2)
