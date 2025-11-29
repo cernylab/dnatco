@@ -173,21 +173,15 @@ ReDNATCO can be configured with a JSON configuration file. The file must be name
         // Name of the interval(s) that does not belong to any ProSco probability group
         "outlierName": "Outlier",
 
-        // Probability groups.
-        // Probability group is defined by a "threshold" and "color".
-        // The "threshold" is effectively the statistical percentile. The higher the value,
-        // the greater the likelihood that a concrete value will fall within a specific interval of values.
-        // The higher the percentile, the wider the interval needs to be.
-        // Note that since the values of bond lengths and angles do not follow any particular statistical
-        // distribution, a given percentile may be composed of multiple intervals with gaps between them.
-        // Value of "threshold" must be within (0; 100).
-        // Value of "color" sets the color used in graphical representations of the probability groups.
-        "pGroups": [
-            { "threshold": 80, "color": "#006eee", "name": "A" },
-            { "threshold": 95, "color": "#00ff00", "name": "B" },
-            { "threshold": 99, "color": "#ffff00", "name": "C" },
-            { "threshold": 99.9, "color": "#ffaa00", "name": "D" }
-        ],
+        // ProSco classification groups
+        // "name" - sets the displayed name of the group.
+        // "color" - sets the color used in graphical representations of the probability groups.
+        "pGroups": {
+            "common": { "color": "#1a33ad", name: "Common" },
+            "rare": { "color": "#737dad", name: "Rare" },
+            "ambiguous": { "color": "#ad738a", name: "Ambiguous" },
+            "unique": { "color": "#ad265a", name: "Unique" }
+        },
 
         // Color of the marker that denotes the actual bond angle/length in the ProSco chart
         "chartMarkerColor": string,
@@ -202,7 +196,7 @@ ReDNATCO can be configured with a JSON configuration file. The file must be name
         "navalMarkerColor": "000000",
 
         // Whether to display summary information with NA-VAL or ProSco metrics
-        "summaryVariant": "naval" | "prosco"
+        "summaryMetrics": "naval" | "prosco"
     },
 
     // --- Configuration of user databases ---
