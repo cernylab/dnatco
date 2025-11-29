@@ -106,6 +106,7 @@ export namespace Grouping {
         }
         if (lowerUnique.from === -1) lowerUnique.from = bins[0].from;
 
+        // Find the upper "UNIQUE" interval
         const upperUnique: Bin = { prosco: -1, from: -1, to: -1, probability: 0 };
         for (let idx = bins.length - 1; idx >= 0; idx--) {
             const bin = bins[idx];
@@ -134,6 +135,109 @@ export namespace Grouping {
         ambiguous: Bin[],
         searchDir: 'up' | 'down'
     ) {
+        /*
+
+              +---------------------------------------------------------------------+
+              |      +      +      +      +      +      +      +      +      +      |
+              |                                                                     |
+              |                                                                     |
+          100 |-+                               ***                               +-|
+              |                                 * *                                 |
+              |                                 *  *                                |
+              |                                *   *                                |
+              |                                *    *                               |
+              |                               *     *                               |
+              |                               *     *                               |
+           90 |-+                            *      *                             +-|
+              |                              *      *                               |
+              |                              *      *                               |
+              |                              *       *                              |
+              |                              *       *                              |
+              |                              *       *                              |
+              |                              *       *                              |
+           80 |-+                           *         *                           +-|
+              |                             *         *                             |
+              |                             *         *                             |
+              |                             *          *                            |
+              |                            *           *                            |
+              |                            *           *                            |
+              |                            *           *                            |
+           70 |-+                          *           *                          +-|
+              |                            *           *                            |
+              |                            *           *                            |
+              |                            *           *                            |
+              |                            *           *                            |
+              |                            *            *                           |
+              |                           *             *                           |
+              |                           *             *                           |
+           60 |-+                         *             *                         +-|
+              |                           *              *                          |
+              |                          *               *                          |
+              |                          *               *                          |
+              |                          *               *                          |
+              |                          *               *                          |
+              |                          *               *                          |
+           50 |-+                        *               *                        +-|
+              |                          *               *                          |
+              |                          *               *                          |
+              |                          *                *                         |
+              |                         *                 *                         |
+              |                         *                 *                         |
+              |                         *                 *                         |
+           40 |-+                       *                  *                      +-|
+              |                        *                   *                        |
+              |                        *                   *                        |
+              |                        *                   *                        |
+              |                        *                   *                        |
+              |                       *                    *                        |
+              |                       *                    *                        |
+           30 |-+                     *                    *                      +-|
+              |                       *                     *                       |
+              |                       *                     *                       |
+              |                       *                     *                       |
+              |                      *                       *                      |
+              |                      *                       *                      |
+              |                      *                       *                      |
+              |                     *                         *                     |
+           20 |-+                   *                         *                   +-|
+              |                     *                         *                     |
+              |                     *                         *                     |
+              |                     *                          *                    |
+              |                    *                           *                    |
+              |                    *                            *                   |
+              |                   *                             *                   |
+           10 |-+                 *                             *                 +-|
+              |                   *                             *                   |
+              |                  * --- COMMON BTM THRESHOLD      *                  |
+SCALE BROKEN //                  *                                *                 //
+              |                 *                                 *                 |
+              |                *                                  *                 |
+              |     *          *                                   *                |
+             ---   * *       ** --- RARE BOTTOM THRESHOLD          *                |
+              |   *    *    *                                       *               |
+              |   *     *  *                                         *              |
+              |   *       *                                           *             |
+              |  *                                                     *            |
+              |  *                                                      *           |
+              | *                                                        **         |
+              | *     +      +      +      +      +      +      +      +      +     |
+            0 +---------------------------------------------------------------------+
+             -5     -4     -3     -2     -1      0      1      2      3      4      5
+
+                uuu|aaaaaaaaa|rrr|ccccccccccccccccccccccccccccccc|rrrrr|uuu
+
+            "AMBIGUOUS" intervals are defined as follows:
+            Going from the direction of higher ProSco score, when the ProSco value
+            drops below "RARE BOTTOM THRESHOLD", later raises back above this value
+            and eventually drops back below the "RARE BOTTOM THRESHOLD" value,
+            the interval between the two crossings of the "RARE BOTTOM THRESHOLD" is
+            considered to be "AMBIGUOUS".
+
+            Explained in terms of the definition of the "UNIQUE" intervals, an interval
+            is "UNIQUE" only if the ProSco value never raises back above "RARE BOTTOM THRESHOLD"
+            until the end of data.
+ */
+
         const bin = bins[idx];
 
         if (ctx.state === 'finding-beginning') {
