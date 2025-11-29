@@ -34,8 +34,13 @@ type AverageData = Record<
 >;
 
 /**
- *  @nocheckin
- *  NO NO NO - Document what it actually is
+ * ProSco "macrobins" grouped together by the ProSco classification category they fall into.
+ * A "macrobin" is a bin created by joining multiple adjoning base bins toghether into a single bin whose
+ * "from" and "to" values correspond to the values of the leftmost and rightmost base bin, respectively.
+ *
+ * There can be multiple "macrobins" in each category because we assume that the distribution of probabilities
+ * can be arbitrary. For example, there can be two "macrobins" in the "common" category separated by a "macrobin"
+ * of the "rare" category.
  */
 type PGroupData = Record<
     ElementaryResidue,
