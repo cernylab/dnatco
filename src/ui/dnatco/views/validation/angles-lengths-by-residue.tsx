@@ -694,6 +694,9 @@ function ResidueHeader(props: {
     }
   }, [props.counts]);
 
+    const captionColor = props.counts.kind === 'naval'
+        ? DAnglesLengths.navalRankingClassColor('allowed') : DAnglesLengths.pGroupColor('common');
+
   return (
     <div
       className="relative w-full h-full"
@@ -701,7 +704,7 @@ function ResidueHeader(props: {
       id={props.residueIdentifyingName}
     >
         <div className={
-            `${luminance(DAnglesLengths.pGroupColor('common')) < ColorIsDarkThreshold ?  "text-white" : "" } font-bold top-0 left-2 absolute z-1`}>
+            `${luminance(captionColor) < ColorIsDarkThreshold ?  "text-white" : "" } font-bold top-0 left-2 absolute z-1`}>
         {props.caption}
       </div>
 
@@ -1492,7 +1495,10 @@ export class AnglesLengthsByResidue extends View<
               {AnglesLengthsCommon.renderSubstructureStats(
                 this.winTracker,
                 "Lengths",
-                AnglesLengthsCommon.substructureBarCaption("Lengths", DAnglesLengths.pGroupColor('common')),
+                AnglesLengthsCommon.substructureBarCaption(
+                  "Lengths",
+                  metrics === 'naval' ? DAnglesLengths.navalRankingClassColor('allowed') : DAnglesLengths.pGroupColor('common')
+                ),
                 summary.lengths,
                 metrics === 'naval'
                   ? { kind: 'naval', counts: SummarizeNaval.countsInGroups(summary.lengths) }
@@ -1504,7 +1510,10 @@ export class AnglesLengthsByResidue extends View<
               {AnglesLengthsCommon.renderSubstructureStats(
                 this.winTracker,
                 "Angles",
-                AnglesLengthsCommon.substructureBarCaption("Angles", DAnglesLengths.pGroupColor('common')),
+                AnglesLengthsCommon.substructureBarCaption(
+                  "Angles",
+                  metrics === 'naval' ? DAnglesLengths.navalRankingClassColor('allowed') : DAnglesLengths.pGroupColor('common')
+                ),
                 summary.angles,
                 metrics === 'naval'
                   ? { kind: 'naval', counts: SummarizeNaval.countsInGroups(summary.angles) }

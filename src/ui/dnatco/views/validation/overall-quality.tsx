@@ -384,7 +384,10 @@ export class OverallQuality extends View<View.Props> {
               {AnglesLengthsCommon.renderSubstructureStats(
                 this.winTracker,
                 "Lengths",
-                AnglesLengthsCommon.substructureBarCaption("Lengths", DAnglesLengths.pGroupColor('common')),
+                AnglesLengthsCommon.substructureBarCaption(
+                  "Lengths",
+                  metrics === "naval" ? DAnglesLengths.navalRankingClassColor("allowed") : DAnglesLengths.pGroupColor("common")
+                ),
                 overallLengths,
                 metrics === 'naval'
                   ? { kind: 'naval', counts: SummarizeNaval.countsInGroups(overallLengths) }
@@ -396,7 +399,10 @@ export class OverallQuality extends View<View.Props> {
               {AnglesLengthsCommon.renderSubstructureStats(
                 this.winTracker,
                 "Angles",
-                AnglesLengthsCommon.substructureBarCaption("Angles", DAnglesLengths.pGroupColor('common')),
+                AnglesLengthsCommon.substructureBarCaption(
+                  "Angles",
+                  metrics === "naval" ? DAnglesLengths.navalRankingClassColor("allowed") : DAnglesLengths.pGroupColor("common")
+                ),
                 overallAngles,
                 metrics === 'naval'
                   ? { kind: 'naval', counts: SummarizeNaval.countsInGroups(overallAngles) }

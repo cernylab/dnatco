@@ -175,7 +175,10 @@ function Base<T extends ALM.AngleStats | ALM.LengthStats>(props: {
           {AnglesLengthsCommon.renderSubstructureStats(
             props.winTracker,
             props.base,
-            AnglesLengthsCommon.substructureBarCaption(props.base, DAnglesLengths.pGroupColor('common')),
+            AnglesLengthsCommon.substructureBarCaption(
+              props.base,
+              metrics === "naval" ? DAnglesLengths.navalRankingClassColor("allowed") : DAnglesLengths.pGroupColor("common")
+            ),
             metrics === 'naval' ? props.stats.overallNaval : props.stats.overallProSco,
             metrics === 'naval'
               ? { kind: 'naval', counts: SummarizeNaval.countsInGroups(props.stats.overallNaval) }
@@ -339,7 +342,10 @@ function Metric<T extends ALM.AngleStats | ALM.LengthStats>(props: {
             <div className="font-700">
               {props.base} {name}
             </div>,
-            AnglesLengthsCommon.substructureBarCaption(name, DAnglesLengths.pGroupColor('common')),
+            AnglesLengthsCommon.substructureBarCaption(
+              name,
+              metrics === "naval" ? DAnglesLengths.navalRankingClassColor("allowed") : DAnglesLengths.pGroupColor("common")
+            ),
             metrics === 'naval' ? props.stats.overallNaval : props.stats.overallProSco,
             metrics === 'naval'
               ? { kind: 'naval', counts: SummarizeNaval.countsInGroups(props.stats.overallNaval) }
@@ -1008,7 +1014,10 @@ export class AnglesLengthsByCompound extends View<View.Props> {
               {AnglesLengthsCommon.renderSubstructureStats(
                 this.winTracker,
                 "Lengths",
-                AnglesLengthsCommon.substructureBarCaption("Lengths", DAnglesLengths.pGroupColor('common')),
+                AnglesLengthsCommon.substructureBarCaption(
+                  "Lengths",
+                  metrics === "naval" ? DAnglesLengths.navalRankingClassColor("allowed") : DAnglesLengths.pGroupColor("common")
+                ),
                 overallLengths,
                 metrics === 'naval'
                   ? { kind: 'naval', counts: SummarizeNaval.countsInGroups(overallLengths) }
@@ -1020,7 +1029,10 @@ export class AnglesLengthsByCompound extends View<View.Props> {
               {AnglesLengthsCommon.renderSubstructureStats(
                 this.winTracker,
                 "Angles",
-                AnglesLengthsCommon.substructureBarCaption("Angles", DAnglesLengths.pGroupColor('common')),
+                AnglesLengthsCommon.substructureBarCaption(
+                  "Angles",
+                  metrics === "naval" ? DAnglesLengths.navalRankingClassColor("allowed") : DAnglesLengths.pGroupColor("common")
+                ),
                 overallAngles,
                 metrics === 'naval'
                   ? { kind: 'naval', counts: SummarizeNaval.countsInGroups(overallAngles) }

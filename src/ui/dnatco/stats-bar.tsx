@@ -7,8 +7,6 @@ export function StatsBar(props: { counts: number[], colors: string[] }) {
     for (let idx = 0; idx < props.counts.length; idx++) {
         const n = props.counts[idx];
 
-        console.log(n, props.colors[idx]);
-
         if (n === 0)
             continue;
 
