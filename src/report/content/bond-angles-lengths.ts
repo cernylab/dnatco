@@ -6,11 +6,9 @@ import { NTFont, NTHAlignment, NTInset, NTTable } from '../nottex/primitives';
 import { NTMm, NTUnit, NTXYWH } from '../nottex/space';
 import { Dnatcofication } from '../../dnatco/dnatcofication';
 import { AnglesLengths, NavalRankingClasses, ProScoGroup, ProScoGroups } from '../../dnatco/angles-lengths';
-import { ByResidueHelpers } from '../../dnatco/angles-lengths/helpers';
 import { SummarizeNaval, SummarizeProSco } from '../../dnatco/angles-lengths/summarize';
 import { GlobalConfig } from '../../global-config';
 import { colorToRgb, nrgb, nrgba, NRgba } from '../../util/colors';
-import { InvalidChain } from '../../util/structure-selection';
 
 const Monospace = { ...Fonts.Default, family: 'monospace' } as NTFont;
 const CountCellText = { hAlign: 'right' as NTHAlignment, font: Monospace };
@@ -216,13 +214,12 @@ export namespace BondAnglesLengths {
         );
 
         const numModels = Dnatcofication.Structure.numberOfModels(ctx.dnatcofication);
-        const alm = ctx.dnatcofication.data.almByResidue;
+        const alm = ctx.dnatcofication.data.almByCompound;
         const metrics =  GlobalConfig.data().anglesLengths.summaryMetrics;
 
         for (let mIdx = 0; mIdx < numModels; mIdx++) {
-            const selectedIndices = ByResidueHelpers.selectionToIndices(ctx.dnatcofication, mIdx, InvalidChain);
-            const selectedResidues = selectedIndices.map((x) => alm.residues[x]);
-            const summary = SummarizeProSco.substructure(selectedResidues);
+            const modelNum = ctx.dnatcofication.data.structures[0].models[mIdx].num;
+            const selected = alm.models.get(modelNum)!;
 
             if (numModels > 1) {
                 root.lineText(
@@ -242,12 +239,14 @@ export namespace BondAnglesLengths {
             const countsLengths = metrics === 'prosco'
                 ? {
                     kind: 'prosco' as const,
-                    counts: SummarizeProSco.countsInGroups(summary.lengths),
+                    counts: SummarizeProSco.countsInGroups(selected.overallLengthsProSco),
                 }
                 : {
                     kind: 'naval' as const,
-                    counts: SummarizeNaval.countsInGroups(summary.lengths),
+                    counts: SummarizeNaval.countsInGroups(selected.overallLengthsNaval),
                 };
+
+            console.log(countsLengths);
 
             drawCountsBar(inset, countsLengths, mIdx, 'Lengths', ctx);
             root.breakLine();
@@ -255,13 +254,14 @@ export namespace BondAnglesLengths {
 
             root.breakLine();
 
-            const countsAngles = metrics === 'prosco' ? {
+            const countsAngles = metrics === 'prosco'
+                ? {
                     kind: 'prosco' as const,
-                    counts: SummarizeProSco.countsInGroups(summary.angles),
+                    counts: SummarizeProSco.countsInGroups(selected.overallAnglesProSco),
                 }
                 : {
                     kind: 'naval' as const,
-                    counts: SummarizeNaval.countsInGroups(summary.angles),
+                    counts: SummarizeNaval.countsInGroups(selected.overallAnglesNaval),
                 };
 
             // --- ANGLES ---
