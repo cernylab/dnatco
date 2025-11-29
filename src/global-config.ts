@@ -16,15 +16,26 @@ import { fromTemplate } from './util/json';
 const SchemeRegex = new RegExp('^([a-zA-Z]){1}([a-zA-Z0-9])*:\\/\\/');
 
 export type AngleLengthPGroup = {
-    threshold: number,
     color: string,
     name: string,
 };
 export const AngleLengthPGroup: AngleLengthPGroup = {
-    threshold: 0,
     color: '#ffffff',
     name: '',
 };
+
+export type AngleLengthPGroups = {
+    common: AngleLengthPGroup,
+    rare: AngleLengthPGroup,
+    ambiguous: AngleLengthPGroup,
+    unique: AngleLengthPGroup,
+};
+export const AngleLengthPGroups: AngleLengthPGroups = {
+    common: { ...AngleLengthPGroup, name: 'Common' },
+    rare: { ...AngleLengthPGroup, name: 'Rare' },
+    ambiguous: { ...AngleLengthPGroup, name: 'Ambiguous' },
+    unique: { ...AngleLengthPGroup, name: 'Unique' },
+}
 
 export type GlobalConfigData = {
     isDevel: boolean,
@@ -38,7 +49,7 @@ export type GlobalConfigData = {
         navalPreferredColor: string,
         navalAllowedColor: string,
         navalOfConcernColor: string,
-        pGroups: AngleLengthPGroup[],
+        pGroups: AngleLengthPGroups,
         outlierColor: string,
         outlierName: string,
         summaryMetrics: 'naval' | 'prosco',
@@ -109,11 +120,12 @@ const GlobalConfigData: GlobalConfigData = {
         outlierColor: '#000000',
         outlierName: 'Outlier',
         summaryMetrics: 'naval',
-        pGroups: [
-            { threshold: 80, color: '#006eff', name: '', },
-            { threshold: 95, color: '#00ff00', name: '', },
-            { threshold: 99.9, color: '#ffff00', name: '' },
-        ],
+        pGroups: {
+            common: { color: '#1a33ad', name: 'Common' },
+            rare: { color: '#737dad', name: 'Rare' },
+            ambiguous: { color: '#ad738a', name: 'Ambiguous' },
+            unique: { color: '#ad265a', name: 'Unique' },
+        },
         debugProScoGrouping: false,
     },
     violinPlotMarkerColorA: '#fff70c',

@@ -548,6 +548,8 @@ export class PGroupSummary extends React.Component<
     const nearestLower = this.props.nearestReferenceLower;
     const nearestUpper = this.props.nearestReferenceUpper;
 
+    const pGroupCat = this.props.pGroup?.pGroup;
+
     return (
       <div className="flex flex-row gap-4 font-bold">
           <div className="gap-2" style={{ display: 'grid', gridTemplateColumns: 'auto auto auto auto', alignItems: 'center' }}>
@@ -567,7 +569,7 @@ export class PGroupSummary extends React.Component<
             height: '1rem',
             backgroundColor: proscoColor
           }} />
-          <div>{this.props.pGroup?.pGroup ?? DAnglesLengths.outlierName()}</div>
+          <div>{pGroupCat ? DAnglesLengths.pGroupName(pGroupCat) : DAnglesLengths.outlierName()}</div>
         </div>
 
         <div style={{ flex: '1' }} />

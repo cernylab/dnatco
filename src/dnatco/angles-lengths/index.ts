@@ -223,10 +223,16 @@ let NavalPrefferedColor = 0x0000FF00;
 let NavalAllowedColor   = 0x00FFFF00;
 let NavalOfConcernColor = 0x00FF0000;
 let PGroupColors: Record<ProScoGroup, number> = {
-    unique: 0x00FF0000,
-    ambiguous: 0x00CCCC00,
-    rare: 0x00FFFF00,
-    common: 0x0000FF00,
+    unique: 0x00AD265A,
+    ambiguous: 0x00AD738A,
+    rare: 0x00737DAD,
+    common: 0x001A33AD,
+};
+let PGroupNames: Record<ProScoGroup, string> = {
+    unique: 'Unique',
+    ambiguous: 'Ambiguous',
+    rare: 'Rare',
+    common: 'Unique',
 };
 
 function checkReferenceData(data: object): asserts data is (WireBins & ZPrime & WireReferenceSets) {
@@ -475,14 +481,14 @@ export namespace AnglesLengths {
     export async function initialize(loaderFunc?: (subpath: string) => string): Promise<Result<void>> {
         const prefix = `${GlobalConfig.data().pathPrefix}/angles_lengths`;
 
-        for (const pgrp of GlobalConfig.data().anglesLengths.pGroups) {
-            if (!ProScoGroups.includes(pgrp.name as ProScoGroup))
-                throw new Error(`${pgrp.name} is not a valid ProSco group name`);
+        for (const cat of ProScoGroups) {
+            const pgrp = GlobalConfig.data().anglesLengths.pGroups[cat];
             const color = htmlColorAsNumber(pgrp.color);
             if (!color)
                 throw new Error(`${pgrp.color} is not a valid HTML color string`);
 
-            PGroupColors[pgrp.name as ProScoGroup] = color;
+            PGroupNames[cat] = pgrp.name;
+            PGroupColors[cat] = color;
         }
 
         OutlierColor = htmlColorAsNumber(GlobalConfig.data().anglesLengths.outlierColor) ?? 0;
@@ -669,6 +675,10 @@ export namespace AnglesLengths {
     export function pGroupColor(group: ProScoGroup | 'outlier') {
         if (group === 'outlier') return outlierColor();
         return PGroupColors[group];
+    }
+
+    export function pGroupName(group: ProScoGroup) {
+        return PGroupNames[group];
     }
 
     export function navalAngle(naval: MappedNaval, r: Measurements.Residue, triplet: Triplet) {
