@@ -65,6 +65,9 @@ const EmptyNavalItem: NavalItem = {
     csdPreferredRight: -1,
     value: -1,
 };
+function isInvalidNavalValue(v: number) {
+    return v < 0;
+}
 
 export type NavalRankingData = {
     weightedMedian: number,
@@ -701,7 +704,14 @@ export namespace AnglesLengths {
     }
 
     export function navalPreferredLowerBound(navalValue: number, bins?: Bins) {
+        if (!bins && isInvalidNavalValue(navalValue)) {
+            console.error('Requested NA-VAL preferred upper bound but neither NA-VAL nor ProSco data is available to calculate it');
+            return 0;
+        }
+
         if (!bins) return navalValue;
+        // This assumes that the bins are sorted and they should be
+        if (isInvalidNavalValue(navalValue)) return bins[0].from;
 
         for (const bin of bins) {
             if (bin.from > navalValue) {
@@ -720,7 +730,14 @@ export namespace AnglesLengths {
     }
 
     export function navalPreferredUpperBound(navalValue: number, bins?: Bins) {
+        if (!bins && isInvalidNavalValue(navalValue)) {
+            console.error('Requested NA-VAL preferred upper bound but neither NA-VAL nor ProSco data is available to calculate it');
+            return 0;
+        }
+
         if (!bins) return navalValue;
+        // This assumes that the bins are sorted and they should be
+        if (isInvalidNavalValue(navalValue)) return bins[bins.length - 1].to;
 
         for (let idx = bins.length - 1; idx >= 0; idx--) {
             const bin = bins[idx];
