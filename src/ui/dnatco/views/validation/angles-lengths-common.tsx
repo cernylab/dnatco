@@ -532,14 +532,6 @@ export class PGroupSummary extends React.Component<
     };
   }
 
-  private navalRankingClassName() {
-    switch (this.props.navalRankingClass) {
-      case 'of-concern': return 'Of concern';
-      case 'allowed': return 'Allowed';
-      case 'preferred': return 'Preferred';
-    }
-  }
-
   private renderSummary() {
     const proscoColor = colorToHex(this.props.pGroup
       ? DAnglesLengths.pGroupColor(this.props.pGroup.pGroup)
@@ -560,7 +552,7 @@ export class PGroupSummary extends React.Component<
             height: '1rem',
             backgroundColor: colorToHex(DAnglesLengths.navalRankingClassColor(this.props.navalRankingClass))
           }} />
-          <div>{this.navalRankingClassName()}</div>
+          <div>{DAnglesLengths.navalRankingClassName(this.props.navalRankingClass)}</div>
 
           <div>ProSco</div>
           <div><Prosco bin={this.props.maybeBin} /></div>

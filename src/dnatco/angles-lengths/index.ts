@@ -797,6 +797,14 @@ export namespace AnglesLengths {
         }
     }
 
+    export function navalRankingClassName(cls: NavalRankingClass) {
+        switch (cls) {
+            case 'of-concern': return 'Of concern';
+            case 'allowed': return 'Allowed';
+            case 'preferred': return 'Preferred';
+        }
+    }
+
     export function nearestAngleReferenceLower(binIndex: number, base: ElementaryResidue, triplet: Triplet) {
         if (binIndex < 0) return void 0;
 

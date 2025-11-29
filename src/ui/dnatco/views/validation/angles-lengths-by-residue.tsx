@@ -29,7 +29,7 @@ import { ALM } from "../../../../dnatco/alm";
 import { Dnatcofication } from "../../../../dnatco/dnatcofication";
 import {
   AnglesLengths as DAnglesLengths,
-  NavalItem, NavalRankingClasses,
+  NavalItem, NavalRankingClass, NavalRankingClasses,
   NavalRankingData,
   ProScoGroup,
   ProScoGroups,
@@ -1432,7 +1432,12 @@ export class AnglesLengthsByResidue extends View<
     .reverse()
     .map((thr) => {
       const v = thr.toString();
-      return { caption: v, value: v };
+      return {
+        caption: metrics === 'naval'
+          ? DAnglesLengths.navalRankingClassName(v as NavalRankingClass)
+          : DAnglesLengths.pGroupName(v as ProScoGroup),
+        value: v,
+      };
     });
 
     const mkHeader = (text: string) => {

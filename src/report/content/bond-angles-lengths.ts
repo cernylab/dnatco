@@ -8,7 +8,7 @@ import { Dnatcofication } from '../../dnatco/dnatcofication';
 import { AnglesLengths, NavalRankingClasses, ProScoGroup, ProScoGroups } from '../../dnatco/angles-lengths';
 import { SummarizeNaval, SummarizeProSco } from '../../dnatco/angles-lengths/summarize';
 import { GlobalConfig } from '../../global-config';
-import { colorToRgb, nrgb, nrgba, NRgba } from '../../util/colors';
+import { colorToRgb, luminance, nrgb, nrgba, NRgba } from '../../util/colors';
 
 const Monospace = { ...Fonts.Default, family: 'monospace' } as NTFont;
 const CountCellText = { hAlign: 'right' as NTHAlignment, font: Monospace };
@@ -37,6 +37,11 @@ function drawCountsBar<Output>(
 ) {
     const H = NTUnit.multiply(2, ctx.tDims.characterHeight);
     const totalWidth = inset.xywh.width;
+
+    const captionClrSrc = counts.kind === 'naval'
+      ? AnglesLengths.navalRankingClassColor('allowed')
+      : AnglesLengths.pGroupColor('common');
+    const captionClr = luminance(captionClrSrc) > 0.5 ? NRgba(0, 0, 0) : NRgba(1, 1, 1);
 
     if (counts.kind === 'prosco') {
         const grps = [...ProScoGroups, 'outlier'] as const;
@@ -99,7 +104,7 @@ function drawCountsBar<Output>(
         {},
         `${tag}-${mIdx}`
     );
-    _inset.lineText(tag, { color: NRgba(1, 1, 1), font: { size: 14, style: 'bold' } });
+    _inset.lineText(tag, { color: captionClr, font: { size: 14, style: 'bold' } });
 }
 
 function drawCountsTable<Output>(
@@ -151,7 +156,7 @@ function drawCountsTable<Output>(
                 box.lineText(Colors.colorToGlyph(rectClr), {}, ref);
             else
                 box.rect(clrXywh, { color: NRgba(rectNClr.r, rectNClr.g, rectNClr.b) }, ref);
-            box.lineText(grp, CountCellText, ref);
+            box.lineText(AnglesLengths.pGroupName(grp), CountCellText, ref);
 
             tbl.addRow([
                 NTTable.Cell.box(box),
@@ -194,7 +199,7 @@ function drawCountsTable<Output>(
                 box.lineText(Colors.colorToGlyph(rectClr), {}, ref);
             else
                 box.rect(clrXywh, { color: NRgba(rectNClr.r, rectNClr.g, rectNClr.b) }, ref);
-            box.lineText(NavalRankingClasses[gdx], CountCellText, ref);
+            box.lineText(AnglesLengths.navalRankingClassName(cls), CountCellText, ref);
 
             tbl.addRow([
                 NTTable.Cell.box(box),
