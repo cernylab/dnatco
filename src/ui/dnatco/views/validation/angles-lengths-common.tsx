@@ -767,7 +767,7 @@ function SubstructureSummaryProSco(props: {
         Counts
       </div>
 
-      <div className="font-700 col-span-2">Percentile</div>
+      <div className="font-700 col-span-2">Category</div>
       <div className="font-700">Exclusive</div>
       <div className="font-700">Cumulative</div>
       {grps.map(g => props.countsInGroups[g]).map((x, idx) => {
@@ -777,7 +777,7 @@ function SubstructureSummaryProSco(props: {
         return (
           <React.Fragment key={idx}>
             <div style={{ backgroundColor: colorStyle(colorToTuple(clr)) }} />
-            <div className="text-right">{thr}</div>
+            <div className="text-right">{thr === 'outlier' ? DAnglesLengths.outlierName() : DAnglesLengths.pGroupName(thr)}</div>
             <div className="text-right">{x.exclusive}</div>
             <div className="text-right">{`${x.cumulative}\u00A0(${perc
               .toFixed(2)
