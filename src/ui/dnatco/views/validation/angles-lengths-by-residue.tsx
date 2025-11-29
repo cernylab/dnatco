@@ -1435,7 +1435,7 @@ export class AnglesLengthsByResidue extends View<
       return {
         caption: metrics === 'naval'
           ? DAnglesLengths.navalRankingClassName(v as NavalRankingClass)
-          : DAnglesLengths.pGroupName(v as ProScoGroup),
+          : v === 'outlier' ? DAnglesLengths.outlierName() : DAnglesLengths.pGroupName(v as ProScoGroup),
         value: v,
       };
     });
