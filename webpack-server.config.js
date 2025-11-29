@@ -17,6 +17,10 @@ module.exports = (env, argv) => {
         {
             mode: productionBuild ? 'production' : 'development',
 
+            optimization: {
+                minimize: false,
+            },
+
             externals: {
                 'better-sqlite3': 'commonjs better-sqlite3'
             },
