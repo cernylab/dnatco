@@ -4,6 +4,7 @@ import { Layout } from '../layout';
 import { Fonts } from '../styling';
 import { ByResidueHelpers } from '../../dnatco/angles-lengths/helpers';
 import { Dnatcofication } from '../../dnatco/dnatcofication';
+import { GlobalConfig } from '../../global-config';
 import { InvalidChain } from '../../util/structure-selection';
 
 export namespace CompleteAnglesLengths {
@@ -14,6 +15,8 @@ export namespace CompleteAnglesLengths {
 
         const numModels = Dnatcofication.Structure.numberOfModels(ctx.dnatcofication);
         const alm = ctx.dnatcofication.data.almByResidue;
+        const metrics =  GlobalConfig.data().anglesLengths.summaryMetrics;
+
 
         for (let mIdx = 0; mIdx < numModels; mIdx++) {
             const indices = ByResidueHelpers.selectionToIndices(ctx.dnatcofication, mIdx, InvalidChain);
@@ -25,11 +28,11 @@ export namespace CompleteAnglesLengths {
 
             // --- LENGTHS ---
             root.lineText('Lengths', { font: { style: 'bold' }, hAlign: ctx.mode === 'textual' ? 'left' : 'center' });
-            drawAllAnglesLengths('lengths', residues, residueStats, ctx.ntDoc, ctx);
+            drawAllAnglesLengths('lengths', residues, ctx.dnatcofication, metrics, residueStats, ctx.ntDoc, ctx);
 
             // --- ANGLES ---
             root.lineText('Angles', { font: { style: 'bold' }, hAlign: ctx.mode === 'textual' ? 'left' : 'center' });
-            drawAllAnglesLengths('angles', residues, residueStats, ctx.ntDoc, ctx);
+            drawAllAnglesLengths('angles', residues, ctx.dnatcofication, metrics, residueStats, ctx.ntDoc, ctx);
         }
 
         if (ctx.generator === 'web') {

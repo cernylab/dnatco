@@ -1,4 +1,4 @@
-import { type ElementaryResidue, AnglesLengths } from './';
+import { type ElementaryResidue, AnglesLengths, ProScoGroup, ProScoGroups } from './';
 import { Triplet } from './angles';
 import { Pair } from './lengths';
 import { Measurements } from './measurements';
@@ -9,7 +9,7 @@ import { Serialization } from '../../util/serialization';
 
 const DetailsHeader = ['kind', 'model', 'chain', 'seqid', 'inscode', 'altid', 'auth_chain', 'auth_seqid', 'compound', 'percentile', 'name', 'value', 'prosco'];
 
-type Detail = { name: string, value: number, threshold: number | null, prosco: number | null };
+type Detail = { name: string, value: number, pGroup: ProScoGroup | null, prosco: number | null };
 type Residue = {
     model: number,
     chain: string,
@@ -48,14 +48,15 @@ function residueWithDetails(r: Measurements.Residue, details: Detail[]): Residue
     };
 }
 
-function proScoStatsToSerializable(counts: SummarizeProSco.CountsInGroup[], kind: 'a' | 'l'): Serialization.Serializable {
+function proScoStatsToSerializable(counts: Record<ProScoGroup | 'outlier', SummarizeProSco.CountsInGroup>, kind: 'a' | 'l'): Serialization.Serializable {
     const tags = ['kind', 'percentile', 'cumulative_count', 'exclusive_count'];
     const values = new Array<(number|string)[]>();
 
-    values.push((new Array<string>(counts.length)).fill(kind));
-    values.push(counts.map(x => x.threshold));
-    values.push(counts.map(x => x.cumulative));
-    values.push(counts.map(x => x.exclusive));
+    const grps = [...ProScoGroups, 'outlier'] as const;
+    values.push((new Array<string>(ProScoGroups.length + 1)).fill(kind));
+    values.push(grps.map(g => counts[g]).map(x => x.pGroup));
+    values.push(grps.map(g => counts[g]).map(x => x.cumulative));
+    values.push(grps.map(g => counts[g]).map(x => x.exclusive));
 
     return { tags, values };
 }
@@ -74,7 +75,7 @@ export namespace SerializeByCompound {
         values.push(angles.flatMap((x) => x.angles.map((a) => a.residue.authChain)));
         values.push(angles.flatMap((x) => x.angles.map((a) => a.residue.authSeqId)));
         values.push(angles.flatMap((x) => x.angles.map((a) => a.residue.compound)));
-        values.push(angles.flatMap((x) => x.angles.map((a) => a.pGroup?.threshold ?? 'outlier')));
+        values.push(angles.flatMap((x) => x.angles.map((a) => a.pGroup?.pGroup ?? 'outlier')));
         values.push(angles.flatMap((x) => x.angles.map((a) => angleName(a.angle.triplet))));
         values.push(angles.flatMap((x) => x.angles.map((a) => a.angle.angle)));
         values.push(angles.flatMap((x) => x.angles.map((a) => maybeBinValue(a.bin)?.prosco ?? a.bin as string)));
@@ -95,7 +96,7 @@ export namespace SerializeByCompound {
         values.push(lengths.flatMap((x) => x.lengths.map((l) => l.residue.authChain)));
         values.push(lengths.flatMap((x) => x.lengths.map((l) => l.residue.authSeqId)));
         values.push(lengths.flatMap((x) => x.lengths.map((l) => l.residue.compound)));
-        values.push(lengths.flatMap((x) => x.lengths.map((l) => l.pGroup?.threshold ?? 'outlier')));
+        values.push(lengths.flatMap((x) => x.lengths.map((l) => l.pGroup?.pGroup ?? 'outlier')));
         values.push(lengths.flatMap((x) => x.lengths.map((l) => lengthName(l.length.pair))));
         values.push(lengths.flatMap((x) => x.lengths.map((l) => l.length.length)));
         values.push(lengths.flatMap((x) => x.lengths.map((l) => maybeBinValue(l.bin)?.prosco ?? l.bin as string)));
@@ -105,9 +106,9 @@ export namespace SerializeByCompound {
 
     export function toCsv(
         angles: ALM.AngleStats[],
-        proScoCountsAngles: SummarizeProSco.CountsInGroup[],
+        proScoCountsAngles: Record<ProScoGroup | 'outlier', SummarizeProSco.CountsInGroup>,
         lengths: ALM.LengthStats[],
-        proScoCountsLengths: SummarizeProSco.CountsInGroup[]
+        proScoCountsLengths: Record<ProScoGroup | 'outlier', SummarizeProSco.CountsInGroup>
     ) {
         const proScoStatsAngles = Serialization.toCsv(proScoStatsToSerializable(proScoCountsAngles, 'a'));
         const proScoStatsLengths = Serialization.toCsv(proScoStatsToSerializable(proScoCountsLengths, 'l'));
@@ -119,14 +120,15 @@ export namespace SerializeByCompound {
 
     export function toJson(
         angles: ALM.AngleStats[],
-        proScoCountsAngles: SummarizeProSco.CountsInGroup[],
+        proScoCountsAngles: Record<ProScoGroup | 'outlier',  SummarizeProSco.CountsInGroup>,
         lengths: ALM.LengthStats[],
-        proScoCountsLengths: SummarizeProSco.CountsInGroup[]
+        proScoCountsLengths: Record<ProScoGroup | 'outlier', SummarizeProSco.CountsInGroup>
     ) {
-        type Stats = { percentile: number|null, cumulativeCount: number, exclusiveCount: number };
+        type Stats = { pGroup: ProScoGroup | 'outlier', cumulativeCount: number, exclusiveCount: number };
 
-        const proScoAnglesStats: Stats[] = proScoCountsAngles.map(x => ({ percentile: x.threshold, cumulativeCount: x.cumulative, exclusiveCount: x.exclusive }));
-        const proScoLengthsStats: Stats[] = proScoCountsLengths.map(x => ({ percentile: x.threshold, cumulativeCount: x.cumulative, exclusiveCount: x.exclusive }));
+        const grps = [...ProScoGroups, 'outlier'] as const;
+        const proScoAnglesStats: Stats[] = grps.map(g => proScoCountsAngles[g]).map(x => ({ pGroup: x.pGroup, cumulativeCount: x.cumulative, exclusiveCount: x.exclusive }));
+        const proScoLengthsStats: Stats[] = grps.map(g => proScoCountsLengths[g]).map(x => ({ pGroup: x.pGroup, cumulativeCount: x.cumulative, exclusiveCount: x.exclusive }));
 
         type OutStats<T extends ALM.AngleStats['angles'] | ALM.LengthStats['lengths']> = {
             stats: Omit<T[0], 'residue'>,
@@ -210,7 +212,7 @@ export namespace SerializeByResidue {
         values.push(residues.flatMap(x => x.bondAngles.map(() => x.authChain)));
         values.push(residues.flatMap(x => x.bondAngles.map(() => x.authSeqId)));
         values.push(residues.flatMap(x => x.bondAngles.map(() => x.compound)));
-        values.push(residues.flatMap(x => x.bondAngles.map(a => AnglesLengths.anglePGroup(x.compound, a)?.threshold ?? 'outlier')));
+        values.push(residues.flatMap(x => x.bondAngles.map(a => AnglesLengths.anglePGroup(x.compound, a)?.pGroup?? 'outlier')));
         values.push(residues.flatMap(x => x.bondAngles.map(a => angleName(a.triplet))));
         values.push(residues.flatMap(x => x.bondAngles.map(a => a.angle)));
         values.push(residues.flatMap((x, idx) => x.bondAngles.map((_y, jdx) => {
@@ -234,7 +236,7 @@ export namespace SerializeByResidue {
         values.push(residues.flatMap(x => x.bondLengths.map(() => x.authChain)));
         values.push(residues.flatMap(x => x.bondLengths.map(() => x.authSeqId)));
         values.push(residues.flatMap(x => x.bondLengths.map(() => x.compound)));
-        values.push(residues.flatMap(x => x.bondLengths.map(l => AnglesLengths.lengthPGroup(x.compound, l)?.threshold ?? 'outlier')));
+        values.push(residues.flatMap(x => x.bondLengths.map(l => AnglesLengths.lengthPGroup(x.compound, l)?.pGroup ?? 'outlier')));
         values.push(residues.flatMap(x => x.bondLengths.map(l => lengthName(l.pair))));
         values.push(residues.flatMap(x => x.bondLengths.map(l => l.length)));
         values.push(residues.flatMap((x, idx) => x.bondLengths.map((_y, jdx) => {
@@ -245,8 +247,8 @@ export namespace SerializeByResidue {
     }
 
     export function toCsv(
-        proScoCountsAngles: SummarizeProSco.CountsInGroup[],
-        proScoCountsLengths: SummarizeProSco.CountsInGroup[],
+        proScoCountsAngles: Record<ProScoGroup | 'outlier', SummarizeProSco.CountsInGroup>,
+        proScoCountsLengths: Record<ProScoGroup | 'outlier', SummarizeProSco.CountsInGroup>,
         residues: Measurements.Residue[],
         stats: ALM.ResidueStats[]
     ) {
@@ -259,15 +261,16 @@ export namespace SerializeByResidue {
     }
 
     export function toJson(
-        countsAngles: SummarizeProSco.CountsInGroup[],
-        countsLengths: SummarizeProSco.CountsInGroup[],
+        countsAngles: Record<ProScoGroup | 'outlier', SummarizeProSco.CountsInGroup>,
+        countsLengths: Record<ProScoGroup | 'outlier', SummarizeProSco.CountsInGroup>,
         residues: Measurements.Residue[],
         stats: ALM.ResidueStats[]
     ) {
-        type Stats = { percentile: number|null, cumulativeCount: number, exclusiveCount: number };
+        type Stats = { pGroup: ProScoGroup | 'outlier', cumulativeCount: number, exclusiveCount: number };
 
-        const proScoAnglesStats: Stats[] = countsAngles.map(x => ({ percentile: x.threshold, cumulativeCount: x.cumulative, exclusiveCount: x.exclusive }));
-        const proScoLengthsStats: Stats[] = countsLengths.map(x => ({ percentile: x.threshold, cumulativeCount: x.cumulative, exclusiveCount: x.exclusive }));
+        const grps = [...ProScoGroups, 'outlier'] as const;
+        const proScoAnglesStats: Stats[] = grps.map(g => countsAngles[g]).map(x => ({ pGroup: x.pGroup, cumulativeCount: x.cumulative, exclusiveCount: x.exclusive }));
+        const proScoLengthsStats: Stats[] = grps.map(g => countsLengths[g]).map(x => ({ pGroup: x.pGroup, cumulativeCount: x.cumulative, exclusiveCount: x.exclusive }));
 
         const angles = new Array<Residue>();
         const lengths = new Array<Residue>();
@@ -277,10 +280,10 @@ export namespace SerializeByResidue {
             const s = stats[idx];
 
             const anglesDetails: Detail[] = r.bondAngles.map((x, jdx) => ({
-                name: angleName(x.triplet), value: x.angle, threshold: AnglesLengths.anglePGroup(r.compound, x)?.threshold ?? null, prosco: maybeBinValue(s.angles[jdx].bin)?.prosco ?? null,
+                name: angleName(x.triplet), value: x.angle, pGroup: AnglesLengths.anglePGroup(r.compound, x)?.pGroup ?? null, prosco: maybeBinValue(s.angles[jdx].bin)?.prosco ?? null,
             }));
             const lengthsDetails: Detail[] = r.bondLengths.map((x, jdx) => ({
-                name: lengthName(x.pair), value: x.length, threshold: AnglesLengths.lengthPGroup(r.compound, x)?.threshold ?? null, prosco: maybeBinValue(s.lengths[jdx].bin)?.prosco ?? null,
+                name: lengthName(x.pair), value: x.length, pGroup: AnglesLengths.lengthPGroup(r.compound, x)?.pGroup ?? null, prosco: maybeBinValue(s.lengths[jdx].bin)?.prosco ?? null,
             }));
 
             angles.push(residueWithDetails(r, anglesDetails));

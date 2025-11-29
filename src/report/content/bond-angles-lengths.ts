@@ -5,11 +5,10 @@ import { NTDocument } from '../nottex/document';
 import { NTFont, NTHAlignment, NTInset, NTTable } from '../nottex/primitives';
 import { NTMm, NTUnit, NTXYWH } from '../nottex/space';
 import { Dnatcofication } from '../../dnatco/dnatcofication';
-import { AnglesLengths } from '../../dnatco/angles-lengths';
-import { ByResidueHelpers } from '../../dnatco/angles-lengths/helpers';
-import { SummarizeProSco } from '../../dnatco/angles-lengths/summarize';
-import { colorToRgb, nrgb, nrgba, NRgba } from '../../util/colors';
-import { InvalidChain } from '../../util/structure-selection';
+import { AnglesLengths, NavalRankingClasses, ProScoGroup, ProScoGroups } from '../../dnatco/angles-lengths';
+import { SummarizeNaval, SummarizeProSco } from '../../dnatco/angles-lengths/summarize';
+import { GlobalConfig } from '../../global-config';
+import { colorToRgb, luminance, nrgb, nrgba, NRgba } from '../../util/colors';
 
 const Monospace = { ...Fonts.Default, family: 'monospace' } as NTFont;
 const CountCellText = { hAlign: 'right' as NTHAlignment, font: Monospace };
@@ -23,37 +22,78 @@ function drawBarSegment(inset: NTInset, x: number, w: number, totalWidth: NTUnit
     inset.rect(xywh, { color }, ref);
 }
 
-function drawProScoCountsBar<Output>(inset: NTInset, counts: SummarizeProSco.CountsInGroup[], mIdx: number, tag: string, ctx: Report.Context<Output>) {
+function drawCountsBar<Output>(
+    inset: NTInset,
+    counts: {
+        kind: 'prosco',
+        counts: Record<ProScoGroup | 'outlier', SummarizeProSco.CountsInGroup>,
+    } | {
+        kind: 'naval',
+        counts: SummarizeNaval.CountsInGroup[],
+    },
+    mIdx: number,
+    tag: string,
+    ctx: Report.Context<Output>
+) {
     const H = NTUnit.multiply(2, ctx.tDims.characterHeight);
     const totalWidth = inset.xywh.width;
-    const totalCount = counts.reduce((p, c) => p + c.exclusive, 0);
 
-    let x = 0;
-    for (let idx = 0; idx < AnglesLengths.pGroupCount(); idx++) {
-        const w = counts[idx].exclusive / totalCount;
+    const captionClrSrc = counts.kind === 'naval'
+      ? AnglesLengths.navalRankingClassColor('allowed')
+      : AnglesLengths.pGroupColor('common');
+    const captionClr = luminance(captionClrSrc) > 0.5 ? NRgba(0, 0, 0) : NRgba(1, 1, 1);
 
+    if (counts.kind === 'prosco') {
+        const grps = [...ProScoGroups, 'outlier'] as const;
+        const totalCount = grps.map((g) => counts.counts[g]).reduce((p, c) => p + c.exclusive, 0)
+
+        let x = 0;
+        for (const grp of grps) {
+            const w = counts.counts[grp].exclusive / totalCount;
+
+            drawBarSegment(
+                inset,
+                x,
+                w,
+                totalWidth,
+                H,
+                AnglesLengths.pGroupColor(grp),
+                `${tag}-${mIdx}`
+            );
+
+            x += w;
+        }
+        // Outliers
         drawBarSegment(
             inset,
             x,
-            w,
+            1.0 - x,
             totalWidth,
             H,
-            AnglesLengths.pGroupColor(idx),
+            AnglesLengths.outlierColor(),
             `${tag}-${mIdx}`
         );
+    } else if (counts.kind === 'naval') {
+        const totalCount = counts.counts.reduce((p, c) => p + c.exclusive, 0);
 
-        x += w;
+        let x = 0;
+        for (let gdx = 0; gdx < NavalRankingClasses.length; gdx++) {
+            const cls = NavalRankingClasses[gdx];
+            const w = counts.counts[gdx].exclusive / totalCount;
+
+            drawBarSegment(
+                inset,
+                x,
+                w,
+                totalWidth,
+                H,
+                AnglesLengths.navalRankingClassColor(cls),
+                `${tag}-${mIdx}`
+            );
+
+            x += w;
+        }
     }
-    // Outliers
-    drawBarSegment(
-        inset,
-        x,
-        1.0 - x,
-        totalWidth,
-        H,
-        AnglesLengths.outlierColor(),
-        `${tag}-${mIdx}`
-    );
 
     let _inset = inset.inset(
         NTXYWH.create(
@@ -64,10 +104,21 @@ function drawProScoCountsBar<Output>(inset: NTInset, counts: SummarizeProSco.Cou
         {},
         `${tag}-${mIdx}`
     );
-    _inset.lineText(tag, { color: NRgba(1, 1, 1), font: { size: 14, style: 'bold' } });
+    _inset.lineText(tag, { color: captionClr, font: { size: 14, style: 'bold' } });
 }
 
-function drawProScoCountsTable<Output>(inset: NTInset | NTDocument<Output>, counts: SummarizeProSco.CountsInGroup[], tag: string, ctx: Report.Context<Output>) {
+function drawCountsTable<Output>(
+    inset: NTInset | NTDocument<Output>,
+    counts: {
+        kind: 'prosco',
+        counts: Record<ProScoGroup | 'outlier', SummarizeProSco.CountsInGroup>,
+    } | {
+        kind: 'naval',
+        counts: SummarizeNaval.CountsInGroup[],
+    },
+    tag: string,
+    ctx: Report.Context<Output>
+) {
     const tbl = inset.table(
         3,
         {
@@ -78,55 +129,89 @@ function drawProScoCountsTable<Output>(inset: NTInset | NTDocument<Output>, coun
     );
 
     tbl.addRow([
-        NTTable.Cell.lineText('Percentile', tbl, { font: Tables.HeaderFont }),
+        NTTable.Cell.lineText('Category', tbl, { font: Tables.HeaderFont }),
         NTTable.Cell.lineText('Exclusive', tbl, { font: Tables.HeaderFont }),
         NTTable.Cell.lineText('Cumulative', tbl, { font: Tables.HeaderFont }),
     ]);
 
-    const boxXywh = NTXYWH.create(NTUnit.zero(), NTUnit.zero(), NTUnit.multiply(6, ctx.tDims.characterWidth), ctx.tDims.characterHeight);
+    let clrBoxOffset;
+    if (counts.kind === 'naval') {
+        clrBoxOffset = Math.max(...NavalRankingClasses.map(x => x.length));
+    } else {
+        clrBoxOffset = Math.max(...ProScoGroups.map(x => x.length));
+    }
+
+    const boxXywh = NTXYWH.create(NTUnit.zero(), NTUnit.zero(), NTUnit.multiply(clrBoxOffset, ctx.tDims.characterWidth), ctx.tDims.characterHeight);
     const clrXywh = NTXYWH.create(NTUnit.zero(), NTUnit.zero(), NTUnit.multiply(1, ctx.tDims.characterWidth), ctx.tDims.characterHeight);
-    const outlierC = counts[counts.length - 1];
-    for (let idx = 0; idx < AnglesLengths.pGroupCount(); idx++) {
-        const c = counts[idx];
-        const rectClr = colorToRgb(AnglesLengths.pGroupColor(idx));
-        const rectNClr = nrgb(rectClr);
+
+    if (counts.kind === 'prosco') {
+        const outlierC = counts.counts.outlier;
+        for (const grp of ProScoGroups) {
+            const c = counts.counts[grp];
+            const rectClr = colorToRgb(AnglesLengths.pGroupColor(grp));
+            const rectNClr = nrgb(rectClr);
+            const box = tbl.getBox(boxXywh);
+            const ref = `${tag}-${grp}`;
+            if (ctx.mode === 'textual')
+                box.lineText(Colors.colorToGlyph(rectClr), {}, ref);
+            else
+                box.rect(clrXywh, { color: NRgba(rectNClr.r, rectNClr.g, rectNClr.b) }, ref);
+            box.lineText(AnglesLengths.pGroupName(grp), CountCellText, ref);
+
+            tbl.addRow([
+                NTTable.Cell.box(box),
+                NTTable.Cell.lineText(c.exclusive.toString(), tbl, CountCellText),
+                NTTable.Cell.lineText(
+                    `${c.cumulative} (${(100 * c.cumulative / outlierC.cumulative).toFixed(2).padStart(6, ' ')} %)`,
+                    tbl,
+                    CountCellText
+                ),
+            ]);
+        }
+        const rectClr = colorToRgb(AnglesLengths.outlierColor());
+        const rectNClr = nrgba(rectClr);
         const box = tbl.getBox(boxXywh);
-        const ref = `${tag}-${idx}`;
+        const ref = `${tag}-outlier`;
         if (ctx.mode === 'textual')
             box.lineText(Colors.colorToGlyph(rectClr), {}, ref);
         else
-            box.rect(clrXywh, { color: NRgba(rectNClr.r, rectNClr.g, rectNClr.b) }, ref);
-        box.lineText(c.threshold.toFixed(1), CountCellText, ref);
+            box.rect(clrXywh, { color: rectNClr }, ref);
+        box.lineText(outlierC.pGroup, CountCellText, ref);
 
         tbl.addRow([
             NTTable.Cell.box(box),
-            NTTable.Cell.lineText(c.exclusive.toString(), tbl, CountCellText),
+            NTTable.Cell.lineText(outlierC.exclusive.toString(), tbl, CountCellText),
             NTTable.Cell.lineText(
-                `${c.cumulative} (${(100 * c.cumulative / outlierC.cumulative).toFixed(2).padStart(6, ' ')} %)`,
+                `${outlierC.cumulative} (100.00 %)`,
                 tbl,
                 CountCellText
             ),
         ]);
-    }
-    const rectClr = colorToRgb(AnglesLengths.outlierColor());
-    const rectNClr = nrgba(rectClr);
-    const box = tbl.getBox(boxXywh);
-    const ref = `${tag}-outlier`;
-    if (ctx.mode === 'textual')
-        box.lineText(Colors.colorToGlyph(rectClr), {}, ref);
-    else
-        box.rect(clrXywh, { color: rectNClr }, ref);
-    box.lineText(outlierC.threshold.toFixed(1), CountCellText, ref);
+    } else if (counts.kind === 'naval') {
+        for (let gdx = 0; gdx < NavalRankingClasses.length; gdx++) {
+            const cls = NavalRankingClasses[gdx];
+            const c = counts.counts[gdx];
+            const rectClr = colorToRgb(AnglesLengths.navalRankingClassColor(cls));
+            const rectNClr = nrgb(rectClr);
+            const box = tbl.getBox(boxXywh);
+            const ref = `${tag}-${gdx}`;
+            if (ctx.mode === 'textual')
+                box.lineText(Colors.colorToGlyph(rectClr), {}, ref);
+            else
+                box.rect(clrXywh, { color: NRgba(rectNClr.r, rectNClr.g, rectNClr.b) }, ref);
+            box.lineText(AnglesLengths.navalRankingClassName(cls), CountCellText, ref);
 
-    tbl.addRow([
-        NTTable.Cell.box(box),
-        NTTable.Cell.lineText(outlierC.exclusive.toString(), tbl, CountCellText),
-        NTTable.Cell.lineText(
-            `${outlierC.cumulative} (100.00 %)`,
-            tbl,
-            CountCellText
-        ),
-    ]);
+            tbl.addRow([
+                NTTable.Cell.box(box),
+                NTTable.Cell.lineText(c.exclusive.toString(), tbl, CountCellText),
+                NTTable.Cell.lineText(
+                    `${c.cumulative} (${(100 * c.cumulative / counts.counts[NavalRankingClasses.length - 1].cumulative).toFixed(2).padStart(6, ' ')} %)`,
+                    tbl,
+                    CountCellText
+                ),
+            ]);
+        }
+    }
 }
 
 export namespace BondAnglesLengths {
@@ -135,20 +220,20 @@ export namespace BondAnglesLengths {
 
         Layout.sectionHeader('Bond Lengths & Angles', ctx);
 
+        const metrics =  GlobalConfig.data().anglesLengths.summaryMetrics;
+        const metricsName = metrics === 'naval' ? 'NA-VAL' : 'ProSco';
+
         root.paragraphText(
-            'Occurrence of bond lengths and angles within probability distribution bins',
+            `Occurrence of bond lengths and angles within probability distribution bins (${metricsName})`,
             { hAlign: 'center' }
         );
 
         const numModels = Dnatcofication.Structure.numberOfModels(ctx.dnatcofication);
-        const alm = ctx.dnatcofication.data.almByResidue;
+        const alm = ctx.dnatcofication.data.almByCompound;
 
         for (let mIdx = 0; mIdx < numModels; mIdx++) {
-            const selectedIndices = ByResidueHelpers.selectionToIndices(ctx.dnatcofication, mIdx, InvalidChain);
-            const selectedResidues = selectedIndices.map((x) => alm.residues[x]);
-            const summary = SummarizeProSco.substructure(selectedResidues);
-
-            const countsLenghts = SummarizeProSco.countsInGroups(summary.lengths);
+            const modelNum = ctx.dnatcofication.data.structures[0].models[mIdx].num;
+            const selected = alm.models.get(modelNum)!;
 
             if (numModels > 1) {
                 root.lineText(
@@ -164,13 +249,34 @@ export namespace BondAnglesLengths {
                 {},
                 'lengths-bar',
             );
-            drawProScoCountsBar(inset, countsLenghts, mIdx, 'Lengths', ctx);
+
+            const countsLengths = metrics === 'prosco'
+                ? {
+                    kind: 'prosco' as const,
+                    counts: SummarizeProSco.countsInGroups(selected.overallLengthsProSco),
+                }
+                : {
+                    kind: 'naval' as const,
+                    counts: SummarizeNaval.countsInGroups(selected.overallLengthsNaval),
+                };
+
+            console.log(countsLengths);
+
+            drawCountsBar(inset, countsLengths, mIdx, 'Lengths', ctx);
             root.breakLine();
-            drawProScoCountsTable(root, countsLenghts, `lengths-tbl-${mIdx}`, ctx);
+            drawCountsTable(root, countsLengths, `lengths-tbl-${mIdx}`, ctx);
 
             root.breakLine();
 
-            const countsAngles = SummarizeProSco.countsInGroups(summary.angles);
+            const countsAngles = metrics === 'prosco'
+                ? {
+                    kind: 'prosco' as const,
+                    counts: SummarizeProSco.countsInGroups(selected.overallAnglesProSco),
+                }
+                : {
+                    kind: 'naval' as const,
+                    counts: SummarizeNaval.countsInGroups(selected.overallAnglesNaval),
+                };
 
             // --- ANGLES ---
             inset = root.inset(
@@ -178,9 +284,9 @@ export namespace BondAnglesLengths {
                 {},
                 'angles-bar',
             );
-            drawProScoCountsBar(inset, countsAngles, mIdx, 'Angles', ctx);
+            drawCountsBar(inset, countsAngles, mIdx, 'Angles', ctx);
             root.breakLine();
-            drawProScoCountsTable(root, countsAngles, `angles-tbl-${mIdx}`, ctx);
+            drawCountsTable(root, countsAngles, `angles-tbl-${mIdx}`, ctx);
 
             root.breakLine();
         }

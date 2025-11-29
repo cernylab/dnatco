@@ -10,6 +10,9 @@ export type Bin = typeof _Bin;
 export function Bin(from: number, to: number, probability: number, prosco: number): Bin {
     return { from, to, probability, prosco };
 }
+export function isBinValid(bin: Bin) {
+    return (bin.from !== -1 && bin.to !== -1);
+}
 
 export type Bins = Bin[];
 

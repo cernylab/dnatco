@@ -4,14 +4,20 @@ import { Layout } from '../layout';
 import { Fonts } from '../styling';
 import { ByResidueHelpers } from '../../dnatco/angles-lengths/helpers';
 import { Dnatcofication } from '../../dnatco/dnatcofication';
+import { GlobalConfig } from '../../global-config';
 import { InvalidChain } from '../../util/structure-selection';
 
 export namespace UntypicalAnglesLengths {
     export function add<Output>(ctx: Report.Context<Output>) {
         const root = ctx.ntDoc;
 
+        const metrics =  GlobalConfig.data().anglesLengths.summaryMetrics;
+        const threshold = metrics === 'naval'
+            ? 'of-concern'
+            : 'outlier';
+
         Layout.sectionHeader('Most untypical bond Lengths & Angles', ctx);
-        root.paragraphText('List of bond lengths and angles within the outlier probability category', { hAlign: ctx.mode === 'textual' ? 'left' : 'center' });
+        root.paragraphText(`List of bond lengths and angles within the ${threshold} category (${metrics === 'naval' ? 'NA-VAL' : 'ProSco'})`, { hAlign: ctx.mode === 'textual' ? 'left' : 'center' });
 
         const numModels = Dnatcofication.Structure.numberOfModels(ctx.dnatcofication);
         const alm = ctx.dnatcofication.data.almByResidue;
@@ -26,11 +32,11 @@ export namespace UntypicalAnglesLengths {
 
             // --- LENGTHS ---
             root.lineText('Lengths', { font: { style: 'bold' }, hAlign: ctx.mode === 'textual' ? 'left' : 'center' });
-            drawWorstAnglesLengths('lengths', residues, residueStats, 'outlier', ctx.ntDoc, ctx);
+            drawWorstAnglesLengths('lengths', ctx.dnatcofication, residues, residueStats, metrics, threshold, ctx.ntDoc, ctx);
 
             // --- ANGLES ---
             root.lineText('Angles', { font: { style: 'bold' }, hAlign: ctx.mode === 'textual' ? 'left' : 'center' });
-            drawWorstAnglesLengths('angles', residues, residueStats, 'outlier', ctx.ntDoc, ctx);
+            drawWorstAnglesLengths('angles', ctx.dnatcofication, residues, residueStats, metrics, threshold, ctx.ntDoc, ctx);
         }
 
         if (ctx.generator === 'web') {

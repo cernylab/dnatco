@@ -1,112 +1,415 @@
-import { Bin, Bins } from './bin';
-import { M } from '../../util/math';
-
-function pivotIndex(bins: Bins) {
-    let max = Number.MIN_VALUE;
-    let candidate = -1;
-
-    for (let idx = 0; idx < bins.length; idx++) {
-        const p = bins[idx].probability;
-        if (p > max) {
-            max = p;
-            candidate = idx;
-        }
-    }
-
-    return candidate;
-}
-
-function tryAssignBin(macroBin: Bin, bin: Bin) {
-    if (M.fuzzyCompare(macroBin.from, bin.to)) { // From the left?
-        macroBin.from = bin.from;
-        macroBin.probability += bin.probability;
-
-        return true;
-    } else if (M.fuzzyCompare(macroBin.to, bin.from)) { // From the right?
-        macroBin.to = bin.to;
-        macroBin.probability += bin.probability;
-
-        return true;
-    }
-
-    return false;
-}
+import { ProScoCommonBottomThreshold } from './';
+import { Bin, Bins, isBinValid } from './bin';
+import { GlobalConfig } from '../../global-config';
 
 export namespace Grouping {
-    export function aggregate(bins: Bins, aggregateProbability: number) {
-        if (aggregateProbability >= 1.0 || aggregateProbability <= 0.0)
-            throw new Error(`${aggregateProbability} aggregate probability value must be in range 0.0 - 1.0`);
+    function aggregateUnique(bins: Bins, rareBottomThreshold: number) {
+        /*
 
-        // Sort the bins by probabilities from max to min
-        const sortedBins = [...bins].sort((a, b) => b.probability - a.probability);
+              +---------------------------------------------------------------------+
+              |      +      +      +      +      +      +      +      +      +      |
+              |                                                                     |
+              |                                                                     |
+          100 |-+                               ***                               +-|
+              |                                 * *                                 |
+              |                                 *  *                                |
+              |                                *   *                                |
+              |                                *    *                               |
+              |                               *     *                               |
+              |                               *     *                               |
+           90 |-+                            *      *                             +-|
+              |                              *      *                               |
+              |                              *      *                               |
+              |                              *       *                              |
+              |                              *       *                              |
+              |                              *       *                              |
+              |                              *       *                              |
+           80 |-+                           *         *                           +-|
+              |                             *         *                             |
+              |                             *         *                             |
+              |                             *          *                            |
+              |                            *           *                            |
+              |                            *           *                            |
+              |                            *           *                            |
+           70 |-+                          *           *                          +-|
+              |                            *           *                            |
+              |                            *           *                            |
+              |                            *           *                            |
+              |                            *           *                            |
+              |                            *            *                           |
+              |                           *             *                           |
+              |                           *             *                           |
+           60 |-+                         *             *                         +-|
+              |                           *              *                          |
+              |                          *               *                          |
+              |                          *               *                          |
+              |                          *               *                          |
+              |                          *               *                          |
+              |                          *               *                          |
+           50 |-+                        *               *                        +-|
+              |                          *               *                          |
+              |                          *               *                          |
+              |                          *                *                         |
+              |                         *                 *                         |
+              |                         *                 *                         |
+              |                         *                 *                         |
+           40 |-+                       *                  *                      +-|
+              |                        *                   *                        |
+              |                        *                   *                        |
+              |                        *                   *                        |
+              |                        *                   *                        |
+              |                       *                    *                        |
+              |                       *                    *                        |
+           30 |-+                     *                    *                      +-|
+              |                       *                     *                       |
+              |                       *                     *                       |
+              |                       *                     *                       |
+              |                      *                       *                      |
+              |                      *                       *                      |
+              |                      *                       *                      |
+              |                     *                         *                     |
+           20 |-+                   *                         *                   +-|
+              |                     *                         *                     |
+              |                     *                         *                     |
+              |                     *                          *                    |
+              |                    *                           *                    |
+              |                    *                            *                   |
+              |                   *                             *                   |
+           10 |-+                 *                             *                 +-|
+              |                   *                             *                   |
+              |                  *                               *                  |
+              |                 *                                 *                 |
+              |                *                                  *                 |
+              |               **                                   **               |
+              |      +     ***     +      +      +      +      +     ***     +      |
+            0 +---------------------------------------------------------------------+
+             -5     -4     -3     -2     -1      0      1      2      3      4      5
 
-        let aggre = 0;
-        const useBins = [];
-        for (const bin of sortedBins) {
-            useBins.push(bin);
-            aggre += bin.probability;
-            if (aggre >= aggregateProbability)
-                break;
+                    uuuuuu|rrrr|ccccccccccccccccccccccccccccccccccc|rrrrr|uuuuuu
+
+            The lower "UNIQUE" interval is bracketed by the start of the data and
+            the first value that is greater than "RARE BOTTOM THRESHOLD"
+
+            The upper "UNIQUE" interval is bracketed by the end of the data and
+            the last value that is less or equal to than "RARE BOTTOM THRESHOLD"
+        */
+
+        // Find the lower "UNIQUE" interval
+        const lowerUnique: Bin = { prosco: -1, from: -1, to: -1, probability: 0 };
+        for (let idx = 0; idx < bins.length; idx++) {
+            const bin = bins[idx];
+
+            if (bin.prosco > rareBottomThreshold) break;
+
+            lowerUnique.to = bin.to;
+            lowerUnique.probability += bin.probability;
         }
+        if (lowerUnique.from === -1) lowerUnique.from = bins[0].from;
 
-        if (useBins.length === 0)
-            return []; // Weird, but possible if we get odd data
+        // Find the upper "UNIQUE" interval
+        const upperUnique: Bin = { prosco: -1, from: -1, to: -1, probability: 0 };
+        for (let idx = bins.length - 1; idx >= 0; idx--) {
+            const bin = bins[idx];
 
-        // Compactified range of used bins.
-        // We assume that bins cannot overlap but share a boundary.
-        const macroBins = [{ ...useBins.shift()!, prosco: -1 }];
-        while (true) {
-            let mb = macroBins[macroBins.length - 1];
-            let foundMatch = false;
+            if (bin.prosco > rareBottomThreshold) break;
 
-            do {
-                // Try to find a bin to extend the current macroBin.
-                // Keep running while we keep finding at least one bin that extends the macroBin
-                for (let idx = 0; idx < useBins.length; idx++) {
-                    const b = useBins[idx];
-
-                    foundMatch = tryAssignBin(mb, b);
-                    if (foundMatch) {
-                        useBins.splice(idx, 1);
-                        break;
-                    }
-                }
-            } while (foundMatch && useBins.length > 0);
-
-            // No more bins to extend the current macroBin. Make a new macroBin and go again.
-            if (useBins.length > 0)
-                macroBins.push({ ...useBins.shift()!, prosco: -1 });
-            else
-                return macroBins;
+            upperUnique.from = bin.from;
+            upperUnique.probability += bin.probability;
         }
+        if (upperUnique.to === -1) upperUnique.to = bins[bins.length - 1].to;
+
+        return { lowerUnique, upperUnique };
     }
 
-    /**
-     * Simple, but relatively naive approach to calculate a probability range from bins.
-     * Guaranteed to work correctly only if the probabilities expressed by bins follows normal distribution
-     */
-    export function cumulative(bins: Bins, cumulativeProbability: number) {
-        if (cumulativeProbability >= 1.0 || cumulativeProbability <= 0.0)
-            throw new Error(`${cumulativeProbability} cumulative probability value must be in range 0.0 - 1.0`);
+    type AmbiguousFinderState = 'finding-beginning' | 'finding-end-candidate' | 'confirming-end-candidate';
+    type AmbiguousFinderCtx = {
+        beginningIdx: number,
+        endCandidateIdx: number,
+        state: AmbiguousFinderState,
+    };
+    function findAmbigious(
+        idx: number,
+        ctx: AmbiguousFinderCtx,
+        bins: Bins,
+        rareBottomThreshold: number,
+        ambiguous: Bin[],
+        searchDir: 'up' | 'down'
+    ) {
+        /*
 
-        const pivotIdx = pivotIndex(bins);
+              +---------------------------------------------------------------------+
+              |      +      +      +      +      +      +      +      +      +      |
+              |                                                                     |
+              |                                                                     |
+          100 |-+                               ***                               +-|
+              |                                 * *                                 |
+              |                                 *  *                                |
+              |                                *   *                                |
+              |                                *    *                               |
+              |                               *     *                               |
+              |                               *     *                               |
+           90 |-+                            *      *                             +-|
+              |                              *      *                               |
+              |                              *      *                               |
+              |                              *       *                              |
+              |                              *       *                              |
+              |                              *       *                              |
+              |                              *       *                              |
+           80 |-+                           *         *                           +-|
+              |                             *         *                             |
+              |                             *         *                             |
+              |                             *          *                            |
+              |                            *           *                            |
+              |                            *           *                            |
+              |                            *           *                            |
+           70 |-+                          *           *                          +-|
+              |                            *           *                            |
+              |                            *           *                            |
+              |                            *           *                            |
+              |                            *           *                            |
+              |                            *            *                           |
+              |                           *             *                           |
+              |                           *             *                           |
+           60 |-+                         *             *                         +-|
+              |                           *              *                          |
+              |                          *               *                          |
+              |                          *               *                          |
+              |                          *               *                          |
+              |                          *               *                          |
+              |                          *               *                          |
+           50 |-+                        *               *                        +-|
+              |                          *               *                          |
+              |                          *               *                          |
+              |                          *                *                         |
+              |                         *                 *                         |
+              |                         *                 *                         |
+              |                         *                 *                         |
+           40 |-+                       *                  *                      +-|
+              |                        *                   *                        |
+              |                        *                   *                        |
+              |                        *                   *                        |
+              |                        *                   *                        |
+              |                       *                    *                        |
+              |                       *                    *                        |
+           30 |-+                     *                    *                      +-|
+              |                       *                     *                       |
+              |                       *                     *                       |
+              |                       *                     *                       |
+              |                      *                       *                      |
+              |                      *                       *                      |
+              |                      *                       *                      |
+              |                     *                         *                     |
+           20 |-+                   *                         *                   +-|
+              |                     *                         *                     |
+              |                     *                         *                     |
+              |                     *                          *                    |
+              |                    *                           *                    |
+              |                    *                            *                   |
+              |                   *                             *                   |
+           10 |-+                 *                             *                 +-|
+              |                   *                             *                   |
+              |                  * --- COMMON BTM THRESHOLD      *                  |
+SCALE BROKEN //                  *                                *                 //
+              |                 *                                 *                 |
+              |                *                                  *                 |
+              |     *          *                                   *                |
+             ---   * *       ** --- RARE BOTTOM THRESHOLD          *                |
+              |   *    *    *                                       *               |
+              |   *     *  *                                         *              |
+              |   *       *                                           *             |
+              |  *                                                     *            |
+              |  *                                                      *           |
+              | *                                                        **         |
+              | *     +      +      +      +      +      +      +      +      +     |
+            0 +---------------------------------------------------------------------+
+             -5     -4     -3     -2     -1      0      1      2      3      4      5
 
-        let accumulated = bins[pivotIdx].probability;
-        let lowerIdx = pivotIdx;
-        let upperIdx = pivotIdx;
-        while (accumulated < cumulativeProbability) {
-            if (lowerIdx > 0) {
-                lowerIdx--;
-                accumulated += bins[lowerIdx].probability;
+                uuu|aaaaaaaaa|rrr|ccccccccccccccccccccccccccccccc|rrrrr|uuu
+
+            "AMBIGUOUS" intervals are defined as follows:
+            Going from the direction of higher ProSco score, when the ProSco value
+            drops below "RARE BOTTOM THRESHOLD", later raises back above this value
+            and eventually drops back below the "RARE BOTTOM THRESHOLD" value,
+            the interval between the two crossings of the "RARE BOTTOM THRESHOLD" is
+            considered to be "AMBIGUOUS".
+
+            Explained in terms of the definition of the "UNIQUE" intervals, an interval
+            is "UNIQUE" only if the ProSco value never raises back above "RARE BOTTOM THRESHOLD"
+            until the end of data.
+ */
+
+        const bin = bins[idx];
+
+        if (ctx.state === 'finding-beginning') {
+            // Look for the first bin whose ProSco falls below "RARE BOTTOM THRESHOLD"
+            if (bin.prosco < rareBottomThreshold) {
+                ctx.beginningIdx = idx;
+                ctx.state = 'finding-end-candidate';
             }
+        } else if (ctx.state === 'finding-end-candidate') {
+            // End candidate is a bin whose ProSco is greater that "RARE BOTTOM THRESHOLD"
+            if (bin.prosco >= rareBottomThreshold) {
+                ctx.endCandidateIdx = idx;
+                ctx.state = 'confirming-end-candidate';
+            }
+        } else if (ctx.state === 'confirming-end-candidate') {
+            /* There are two possibilities that can happen with ProSco of the upcoming bins
+               1) ProSco falls back below "RARE BOTTOM THRESHOLD"
+                  In that case, the "end candidate" is not an end of the "AMBIGUOUS" interval
+                  and we need to look further
+               2) ProSco exceeds the value of "COMMON BOTTOM THRESHOLD". In this case we have been
+                  walking through the "RARE" interval and the "end candidate" is the end of an "AMBIGUOUS" interval
+            */
 
-            if (upperIdx < bins.length - 1) {
-                upperIdx++;
-                accumulated += bins[upperIdx].probability;
+            if (bin.prosco >= ProScoCommonBottomThreshold) {
+                if (ctx.beginningIdx > ctx.endCandidateIdx) {
+                    let aux = ctx.endCandidateIdx;
+                    ctx.endCandidateIdx = ctx.beginningIdx;
+                    ctx.beginningIdx = aux;
+                }
+
+                let binFrom = bins[ctx.beginningIdx];
+                let binTo = bins[ctx.endCandidateIdx];
+
+                // Do not allow "spurious" "AMBIGUOUS" intervals that are just 1 bin wide
+                if (ctx.endCandidateIdx - ctx.beginningIdx > 1) {
+                    let prob = 0;
+                    for (let probIdx = ctx.beginningIdx; probIdx <= ctx.endCandidateIdx; probIdx++) {
+                        const _bin = bins[probIdx];
+                        prob += _bin.probability;
+                    }
+
+                    const ambi = Bin(searchDir === 'up' ? binFrom.from : binFrom.to, binTo.from, prob, -1);
+                    ambiguous.push(ambi);
+                }
+
+                ctx.state = 'finding-beginning';
+            } else if (bin.prosco < rareBottomThreshold) {
+                ctx.state = 'finding-end-candidate';
             }
         }
+    }
+    function aggregateAmbiguous(from: number, to: number, bins: Bins, rareBottomThreshold: number) {
+        let fromIdx = 0;
+        for (; fromIdx < bins.length; fromIdx++) {
+            const bin = bins[fromIdx];
+            if (bin.to > from) break;
+        }
+        let toIdx = bins.length - 1;
+        for (; toIdx > fromIdx; toIdx--) {
+            const bin = bins[toIdx];
+            if (bin.from <= to) break;
+        }
 
-        // TODO: What do we do with Prosco value?
-        return Bin(bins[lowerIdx].from, bins[upperIdx].to, accumulated, -1);
+        if (fromIdx == toIdx) return [];
+
+        const ambiguous: Bin[] = [];
+        const ctx: AmbiguousFinderCtx = {
+            beginningIdx: fromIdx,
+            endCandidateIdx: -1,
+            state: 'finding-end-candidate',
+        };
+        for (let idx = fromIdx; idx <= toIdx; idx++) {
+            findAmbigious(idx, ctx, bins, rareBottomThreshold, ambiguous, 'up');
+        }
+
+        ctx.beginningIdx = toIdx;
+        ctx.endCandidateIdx = -1;
+        ctx.state = 'finding-end-candidate';
+        for (let idx = toIdx; idx >= fromIdx; idx--) {
+            findAmbigious(idx, ctx, bins, rareBottomThreshold, ambiguous, 'down');
+        }
+
+        return ambiguous;
+    }
+
+    function aggregateRareAndCommon(bins: Bins, rareBottomThreshold: number) {
+        // Find all crossings between "COMMON" and "RARE"
+
+        const crossingsIncr = [];
+        const crossingsDecr = [];
+        for (let idx = 1; idx < bins.length - 1; idx++) {
+            const binL = bins[idx - 1];
+            const binU = bins[idx];
+
+            if (binL.prosco < ProScoCommonBottomThreshold && binU.prosco >= ProScoCommonBottomThreshold) crossingsIncr.push(idx);
+            else if (binL.prosco >= ProScoCommonBottomThreshold && binU.prosco < ProScoCommonBottomThreshold) crossingsDecr.push(idx);
+
+        }
+
+        const rares = [];
+        for (const idx of crossingsIncr) {
+            const rare = Bin(-1, bins[idx].from, 0, -1);
+
+            for (let rdx = idx; rdx >= 0; rdx--) {
+                const bin = bins[rdx];
+                if (bin.prosco < rareBottomThreshold) break;
+
+                rare.from = bin.from;
+                rare.probability += bin.probability;
+            }
+
+            rares.push(rare);
+        }
+        for (const idx of crossingsDecr) {
+            const rare = Bin(bins[idx].from, -1, 0, -1);
+
+            for (let rdx = idx; rdx < bins.length; rdx++) {
+                const bin = bins[rdx];
+                if (bin.prosco < rareBottomThreshold) break;
+
+                rare.to = bin.to;
+                rare.probability += bin.probability;
+            }
+
+            rares.push(rare);
+        }
+
+        const commons = [];
+        for (const idx of crossingsIncr) {
+            const common = Bin(bins[idx].from, -1, 0, -1);
+
+            for (let rdx = idx; rdx < bins.length; rdx++) {
+                const bin = bins[rdx];
+
+                if (bin.prosco < ProScoCommonBottomThreshold) break;
+
+                common.to = bin.to;
+                common.probability += bin.probability;
+            }
+
+            commons.push(common);
+        }
+
+        return { rare: rares, common: commons };
+    }
+
+    export function aggregate(bins: Bins, rareBottomThreshold: number) {
+        const { lowerUnique, upperUnique } = aggregateUnique(bins, rareBottomThreshold);
+
+        const ambiguous = aggregateAmbiguous(
+            isBinValid(lowerUnique) ? lowerUnique.to : bins[0].to,
+            isBinValid(upperUnique) ? upperUnique.from : bins[bins.length - 1].from,
+            bins,
+            rareBottomThreshold
+        );
+
+        const { rare, common } = aggregateRareAndCommon(bins, rareBottomThreshold);
+
+        if (GlobalConfig.data().anglesLengths.debugProScoGrouping) {
+            console.log('L UNIQUE', lowerUnique);
+            console.log('U UNIQUE', upperUnique);
+            console.log('AMBI', ambiguous);
+            console.log('RARE', rare);
+            console.log('COMMON', common);
+        }
+
+        return {
+            lowerUnique,
+            upperUnique,
+            ambiguous,
+            rare,
+            common,
+        };
     }
 }

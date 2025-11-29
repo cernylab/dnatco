@@ -1,4 +1,4 @@
-import { AnglesLengths, NavalPGroupCount, NavalRankingClass } from './';
+import { AnglesLengths, NavalPGroupCount, NavalRankingClass, ProScoGroup, ProScoGroups } from './';
 import { Measurements } from './measurements';
 import { MappedNaval } from '../dnatcofication';
 import { initedArray } from '../../util';
@@ -23,8 +23,9 @@ export namespace Summarize {
     };
 }
 
-function count(counts: Summarize.Counts, nPGroups: number, pgrp?: AnglesLengths.PGroup) {
-    let accumulateTo = pgrp ? pgrp.index : nPGroups;
+function count(counts: Summarize.Counts, nPGroups: number, pgrp: ProScoGroup | 'outlier') {
+    let accumulateTo = ProScoGroups.indexOf(pgrp as ProScoGroup);
+    if (accumulateTo < 0) accumulateTo = nPGroups;
     countWithEnd(counts, accumulateTo, nPGroups);
 }
 
@@ -37,70 +38,72 @@ function countWithEnd(counts: Summarize.Counts, accumulateTo: number, max: numbe
 
 export namespace SummarizeProSco {
     export type CountsInGroup = {
-        threshold: number,
+        pGroup: ProScoGroup|'outlier',
         exclusive: number,
         cumulative: number,
-        pGroupIdx: number|'outlier',
     };
 
     export function angles(angles: { angle: Measurements.BondAngle, r: Measurements.Residue }[]) {
-        const nPGroups = AnglesLengths.pGroupCount();
+        const nPGroups = ProScoGroups.length;
         const counts = Summarize.Counts(nPGroups);
 
         for (const { angle, r } of angles)
-            count(counts, nPGroups, AnglesLengths.anglePGroup(r.compound, angle));
+            count(counts, ProScoGroups.length, AnglesLengths.anglePGroup(r.compound, angle)?.pGroup ?? 'outlier');
 
         return counts;
     }
 
-    export function countsInGroups(counts: Summarize.Counts): CountsInGroup[] {
-        const thresholds = AnglesLengths.pGroupThresholds();
-        const cig = [];
+    export function countsInGroups(counts: Summarize.Counts): Record<ProScoGroup | 'outlier', CountsInGroup> {
+        const cig = {} as Record<ProScoGroup | 'outlier', CountsInGroup>;
 
-        for (let idx = 0; idx <= thresholds.length; idx++) {
-            const thr = thresholds[idx];
-            cig.push({
-                threshold: thr ?? 100,
-                exclusive: counts.exclusive[idx],
-                cumulative: counts.cumulative[idx],
-                pGroupIdx: (thr ? idx : 'outlier') as SummarizeProSco.CountsInGroup['pGroupIdx'],
-            });
+        const grps = [...ProScoGroups, 'outlier'] as const;
+        let _cumulative = 0;
+        for (let idx = 0; idx < grps.length; idx++) {
+            const grp = grps[idx];
+            const cumulative = counts.cumulative[idx] ?? _cumulative;
+            cig[grp] = {
+                pGroup: grp,
+                exclusive: counts.exclusive[idx] ?? 0,
+                cumulative,
+            };
+
+            _cumulative = cumulative;
         }
 
         return cig;
     }
 
     export function lengths(lengths: { length: Measurements.BondLength, r: Measurements.Residue }[]) {
-        const nPGroups = AnglesLengths.pGroupCount();
+        const nPGroups = ProScoGroups.length;
         const counts = Summarize.Counts(nPGroups);
 
         for (const { length, r } of lengths)
-            count(counts, nPGroups, AnglesLengths.lengthPGroup(r.compound, length));
+            count(counts, nPGroups, AnglesLengths.lengthPGroup(r.compound, length)?.pGroup ?? 'outlier');
 
         return counts;
     }
 
     export function residue(r: Measurements.Residue): Summarize.Summary {
-        const nPGroups = AnglesLengths.pGroupCount();
+        const nPGroups = ProScoGroups.length;
 
         const angles = Summarize.Counts(nPGroups);
         const lengths = Summarize.Counts(nPGroups);
 
         for (const angle of r.bondAngles) {
             const pgrp = AnglesLengths.anglePGroup(r.compound, angle);
-            count(angles, nPGroups, pgrp);
+            count(angles, nPGroups, pgrp?.pGroup ?? 'outlier');
         }
 
         for (const length of r.bondLengths) {
             const pgrp = AnglesLengths.lengthPGroup(r.compound, length);
-            count(lengths, nPGroups, pgrp);
+            count(lengths, nPGroups, pgrp?.pGroup ?? 'outlier');
         }
 
         return { angles, lengths };
     }
 
     export function substructure(residues: Measurements.Residue[]): Summarize.Summary {
-        const nPGroups = AnglesLengths.pGroupCount();
+        const nPGroups = ProScoGroups.length;
 
         const angles = Summarize.Counts(nPGroups);
         const lengths = Summarize.Counts(nPGroups);
@@ -123,17 +126,15 @@ export namespace SummarizeProSco {
 function rankNavalAngle(naval: MappedNaval, r: Measurements.Residue, angle: Measurements.BondAngle) {
     const ranking = AnglesLengths.angleNavalRanking(r.compound, angle);
     const navalAngle =  AnglesLengths.navalAngle(naval, r, angle.triplet);
-    const pgrp = AnglesLengths.anglePGroup(r.compound, angle);
+    const angleAvgs = AnglesLengths.angleAverages(r.compound, angle.triplet);
 
     const ret = AnglesLengths.navalRankingClass(
         angle.angle,
         ranking,
         M.d2r(navalAngle.csdPreferredLeft),
         M.d2r(navalAngle.csdPreferredRight),
-        pgrp
+        angleAvgs
     );
-
-    console.log(ranking, angle.angle, ret);
 
     return ret;
 }
@@ -141,14 +142,14 @@ function rankNavalAngle(naval: MappedNaval, r: Measurements.Residue, angle: Meas
 function rankNavalLength(naval: MappedNaval, r: Measurements.Residue, length: Measurements.BondLength) {
     const ranking = AnglesLengths.lengthNavalRanking(r.compound, length);
     const navalBond =  AnglesLengths.navalBond(naval, r, length.pair);
-    const pgrp = AnglesLengths.lengthPGroup(r.compound, length);
+    const lengthAvgs = AnglesLengths.lengthAverages(r.compound, length.pair);
 
     return AnglesLengths.navalRankingClass(
         length.length,
         ranking,
         navalBond.csdPreferredLeft,
         navalBond.csdPreferredRight,
-        pgrp
+        lengthAvgs
     );
 }
 

@@ -162,7 +162,7 @@ function measureStructure(pdbcode: string, segs: any) {
 
 function residuesAsVector(residues: any) {
     const vec = new Array<jsLLKA.LLKAStructure>(residues.size());
-    const keys = residues.keys(); // We hope that Emscripten return the keys in the correct order
+    const keys = residues.keys(); // We hope that Emscripten returns the keys in the correct order
     for (let idx = 0; idx < keys.size(); idx++) {
         const key = keys.get(idx);
         const r = residues.get(key);
