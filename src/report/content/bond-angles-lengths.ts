@@ -215,14 +215,16 @@ export namespace BondAnglesLengths {
 
         Layout.sectionHeader('Bond Lengths & Angles', ctx);
 
+        const metrics =  GlobalConfig.data().anglesLengths.summaryMetrics;
+        const metricsName = metrics === 'naval' ? 'NA-VAL' : 'ProSco';
+
         root.paragraphText(
-            'Occurrence of bond lengths and angles within probability distribution bins',
+            `Occurrence of bond lengths and angles within probability distribution bins (${metricsName})`,
             { hAlign: 'center' }
         );
 
         const numModels = Dnatcofication.Structure.numberOfModels(ctx.dnatcofication);
         const alm = ctx.dnatcofication.data.almByCompound;
-        const metrics =  GlobalConfig.data().anglesLengths.summaryMetrics;
 
         for (let mIdx = 0; mIdx < numModels; mIdx++) {
             const modelNum = ctx.dnatcofication.data.structures[0].models[mIdx].num;
