@@ -1051,8 +1051,8 @@ export class AnglesLengthsByResidue extends View<
               }
               : {
                 kind: 'prosco',
-                angles: SummarizeProSco.countsInGroups(_s.summaryNaval.angles),
-                lengths: SummarizeProSco.countsInGroups(_s.summaryNaval.lengths),
+                angles: SummarizeProSco.countsInGroups(_s.summaryProSco.angles),
+                lengths: SummarizeProSco.countsInGroups(_s.summaryProSco.lengths),
               }
           }
           outlierColor={outlierColor}
