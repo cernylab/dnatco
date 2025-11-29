@@ -989,7 +989,7 @@ export class AnglesLengthsByResidue extends View<
   constructor(props: View.Props) {
     super(props);
 
-    const thr = GlobalConfig.data().anglesLengths.summaryVariant === "naval"
+    const thr = GlobalConfig.data().anglesLengths.summaryMetrics === "naval"
       ? "of-concern"
       : "outlier";
 
@@ -1015,7 +1015,7 @@ export class AnglesLengthsByResidue extends View<
     const s = this.props.dnatcofication.data.almByResidue.stats;
     const outlierColor = colorToTuple(DAnglesLengths.outlierColor());
 
-    const sumVar = GlobalConfig.data().anglesLengths.summaryVariant;
+    const metrics = GlobalConfig.data().anglesLengths.summaryMetrics;
 
     const mapping = new Map<string, React.RefObject<Residue>>();
     const elems = new Array<JSX.Element>();
@@ -1043,7 +1043,7 @@ export class AnglesLengthsByResidue extends View<
           tainer={tainer}
           d={this.props.dnatcofication}
           counts={
-            sumVar === 'naval'
+            metrics === 'naval'
               ? {
                 kind: 'naval',
                 angles: SummarizeNaval.countsInGroups(_s.summaryNaval.angles),
@@ -1401,19 +1401,19 @@ export class AnglesLengthsByResidue extends View<
     const selectedResidues = selectedIndices.map((x) => alm.residues[x]);
     const selectedResidueStats = selectedIndices.map((x) => alm.stats[x]);
 
-    const sumVar = GlobalConfig.data().anglesLengths.summaryVariant;
-    const summary = sumVar === 'naval'
+    const metrics = GlobalConfig.data().anglesLengths.summaryMetrics;
+    const summary = metrics === 'naval'
       ? SummarizeNaval.substructure(selectedResidues, this.props.dnatcofication.data.naval)
       : SummarizeProSco.substructure(selectedResidues);
 
     const htmlColorsForStatsBar = new Array<string>();
-    if (sumVar === 'naval') {
+    if (metrics === 'naval') {
       for (const cls of NavalRankingClasses) {
         htmlColorsForStatsBar.push(
           rgbToHex(colorToRgb(DAnglesLengths.navalRankingClassColor(cls)))
         );
       }
-    } else if (sumVar === 'prosco') {
+    } else if (metrics === 'prosco') {
       for (const grp of ProScoGroups)
         htmlColorsForStatsBar.push(
           rgbToHex(colorToRgb(DAnglesLengths.pGroupColor(grp)))
@@ -1423,7 +1423,7 @@ export class AnglesLengthsByResidue extends View<
       );
     }
 
-    const categoryOptions = (sumVar === 'naval'
+    const categoryOptions = (metrics === 'naval'
       ? Array.from([...NavalRankingClasses])
       : Array.from([...ProScoGroups, 'outlier']))
     .reverse()
@@ -1494,7 +1494,7 @@ export class AnglesLengthsByResidue extends View<
                 "Lengths",
                 AnglesLengthsCommon.substructureBarCaption("Lengths", DAnglesLengths.pGroupColor('common')),
                 summary.lengths,
-                sumVar === 'naval'
+                metrics === 'naval'
                   ? { kind: 'naval', counts: SummarizeNaval.countsInGroups(summary.lengths) }
                   : { kind: 'prosco', counts: SummarizeProSco.countsInGroups(summary.lengths) },
                 htmlColorsForStatsBar
@@ -1506,7 +1506,7 @@ export class AnglesLengthsByResidue extends View<
                 "Angles",
                 AnglesLengthsCommon.substructureBarCaption("Angles", DAnglesLengths.pGroupColor('common')),
                 summary.angles,
-                sumVar === 'naval'
+                metrics === 'naval'
                   ? { kind: 'naval', counts: SummarizeNaval.countsInGroups(summary.angles) }
                   : { kind: 'prosco', counts: SummarizeProSco.countsInGroups(summary.angles) },
                 htmlColorsForStatsBar
@@ -1634,7 +1634,7 @@ export class AnglesLengthsByResidue extends View<
                   {this.renderWorstLengths(
                     selectedResidues,
                     selectedResidueStats,
-                    sumVar,
+                    metrics,
                     this.state.maxWorstLengths,
                     this.state.worstLengthsThreshold as any,
                     AnglesLengthsCommon.structureIdentifyingName(
@@ -1682,7 +1682,7 @@ export class AnglesLengthsByResidue extends View<
                   {this.renderWorstAngles(
                     selectedResidues,
                     selectedResidueStats,
-                    sumVar,
+                    metrics,
                     this.state.maxWorstAngles,
                     this.state.worstAnglesThreshold as any,
                     AnglesLengthsCommon.structureIdentifyingName(

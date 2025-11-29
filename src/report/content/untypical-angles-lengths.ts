@@ -11,7 +11,7 @@ export namespace UntypicalAnglesLengths {
     export function add<Output>(ctx: Report.Context<Output>) {
         const root = ctx.ntDoc;
 
-        const metrics =  GlobalConfig.data().anglesLengths.summaryVariant;
+        const metrics =  GlobalConfig.data().anglesLengths.summaryMetrics;
         const threshold = metrics === 'naval'
             ? 'of-concern'
             : 'outlier';

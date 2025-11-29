@@ -41,7 +41,7 @@ export type GlobalConfigData = {
         pGroups: AngleLengthPGroup[],
         outlierColor: string,
         outlierName: string,
-        summaryVariant: 'naval' | 'prosco',
+        summaryMetrics: 'naval' | 'prosco',
         debugProScoGrouping: boolean,
     },
     violinPlotMarkerColorA: string,
@@ -108,7 +108,7 @@ const GlobalConfigData: GlobalConfigData = {
         maxWorst: 30,
         outlierColor: '#000000',
         outlierName: 'Outlier',
-        summaryVariant: 'naval',
+        summaryMetrics: 'naval',
         pGroups: [
             { threshold: 80, color: '#006eff', name: '', },
             { threshold: 95, color: '#00ff00', name: '', },

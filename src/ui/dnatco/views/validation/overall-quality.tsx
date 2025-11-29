@@ -314,9 +314,9 @@ export class OverallQuality extends View<View.Props> {
 
     const selected = getSelection(alm, modelNum, chain);
 
-    const sumVar = GlobalConfig.data().anglesLengths.summaryVariant;
+    const metrics = GlobalConfig.data().anglesLengths.summaryMetrics;
 
-    const [overallAngles, overallLengths] = sumVar === 'naval'
+    const [overallAngles, overallLengths] = metrics === 'naval'
         ? [selected.overallAnglesNaval, selected.overallLengthsNaval]
         : [selected.overallAnglesProSco, selected.overallLengthsProSco];
 
@@ -325,13 +325,13 @@ export class OverallQuality extends View<View.Props> {
     const countsLengthsProSco = SummarizeProSco.countsInGroups(selected.overallLengthsProSco);
 
     const htmlColorsForStatsBar = new Array<string>();
-    if (sumVar === 'naval') {
+    if (metrics === 'naval') {
       for (const cls of NavalRankingClasses) {
         htmlColorsForStatsBar.push(
           rgbToHex(colorToRgb(DAnglesLengths.navalRankingClassColor(cls)))
         );
       }
-    } else if (sumVar === 'prosco') {
+    } else if (metrics === 'prosco') {
       for (const grp of ProScoGroups)
         htmlColorsForStatsBar.push(
           rgbToHex(colorToRgb(DAnglesLengths.pGroupColor(grp)))
@@ -386,7 +386,7 @@ export class OverallQuality extends View<View.Props> {
                 "Lengths",
                 AnglesLengthsCommon.substructureBarCaption("Lengths", DAnglesLengths.pGroupColor('common')),
                 overallLengths,
-                sumVar === 'naval'
+                metrics === 'naval'
                   ? { kind: 'naval', counts: SummarizeNaval.countsInGroups(overallLengths) }
                   : { kind: 'prosco', counts: SummarizeProSco.countsInGroups(overallLengths) },
                 htmlColorsForStatsBar
@@ -398,7 +398,7 @@ export class OverallQuality extends View<View.Props> {
                 "Angles",
                 AnglesLengthsCommon.substructureBarCaption("Angles", DAnglesLengths.pGroupColor('common')),
                 overallAngles,
-                sumVar === 'naval'
+                metrics === 'naval'
                   ? { kind: 'naval', counts: SummarizeNaval.countsInGroups(overallAngles) }
                   : { kind: 'prosco', counts: SummarizeProSco.countsInGroups(overallAngles) },
                 htmlColorsForStatsBar

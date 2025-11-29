@@ -141,11 +141,11 @@ function Base<T extends ALM.AngleStats | ALM.LengthStats>(props: {
   tainerRef: React.RefObject<HTMLDivElement>;
   winTracker: WindowsTracker;
 }) {
-  const metrics = [];
+  const metricsData = [];
   for (const metricName of props.displayOrders[props.base]) {
     const metric = props.stats.byMetric.get(metricName);
     if (!metric) continue;
-    metrics.push(
+    metricsData.push(
       <div className="flex flex-row">
         <div className="w-4" />
         <Metric
@@ -166,7 +166,7 @@ function Base<T extends ALM.AngleStats | ALM.LengthStats>(props: {
     );
   }
 
-  const sumVar = GlobalConfig.data().anglesLengths.summaryVariant;
+  const metrics = GlobalConfig.data().anglesLengths.summaryMetrics;
 
   return (
     <CollapsibleVertical
@@ -176,8 +176,8 @@ function Base<T extends ALM.AngleStats | ALM.LengthStats>(props: {
             props.winTracker,
             props.base,
             AnglesLengthsCommon.substructureBarCaption(props.base, DAnglesLengths.pGroupColor('common')),
-            sumVar === 'naval' ? props.stats.overallNaval : props.stats.overallProSco,
-            sumVar === 'naval'
+            metrics === 'naval' ? props.stats.overallNaval : props.stats.overallProSco,
+            metrics === 'naval'
               ? { kind: 'naval', counts: SummarizeNaval.countsInGroups(props.stats.overallNaval) }
               : { kind: 'prosco', counts: SummarizeProSco.countsInGroups(props.stats.overallProSco) },
             props.colorsForCounts
@@ -188,7 +188,7 @@ function Base<T extends ALM.AngleStats | ALM.LengthStats>(props: {
       <div className="flex-1 overflow-hidden relative">
         <div className="rdo-scroll-vertically-with-scrollbar flex flex-col gap-[calc(0.5em/2)]">
           <div />
-          {...metrics}
+          {...metricsData}
         </div>
       </div>
     </CollapsibleVertical>
@@ -283,7 +283,7 @@ function Metric<T extends ALM.AngleStats | ALM.LengthStats>(props: {
   const rgb = hexToRgb(GlobalConfig.data().currentStepColor);
   const backgroundColorSelected = Rgba(rgb.r, rgb.g, rgb.b, 0.5);
 
-  const sumVar = GlobalConfig.data().anglesLengths.summaryVariant;
+  const metrics = GlobalConfig.data().anglesLengths.summaryMetrics;
 
   const name =
     props.stats.type === "angle"
@@ -340,8 +340,8 @@ function Metric<T extends ALM.AngleStats | ALM.LengthStats>(props: {
               {props.base} {name}
             </div>,
             AnglesLengthsCommon.substructureBarCaption(name, DAnglesLengths.pGroupColor('common')),
-            sumVar === 'naval' ? props.stats.overallNaval : props.stats.overallProSco,
-            sumVar === 'naval'
+            metrics === 'naval' ? props.stats.overallNaval : props.stats.overallProSco,
+            metrics === 'naval'
               ? { kind: 'naval', counts: SummarizeNaval.countsInGroups(props.stats.overallNaval) }
               : { kind: 'prosco', counts: SummarizeProSco.countsInGroups(props.stats.overallProSco) },
             props.colorsForCounts
@@ -935,19 +935,19 @@ export class AnglesLengthsByCompound extends View<View.Props> {
 
     const selected = getSelection(alm, modelNum, chain);
 
-    const sumVar = GlobalConfig.data().anglesLengths.summaryVariant;
+    const metrics = GlobalConfig.data().anglesLengths.summaryMetrics;
 
-    const overallAngles = sumVar === 'naval' ? selected.overallAnglesProSco : selected.overallAnglesNaval;
-    const overallLengths = sumVar === 'naval' ? selected.overallLengthsNaval : selected.overallLengthsProSco;
+    const overallAngles = metrics === 'naval' ? selected.overallAnglesProSco : selected.overallAnglesNaval;
+    const overallLengths = metrics === 'naval' ? selected.overallLengthsNaval : selected.overallLengthsProSco;
 
     const htmlColorsForStatsBar = new Array<string>();
-    if (sumVar === 'naval') {
+    if (metrics === 'naval') {
       for (const cls of NavalRankingClasses) {
         htmlColorsForStatsBar.push(
           rgbToHex(colorToRgb(DAnglesLengths.navalRankingClassColor(cls)))
         );
       }
-    } else if (sumVar === 'prosco') {
+    } else if (metrics === 'prosco') {
       for (const grp of ProScoGroups)
         htmlColorsForStatsBar.push(
           rgbToHex(colorToRgb(DAnglesLengths.pGroupColor(grp)))
@@ -957,7 +957,7 @@ export class AnglesLengthsByCompound extends View<View.Props> {
       );
     }
 
-    const outlierColor = colorToTuple(sumVar === 'naval' ? DAnglesLengths.navalRankingClassColor('of-concern') : DAnglesLengths.outlierColor());
+    const outlierColor = colorToTuple(metrics === 'naval' ? DAnglesLengths.navalRankingClassColor('of-concern') : DAnglesLengths.outlierColor());
     const structureName = AnglesLengthsCommon.structureIdentifyingName(
       this.props.dnatcofication
     );
@@ -1010,7 +1010,7 @@ export class AnglesLengthsByCompound extends View<View.Props> {
                 "Lengths",
                 AnglesLengthsCommon.substructureBarCaption("Lengths", DAnglesLengths.pGroupColor('common')),
                 overallLengths,
-                sumVar === 'naval'
+                metrics === 'naval'
                   ? { kind: 'naval', counts: SummarizeNaval.countsInGroups(overallLengths) }
                   : { kind: 'prosco', counts: SummarizeProSco.countsInGroups(overallLengths) },
                 htmlColorsForStatsBar
@@ -1022,7 +1022,7 @@ export class AnglesLengthsByCompound extends View<View.Props> {
                 "Angles",
                 AnglesLengthsCommon.substructureBarCaption("Angles", DAnglesLengths.pGroupColor('common')),
                 overallAngles,
-                sumVar === 'naval'
+                metrics === 'naval'
                   ? { kind: 'naval', counts: SummarizeNaval.countsInGroups(overallAngles) }
                   : { kind: 'prosco', counts: SummarizeProSco.countsInGroups(overallAngles) },
                 htmlColorsForStatsBar

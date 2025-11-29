@@ -65,9 +65,9 @@ export function measuredItemColor(
   outlierColor: ColorTuple,
   bins: Bins | undefined
 ) {
-  const sumVar = GlobalConfig.data().anglesLengths.summaryVariant;
+  const metrics = GlobalConfig.data().anglesLengths.summaryMetrics;
 
-  return sumVar === 'naval'
+  return metrics === 'naval'
     ? colorToTuple(DAnglesLengths.navalRankingClassColor(DAnglesLengths.navalRankingClass(
         value,
         navalRanking,

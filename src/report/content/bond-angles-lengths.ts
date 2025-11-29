@@ -217,7 +217,7 @@ export namespace BondAnglesLengths {
 
         const numModels = Dnatcofication.Structure.numberOfModels(ctx.dnatcofication);
         const alm = ctx.dnatcofication.data.almByResidue;
-        const metrics =  GlobalConfig.data().anglesLengths.summaryVariant;
+        const metrics =  GlobalConfig.data().anglesLengths.summaryMetrics;
 
         for (let mIdx = 0; mIdx < numModels; mIdx++) {
             const selectedIndices = ByResidueHelpers.selectionToIndices(ctx.dnatcofication, mIdx, InvalidChain);
