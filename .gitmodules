@@ -1,13 +1,13 @@
 [submodule "molstar"]
 	path = molstar
-	url = https://gitlab.cesnet.cz/madcatxster/molstar.git
+	url = https://github.com/cernylab/molstar.git
 	branch = rednatco-v2
 [submodule "jsllka"]
 	path = jsllka
-	url = git@gitlab.cesnet.cz:madcatxster/jsllka.git
+	url = git@github.com:cernylab/jsllka.git
 [submodule "tscif"]
 	path = tscif
-	url = git@gitlab.cesnet.cz:madcatxster/tscif.git
+	url = git@github.com:cernylab/tscif.git
 [submodule "tspdb"]
 	path = tspdb
 	url = git@github.com:cernylab/tspdb.git
