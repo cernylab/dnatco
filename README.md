@@ -1,19 +1,19 @@
-ReDNATCO
+DNATCO
 ===
 
-The main component of the ReDNATCO nucleic acid analyzing tool.
+The main component of the DNATCO nucleic acid analyzing tool.
 
 Prerequisites
 ---
-ReDNATCO is a Single Page Application written in [Typescript](https://www.typescriptlang.org/) and [React](https://react.dev/). ReDNATCO is mostly self-sufficient and implements majority of the required data processing functionality.
+DNATCO, also referred to as "ReDNATCO" during the major rewrite phase, is a Single Page Application written in [Typescript](https://www.typescriptlang.org/) and [React](https://react.dev/). DNATCO is mostly self-sufficient and implements majority of the required data processing functionality.
 
-Some additional functionality requires support from the [ReDNATCO server]() tool. It is recommended that you set up ReDNATCO server first before you set up ReDNATCO itself.
+Some additional functionality requires support from the [DNATCO server](src/server) tool. It is recommended that you set up DNATCO server first before you set up DNATCO itself.
 
-ReDNATCO requires [Node.js](https://nodejs.org) __version 18__ or above to build and run.
+DNATCO requires [Node.js](https://nodejs.org) __version 18__ or above to build and run.
 
 Build instructions
 ---
-As the very first step, use `git clone` to clone this repository. Once done, `cd` into the project's directory. Unless you told `git` otherwise, the project will be cloned into directory `rednatco`.
+As the very first step, use `git clone` to clone this repository. Once done, `cd` into the project's directory. Unless you told `git` otherwise, the project will be cloned into directory `dnatco`.
 
 
 Then make sure that you have also pulled all the submodules. Run
@@ -21,7 +21,7 @@ Then make sure that you have also pulled all the submodules. Run
 git submodule update --init --recursive --checkout
 ```
 
-ReDNATCO relies on [Molstar](https://molstar.org/) Viewer for visualisation. To avoid any potential issues during the build process, it is highly recommended that you build the Molstar viewer first.
+DNATCO relies on [Molstar](https://molstar.org/) Viewer for visualisation. To avoid any potential issues during the build process, it is highly recommended that you build the Molstar viewer first.
 To do so, run
 ```
 node build_molstar.js
@@ -39,22 +39,22 @@ Alternatively, you can run
 npm run build-dev
 ```
 
-By default, ReDNATCO will be built into the `dist` subdirectory.
+By default, DNATCO will be built into the `dist` subdirectory.
 
 #### Continuous incremental builds
 
-This will produce an unoptimized build of ReDNATCO. Unoptimized build has a considerably larger size but the generated code is more readable and it takes less time to build. It is highly recommended to use `build-dev` for development purposes.
+This will produce an unoptimized build of DNATCO. Unoptimized build has a considerably larger size but the generated code is more readable and it takes less time to build. It is highly recommended to use `build-dev` for development purposes.
 
 If the code build successfully, you may also run
 ```
 npm run watch
 ```
 
-This will start a watcher that will rebuild ReDNATCO incrementally whenever a project file gets changed. Note that some more invasive changes or changes to the Webpack configuration may require a full rebuild with `npm run build-dev`.
+This will start a watcher that will rebuild DNATCO incrementally whenever a project file gets changed. Note that some more invasive changes or changes to the Webpack configuration may require a full rebuild with `npm run build-dev`.
 
 #### Development with internal web server
 
-You may also use the `webpack-dev-server` plugin for local development. Webpack will start its own web server that will serve ReDNATCO and incrementally rebuild ReDNATCO in the same fashion as `npm run watch`.
+You may also use the `webpack-dev-server` plugin for local development. Webpack will start its own web server that will serve DNATCO and incrementally rebuild DNATCO in the same fashion as `npm run watch`.
 To use Webpack internal server, run
 ```
 npm run serve-dev
@@ -62,13 +62,13 @@ npm run serve-dev
 
 and navigate to [http://localhost:8118](http://localhost:8118) in your browser. Webpack internal server provides additional development conveniences such as hot reloading and nicer error reporting. Please see the notes below if you wish to use Webpack internal server for development.
 
-**NOTE:** Webpack server does not provide the full functionality of ReDNATCO server. It is intended for development purposes only.
+**NOTE:** Webpack server does not provide the full functionality of DNATCO server. It is intended for development purposes only.
 
 ### Tool for offline use
 
-ReDNATCO provides a standalone tool that can be run with Node.js. Since ReDNATCO is primarily intended to run in a browser, it relies on additional modules that emulate functionality that is available in a browser but not in Node.js environment to make the standalone tool work.
+DNATCO provides a standalone tool that can be run with Node.js. Since DNATCO is primarily intended to run in a browser, it relies on additional modules that emulate functionality that is available in a browser but not in Node.js environment to make the standalone tool work.
 
-Note that the offline tool is __not__ a complete offline replacement for ReDNATCO. It does not have any graphical user interface and its purpose is to produce the structural analysis report from the given coordinates and density map files.
+Note that the offline tool is __not__ a complete offline replacement for DNATCO. It does not have any graphical user interface and its purpose is to produce the structural analysis report from the given coordinates and density map files.
 
 #### Setting up `node-canvas` module
 
@@ -98,16 +98,16 @@ npm run build-lib
 
 #### Running the tool
 
-To run the tool from the ReDNATCO root directory, execute the following command:
+To run the tool from the DNATCO root directory, execute the following command:
 
 ```
-node ./bin/rednatco.js <output_directory> <coordinates_file> <density_map (optional)>
+node ./bin/dnatco.js <output_directory> <coordinates_file> <density_map (optional)>
 ```
 
 or, on a Windows system:
 
 ```
-node bin\rednatco.js <output_directory> <coordinates_file> <density_map (optional)>
+node bin\dnatco.js <output_directory> <coordinates_file> <density_map (optional)>
 ```
 
 The tool will produce a mmCIF file with additional categories and a validation report as a PDF file.
@@ -116,7 +116,7 @@ The tool will produce a mmCIF file with additional categories and a validation r
 
 Configuration
 ---
-ReDNATCO can be configured with a JSON configuration file. The file must be named `config.json` and it must be placed in the site's root directory. Annotated configuration file is listed below
+DNATCO can be configured with a JSON configuration file. The file must be named `config.json` and it must be placed in the site's root directory. Annotated configuration file is listed below
 
 ```
 {
@@ -154,7 +154,7 @@ ReDNATCO can be configured with a JSON configuration file. The file must be name
         { "db": "rcsb", "pdbId": "4qvi", "name": "Quadruplex" }
     ],
 
-    // If set to true, ReDNATCO will calculate connectivities and similarities for the entire structure
+    // If set to true, DNATCO will calculate connectivities and similarities for the entire structure
     // during the initial processing. Otherwise, connectivities and similarities will be calculated
     // only as required.
     "precalculateConnectivitiesAndSimilarities": false,
@@ -201,7 +201,7 @@ ReDNATCO can be configured with a JSON configuration file. The file must be name
 
     // --- Configuration of user databases ---
 
-    // ReDNATCO has built-in support of "RCSB" and "PDB-REDO" databases of structures.
+    // DNATCO has built-in support of "RCSB" and "PDB-REDO" databases of structures.
     // Additional used-defined databases of structures may be added as follows:
     "userDatabases": [
         {
@@ -266,10 +266,10 @@ ReDNATCO can be configured with a JSON configuration file. The file must be name
     // Expected fingerprint of NtC assignment parametrization data
     "expectedParametersFingerprint": "466a5115d59a4b1cd691d7e8f4f7b0aa8a39879fb048f2368692c54935ab2912",
 
-    // Set to true only for development builds of ReDNATCO
+    // Set to true only for development builds of DNATCO
     "isDevel": true,
 
-    // Set to true if you do not intend to serve ReDNATCO with rednatco-server
+    // Set to true if you do not intend to serve DNATCO with the DNATCO server (in src/server)
     // This will replace default application routing
     //
     //   somewhere.net/app/something
@@ -295,7 +295,7 @@ ReDNATCO can be configured with a JSON configuration file. The file must be name
 ```
 #### Note about configuration
 Mind that the JSON format **does not** support comments and the annotated example above **is not** a valid JSON file. Unless specifically overridden in the configuration file,
-ReDNATCO will use sensible defaults for all configuration options. It is not necessary to list every single option in your configuration file, override only the options that you need.
+DNATCO will use sensible defaults for all configuration options. It is not necessary to list every single option in your configuration file, override only the options that you need.
 
 Citation
 ---
