@@ -65,45 +65,53 @@ function drawAnglesLengths<Output, BL extends (Measurements.BondAngle | Measurem
     root: NTDocument<Output>,
     ctx: Report.Context<Output>
 ) {
-    const tbl = root.table(5, { ...Tables.EnumTable(ctx.tDims.characterWidth, ctx.tDims.characterHeight, ctx.mode), hAlign: ctx.mode === 'textual' ? 'left' : 'center' });
+    const tbl = root.table(6, { ...Tables.EnumTable(ctx.tDims.characterWidth, ctx.tDims.characterHeight, ctx.mode), hAlign: ctx.mode === 'textual' ? 'left' : 'center' });
 
     tbl.addRow([
         NTTable.Cell.lineText('Residue', tbl, { font: Tables.HeaderFont }),
         NTTable.Cell.lineText('', tbl, { font: Tables.HeaderFont }),
+        NTTable.Cell.lineText('', tbl, { font: Tables.HeaderFont }),
         NTTable.Cell.lineText('Atoms', tbl, { font: Tables.HeaderFont }),
         NTTable.Cell.lineText(gathered === 'lengths' ? `Length [${AngstromSignChar}]` : 'Angle [\u00B0]', tbl, { font: Tables.HeaderFont }),
-        NTTable.Cell.lineText('Probability', tbl, { font: Tables.HeaderFont }),
+        NTTable.Cell.lineText('ProSco', tbl, { font: Tables.HeaderFont }),
     ]);
 
     const xywh = NTXYWH.create(NTUnit.zero(), NTUnit.zero(), NTUnit.multiply(1, ctx.tDims.characterWidth), ctx.tDims.characterHeight);
     for (const al of angleLengthData) {
-        let rgb;
-        if (metrics === 'naval') {
-            let nrankCls;
-            if (gathered === 'lengths') {
-                const bl = al.bond as Measurements.BondLength;
-                const ni = AnglesLengths.navalBond(naval, al.residue, bl.pair);
-                const nrank = AnglesLengths.lengthNavalRanking(al.residue.compound, bl);
-                nrankCls = AnglesLengths.navalRankingClass(bl.length, nrank, ni.csdPreferredLeft, ni.csdPreferredRight, AnglesLengths.lengthAverages(al.residue.compound, bl.pair));
-            } else {
-                const ba = al.bond as Measurements.BondAngle;
-                const ni = AnglesLengths.navalAngle(naval, al.residue, ba.triplet);
-                const nrank = AnglesLengths.angleNavalRanking(al.residue.compound, ba);
-                nrankCls = AnglesLengths.navalRankingClass(ba.angle, nrank, ni.csdPreferredLeft, ni.csdPreferredRight, AnglesLengths.angleAverages(al.residue.compound, ba.triplet));
-            }
-
-            rgb = colorToRgb(AnglesLengths.navalRankingClassColor(nrankCls));
+        // Calculate Naval color (green/yellow/red)
+        let navalRgb;
+        let nrankCls;
+        if (gathered === 'lengths') {
+            const bl = al.bond as Measurements.BondLength;
+            const ni = AnglesLengths.navalBond(naval, al.residue, bl.pair);
+            const nrank = AnglesLengths.lengthNavalRanking(al.residue.compound, bl);
+            nrankCls = AnglesLengths.navalRankingClass(bl.length, nrank, ni.csdPreferredLeft, ni.csdPreferredRight, AnglesLengths.lengthAverages(al.residue.compound, bl.pair));
         } else {
-            rgb = colorToRgb(al.pGroup ? AnglesLengths.pGroupColor(al.pGroup.pGroup) : AnglesLengths.outlierColor());
+            const ba = al.bond as Measurements.BondAngle;
+            const ni = AnglesLengths.navalAngle(naval, al.residue, ba.triplet);
+            const nrank = AnglesLengths.angleNavalRanking(al.residue.compound, ba);
+            nrankCls = AnglesLengths.navalRankingClass(ba.angle, nrank, ni.csdPreferredLeft, ni.csdPreferredRight, AnglesLengths.angleAverages(al.residue.compound, ba.triplet));
         }
-        const clr = nrgba(rgb);
+        navalRgb = colorToRgb(AnglesLengths.navalRankingClassColor(nrankCls));
 
-        const clrCell = ctx.mode === 'textual'
-            ? NTTable.Cell.lineText(Colors.colorToGlyph(rgb), tbl)
-            : NTTable.Cell.rect(xywh, { color: clr });
+        // Calculate ProSco color (blue shades)
+        const proscoRgb = colorToRgb(al.pGroup ? AnglesLengths.pGroupColor(al.pGroup.pGroup) : AnglesLengths.outlierColor());
+
+        const navalClr = nrgba(navalRgb);
+        const proscoClr = nrgba(proscoRgb);
+
+        const navalClrCell = ctx.mode === 'textual'
+            ? NTTable.Cell.lineText(Colors.colorToGlyph(navalRgb), tbl)
+            : NTTable.Cell.rect(xywh, { color: navalClr });
+
+        const proscoClrCell = ctx.mode === 'textual'
+            ? NTTable.Cell.lineText(Colors.colorToGlyph(proscoRgb), tbl)
+            : NTTable.Cell.rect(xywh, { color: proscoClr });
+
         tbl.addRow([
             NTTable.Cell.lineText(residueName(al.residue), tbl),
-            clrCell,
+            navalClrCell,
+            proscoClrCell,
             NTTable.Cell.lineText(makeBondName(gathered === 'lengths' ? (al.bond as Measurements.BondLength).pair : (al.bond as Measurements.BondAngle).triplet), tbl),
             NTTable.Cell.lineText(gathered === 'lengths' ? drawLength(al.bond as Measurements.BondLength) : drawAngle(al.bond as Measurements.BondAngle), tbl, { font: Fonts.Monospace, hAlign: 'right' }),
             NTTable.Cell.lineText(drawProsco(al.maybeBin), tbl, { font: Fonts.Monospace, hAlign: 'right' }),

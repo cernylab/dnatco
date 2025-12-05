@@ -33,6 +33,7 @@ function drawCountsBar<Output>(
     },
     mIdx: number,
     tag: string,
+    metricsKind: string,
     ctx: Report.Context<Output>
 ) {
     const H = NTUnit.multiply(2, ctx.tDims.characterHeight);
@@ -58,7 +59,7 @@ function drawCountsBar<Output>(
                 totalWidth,
                 H,
                 AnglesLengths.pGroupColor(grp),
-                `${tag}-${mIdx}`
+                `${tag}-${metricsKind}-${mIdx}`
             );
 
             x += w;
@@ -71,7 +72,7 @@ function drawCountsBar<Output>(
             totalWidth,
             H,
             AnglesLengths.outlierColor(),
-            `${tag}-${mIdx}`
+            `${tag}-${metricsKind}-${mIdx}`
         );
     } else if (counts.kind === 'naval') {
         const totalCount = counts.counts.reduce((p, c) => p + c.exclusive, 0);
@@ -88,7 +89,7 @@ function drawCountsBar<Output>(
                 totalWidth,
                 H,
                 AnglesLengths.navalRankingClassColor(cls),
-                `${tag}-${mIdx}`
+                `${tag}-${metricsKind}-${mIdx}`
             );
 
             x += w;
@@ -102,7 +103,7 @@ function drawCountsBar<Output>(
             inset.xywh.width
         ),
         {},
-        `${tag}-${mIdx}`
+        `${tag}-${metricsKind}-${mIdx}`
     );
     _inset.lineText(tag, { color: captionClr, font: { size: 14, style: 'bold' } });
 }
@@ -147,6 +148,9 @@ function drawCountsTable<Output>(
     if (counts.kind === 'prosco') {
         const outlierC = counts.counts.outlier;
         for (const grp of ProScoGroups) {
+            // Skip 'unique' as it will be combined with 'outlier'
+            if (grp === 'unique') continue;
+
             const c = counts.counts[grp];
             const rectClr = colorToRgb(AnglesLengths.pGroupColor(grp));
             const rectNClr = nrgb(rectClr);
@@ -168,19 +172,27 @@ function drawCountsTable<Output>(
                 ),
             ]);
         }
+        // Combine 'unique' and 'outlier' into one row
+        const uniqueC = counts.counts.unique;
+        // Option 1: Show as sum (currently active)
+        const combinedExclusiveText = (uniqueC.exclusive + outlierC.exclusive).toString();
+        // Option 2: Show as "unique+outlier" format (commented out)
+        // const combinedExclusiveText = uniqueC.exclusive > 0 && outlierC.exclusive > 0
+        //     ? `${uniqueC.exclusive}+${outlierC.exclusive}`
+        //     : (uniqueC.exclusive + outlierC.exclusive).toString();
         const rectClr = colorToRgb(AnglesLengths.outlierColor());
         const rectNClr = nrgba(rectClr);
         const box = tbl.getBox(boxXywh);
-        const ref = `${tag}-outlier`;
+        const ref = `${tag}-unique-outlier`;
         if (ctx.mode === 'textual')
             box.lineText(Colors.colorToGlyph(rectClr), {}, ref);
         else
             box.rect(clrXywh, { color: rectNClr }, ref);
-        box.lineText(AnglesLengths.outlierName(), CountCellText, ref);
+        box.lineText('Unique', CountCellText, ref);
 
         tbl.addRow([
             NTTable.Cell.box(box),
-            NTTable.Cell.lineText(outlierC.exclusive.toString(), tbl, CountCellText),
+            NTTable.Cell.lineText(combinedExclusiveText, tbl, CountCellText),
             NTTable.Cell.lineText(
                 `${outlierC.cumulative} (100.00 %)`,
                 tbl,
@@ -220,73 +232,98 @@ export namespace BondAnglesLengths {
 
         Layout.sectionHeader('Bond Lengths & Angles', ctx);
 
-        const metrics =  GlobalConfig.data().anglesLengths.summaryMetrics;
-        const metricsName = metrics === 'naval' ? 'NA-VAL' : 'ProSco';
-
-        root.paragraphText(
-            `Occurrence of bond lengths and angles within probability distribution bins (${metricsName})`,
-            { hAlign: 'center' }
-        );
-
         const numModels = Dnatcofication.Structure.numberOfModels(ctx.dnatcofication);
         const alm = ctx.dnatcofication.data.almByCompound;
 
-        for (let mIdx = 0; mIdx < numModels; mIdx++) {
-            const modelNum = ctx.dnatcofication.data.structures[0].models[mIdx].num;
-            const selected = alm.models.get(modelNum)!;
+        // Plot both metrics: order determined by config
+        const configMetrics = GlobalConfig.data().anglesLengths.summaryMetrics;
+        const metricsToPlot: Array<{ kind: 'naval' | 'prosco', name: string }> = configMetrics === 'prosco'
+            ? [
+                { kind: 'prosco', name: 'ProSco' },
+                { kind: 'naval', name: 'NA-VAL' }
+            ]
+            : [
+                { kind: 'naval', name: 'NA-VAL' },
+                { kind: 'prosco', name: 'ProSco' }
+            ];
 
-            if (numModels > 1) {
-                root.lineText(
-                    `Model ${ctx.dnatcofication.data.structures[0].models[mIdx].num}`,
-                    { font: Fonts.SubsectionCaption, hAlign: ctx.mode === 'textual' ? 'left' : 'center' }
-                );
-                root.breakLine();
+        for (let metricsIdx = 0; metricsIdx < metricsToPlot.length; metricsIdx++) {
+            const metrics = metricsToPlot[metricsIdx];
+
+            // Add page break and section header for the second metric
+            if (metricsIdx > 0) {
+                root.breakPage();
+                Layout.sectionHeader('Bond Lengths & Angles', ctx);
             }
 
-            // --- LENGTHS ---
-            let inset = root.inset(
-                NTXYWH.create(NTMm(0), NTMm(0), ctx.cDims.width),
-                {},
-                'lengths-bar',
+            root.paragraphText(
+                metrics.kind === 'naval'
+                    ? `Occurrence of bond lengths and angles within ${metrics.name} tiers`
+                    : `Occurrence of bond lengths and angles within PDB-NA Reference Set distribution (${metrics.name})`,
+                { hAlign: 'center' }
             );
 
-            const countsLengths = metrics === 'prosco'
-                ? {
-                    kind: 'prosco' as const,
-                    counts: SummarizeProSco.countsInGroups(selected.overallLengthsProSco),
+            for (let mIdx = 0; mIdx < numModels; mIdx++) {
+                const modelNum = ctx.dnatcofication.data.structures[0].models[mIdx].num;
+                const selected = alm.models.get(modelNum)!;
+
+                if (numModels > 1) {
+                    root.lineText(
+                        `Model ${ctx.dnatcofication.data.structures[0].models[mIdx].num}`,
+                        { font: Fonts.SubsectionCaption, hAlign: ctx.mode === 'textual' ? 'left' : 'center' }
+                    );
+                    root.breakLine();
                 }
-                : {
-                    kind: 'naval' as const,
-                    counts: SummarizeNaval.countsInGroups(selected.overallLengthsNaval),
-                };
 
-            console.log(countsLengths);
+                // --- LENGTHS ---
+                let inset = root.inset(
+                    NTXYWH.create(NTMm(0), NTMm(0), ctx.cDims.width),
+                    {},
+                    `lengths-bar-${metrics.kind}-${mIdx}`,
+                );
 
-            drawCountsBar(inset, countsLengths, mIdx, 'Lengths', ctx);
-            root.breakLine();
-            drawCountsTable(root, countsLengths, `lengths-tbl-${mIdx}`, ctx);
+                const countsLengths = metrics.kind === 'prosco'
+                    ? {
+                        kind: 'prosco' as const,
+                        counts: SummarizeProSco.countsInGroups(selected.overallLengthsProSco),
+                    }
+                    : {
+                        kind: 'naval' as const,
+                        counts: SummarizeNaval.countsInGroups(selected.overallLengthsNaval),
+                    };
 
-            root.breakLine();
+                console.log(countsLengths);
 
-            const countsAngles = metrics === 'prosco'
-                ? {
-                    kind: 'prosco' as const,
-                    counts: SummarizeProSco.countsInGroups(selected.overallAnglesProSco),
-                }
-                : {
-                    kind: 'naval' as const,
-                    counts: SummarizeNaval.countsInGroups(selected.overallAnglesNaval),
-                };
+                drawCountsBar(inset, countsLengths, mIdx, 'Lengths', metrics.kind, ctx);
+                root.breakLine();
+                drawCountsTable(root, countsLengths, `lengths-tbl-${metrics.kind}-${mIdx}`, ctx);
 
-            // --- ANGLES ---
-            inset = root.inset(
-                NTXYWH.create(NTMm(0), NTMm(0), ctx.cDims.width),
-                {},
-                'angles-bar',
-            );
-            drawCountsBar(inset, countsAngles, mIdx, 'Angles', ctx);
-            root.breakLine();
-            drawCountsTable(root, countsAngles, `angles-tbl-${mIdx}`, ctx);
+                root.breakLine();
+
+                const countsAngles = metrics.kind === 'prosco'
+                    ? {
+                        kind: 'prosco' as const,
+                        counts: SummarizeProSco.countsInGroups(selected.overallAnglesProSco),
+                    }
+                    : {
+                        kind: 'naval' as const,
+                        counts: SummarizeNaval.countsInGroups(selected.overallAnglesNaval),
+                    };
+
+                console.log(countsAngles);
+
+                // --- ANGLES ---
+                inset = root.inset(
+                    NTXYWH.create(NTMm(0), NTMm(0), ctx.cDims.width),
+                    {},
+                    `angles-bar-${metrics.kind}-${mIdx}`,
+                );
+                drawCountsBar(inset, countsAngles, mIdx, 'Angles', metrics.kind, ctx);
+                root.breakLine();
+                drawCountsTable(root, countsAngles, `angles-tbl-${metrics.kind}-${mIdx}`, ctx);
+
+                root.breakLine();
+            }
 
             root.breakLine();
         }

@@ -141,7 +141,7 @@ export namespace ByResidueHelpers {
                                 break;
                         }
 
-                        console.log(navalClass, threshold);
+                        // console.log(navalClass, threshold);
 
                         const tail = worst.splice(
                             kdx,

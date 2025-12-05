@@ -24,13 +24,20 @@ export namespace StructureInfo {
         let tbl = root.table(2, EnumTbl);
         tbl.addRow([
             NTTable.Cell.lineText('Structure ID:', tbl, { font: Tables.EnumTableName.font }, Tables.EnumTableName.cell ),
-            NTTable.Cell.hyperlink(
-                ctx.dnatcofication.pdbId,
-                rcsbLink(ctx.dnatcofication.pdbId),
-                NTUnit.multiply(50, ctx.tDims.characterWidth),
-                tbl,
-                Tables.EnumTableName.cell
-            ),
+            ctx.dnatcofication.pdbId === 'custom'
+                ? NTTable.Cell.lineText(
+                    'custom',
+                    tbl,
+                    { font: Tables.EnumTableValue.font },
+                    Tables.EnumTableValue.cell
+                )
+                : NTTable.Cell.hyperlink(
+                    ctx.dnatcofication.pdbId,
+                    rcsbLink(ctx.dnatcofication.pdbId),
+                    NTUnit.multiply(50, ctx.tDims.characterWidth),
+                    tbl,
+                    Tables.EnumTableName.cell
+                ),
         ]);
         tbl.addRow([
             NTTable.Cell.lineText('Structure title:', tbl, { font: Tables.EnumTableName.font }, Tables.EnumTableName.cell),
@@ -103,23 +110,37 @@ export namespace StructureInfo {
         ]);
         tbl.addRow([
             NTTable.Cell.lineText('PubMed:', tbl, { font: Tables.EnumTableName.font }, Tables.EnumTableName.cell),
-            NTTable.Cell.hyperlink(
-                priPub?.pdbx_database_id_PubMed?.toString() ?? Common.NA,
-                pubmedLink(priPub?.pdbx_database_id_PubMed ?? 0),
-                NTUnit.multiply(40, ctx.tDims.characterWidth),
-                tbl,
-                Tables.EnumTableValue.cell
-            )
+            priPub?.pdbx_database_id_PubMed
+                ? NTTable.Cell.hyperlink(
+                    priPub.pdbx_database_id_PubMed.toString(),
+                    pubmedLink(priPub.pdbx_database_id_PubMed),
+                    NTUnit.multiply(40, ctx.tDims.characterWidth),
+                    tbl,
+                    Tables.EnumTableValue.cell
+                )
+                : NTTable.Cell.lineText(
+                    Common.NA,
+                    tbl,
+                    { font: Tables.EnumTableValue.font },
+                    Tables.EnumTableValue.cell
+                )
         ]);
         tbl.addRow([
             NTTable.Cell.lineText('DOI:', tbl, { font: Tables.EnumTableName.font }, Tables.EnumTableName.cell),
-            NTTable.Cell.hyperlink(
-                priPub?.pdbx_database_id_DOI ?? Common.NA,
-                doiLink(priPub?.pdbx_database_id_DOI ?? ''),
-                NTUnit.multiply(40, ctx.tDims.characterWidth),
-                tbl,
-                Tables.EnumTableValue.cell
-            )
+            priPub?.pdbx_database_id_DOI
+                ? NTTable.Cell.hyperlink(
+                    priPub.pdbx_database_id_DOI,
+                    doiLink(priPub.pdbx_database_id_DOI),
+                    NTUnit.multiply(40, ctx.tDims.characterWidth),
+                    tbl,
+                    Tables.EnumTableValue.cell
+                )
+                : NTTable.Cell.lineText(
+                    Common.NA,
+                    tbl,
+                    { font: Tables.EnumTableValue.font },
+                    Tables.EnumTableValue.cell
+                )
         ]);
         root.breakLine();
 
