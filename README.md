@@ -98,19 +98,39 @@ npm run build-lib
 
 #### Running the tool
 
-To run the tool from the DNATCO root directory, execute the following command:
+To run the tool from the DNATCO root directory, execute:
 
 ```
-node ./bin/dnatco.js <output_directory> <coordinates_file> <density_map (optional)>
+node ./bin/dnatco.js --outputDir <path> --coords <path> [options]
 ```
 
 or, on a Windows system:
 
 ```
-node bin\dnatco.js <output_directory> <coordinates_file> <density_map (optional)>
+node bin\dnatco.js --outputDir <path> --coords <path> [options]
 ```
 
-The tool will produce a mmCIF file with additional categories and a validation report as a PDF file.
+**Command-line options:**
+
+```
+Usage: dnatco.js
+  --help                          Print usage and exit
+  --outputDir                     Path to output directory [VALUE] (REQUIRED)
+  --coords                        Path to file with coordinates [VALUE] (REQUIRED)
+  --reflns                        Path to file with reflections [VALUE]
+  --prefix                        Prefix for output files [VALUE]
+  --extendedCIF                   Generate mmCIF file extended with additional DNATCO categories
+  --report                        Generate comprehensive DNATCO validation report
+  --busterRestraints              Generate file with NtC restraints for Buster
+  --refmacRestraints              Generate file with NtC restraints for Refmac/Servalcat
+  --cootRestraints                Generate file with NtC restraints for Coot
+  --phenixRestraints              Generate file with NtC restraints for Phenix
+  --restraintsRmsd                Maximum allowed NtC RMSD (default 0.5Å) [VALUE]
+  --restraintsSigmaFactor         Restraints sigma factor (default 1.0) [VALUE]
+  --log                           Path to a log file [VALUE]
+```
+
+By default (when no output options are specified), the tool will produce a mmCIF file with additional DNATCO categories and a validation report as a PDF file.
 
 **NOTE:** The standalone tool relies on the entire content of the `bin` directory. If you wish to move the standalone tool to a different directory, make sure that you copy the entire `bin` directory and that its contents remain unchanged.
 
