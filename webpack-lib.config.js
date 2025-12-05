@@ -9,7 +9,7 @@ module.exports = (env, argv) => {
     const productionBuild = argv.mode === 'production';
 
     return createLib(
-        'rednatco',
+        'dnatco',
         productionBuild,
         DistDir,
         {
