@@ -1,7 +1,7 @@
 DNATCO
 ===
 
-The main component of the DNATCO nucleic acid analyzing tool at he [dnatco.datmos.org](https://dnatco.datmos.org).
+The main component of the DNATCO nucleic acid analyzing tool available at the [dnatco.datmos.org](https://dnatco.datmos.org).
 
 Prerequisites
 ---
