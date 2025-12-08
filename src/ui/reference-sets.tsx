@@ -44,47 +44,57 @@ function DownloadSection(props: {
 export function ReferenceSets() {
     const pdbNaReferenceSetFiles = [
         {
-            name: 'dna_naked.csv',
-            url: '/reference-sets/na-val/dna_naked.csv',
-            caption: 'DNA (naked)',
+            name: 'PDB-NA_Reference_Set_DNA.csv',
+            url: '/reference-sets/na-val/PDB-NA_Reference_Set_DNA.csv',
+            caption: 'PDB-NA Reference Set DNA residues',
         },
         {
-            name: 'dna_protein_complexes.csv',
-            url: '/reference-sets/na-val/dna_protein_complexes.csv',
-            caption: 'Protein-DNA complexes',
-        },
-        {
-            name: 'rna_naked.csv',
-            url: '/reference-sets/na-val/rna_naked.csv',
-            caption: 'RNA (naked)',
-        },
-        {
-            name: 'rna_protein_complexes.csv',
-            url: '/reference-sets/na-val/rna_protein_complexes.csv',
-            caption: 'Protein-RNA complexes',
+            name: 'PDB-NA_Reference_Set_RNA.csv',
+            url: '/reference-sets/na-val/PDB-NA_Reference_Set_RNA.csv',
+            caption: 'PDB-NA Reference Set RNA residues',
         },
     ];
 
     const generalReferenceSetFiles = [
         {
-            name: 'resolution_1.0_1.5.csv',
-            url: '/reference-sets/general/resolution_1.0_1.5.csv',
-            caption: 'Resolution 1.0-1.5 Å',
+            name: 'RS25_DNA_c2.csv',
+            url: '/reference-sets/general/RS25_DNA_c2.csv',
+            caption: 'DNA chains with resolution ≤ 2.5 Å',
         },
         {
-            name: 'resolution_1.5_2.0.csv',
-            url: '/reference-sets/general/resolution_1.5_2.0.csv',
-            caption: 'Resolution 1.5-2.0 Å',
+            name: 'RS35_DNA_c2.csv',
+            url: '/reference-sets/general/RS35_DNA_c2.csv',
+            caption: 'DNA chains with resolution ≤ 3.5 Å',
         },
         {
-            name: 'resolution_2.0_2.5.csv',
-            url: '/reference-sets/general/resolution_2.0_2.5.csv',
-            caption: 'Resolution 2.0-2.5 Å',
+            name: 'RS25_DNA_c2_contacts.csv',
+            url: '/reference-sets/general/RS25_DNA_c2_contacts.csv',
+            caption: 'DNA chains with resolution ≤ 2.5 Å with contacts',
         },
         {
-            name: 'resolution_2.5_3.0.csv',
-            url: '/reference-sets/general/resolution_2.5_3.0.csv',
-            caption: 'Resolution 2.5-3.0 Å',
+            name: 'RS35_DNA_c2_contacts.csv',
+            url: '/reference-sets/general/RS35_DNA_c2_contacts.csv',
+            caption: 'DNA chains with resolution ≤ 3.5 Å with contacts',
+        },
+        {
+            name: 'RS25_RNA_c2.csv',
+            url: '/reference-sets/general/RS25_RNA_c2.csv',
+            caption: 'RNA chains with resolution ≤ 2.5 Å',
+        },
+        {
+            name: 'RS35_RNA_c2.csv',
+            url: '/reference-sets/general/RS35_RNA_c2.csv',
+            caption: 'RNA chains with resolution ≤ 3.5 Å',
+        },
+        {
+            name: 'RS25_RNA_c2_contacts.csv',
+            url: '/reference-sets/general/RS25_RNA_c2_contacts.csv',
+            caption: 'RNA chains with resolution ≤ 2.5 Å with contacts',
+        },
+        {
+            name: 'RS35_RNA_c2_contacts.csv',
+            url: '/reference-sets/general/RS35_RNA_c2_contacts.csv',
+            caption: 'RNA chains with resolution ≤ 3.5 Å with contacts',
         },
     ];
 
@@ -113,17 +123,18 @@ export function ReferenceSets() {
                     description={
                         <>
                             <p className='mb-2'>
-                                These reference sets contain nucleic acid structures grouped by resolution ranges.
+                                These reference sets contain non-redundant list of the best-scoring nucleic acid chains in given resolution ranges.
                             </p>
                             <p>
-                                Each dataset includes structures filtered according to quality criteria within
+                                Each dataset includes chains filtered according to the Composite Quality Score (CQS) within
                                 the specified resolution range. The selection criteria include:
                             </p>
                             <ul className='list-disc ml-6 mt-2'>
                                 <li>X-ray crystallography structures only</li>
-                                <li>R-factor and R-free values within acceptable ranges</li>
-                                <li>Complete nucleic acid chains</li>
-                                <li>Standard nucleotide composition</li>
+                                <li>Complete nucleic acid chains with CQS &lt; 15</li>
+                                <li>CQS integrates resolution, R_free, clashscore, RSCC, RSR, and model completeness</li>
+                                <li>Up to two best chains from each 90% sequence identity cluster are included</li>
+                                <li>NAs in protein complexes and naked are considered different</li>
                             </ul>
                         </>
                     }

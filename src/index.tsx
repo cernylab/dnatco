@@ -787,7 +787,12 @@ function App(props: { initial: Initial }) {
                 />
               }
             />
-            <Route path="list-of-conformers" element={<ConformersTab />} />
+            <Route path="browse">
+              <Route index element={<ConformersTab />} />
+              <Route path=":tab" element={<ConformersTab />} />
+            </Route>
+            <Route path="list-of-conformers" element={<Navigate to="/app/browse" replace />} />
+            <Route path="reference-sets" element={<Navigate to="/app/browse/reference-sets" replace />} />
             <Route path="about" element={<AboutTab/>} >
               <Route index element={<Navigate to="help" replace />} />
               <Route path=":section" element={<AboutTab/>} />
