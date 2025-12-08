@@ -1,4 +1,5 @@
 import React from "react";
+import { useParams } from "react-router";
 import { ContourPlots } from "./contour-plots";
 import { Help } from "./help";
 import { SearchConformers } from "./search-conformers";
@@ -23,7 +24,7 @@ import { arrowDown, arrowDownHover } from "../assets/images";
 
 const Tabs = [
   [
-    "browse-conformers",
+    "conformers",
     {
       caption: "Conformers",
       title:
@@ -665,18 +666,28 @@ class TableOfConformers extends React.Component {
 interface State {
   selected: (typeof Tabs)[number][0];
 }
-export class ConformersTab extends React.Component<ConformersTab.Props, State> {
-  constructor(props: ConformersTab.Props) {
+interface ConformersTabInternalProps extends ConformersTab.Props {
+  initialTab?: string;
+}
+
+class ConformersTabInternal extends React.Component<ConformersTabInternalProps, State> {
+  constructor(props: ConformersTabInternalProps) {
     super(props);
 
+    // Use the initialTab prop if provided, otherwise default to conformers
+    const validTabs = Tabs.map(([id]) => id);
+    const initialTab = props.initialTab && validTabs.includes(props.initialTab as any)
+      ? props.initialTab
+      : "conformers";
+
     this.state = {
-      selected: "browse-conformers",
+      selected: initialTab as (typeof Tabs)[number][0],
     };
   }
 
   private renderTab() {
     switch (this.state.selected) {
-      case "browse-conformers":
+      case "conformers":
         return <BrowseConformers />;
       case "base-pairs":
         return (
@@ -726,6 +737,12 @@ export class ConformersTab extends React.Component<ConformersTab.Props, State> {
       </div>
     );
   }
+}
+
+// Wrapper component to use URL params
+export function ConformersTab() {
+  const { tab } = useParams<{ tab?: string }>();
+  return <ConformersTabInternal initialTab={tab} />;
 }
 
 export namespace ConformersTab {
