@@ -17,9 +17,9 @@ import {
   SerializeByResidue,
 } from "../../dnatco/angles-lengths/serialize";
 import { isOk } from "../../dnatco";
-import { SummarizeProSco } from "../../dnatco/angles-lengths/summarize";
+import { SummarizeProSco, SummarizeNaval } from "../../dnatco/angles-lengths/summarize";
 import { Dnatcofication } from "../../dnatco/dnatcofication";
-import { Naval } from "../../dnatco/naval";
+// import { Naval } from "../../dnatco/naval";
 import { Rscc } from "../../dnatco/rscc";
 import { Report } from "../../report";
 import { objKeys } from "../../util";
@@ -66,6 +66,8 @@ function downloadAnglesLengthsByCompound(
 
   const proScoCountsAngles = SummarizeProSco.countsInGroups(data.overallAnglesProSco);
   const proScoCountsLengths = SummarizeProSco.countsInGroups(data.overallLengthsProSco);
+  const navalCountsAngles = SummarizeNaval.countsInGroups(data.overallAnglesNaval);
+  const navalCountsLengths = SummarizeNaval.countsInGroups(data.overallLengthsNaval);
 
   const angles = objKeys(data.angles).flatMap((k) =>
     Array.from(data.angles[k].byMetric.values()).map((x) => x.individual)
@@ -76,12 +78,14 @@ function downloadAnglesLengthsByCompound(
 
   const text =
     fileType === "csv"
-      ? SerializeByCompound.toCsv(angles, proScoCountsAngles, lengths, proScoCountsLengths)
+      ? SerializeByCompound.toCsv(angles, proScoCountsAngles, lengths, proScoCountsLengths, navalCountsAngles, navalCountsLengths)
       : SerializeByCompound.toJson(
           angles,
           proScoCountsAngles,
           lengths,
-          proScoCountsLengths
+          proScoCountsLengths,
+          navalCountsAngles,
+          navalCountsLengths
         );
 
   doDownload(
@@ -98,20 +102,27 @@ function downloadAnglesLengthsByResidue(
 ) {
   const residues = d.data.almByResidue.residues;
   const proScoSummary = SummarizeProSco.substructure(residues);
+  const navalSummary = SummarizeNaval.substructure(residues, d.data.naval);
 
   const proScoCountsAngles = SummarizeProSco.countsInGroups(proScoSummary.angles);
   const proScoCountsLenghts = SummarizeProSco.countsInGroups(proScoSummary.lengths);
+  const navalCountsAngles = SummarizeNaval.countsInGroups(navalSummary.angles);
+  const navalCountsLengths = SummarizeNaval.countsInGroups(navalSummary.lengths);
   const text =
     fileType === "csv"
       ? SerializeByResidue.toCsv(
           proScoCountsAngles,
           proScoCountsLenghts,
+          navalCountsAngles,
+          navalCountsLengths,
           residues,
           d.data.almByResidue.stats
         )
       : SerializeByResidue.toJson(
           proScoCountsAngles,
           proScoCountsLenghts,
+          navalCountsAngles,
+          navalCountsLengths,
           residues,
           d.data.almByResidue.stats
         );
@@ -466,7 +477,13 @@ export function Downloads(props: { dnatcofication: Dnatcofication }) {
             </div>
           </div>
 
-          <div className="flex justify-between border-t-secondary-second border-t pt-3 mb-8">
+          {/*
+            NOTE: This section is commented out to minimize confusion.
+            The "Naval" terminology was historically used incorrectly to refer to CSD-derived (Cambridge Structural Database) classification data.
+            The following section contains intermediate CSD-derived data calculated by DNATCO (using re-implementation of https://github.com/mkowiel/nucleic-acid-validation.git).
+            The CSD-derived data, rotamer-dependent +-3 CSD-sigma,is now properly part of the NA-VAL composite validation score.
+          */}
+          {/* <div className="flex justify-between border-t-secondary-second border-t pt-3 mb-8">
             <div>
               <_Downloads.Title title="Naval validation reports" />
               <div className="text-16px mb-2">
@@ -520,7 +537,7 @@ export function Downloads(props: { dnatcofication: Dnatcofication }) {
                 }
               />
             </div>
-          </div>
+          </div> */}
 
           <div className="flex justify-between border-t-secondary-second border-t pt-3 mb-8">
             <_Downloads.Title title="RSCC vs. RMSD plots" />

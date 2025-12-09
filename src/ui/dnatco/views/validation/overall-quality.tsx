@@ -38,13 +38,17 @@ type DownloadableData = {
   countsAnglesProSco: Record<ProScoGroup | 'outlier',  SummarizeProSco.CountsInGroup>;
   lengths: ALM.LengthStats[];
   countsLengthsProSco: Record<ProScoGroup | 'outlier', SummarizeProSco.CountsInGroup>;
+  countsAnglesNaval: SummarizeNaval.CountsInGroup[];
+  countsLengthsNaval: SummarizeNaval.CountsInGroup[];
 };
 
 function DownloadableData(
   angles: Record<string, ALM.CompoundStats<ALM.AngleStats>>,
   countsAnglesProSco: Record<ProScoGroup | 'outlier', SummarizeProSco.CountsInGroup>,
   lengths: Record<string, ALM.CompoundStats<ALM.LengthStats>>,
-  countsLengthsProSco: Record<ProScoGroup | 'outlier', SummarizeProSco.CountsInGroup>
+  countsLengthsProSco: Record<ProScoGroup | 'outlier', SummarizeProSco.CountsInGroup>,
+  countsAnglesNaval: SummarizeNaval.CountsInGroup[],
+  countsLengthsNaval: SummarizeNaval.CountsInGroup[]
 ): DownloadableData {
   return {
     angles: objKeys(angles).flatMap((k) =>
@@ -55,6 +59,8 @@ function DownloadableData(
       Array.from(lengths[k].byMetric.values()).map((x) => x.individual)
     ),
     countsLengthsProSco,
+    countsAnglesNaval,
+    countsLengthsNaval,
   };
 }
 
@@ -67,7 +73,9 @@ const StatsDownloaders = [
         data.angles,
         data.countsAnglesProSco,
         data.lengths,
-        data.countsLengthsProSco
+        data.countsLengthsProSco,
+        data.countsAnglesNaval,
+        data.countsLengthsNaval
       );
       doDownload(fileNameStem, text, this.fileType);
     },
@@ -80,7 +88,9 @@ const StatsDownloaders = [
         data.angles,
         data.countsAnglesProSco,
         data.lengths,
-        data.countsLengthsProSco
+        data.countsLengthsProSco,
+        data.countsAnglesNaval,
+        data.countsLengthsNaval
       );
       doDownload(fileNameStem, text, this.fileType);
     },
@@ -323,6 +333,8 @@ export class OverallQuality extends View<View.Props> {
     // These are currently only passed to download
     const countsAnglesProSco = SummarizeProSco.countsInGroups(selected.overallAnglesProSco);
     const countsLengthsProSco = SummarizeProSco.countsInGroups(selected.overallLengthsProSco);
+    const countsAnglesNaval = SummarizeNaval.countsInGroups(selected.overallAnglesNaval);
+    const countsLengthsNaval = SummarizeNaval.countsInGroups(selected.overallLengthsNaval);
 
     const htmlColorsForStatsBar = new Array<string>();
     if (metrics === 'naval') {
@@ -368,7 +380,9 @@ export class OverallQuality extends View<View.Props> {
             selected.angles,
             countsAnglesProSco,
             selected.lengths,
-            countsLengthsProSco
+            countsLengthsProSco,
+            countsAnglesNaval,
+            countsLengthsNaval
           )}
           downloaders={StatsDownloaders}
           name={AnglesLengthsCommon.selectionName(

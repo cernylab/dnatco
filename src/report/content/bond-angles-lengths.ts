@@ -38,6 +38,7 @@ function drawCountsBar<Output>(
 ) {
     const H = NTUnit.multiply(2, ctx.tDims.characterHeight);
     const totalWidth = inset.xywh.width;
+    const MIN_VISIBLE_WIDTH = NTUnit.from(NTMm(1)); // 1mm minimum width for visibility
 
     const captionClrSrc = counts.kind === 'naval'
       ? AnglesLengths.navalRankingClassColor('allowed')
@@ -48,51 +49,79 @@ function drawCountsBar<Output>(
         const grps = [...ProScoGroups, 'outlier'] as const;
         const totalCount = grps.map((g) => counts.counts[g]).reduce((p, c) => p + c.exclusive, 0)
 
-        let x = 0;
+        // Calculate widths with minimum visible width
+        const widths: NTUnit[] = [];
+        let totalAllocated = NTUnit.zero();
         for (const grp of grps) {
-            const w = counts.counts[grp].exclusive / totalCount;
-
-            drawBarSegment(
-                inset,
-                x,
-                w,
-                totalWidth,
-                H,
-                AnglesLengths.pGroupColor(grp),
-                `${tag}-${metricsKind}-${mIdx}`
-            );
-
-            x += w;
+            const count = counts.counts[grp].exclusive;
+            if (count === 0) {
+                widths.push(NTUnit.zero());
+            } else {
+                const proportionalWidth = NTUnit.multiply(count / totalCount, totalWidth);
+                const w = proportionalWidth >= MIN_VISIBLE_WIDTH ? proportionalWidth : MIN_VISIBLE_WIDTH;
+                widths.push(w);
+                totalAllocated = NTUnit.add(totalAllocated, w);
+            }
         }
-        // Outliers
-        drawBarSegment(
-            inset,
-            x,
-            1.0 - x,
-            totalWidth,
-            H,
-            AnglesLengths.outlierColor(),
-            `${tag}-${metricsKind}-${mIdx}`
-        );
+
+        // Normalize if total exceeds available width
+        let x = NTUnit.zero();
+        for (let i = 0; i < grps.length; i++) {
+            if (widths[i] > NTUnit.zero()) {
+                const normalizedWidth = totalAllocated > totalWidth
+                    ? NTUnit.multiply(widths[i] / totalAllocated, totalWidth)
+                    : widths[i];
+
+                drawBarSegment(
+                    inset,
+                    x / totalWidth,
+                    normalizedWidth / totalWidth,
+                    totalWidth,
+                    H,
+                    AnglesLengths.pGroupColor(grps[i]),
+                    `${tag}-${metricsKind}-${mIdx}`
+                );
+                x = NTUnit.add(x, normalizedWidth);
+            }
+        }
     } else if (counts.kind === 'naval') {
         const totalCount = counts.counts.reduce((p, c) => p + c.exclusive, 0);
 
-        let x = 0;
+        // Calculate widths with minimum visible width
+        const widths: NTUnit[] = [];
+        let totalAllocated = NTUnit.zero();
         for (let gdx = 0; gdx < NavalRankingClasses.length; gdx++) {
-            const cls = NavalRankingClasses[gdx];
-            const w = counts.counts[gdx].exclusive / totalCount;
+            const count = counts.counts[gdx].exclusive;
+            if (count === 0) {
+                widths.push(NTUnit.zero());
+            } else {
+                const proportionalWidth = NTUnit.multiply(count / totalCount, totalWidth);
+                const w = proportionalWidth >= MIN_VISIBLE_WIDTH ? proportionalWidth : MIN_VISIBLE_WIDTH;
+                widths.push(w);
+                totalAllocated = NTUnit.add(totalAllocated, w);
+            }
+        }
 
-            drawBarSegment(
-                inset,
-                x,
-                w,
-                totalWidth,
-                H,
-                AnglesLengths.navalRankingClassColor(cls),
-                `${tag}-${metricsKind}-${mIdx}`
-            );
+        // Normalize if total exceeds available width
+        let x = NTUnit.zero();
+        for (let gdx = 0; gdx < NavalRankingClasses.length; gdx++) {
+            if (widths[gdx] > NTUnit.zero()) {
+                const normalizedWidth = totalAllocated > totalWidth
+                    ? NTUnit.multiply(widths[gdx] / totalAllocated, totalWidth)
+                    : widths[gdx];
 
-            x += w;
+                const cls = NavalRankingClasses[gdx];
+                drawBarSegment(
+                    inset,
+                    x / totalWidth,
+                    normalizedWidth / totalWidth,
+                    totalWidth,
+                    H,
+                    AnglesLengths.navalRankingClassColor(cls),
+                    `${tag}-${metricsKind}-${mIdx}`
+                );
+                x = NTUnit.add(x, normalizedWidth);
+            }
         }
     }
 
@@ -121,7 +150,7 @@ function drawCountsTable<Output>(
     ctx: Report.Context<Output>
 ) {
     const tbl = inset.table(
-        3,
+        5,
         {
             ...Tables.EnumTable(ctx.tDims.characterWidth, ctx.tDims.characterHeight, ctx.mode),
             hAlign: ctx.mode === 'textual' ? 'left' : 'center',
@@ -132,7 +161,9 @@ function drawCountsTable<Output>(
     tbl.addRow([
         NTTable.Cell.lineText('Category', tbl, { font: Tables.HeaderFont }),
         NTTable.Cell.lineText('Exclusive', tbl, { font: Tables.HeaderFont }),
+        NTTable.Cell.lineText('Exclusive %', tbl, { font: Tables.HeaderFont }),
         NTTable.Cell.lineText('Cumulative', tbl, { font: Tables.HeaderFont }),
+        NTTable.Cell.lineText('Cumulative %', tbl, { font: Tables.HeaderFont }),
     ]);
 
     let clrBoxOffset;
@@ -166,7 +197,13 @@ function drawCountsTable<Output>(
                 NTTable.Cell.box(box),
                 NTTable.Cell.lineText(c.exclusive.toString(), tbl, CountCellText),
                 NTTable.Cell.lineText(
-                    `${c.cumulative} (${(100 * c.cumulative / outlierC.cumulative).toFixed(2).padStart(6, ' ')} %)`,
+                    `${(100 * c.exclusive / outlierC.cumulative).toFixed(2).padStart(6, ' ')} %`,
+                    tbl,
+                    CountCellText
+                ),
+                NTTable.Cell.lineText(c.cumulative.toString(), tbl, CountCellText),
+                NTTable.Cell.lineText(
+                    `${(100 * c.cumulative / outlierC.cumulative).toFixed(2).padStart(6, ' ')} %`,
                     tbl,
                     CountCellText
                 ),
@@ -194,10 +231,12 @@ function drawCountsTable<Output>(
             NTTable.Cell.box(box),
             NTTable.Cell.lineText(combinedExclusiveText, tbl, CountCellText),
             NTTable.Cell.lineText(
-                `${outlierC.cumulative} (100.00 %)`,
+                `${(100 * (uniqueC.exclusive + outlierC.exclusive) / outlierC.cumulative).toFixed(2).padStart(6, ' ')} %`,
                 tbl,
                 CountCellText
             ),
+            NTTable.Cell.lineText(outlierC.cumulative.toString(), tbl, CountCellText),
+            NTTable.Cell.lineText('100.00 %', tbl, CountCellText),
         ]);
     } else if (counts.kind === 'naval') {
         for (let gdx = 0; gdx < NavalRankingClasses.length; gdx++) {
@@ -217,7 +256,13 @@ function drawCountsTable<Output>(
                 NTTable.Cell.box(box),
                 NTTable.Cell.lineText(c.exclusive.toString(), tbl, CountCellText),
                 NTTable.Cell.lineText(
-                    `${c.cumulative} (${(100 * c.cumulative / counts.counts[NavalRankingClasses.length - 1].cumulative).toFixed(2).padStart(6, ' ')} %)`,
+                    `${(100 * c.exclusive / counts.counts[NavalRankingClasses.length - 1].cumulative).toFixed(2).padStart(6, ' ')} %`,
+                    tbl,
+                    CountCellText
+                ),
+                NTTable.Cell.lineText(c.cumulative.toString(), tbl, CountCellText),
+                NTTable.Cell.lineText(
+                    `${(100 * c.cumulative / counts.counts[NavalRankingClasses.length - 1].cumulative).toFixed(2).padStart(6, ' ')} %`,
                     tbl,
                     CountCellText
                 ),

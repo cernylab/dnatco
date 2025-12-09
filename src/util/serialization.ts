@@ -1,7 +1,7 @@
 import { inWorker } from './';
 import { DynamicTable } from './dynamic-table';
 
-const CSV_COL_SEP = ';';
+const CSV_COL_SEP = ',';
 const ChopUrlTag = /(^[a-zA-Z0-9:./-]+);base64,/;
 
 export namespace Serialization {

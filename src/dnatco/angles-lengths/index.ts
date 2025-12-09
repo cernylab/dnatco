@@ -799,7 +799,7 @@ export namespace AnglesLengths {
 
     export function navalRankingClassName(cls: NavalRankingClass) {
         switch (cls) {
-            case 'of-concern': return 'Of concern';
+            case 'of-concern': return 'Of Concern';
             case 'allowed': return 'Allowed';
             case 'preferred': return 'Preferred';
         }

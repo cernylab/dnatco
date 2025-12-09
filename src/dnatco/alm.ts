@@ -6,6 +6,7 @@ import { Measurements } from './angles-lengths/measurements';
 import { Summarize, SummarizeNaval, SummarizeProSco } from './angles-lengths/summarize';
 import { MappedNaval } from './dnatcofication';
 import { objKeys } from '../util';
+import { M } from '../util/math';
 import { InvalidModelIndex } from '../util/structure-selection';
 
 export type ALMCompoundAngleLength = {
@@ -251,8 +252,8 @@ export namespace ALM {
 
     export type MaybeBin = (Bin & { binIndex: number }) | 'below' | 'above' | 'no-data';
     export type ResidueStats = {
-        angles: { pGroup?: AnglesLengths.PGroup, bin: MaybeBin }[],
-        lengths: { pGroup?: AnglesLengths.PGroup, bin: MaybeBin }[],
+        angles: { pGroup?: AnglesLengths.PGroup, bin: MaybeBin, navalRankingClass: NavalRankingClass }[],
+        lengths: { pGroup?: AnglesLengths.PGroup, bin: MaybeBin, navalRankingClass: NavalRankingClass }[],
         summaryProSco: Summarize.Summary;
         summaryNaval: Summarize.Summary;
     }
@@ -501,24 +502,46 @@ export namespace ALM {
             }
 
             // Precompute stats
-            const angles = [];
+            const angles: { pGroup?: AnglesLengths.PGroup, bin: MaybeBin, navalRankingClass: NavalRankingClass }[] = [];
             for (const a of r.bondAngles) {
                 const pgrp = AnglesLengths.anglePGroup(r.compound, a);
                 const binIndex = AnglesLengths.angleBinIndex(r.compound, a);
                 const bin = AnglesLengths.angleBinFromIndex(r.compound, a, binIndex) ?? 'no-data';
                 const maybeBin = asMaybeBin(bin, binIndex);
 
-                angles.push({ pGroup: pgrp, bin: maybeBin });
+                const ranking = AnglesLengths.angleNavalRanking(r.compound, a);
+                const navalAngle = AnglesLengths.navalAngle(naval, r, a.triplet);
+                const angleAvgs = AnglesLengths.angleAverages(r.compound, a.triplet);
+                const navalRankingClass = AnglesLengths.navalRankingClass(
+                    a.angle,
+                    ranking,
+                    M.d2r(navalAngle.csdPreferredLeft),
+                    M.d2r(navalAngle.csdPreferredRight),
+                    angleAvgs
+                );
+
+                angles.push({ pGroup: pgrp, bin: maybeBin, navalRankingClass });
             }
 
-            const lengths = [];
+            const lengths: { pGroup?: AnglesLengths.PGroup, bin: MaybeBin, navalRankingClass: NavalRankingClass }[] = [];
             for (const l of r.bondLengths) {
                 const pgrp = AnglesLengths.lengthPGroup(r.compound, l);
                 const binIndex = AnglesLengths.lengthBinIndex(r.compound, l);
                 const bin = AnglesLengths.lengthBinFromIndex(r.compound, l, binIndex) ?? 'no-data';
                 const maybeBin = asMaybeBin(bin, binIndex);
 
-                lengths.push({ pGroup: pgrp, bin: maybeBin });
+                const ranking = AnglesLengths.lengthNavalRanking(r.compound, l);
+                const navalBond = AnglesLengths.navalBond(naval, r, l.pair);
+                const lengthAvgs = AnglesLengths.lengthAverages(r.compound, l.pair);
+                const navalRankingClass = AnglesLengths.navalRankingClass(
+                    l.length,
+                    ranking,
+                    navalBond.csdPreferredLeft,
+                    navalBond.csdPreferredRight,
+                    lengthAvgs
+                );
+
+                lengths.push({ pGroup: pgrp, bin: maybeBin, navalRankingClass });
             }
 
             stats.push({ angles, lengths, summaryProSco: SummarizeProSco.residue(r), summaryNaval: SummarizeNaval.residue(r, naval) });
