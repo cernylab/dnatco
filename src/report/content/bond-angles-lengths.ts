@@ -337,8 +337,6 @@ export namespace BondAnglesLengths {
                         counts: SummarizeNaval.countsInGroups(selected.overallLengthsNaval),
                     };
 
-                console.log(countsLengths);
-
                 drawCountsBar(inset, countsLengths, mIdx, 'Lengths', metrics.kind, ctx);
                 root.breakLine();
                 drawCountsTable(root, countsLengths, `lengths-tbl-${metrics.kind}-${mIdx}`, ctx);
@@ -354,8 +352,6 @@ export namespace BondAnglesLengths {
                         kind: 'naval' as const,
                         counts: SummarizeNaval.countsInGroups(selected.overallAnglesNaval),
                     };
-
-                console.log(countsAngles);
 
                 // --- ANGLES ---
                 inset = root.inset(

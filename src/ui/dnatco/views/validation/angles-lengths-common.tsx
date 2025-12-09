@@ -453,8 +453,6 @@ function NavalBar(props: {
     const w = context.canvas.width;
     const h = context.canvas.height;
 
-      console.log(w, h);
-
     const ofConcernLower = w * (ranking.ofConcernLower - lowest) / span;
     if (ofConcernLower > 0) {
       context.fillStyle = ofConcernClr;
@@ -462,12 +460,19 @@ function NavalBar(props: {
     }
 
     const preferredLower = w * (totalPreferredLower - lowest) / span;
-    context.fillStyle = allowedClr;
-    context.fillRect(ofConcernLower, 0, preferredLower - ofConcernLower, 32);
-
     const preferredUpper = w * (totalPreferredUpper - lowest) / span;
-    context.fillStyle = preferredClr;
-    context.fillRect(preferredLower, 0, preferredUpper - preferredLower, 32);
+
+    if (ranking.ofConcernLower > totalPreferredLower) {
+      // No yellow zone: green starts at ofConcernLower
+      context.fillStyle = preferredClr;
+      context.fillRect(ofConcernLower, 0, preferredUpper - ofConcernLower, 32);
+    } else {
+      // Normal case: yellow allowed zone exists between red and green
+      context.fillStyle = allowedClr;
+      context.fillRect(ofConcernLower, 0, preferredLower - ofConcernLower, 32);
+      context.fillStyle = preferredClr;
+      context.fillRect(preferredLower, 0, preferredUpper - preferredLower, 32);
+    }
 
     const ofConcernUpper = w * (ranking.ofConcernUpper - lowest) / span;
     context.fillStyle = allowedClr;
