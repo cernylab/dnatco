@@ -1,0 +1,30 @@
+{
+
+    "precalculateConnectivitiesAndSimilarities": false,
+
+    "expectedParametersFingerprint": "466a5115d59a4b1cd691d7e8f4f7b0aa8a39879fb048f2368692c54935ab2912",
+
+    "anglesLengths": {
+        "outlierColor": "#041e42",
+        "outlierName": "Unique",
+        "chartMarkerColor": "#000000",
+        "navalMarkerColor": "#000000",
+        "navalPreferredColor": "#66ff66",
+        "navalAllowedColor": "#ffff66",
+        "navalOfConcernColor": "#ff6666",
+        "pGroups": {
+            "common":    { "threshold": 95,   "color": "#a6cee3", "name": "Common" },
+            "rare":      { "threshold": 99.9, "color": "#2171b5", "name": "Rare" },
+            "ambiguous": { "threshold": 0,    "color": "#08306b", "name": "Ambiguous" },
+            "unique":    { "threshold": 0,    "color": "#041e42", "name": "Unique" }
+        },
+        "summaryMetrics": "naval"
+    },
+
+    "displayedProductName": "DNATCO",
+
+    "phenix": {
+        "rsccExec": "/PATH/TO/phenix.real_space_correlation",
+        "scratchDir": "/tmp/phenix_rednatco"
+    }
+}

@@ -35,6 +35,18 @@ module.exports = (env, argv) => {
                     from: 'jsllka/src/libLLKA_node.*',
                     to() { return path.resolve(__dirname, DistDir, '[name][ext]') },
                 },
+                {
+                    from: 'standalone_config.json',
+                    to() { return path.resolve(__dirname, DistDir, 'config.json') },
+                },
+                {
+                    from: 'standalone_README.md',
+                    to() { return path.resolve(__dirname, DistDir, 'README.md') },
+                },
+                {
+                    from: 'assets/classification',
+                    to() { return path.resolve(__dirname, DistDir, 'classification') },
+                },
             ]
         }
     );

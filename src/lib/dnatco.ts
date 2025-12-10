@@ -4,6 +4,7 @@ import path from 'node:path';
 import process from 'node:process';
 import { fileExists, isDirectory, isReadable, isWriteable, readBinaryFile, readTextFile, writeBinaryFile, writeTextFile } from './io';
 import { Logger } from '../log/logger';
+import { isCanvasAvailable, getCanvasInstallMessage } from '../node-util/canvas-check';
 import { Phenix } from './phenix';
 import { isError, isOk } from '../dnatco';
 import { AnglesLengths } from '../dnatco/angles-lengths';
@@ -542,8 +543,24 @@ async function main(argv: string[]): Promise<ExitCode> {
             Logger.log(Logger.Severity.Warning, `The DNATCO extended mmCIF file will NOT be produced (see --extendedCIF).`);
         }
         if (runCfg.doReport) {
-            Logger.log(Logger.Severity.Warning, `Writing the DNATCO validation report file.`);
-            await writeValidationReport(d, cfg.referenceUrl, outputDirPath, outputPrefix);
+            if (!isCanvasAvailable()) {
+                Logger.log(Logger.Severity.Error, `Cannot generate PDF report: canvas package is not installed.`);
+                Logger.log(Logger.Severity.Error, getCanvasInstallMessage());
+                Logger.log(Logger.Severity.Warning, `Skipping PDF report generation. All other outputs will be generated normally.`);
+            } else {
+                try {
+                    Logger.log(Logger.Severity.Warning, `Writing the DNATCO validation report file.`);
+                    await writeValidationReport(d, cfg.referenceUrl, outputDirPath, outputPrefix);
+                } catch (e) {
+                    if (e instanceof Error && e.message.includes('Canvas package is not available')) {
+                        Logger.log(Logger.Severity.Error, `Cannot generate PDF report: ${e.message}`);
+                        Logger.log(Logger.Severity.Error, getCanvasInstallMessage());
+                        Logger.log(Logger.Severity.Warning, `Skipping PDF report generation. All other outputs will be generated normally.`);
+                    } else {
+                        throw e;
+                    }
+                }
+            }
         } else {
             Logger.log(Logger.Severity.Warning, `The DNATCO validation report file will NOT be produced (see --report).`);
         }
