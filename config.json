@@ -24,19 +24,23 @@
     "userDatabases": [
     ],
 
+
     "anglesLengths": {
-        "outlierColor": "#ff8a89",
-        "outlierName": "Outlier",
+        "outlierColor": "#041e42",
+        "outlierName": "Unique",
         "chartMarkerColor": "#000000",
-        "navalMarkerColor": "#6D74FF",
-        "navalPreferredColor": "#00FF00",
-        "navalAllowedColor": "#FFFF00",
-        "navalOfConcernColor": "#FF0000",
-        "pGroups": [
-            { "threshold": 89, "color": "#a8ff8a", "name": "Rare" },
-            { "threshold": 95, "color": "#a8ff8a", "name": "Dunno" },
-            { "threshold": 99.9, "color": "#fffa8a", "name": "OK" }
-        ]
+        "navalMarkerColor": "#000000",
+        "navalPreferredColor": "#66ff66",
+        "navalAllowedColor": "#ffff66",
+        "navalOfConcernColor": "#ff6666",
+        "pGroups": {
+            "common":    { "threshold": 95,   "color": "#a6cee3", "name": "Common" },
+            "rare":      { "threshold": 99.9, "color": "#2171b5", "name": "Rare" },
+            "ambiguous": { "threshold": 0,    "color": "#08306b", "name": "Ambiguous" },
+            "unique":    { "threshold": 0,    "color": "#041e42", "name": "Unique" }
+        },
+        "summaryMetrics": "naval"
+
     },
     "basePairsLadder": {
         "barRadius": 0.5,
