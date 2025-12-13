@@ -549,4 +549,86 @@ export namespace ALM {
 
         return { models, chains, residues, stats };
     }
+
+    /**
+     * Parse residue name from URL parameter and find matching residue
+     * Format: {pdbid}[-mX]_{authChain}_{compound}[.{altId}]_{authSeqId}[.{insCode}]
+     * Example: 4qvi_B_DG_2109 or 4qvi-m2_B_DG.B_2109.A (for model 2, altId=B, insCode=A)
+     * Model 1 is implicit (no suffix), other models use -mX suffix
+     */
+    export function residueByName(almByResidue: ALMByResidue, name: string): Measurements.Residue | undefined {
+        const parts = name.split('_');
+        if (parts.length !== 4) {
+            console.warn(`Invalid residue format: ${name}. Expected 4 underscore-separated parts.`);
+            return undefined;
+        }
+
+        // Parse pdbid[-mX] to extract model number
+        const pdbidWithModel = parts[0];
+        let modelNum = 1; // Default to model 1
+        const modelMatch = pdbidWithModel.match(/^(.+)-m(\d+)$/);
+        if (modelMatch) {
+            modelNum = parseInt(modelMatch[2]);
+            if (isNaN(modelNum)) {
+                console.warn(`Invalid model number in residue: ${pdbidWithModel}`);
+                return undefined;
+            }
+        }
+
+        const authChain = parts[1];
+        const compWithAltId = parts[2];     // e.g., "DG", "DG.B" (altId=B)
+        const seqWithInsCode = parts[3];    // e.g., "2109", "2109.A" (insCode=A)
+
+        // Parse compound and altId (format: compound[.altId])
+        let compound = compWithAltId;
+        let altId = '';
+        const dotIdx = compWithAltId.indexOf('.');
+        if (dotIdx > 0) {
+            compound = compWithAltId.substring(0, dotIdx);
+            altId = compWithAltId.substring(dotIdx + 1);
+        }
+
+        // Parse authSeqId and insCode (format: authSeqId[.insCode])
+        const seqDotIdx = seqWithInsCode.indexOf('.');
+        let authSeqId: number;
+        let insCode = '';
+        if (seqDotIdx > 0) {
+            authSeqId = parseInt(seqWithInsCode.substring(0, seqDotIdx));
+            insCode = seqWithInsCode.substring(seqDotIdx + 1);
+        } else {
+            authSeqId = parseInt(seqWithInsCode);
+        }
+
+        if (isNaN(authSeqId)) {
+            console.warn(`Invalid sequence ID in residue: ${seqWithInsCode}`);
+            return undefined;
+        }
+
+        // Find residue in ALM data
+        const modelChains = almByResidue.chains.get(modelNum);
+        if (!modelChains) {
+            console.warn(`Model ${modelNum} not found in ALM data`);
+            return undefined;
+        }
+
+        const chainIndices = modelChains.get(authChain);
+        if (!chainIndices) {
+            console.warn(`Chain ${authChain} not found in model ${modelNum}`);
+            return undefined;
+        }
+
+        // Search for matching residue
+        for (const idx of chainIndices) {
+            const r = almByResidue.residues[idx];
+            if (r.authSeqId === authSeqId &&
+                r.compound === compound &&
+                r.insCode === insCode &&
+                r.altId === altId) {
+                return r;
+            }
+        }
+
+        console.warn(`Residue not found: model=${modelNum}, chain=${authChain}, compound=${compound}, seqId=${authSeqId}, insCode=${insCode}, altId=${altId}`);
+        return undefined;
+    }
 }

@@ -121,4 +121,98 @@ export namespace BasePairsMapper {
              (bp.authSeqId1 === authSeqId2 && bp.authSeqId2 === authSeqId1))
         );
     }
+
+    /**
+     * Parse base pair name from URL parameter and find matching base pair
+     * Format: {pdbid}[-mX]_{chain1}_{comp1}[.{altId1}]_{seqId1}[.{insCode1}]_{chain2}_{comp2}[.{altId2}]_{seqId2}[.{insCode2}]
+     * Example: 4qvi_B_U_2109_B_A_2125 or 4qvi-m2_B_U.B_2109.A_B_A.C_2125.D (for model 2, with altIds and insCodes)
+     * Model 1 is implicit (no suffix), other models use -mX suffix
+     */
+    export function byName(d: Dnatcofication, name: string): BasePair | undefined {
+        const parts = name.split('_');
+        if (parts.length !== 7) {
+            console.warn(`Invalid basePair format: ${name}. Expected 7 underscore-separated parts.`);
+            return undefined;
+        }
+
+        // Parse pdbid[-mX] to extract model number
+        const pdbidWithModel = parts[0];
+        let model = 1; // Default to model 1
+        const modelMatch = pdbidWithModel.match(/^(.+)-m(\d+)$/);
+        if (modelMatch) {
+            model = parseInt(modelMatch[2]);
+            if (isNaN(model)) {
+                console.warn(`Invalid model number in basePair: ${pdbidWithModel}`);
+                return undefined;
+            }
+        }
+
+        // Parse first residue: chain1_comp1[.altId1]_seqId1[.insCode1]
+        const authChain1 = parts[1];
+        const comp1WithAltId = parts[2];    // e.g., "U", "U.B" (altId=B)
+        const seqId1WithInsCode = parts[3]; // e.g., "2109", "2109.A" (insCode=A)
+
+        // Parse second residue: chain2_comp2[.altId2]_seqId2[.insCode2]
+        const authChain2 = parts[4];
+        const comp2WithAltId = parts[5];
+        const seqId2WithInsCode = parts[6];
+
+        // Extract compound and altId (format: compound[.altId])
+        const parseCompound = (compWithAltId: string) => {
+            const dotIdx = compWithAltId.indexOf('.');
+            if (dotIdx > 0) {
+                return {
+                    compound: compWithAltId.substring(0, dotIdx),
+                    altId: compWithAltId.substring(dotIdx + 1)
+                };
+            }
+            return { compound: compWithAltId, altId: '' };
+        };
+
+        // Extract seqId and insCode (format: seqId[.insCode])
+        const parseSeqId = (seqIdWithInsCode: string) => {
+            const dotIdx = seqIdWithInsCode.indexOf('.');
+            if (dotIdx > 0) {
+                const authSeqId = parseInt(seqIdWithInsCode.substring(0, dotIdx));
+                return {
+                    authSeqId,
+                    insCode: seqIdWithInsCode.substring(dotIdx + 1)
+                };
+            }
+            return {
+                authSeqId: parseInt(seqIdWithInsCode),
+                insCode: ''
+            };
+        };
+
+        const res1Comp = parseCompound(comp1WithAltId);
+        const res1Seq = parseSeqId(seqId1WithInsCode);
+        const res2Comp = parseCompound(comp2WithAltId);
+        const res2Seq = parseSeqId(seqId2WithInsCode);
+
+        if (isNaN(res1Seq.authSeqId) || isNaN(res2Seq.authSeqId)) {
+            console.warn(`Invalid sequence IDs in basePair: ${seqId1WithInsCode}, ${seqId2WithInsCode}`);
+            return undefined;
+        }
+
+        // Find matching base pair
+        return d.data.basePairs.pairs.find(bp =>
+            bp.model === model && (
+                // Forward match
+                (bp.authAsymId1 === authChain1 && bp.authSeqId1 === res1Seq.authSeqId &&
+                 bp.compId1 === res1Comp.compound && bp.altId1 === res1Comp.altId &&
+                 bp.insCode1 === res1Seq.insCode &&
+                 bp.authAsymId2 === authChain2 && bp.authSeqId2 === res2Seq.authSeqId &&
+                 bp.compId2 === res2Comp.compound && bp.altId2 === res2Comp.altId &&
+                 bp.insCode2 === res2Seq.insCode) ||
+                // Reverse match (base pairs are bidirectional)
+                (bp.authAsymId1 === authChain2 && bp.authSeqId1 === res2Seq.authSeqId &&
+                 bp.compId1 === res2Comp.compound && bp.altId1 === res2Comp.altId &&
+                 bp.insCode1 === res2Seq.insCode &&
+                 bp.authAsymId2 === authChain1 && bp.authSeqId2 === res1Seq.authSeqId &&
+                 bp.compId2 === res1Comp.compound && bp.altId2 === res1Comp.altId &&
+                 bp.insCode2 === res1Seq.insCode)
+            )
+        );
+    }
 }
