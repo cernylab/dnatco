@@ -115,7 +115,13 @@ function Contact() {
                 <div className='mb-4'>
                     <h3 className='font-700 text-18px mb-2 uppercase'>Contributors</h3>
                     <div className='mb-2'>
-                        Michal Malý<span className='rdo-sup'>1</span>, Paulína Božíková<span className='rdo-sup'>1</span>, Lada Biedermannová<span className='rdo-sup'>2</span>, Terezie Prchalová<span className='rdo-sup'>1,2</span>, Jakub Svoboda<span className='rdo-sup'>2</span>, Daniel Šrom<span className='rdo-sup'>1</span>
+                        Michal Malý<span className='rdo-sup'>1</span>, 
+                        Paulína Božíková<span className='rdo-sup'>1</span>, 
+                        Michal Tykač<span className='rdo-sup'>1</span>, 
+                        Lada Biedermannová<span className='rdo-sup'>2</span>, 
+                        Terezie Prchalová<span className='rdo-sup'>1,2</span>, 
+                        Jakub Svoboda<span className='rdo-sup'>2</span>, 
+                        Daniel Šrom<span className='rdo-sup'>1</span>
                     </div>
                 </div>
 
@@ -317,19 +323,31 @@ function Help() {
                                         <div className='flex ml-8 pl-8 pt-2 pb-4'>
                                             <div className='w-[25%]'></div>
                                             <div className='w-[75%] text-16px text-justify'>
-                                                {section.paragraphs.map((item: any, itemIdx: any) => (
-                                                    <div key={itemIdx}>
-                                                        {item.type === 'paragraph' && (
-                                                            <>
-                                                                <p>{renderTextWithLinks(item.text)}</p>
+                                                {section.paragraphs.map((item: any, itemIdx: any) => {
+                                                    // Handle both string format and object format
+                                                    if (typeof item === 'string') {
+                                                        return (
+                                                            <div key={itemIdx}>
+                                                                <p>{renderTextWithLinks(item)}</p>
                                                                 <div className='h-3'></div>
-                                                            </>
-                                                        )}
-                                                        {item.type === 'image' && (
-                                                            <img src={item.url} alt={`Image ${itemIdx}`} className={`${item.width} my-4`} />
-                                                        )}
-                                                    </div>
-                                                ))}
+                                                            </div>
+                                                        );
+                                                    }
+                                                    // Handle object format
+                                                    return (
+                                                        <div key={itemIdx}>
+                                                            {item.type === 'paragraph' && (
+                                                                <>
+                                                                    <p>{renderTextWithLinks(item.text)}</p>
+                                                                    <div className='h-3'></div>
+                                                                </>
+                                                            )}
+                                                            {item.type === 'image' && (
+                                                                <img src={item.url} alt={`Image ${itemIdx}`} className={`${item.width} my-4`} />
+                                                            )}
+                                                        </div>
+                                                    );
+                                                })}
                                             </div>
                                         </div>
                                     )}
@@ -412,6 +430,8 @@ function HowToCite() {
 }
 
 function VersionHistory() {
+    const navigate = useNavigate();
+
     return (
         <div>
             {/* v5.0 */}
@@ -435,6 +455,12 @@ function VersionHistory() {
                     </div>
                     <div className=' text-16px text-justify'>
                         Introducing the 'NtC tube', a new graphical representation of nucleic acids.
+                    </div>
+                    <div className=' text-16px text-justify'>
+                        Providing direct links to specific structures, dinucleotide steps, base pairs, and residues with optional bond/angle validation (<a className='underline cursor-pointer' href='#url-parameters' onClick={(e) => { e.preventDefault(); navigate({ pathname: '/app/about/help', hash: 'url-parameters' }); }}>more details here</a>).
+                    </div>
+                    <div className=' text-16px text-justify'>
+                        Complete source code for DNATCO and its submodules/dependencies is now available at <a className='underline cursor-pointer' href='https://github.com/cernylab/dnatco' target='_blank'>https://github.com/cernylab/dnatco</a>.
                     </div>
                 </div>
             </div>
