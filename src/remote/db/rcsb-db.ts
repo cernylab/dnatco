@@ -69,37 +69,40 @@ async function downloadDensityMapEM(pdbId: string) {
 }
 
 async function downloadDensityMapXRay(pdbId: string): Promise<_Ok<{ data: Uint8Array, kind: DensityMap['kind']}[]>|_Fail|_TryAnother> {
-    const id = pdbId.toLowerCase();
+    // RCSB no longer serves DSN6 maps, fall back to EM maps if available
+    return _TryAnother();
 
-    // Try 2Fo-Fc first
-    let req = await fetch(`https://edmaps.rcsb.org/maps/${id}_2fofc.dsn6`);
-    if (req.status === 404)
-        return _TryAnother(); // Fall back to EM map
-    if (!req.ok)
-        return _Fail(req.statusText);
+    // const id = pdbId.toLowerCase();
 
-    let twoFoFc: Uint8Array;
-    try {
-        twoFoFc = new Uint8Array(await req.arrayBuffer());
-    } catch (e) {
-        return _Fail((e as Error).message);
-    }
+    // // Try 2Fo-Fc first
+    // let req = await fetch(`https://edmaps.rcsb.org/maps/${id}_2fofc.dsn6`);
+    // if (req.status === 404)
+    //     return _TryAnother(); // Fall back to EM map
+    // if (!req.ok)
+    //     return _Fail(req.statusText);
 
-    // Now try Fo-Fc
-    req = await fetch(`https://edmaps.rcsb.org/maps/${id}_fofc.dsn6`);
-    if (!req.ok) {
-        return _Ok([{ data: twoFoFc, kind: '2fo-fc' }]);
-    } else {
-        try {
-            const foFc = new Uint8Array(await req.arrayBuffer());
-            return _Ok([
-                { data: twoFoFc, kind: '2fo-fc' },
-                { data: foFc, kind: 'fo-fc' },
-            ]);
-        } catch (e) {
-            return _Ok([{ data: twoFoFc, kind: '2fo-fc' }]);
-        }
-    }
+    // let twoFoFc: Uint8Array;
+    // try {
+    //     twoFoFc = new Uint8Array(await req.arrayBuffer());
+    // } catch (e) {
+    //     return _Fail((e as Error).message);
+    // }
+
+    // // Now try Fo-Fc
+    // req = await fetch(`https://edmaps.rcsb.org/maps/${id}_fofc.dsn6`);
+    // if (!req.ok) {
+    //     return _Ok([{ data: twoFoFc, kind: '2fo-fc' }]);
+    // } else {
+    //     try {
+    //         const foFc = new Uint8Array(await req.arrayBuffer());
+    //         return _Ok([
+    //             { data: twoFoFc, kind: '2fo-fc' },
+    //             { data: foFc, kind: 'fo-fc' },
+    //         ]);
+    //     } catch (e) {
+    //         return _Ok([{ data: twoFoFc, kind: '2fo-fc' }]);
+    //     }
+    // }
 }
 
 async function downloadDensityMap(pdbId: string, type: 'x-ray'|'em') {
