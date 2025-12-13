@@ -58,23 +58,27 @@ import {
 } from "../../../../util/structure-selection";
 import { ViewerInterop, ViewerApi } from "../../../../viewer/viewer-interop";
 
-function makeAngleDetails(props: ResidueDetailsProps) {
+function makeAngleDetails(props: ResidueDetailsProps, cellRefs: Map<string, React.RefObject<HTMLTableCellElement>>) {
   const displayOrder =
     AnglesLengthsDisplayOrder.Angles[props.residue.compound];
 
   let elems = [];
-  for (const tripletTag of displayOrder) {
+  for (const tripletTagStr of displayOrder) {
     let idx = -1;
 
     for (let _idx = 0; _idx < props.residue.bondAngles.length; _idx++) {
-      if (props.residue.bondAngles[_idx].tag === tripletTag) {
+      if (props.residue.bondAngles[_idx].tag === tripletTagStr) {
         idx = _idx;
         break;
       }
     }
-    if (idx < 0) throw new Error(`Bad tripletTag ${tripletTag}`);
+    if (idx < 0) throw new Error(`Bad tripletTag ${tripletTagStr}`);
 
     const x = props.residue.bondAngles[idx];
+    const angleTag = tripletTag(x.triplet);
+    const cellRef = React.createRef<HTMLTableCellElement>();
+    cellRefs.set(angleTag, cellRef);
+
     elems.push(
       <tr className="rdo-angles-lengths" key={idx}>
         {renderBondAngleDetail(
@@ -87,7 +91,9 @@ function makeAngleDetails(props: ResidueDetailsProps) {
           props.structureName,
           props.outlierColor,
           props.vi,
-          props.winTracker
+          props.winTracker,
+          undefined,
+          cellRef
         )}
         <td className="w-full" />
       </tr>
@@ -97,23 +103,27 @@ function makeAngleDetails(props: ResidueDetailsProps) {
   return elems;
 }
 
-function makeLengthDetails(props: ResidueDetailsProps) {
+function makeLengthDetails(props: ResidueDetailsProps, cellRefs: Map<string, React.RefObject<HTMLTableCellElement>>) {
   const displayOrder =
     AnglesLengthsDisplayOrder.Lengths[props.residue.compound];
 
   let elems = [];
-  for (const pairTag of displayOrder) {
+  for (const pairTagStr of displayOrder) {
     let idx = -1;
 
     for (let _idx = 0; _idx < props.residue.bondLengths.length; _idx++) {
-      if (props.residue.bondLengths[_idx].tag === pairTag) {
+      if (props.residue.bondLengths[_idx].tag === pairTagStr) {
         idx = _idx;
         break;
       }
     }
-    if (idx < 0) throw new Error(`Bad pairTag ${pairTag}`);
+    if (idx < 0) throw new Error(`Bad pairTag ${pairTagStr}`);
 
     const x = props.residue.bondLengths[idx];
+    const bondTag = pairTag(x.pair);
+    const cellRef = React.createRef<HTMLTableCellElement>();
+    cellRefs.set(bondTag, cellRef);
+
     elems.push(
       <tr className="rdo-angles-lengths" key={idx}>
         {renderBondLengthDetail(
@@ -126,7 +136,9 @@ function makeLengthDetails(props: ResidueDetailsProps) {
           props.structureName,
           props.outlierColor,
           props.vi,
-          props.winTracker
+          props.winTracker,
+          undefined,
+          cellRef
         )}
         <td className="w-full" />
       </tr>
@@ -147,7 +159,8 @@ function renderBondAngleDetail(
   outlierColor: [r: number, g: number, b: number],
   vi: ViewerInterop,
   winTracker: WindowsTracker,
-  onAtomsClicked?: (r: Measurements.Residue, triplet: Triplet) => void
+  onAtomsClicked?: (r: Measurements.Residue, triplet: Triplet) => void,
+  cellRef?: React.RefObject<HTMLTableCellElement>
 ) {
   const pgrpDatas = Object.fromEntries(
     ProScoGroups.map(grp => [grp, DAnglesLengths.anglePGroupData(grp, residue.compound, bondAngle.triplet)!])
@@ -175,6 +188,7 @@ function renderBondAngleDetail(
       vi={vi}
       winTracker={winTracker}
       onAtomsClicked={onAtomsClicked}
+      cellRef={cellRef}
     />
   );
 }
@@ -190,7 +204,8 @@ function renderBondLengthDetail(
   outlierColor: [r: number, g: number, b: number],
   vi: ViewerInterop,
   winTracker: WindowsTracker,
-  onAtomsClicked?: (r: Measurements.Residue, pair: Pair) => void
+  onAtomsClicked?: (r: Measurements.Residue, pair: Pair) => void,
+  cellRef?: React.RefObject<HTMLTableCellElement>
 ) {
   const pgrpDatas = Object.fromEntries(
     ProScoGroups.map(x => [x, DAnglesLengths.lengthPGroupData(x, residue.compound, bondLength.pair)!])
@@ -218,6 +233,7 @@ function renderBondLengthDetail(
       vi={vi}
       winTracker={winTracker}
       onAtomsClicked={onAtomsClicked}
+      cellRef={cellRef}
     />
   );
 }
@@ -237,6 +253,7 @@ function BondAngleDetails(props: {
   winTracker: WindowsTracker;
 
   onAtomsClicked?: (r: Measurements.Residue, triplet: Triplet) => void;
+  cellRef?: React.RefObject<HTMLTableCellElement>;
 }) {
   const ba = props.bondAngle;
   const clr = measuredItemColor(
@@ -292,6 +309,7 @@ function BondAngleDetails(props: {
   return (
     <>
       <td
+        ref={props.cellRef}
         style={{ backgroundColor: colorStyle(clr) }}
         onClick={(evt) => {
           const hwnd = Window.create(
@@ -383,6 +401,7 @@ function BondLengthDetails(props: {
   winTracker: WindowsTracker;
 
   onAtomsClicked?: (r: Measurements.Residue, pair: Pair) => void;
+  cellRef?: React.RefObject<HTMLTableCellElement>;
 }) {
   const bl = props.bondLength;
   const clr = measuredItemColor(
@@ -433,7 +452,13 @@ function BondLengthDetails(props: {
     <>
       <td
         style={{ backgroundColor: colorStyle(clr) }}
-        ref={cueRef}
+        ref={(el) => {
+          // Assign to both refs
+          (cueRef as React.MutableRefObject<HTMLTableCellElement | null>).current = el;
+          if (props.cellRef) {
+            (props.cellRef as React.MutableRefObject<HTMLTableCellElement | null>).current = el;
+          }
+        }}
         onClick={(evt) => {
           const hwnd = Window.create(
             <PGroupSummary
@@ -555,6 +580,8 @@ interface ResidueElemProps {
   structureName: string;
   vi: ViewerInterop;
   winTracker: WindowsTracker;
+  autoOpenBond?: string; // Format: atom1_atom2
+  autoOpenAngle?: string; // Format: atom1_atom2_atom3
 }
 interface ResidueDetailsProps extends ResidueElemProps {
   onHideRequested: () => void;
@@ -565,6 +592,8 @@ class ResidueDetails extends React.Component<
   { floatingCueYOffset: number }
 > {
   private selfRef = React.createRef<HTMLDivElement>();
+  private bondCellRefs = new Map<string, React.RefObject<HTMLTableCellElement>>();
+  private angleCellRefs = new Map<string, React.RefObject<HTMLTableCellElement>>();
 
   constructor(props: ResidueDetailsProps) {
     super(props);
@@ -590,6 +619,52 @@ class ResidueDetails extends React.Component<
 
   componentDidMount() {
     this.props.tainer.current?.addEventListener("scroll", this.onScroll);
+
+    // Auto-open bond window if specified
+    if (this.props.autoOpenBond) {
+      // Convert underscore separator to caret (pairTag() uses ^, URL uses _)
+      const bondKey = this.props.autoOpenBond.replace(/_/g, '^');
+      let cellRef = this.bondCellRefs.get(bondKey);
+
+      // If not found, try reversed order (A_B vs B_A)
+      if (!cellRef) {
+        const atoms = bondKey.split('^');
+        if (atoms.length === 2) {
+          const reversedKey = `${atoms[1]}^${atoms[0]}`;
+          cellRef = this.bondCellRefs.get(reversedKey);
+        }
+      }
+
+      if (cellRef?.current) {
+        // Use requestAnimationFrame to ensure DOM is ready
+        requestAnimationFrame(() => {
+          cellRef.current?.click();
+        });
+      }
+    }
+
+    // Auto-open angle window if specified
+    if (this.props.autoOpenAngle) {
+      // Convert underscore separator to caret (tripletTag() uses ^, URL uses _)
+      const angleKey = this.props.autoOpenAngle.replace(/_/g, '^');
+      let cellRef = this.angleCellRefs.get(angleKey);
+
+      // If not found, try reversed order (A_B_C vs C_B_A)
+      if (!cellRef) {
+        const atoms = angleKey.split('^');
+        if (atoms.length === 3) {
+          const reversedKey = `${atoms[2]}^${atoms[1]}^${atoms[0]}`;
+          cellRef = this.angleCellRefs.get(reversedKey);
+        }
+      }
+
+      if (cellRef?.current) {
+        // Use requestAnimationFrame to ensure DOM is ready
+        requestAnimationFrame(() => {
+          cellRef.current?.click();
+        });
+      }
+    }
   }
 
   componentWillUnmount() {
@@ -613,13 +688,13 @@ class ResidueDetails extends React.Component<
                 Bond lengths
               </td>
             </tr>
-            {makeLengthDetails(this.props)}
+            {makeLengthDetails(this.props, this.bondCellRefs)}
             <tr>
               <td colSpan={5} className="font-700 text-center">
                 Bond angles
               </td>
             </tr>
-            {makeAngleDetails(this.props)}
+            {makeAngleDetails(this.props, this.angleCellRefs)}
           </tbody>
         </table>
       </div>
@@ -927,10 +1002,13 @@ export class AnglesLengthsByResidue extends View<
     maxWorstLengths: number;
     worstLengthsThreshold: string;
     shownResiduesLimit: number;
+    autoOpenBond?: { residue: Measurements.Residue; bondSpec: string };
+    autoOpenAngle?: { residue: Measurements.Residue; angleSpec: string };
   }
 > {
   static readonly unscrollableContainer = true;
   private residuesTainerRef = React.createRef<HTMLDivElement>();
+  private residuesSectionCollapserRef = React.createRef<CollapsibleVertical>();
   private inhibitLoadNext = false;
   private searchBoxOpen = false;
   // This is set in the render function each time we re-render.
@@ -982,10 +1060,10 @@ export class AnglesLengthsByResidue extends View<
   };
 
   private readonly SearchBoxProps = {
-    anchor: "bottom-right" as SearchBox.Props<Measurements.Residue>["anchor"],
+    anchor: "top-left" as SearchBox.Props<Measurements.Residue>["anchor"],
     xOffset: 32,
     yOffset: 32,
-    caption: "Enter chain and residue no.",
+    caption: "Enter chain and residue no.\n(e.g. '2109' or 'B 2109')",
     onClose: () => (this.searchBoxOpen = false),
   };
 
@@ -1040,6 +1118,22 @@ export class AnglesLengthsByResidue extends View<
       );
 
       const ref = React.createRef<Residue>();
+
+      // Check if this residue should auto-open a bond or angle window
+      const shouldAutoOpenBond = this.state.autoOpenBond &&
+        this.state.autoOpenBond.residue.modelNum === _r.modelNum &&
+        this.state.autoOpenBond.residue.authChain === _r.authChain &&
+        this.state.autoOpenBond.residue.authSeqId === _r.authSeqId &&
+        this.state.autoOpenBond.residue.insCode === _r.insCode &&
+        this.state.autoOpenBond.residue.altId === _r.altId;
+
+      const shouldAutoOpenAngle = this.state.autoOpenAngle &&
+        this.state.autoOpenAngle.residue.modelNum === _r.modelNum &&
+        this.state.autoOpenAngle.residue.authChain === _r.authChain &&
+        this.state.autoOpenAngle.residue.authSeqId === _r.authSeqId &&
+        this.state.autoOpenAngle.residue.insCode === _r.insCode &&
+        this.state.autoOpenAngle.residue.altId === _r.altId;
+
       const elem = (
         <Residue
           ref={ref}
@@ -1071,6 +1165,8 @@ export class AnglesLengthsByResidue extends View<
           vi={this.props.viewerInterop}
           winTracker={winTracker}
           events={this.events}
+          autoOpenBond={shouldAutoOpenBond ? this.state.autoOpenBond!.bondSpec : undefined}
+          autoOpenAngle={shouldAutoOpenAngle ? this.state.autoOpenAngle!.angleSpec : undefined}
           key={idx}
         />
       );
@@ -1370,6 +1466,60 @@ export class AnglesLengthsByResidue extends View<
         block?.current?.collapseExpand("collapse");
       }
     });
+
+    // Subscribe to bond window opening from URL
+    this.subscribe(this.props.outsideControl.openBondWindow, (data: any) => {
+      const { residue, bondSpec } = data;
+
+      // Set state first so the ResidueDetails component will have the props when it mounts
+      this.setState({ ...this.state, autoOpenBond: { residue, bondSpec } }, () => {
+        // After state is set, expand the "Residues" section
+        // Use requestAnimationFrame to ensure React has processed the state update
+        requestAnimationFrame(() => {
+          this.residuesSectionCollapserRef.current?.collapseExpand("expand");
+
+          // Expand the specific residue block immediately after
+          // React will batch the renders efficiently
+          requestAnimationFrame(() => {
+            const id = AnglesLengthsCommon.residueIdentifyingName(
+              AnglesLengthsCommon.structureIdentifyingName(this.props.dnatcofication),
+              residue
+            );
+            const block = this.residueBlocksMapping.get(id);
+            if (block?.current) {
+              block.current.collapseExpand("expand");
+            }
+          });
+        });
+      });
+    });
+
+    // Subscribe to angle window opening from URL
+    this.subscribe(this.props.outsideControl.openAngleWindow, (data: any) => {
+      const { residue, angleSpec } = data;
+
+      // Set state first so the ResidueDetails component will have the props when it mounts
+      this.setState({ ...this.state, autoOpenAngle: { residue, angleSpec } }, () => {
+        // After state is set, expand the "Residues" section
+        // Use requestAnimationFrame to ensure React has processed the state update
+        requestAnimationFrame(() => {
+          this.residuesSectionCollapserRef.current?.collapseExpand("expand");
+
+          // Expand the specific residue block immediately after
+          // React will batch the renders efficiently
+          requestAnimationFrame(() => {
+            const id = AnglesLengthsCommon.residueIdentifyingName(
+              AnglesLengthsCommon.structureIdentifyingName(this.props.dnatcofication),
+              residue
+            );
+            const block = this.residueBlocksMapping.get(id);
+            if (block?.current) {
+              block.current.collapseExpand("expand");
+            }
+          });
+        });
+      });
+    });
   }
 
   componentDidUpdate(prevProps: View.Props) {
@@ -1440,7 +1590,41 @@ export class AnglesLengthsByResidue extends View<
       };
     });
 
-    const mkHeader = (text: string) => {
+    const mkHeader = (text: string, withSearchIcon?: boolean) => {
+      const searchIcon = withSearchIcon ? (
+        <IconButton
+          src={MagnifyingGlassImg}
+          className="rdo-pushbutton h-6 w-6"
+          onClick={(e) => {
+            e.stopPropagation();
+            if (this.searchBoxOpen === true || !residuesOuterTainerRef.current)
+              return;
+
+            const searching: SearchBox.Searching<Measurements.Residue> = {
+              ...this.Searching,
+              onRenderResult: (residue: Measurements.Residue) => (
+                <ResidueName r={residue} multipleModels={multipleModels} />
+              ),
+              onUseResult: (r) => {
+                const id = AnglesLengthsCommon.residueIdentifyingName(
+                  AnglesLengthsCommon.structureIdentifyingName(
+                    this.props.dnatcofication
+                  ),
+                  r
+                );
+                this.scrollResidueIntoView(id, (block) =>
+                  block.current?.collapseExpand("expand")
+                );
+              },
+            };
+            const sbprops = { ...this.SearchBoxProps, searching };
+
+            this.searchBoxOpen = true;
+            SearchBox.create(residuesOuterTainerRef.current, sbprops);
+          }}
+        />
+      ) : null;
+
       return {
         collapsed: (
           <div className="rdo-secondary-caption cursor-pointer flex flex-row items-center justify-center">
@@ -1458,6 +1642,7 @@ export class AnglesLengthsByResidue extends View<
               className="transition-transform duration-200 transform rotate-180"
             />
             <div className="flex-1">{text}</div>
+            {searchIcon}
           </div>
         ),
       };
@@ -1531,7 +1716,8 @@ export class AnglesLengthsByResidue extends View<
 
         <div className="overflow-hidden flex-1">
           <CollapsibleVertical
-            header={mkHeader("Residues")}
+            ref={this.residuesSectionCollapserRef}
+            header={mkHeader("Residues", true)}
             style={Common.VScrollJail}
             onCollapsedExpanded={(change) => {
               if (change === "collapsed")
@@ -1571,45 +1757,6 @@ export class AnglesLengthsByResidue extends View<
                 }}
               >
                 {residueBlocks.elems}
-              </div>
-              <div className="rdo-floating-search-icon-tainer bottom-4 right-4">
-                <IconButton
-                  src={MagnifyingGlassImg}
-                  className="rdo-floating-search-icon"
-                  onClick={() => {
-                    if (
-                      this.searchBoxOpen === true ||
-                      !residuesOuterTainerRef.current
-                    )
-                      return;
-
-                    const searching: SearchBox.Searching<Measurements.Residue> =
-                      {
-                        ...this.Searching,
-                        onRenderResult: (residue: Measurements.Residue) => (
-                          <ResidueName
-                            r={residue}
-                            multipleModels={multipleModels}
-                          />
-                        ),
-                        onUseResult: (r) => {
-                          const id = AnglesLengthsCommon.residueIdentifyingName(
-                            AnglesLengthsCommon.structureIdentifyingName(
-                              this.props.dnatcofication
-                            ),
-                            r
-                          );
-                          this.scrollResidueIntoView(id, (block) =>
-                            block.current?.collapseExpand("expand")
-                          );
-                        },
-                      };
-                    const sbprops = { ...this.SearchBoxProps, searching };
-
-                    this.searchBoxOpen = true;
-                    SearchBox.create(residuesOuterTainerRef.current, sbprops);
-                  }}
-                />
               </div>
             </div>
           </CollapsibleVertical>
