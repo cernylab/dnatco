@@ -5,16 +5,21 @@ import { View } from "../view";
 import { Colors } from "../../colors";
 import { niceStepName } from "../../common";
 import { setDynamicTableModelColumns } from "../../util";
+import { SearchBox } from "../../search-box";
 import { DynamicTable as DynamicTableComp } from "../../../common/dynamic-table";
+import { IconButton } from "../../../common/push-button";
 import { NamedList, NamedListItem } from "../../../common/named-list";
 import { Tooltip } from "../../../common/tooltip";
+import { MagnifyingGlassImg } from "../../../../assets/images";
 import { Cif } from "../../../../cif";
 import {
   NdbStructNtcStep,
   NdbStructNtcStepSummary,
 } from "../../../../cif/categories/ndb-struct-ntc";
 import { Dnatcofication } from "../../../../dnatco/dnatcofication";
+import { Step } from "../../../../dnatco/step";
 import { StepsMapper } from "../../../../dnatco/steps-mapper";
+import { parseIntStrict } from "../../../../util";
 import { DynamicTable } from "../../../../util/dynamic-table";
 import {
   EmptyStructureSelection,
@@ -30,9 +35,8 @@ export class Conformation extends View<View.Props> {
   static readonly unscrollableContainer = true;
   private tableModel: DynamicTable.Model = new DynamicTable.Model([]);
   private tableTainer = React.createRef<HTMLDivElement>();
-  //private searchBoxOpen = false;
+  private searchBoxOpen = false;
 
-  /*
   private readonly Searching: SearchBox.Searching<Step> = {
     onRenderResult: (step) => (
       <div>
@@ -75,7 +79,7 @@ export class Conformation extends View<View.Props> {
     },
     onUseResult: (step) =>
       this.props.switching.changeSelection(
-        AssignedNtCs.SelectionMaker(
+        Conformation.SelectionMaker(
           step.id,
           InvalidResidue,
           InvalidAtom,
@@ -84,20 +88,18 @@ export class Conformation extends View<View.Props> {
           this.props.structureSelection.atoms,
           this.props.dnatcofication
         ),
-        AssignedNtCs.SelectionDisplayer
+        Conformation.SelectionDisplayer
       ),
   };
-  
+
   private readonly SearchBoxProps: SearchBox.Props<Step> = {
-    anchor: "bottom-right",
+    anchor: "top-left",
     xOffset: 32,
     yOffset: 32,
-    caption: "Enter chain and residue no.",
+    caption: "Enter chain and residue no.\n(e.g. '2109' or 'B 2109')",
     onClose: () => (this.searchBoxOpen = false),
     searching: this.Searching,
   };
-  
-  */
 
   constructor(props: View.Props) {
     super(props);
@@ -119,11 +121,28 @@ export class Conformation extends View<View.Props> {
       tooltip: <div>PDB chain ID (author)</div>,
     };
     const stepColumn: DynamicTable.Column<string> = {
-      name: "Dinucleotide",
+      name: "Step",
       cells: new Array<DynamicTable.Cell<string>>(),
       alignment: "center",
       notSortable: true,
-      tooltip: <div>Dinucleotide step identifier</div>,
+      elem: (
+        <div className="flex items-center justify-center gap-2">
+          <Tooltip tag={<span>Step</span>} delayMsec={300}>
+            Dinucleotide step identifier
+          </Tooltip>
+          <IconButton
+            src={MagnifyingGlassImg}
+            className="rdo-pushbutton h-6 w-6"
+            onClick={() => {
+              const tainer = this.tableTainer.current;
+              if (!tainer || this.searchBoxOpen) return;
+
+              this.searchBoxOpen = true;
+              SearchBox.create(tainer, this.SearchBoxProps);
+            }}
+          />
+        </div>
+      ),
     };
     const ntcColumn: DynamicTable.Column<string> = {
       name: "NtC",
@@ -234,7 +253,7 @@ export class Conformation extends View<View.Props> {
         model={this.tableModel}
         onCellClicked={(data, row, colName) => {
           const cIdx = this.tableModel.columnNames.findIndex(
-            (cn) => cn === "Dinucleotide"
+            (cn) => cn === "Step"
           );
           if (cIdx === -1) return;
 
@@ -342,21 +361,6 @@ export class Conformation extends View<View.Props> {
             {this.renderStepsTable()}
           </div>
         </div>
-        {/*
-          <div className="rdo-floating-search-icon-tainer bottom-4 right-4">
-            <IconButton
-              src={MagnifyingGlassImg}
-              className="rdo-floating-search-icon rdo-pushbutton-border"
-              onClick={() => {
-                const tainer = selfRef.current;
-                if (!tainer || this.searchBoxOpen) return;
-
-                this.searchBoxOpen = true;
-                SearchBox.create(tainer, this.SearchBoxProps);
-              }}
-            />
-          </div>
-      */}
       </div>
     );
   }

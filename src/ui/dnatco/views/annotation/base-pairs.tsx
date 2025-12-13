@@ -1,10 +1,14 @@
 import React from "react";
 import { Dnatcofication } from "../../../../dnatco/dnatcofication";
-import { BasePairsMapper } from "../../../../dnatco/base-pairs-mapper";
+import { BasePair, BasePairsMapper } from "../../../../dnatco/base-pairs-mapper";
 import { Colors } from "../../colors";
+import { SearchBox } from "../../search-box";
 import { SelectedPieces } from "../../structure-selection";
 import { ViewerInterop, ViewerApi } from "../../../../viewer/viewer-interop";
+import { IconButton } from "../../../common/push-button";
+import { MagnifyingGlassImg } from "../../../../assets/images";
 import { InvalidBasePairId } from "../../../../util/structure-selection";
+import { parseIntStrict } from "../../../../util";
 import { Cif } from '../../../../cif';
 import { colorToHex } from '../../../../util/colors';
 import { View } from "../view";
@@ -17,6 +21,53 @@ export function BasePairing({ d, viewerInterop, switching, structureSelection }:
 }) {
   const pdbId = d.pdbId;
   const highlightedRowRef = React.useRef<HTMLTableRowElement>(null);
+  const tableTainerRef = React.useRef<HTMLTableElement>(null);
+  const [searchBoxOpen, setSearchBoxOpen] = React.useState(false);
+
+  const searching: SearchBox.Searching<BasePair> = React.useMemo(() => ({
+    onRenderResult: (bp) => (
+      <div>
+        {bp.authAsymId1} {bp.compId1} {bp.authSeqId1} - {bp.authAsymId2} {bp.compId2} {bp.authSeqId2}
+      </div>
+    ),
+    onSearch: (prompt) => {
+      const toks = prompt.split(" ").filter(t => t.length > 0);
+      if (toks.length === 0) return [];
+
+      const resNoAuth = parseIntStrict(toks[toks.length - 1]);
+      const chainAuth = toks.length > 1 ? toks[0] : void 0;
+
+      if (isNaN(resNoAuth)) return [];
+
+      const results = [];
+      for (const bp of d.data.basePairs.pairs) {
+        const matchesChain1 = !chainAuth || chainAuth === bp.authAsymId1;
+        const matchesChain2 = !chainAuth || chainAuth === bp.authAsymId2;
+        const matchesRes1 = bp.authSeqId1 === resNoAuth;
+        const matchesRes2 = bp.authSeqId2 === resNoAuth;
+
+        if ((matchesChain1 && matchesRes1) || (matchesChain2 && matchesRes2)) {
+          results.push(bp);
+        }
+      }
+
+      return results;
+    },
+    onUseResult: (bp) => {
+      if (!switching) return;
+      const sel = SelectedPieces([], [], [], [bp.id], true);
+      switching.changeSelection(sel, BasePairs.SelectionDisplayer);
+    },
+  }), [d, switching]);
+
+  const searchBoxProps: SearchBox.Props<BasePair> = React.useMemo(() => ({
+    anchor: "top-left" as const,
+    xOffset: 32,
+    yOffset: 32,
+    caption: "Enter chain and residue no. \n(e.g. \'2109\' or \'B 2109\')",
+    onClose: () => setSearchBoxOpen(false),
+    searching,
+  }), [searching]);
 
   // Scroll to highlighted row when selection changes
   React.useEffect(() => {
@@ -86,51 +137,85 @@ export function BasePairing({ d, viewerInterop, switching, structureSelection }:
     // Get currently selected base pair for highlighting
     const selectedBpId = structureSelection?.basePairs?.[0];
 
-    return (
-      <table className="mb-2 w-full">
-        <thead>
-          <tr>
-            <th
-              colSpan={showModel ? 6 : 5}
-              className="mb-4 p-4 text-20px border-primary-first border-[.1px]"
-            >
-              <div>Base Pairs</div>
-              <div className="text-14px">Data provided by FR3D</div>
-            </th>
-          </tr>
-          <tr>
-            {showModel && <th className="py-2 border-primary-first border-[.1px]">Model</th>}
-            <th className="py-2 border-primary-first border-[.1px]">Chain 1</th>
-            <th className="py-2 border-primary-first border-[.1px]">Base 1</th>
-            <th className="py-2 border-primary-first border-[.1px]">Family</th>
-            <th className="py-2 border-primary-first border-[.1px]">Chain 2</th>
-            <th className="py-2 border-primary-first border-[.1px]">Base 2</th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((r, i) => {
-            const isHighlighted = selectedBpId === r.basePairId;
-            const highlightStyle = isHighlighted ? { backgroundColor: colorToHex(Colors.CurrentStep()) } : {};
+    const colGroup = (
+      <colgroup>
+        {showModel && <col />}
+        <col />
+        <col />
+        <col />
+        <col />
+        <col />
+      </colgroup>
+    );
 
-            return (
-              <tr
-                key={i}
-                ref={isHighlighted ? highlightedRowRef : null}
-                onClick={() => handleRowClick(r)}
-                className="cursor-pointer hover:bg-primary-hover"
-                style={highlightStyle}
+    return (
+      <div className="flex flex-col h-full" ref={tableTainerRef}>
+        {/* Fixed header table */}
+        <table className="mb-2 w-full" style={{ tableLayout: 'fixed' }}>
+          {colGroup}
+          <thead>
+            <tr>
+              <th
+                colSpan={showModel ? 6 : 5}
+                className="mb-4 p-4 text-20px border-primary-first border-[.1px]"
               >
-                {showModel && <td className="py-2 border-primary-first border-[.1px] text-center">{r.model}</td>}
-                <td className="py-2 border-primary-first border-[.1px] text-center">{r.chain1}</td>
-                <td className="py-2 border-primary-first border-[.1px] text-center">{r.base1}</td>
-                <td className="py-2 border-primary-first border-[.1px] text-center">{r.family}</td>
-                <td className="py-2 border-primary-first border-[.1px] text-center">{r.chain2}</td>
-                <td className="py-2 border-primary-first border-[.1px] text-center">{r.base2}</td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+                <div className="flex items-center justify-center gap-2">
+                  <span>Base Pairs</span>
+                  <IconButton
+                    src={MagnifyingGlassImg}
+                    className="rdo-pushbutton h-6 w-6"
+                    onClick={() => {
+                      const tainer = tableTainerRef.current;
+                      if (!tainer || searchBoxOpen) return;
+
+                      setSearchBoxOpen(true);
+                      SearchBox.create(tainer, searchBoxProps);
+                    }}
+                  />
+                </div>
+                <div className="text-14px">Data provided by FR3D</div>
+              </th>
+            </tr>
+            <tr>
+              {showModel && <th className="py-2 border-primary-first border-[.1px]">Model</th>}
+              <th className="py-2 border-primary-first border-[.1px]">Chain 1</th>
+              <th className="py-2 border-primary-first border-[.1px]">Base 1</th>
+              <th className="py-2 border-primary-first border-[.1px]">Family</th>
+              <th className="py-2 border-primary-first border-[.1px]">Chain 2</th>
+              <th className="py-2 border-primary-first border-[.1px]">Base 2</th>
+            </tr>
+          </thead>
+        </table>
+        {/* Scrollable body table */}
+        <div className="overflow-y-auto flex-1">
+          <table className="mb-2 w-full" style={{ tableLayout: 'fixed' }}>
+            {colGroup}
+            <tbody>
+              {rows.map((r, i) => {
+                const isHighlighted = selectedBpId === r.basePairId;
+                const highlightStyle = isHighlighted ? { backgroundColor: colorToHex(Colors.CurrentStep()) } : {};
+
+                return (
+                  <tr
+                    key={i}
+                    ref={isHighlighted ? highlightedRowRef : null}
+                    onClick={() => handleRowClick(r)}
+                    className="cursor-pointer hover:bg-primary-hover"
+                    style={highlightStyle}
+                  >
+                    {showModel && <td className="py-2 border-primary-first border-[.1px] text-center">{r.model}</td>}
+                    <td className="py-2 border-primary-first border-[.1px] text-center">{r.chain1}</td>
+                    <td className="py-2 border-primary-first border-[.1px] text-center">{r.base1}</td>
+                    <td className="py-2 border-primary-first border-[.1px] text-center">{r.family}</td>
+                    <td className="py-2 border-primary-first border-[.1px] text-center">{r.chain2}</td>
+                    <td className="py-2 border-primary-first border-[.1px] text-center">{r.base2}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
     );
   }
 

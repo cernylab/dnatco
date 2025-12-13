@@ -6,7 +6,7 @@ import { arrowDown, arrowDownHover } from "../../../../assets/images";
 import { Navigate } from "react-router";
 import { Net } from "../../../../browser-util/net";
 import { FileTypes } from "../../../../util/file-type";
-import { Naval } from "../../../../dnatco/naval";
+// import { Naval } from "../../../../dnatco/naval";
 import { doDownload } from "../../../../browser-util/downloader";
 import { Serialization } from "../../../../util/serialization";
 import { SummarizeProSco, SummarizeNaval } from "../../../../dnatco/angles-lengths/summarize";
@@ -469,6 +469,13 @@ export function DownloadsValidation(props: { dnatcofication: Dnatcofication }) {
           </div>
         </div>
 
+        {/*
+          NOTE: This section is commented out to minimize confusion.
+          The "Naval" terminology was historically used incorrectly to refer to CSD-derived (Cambridge Structural Database) classification data.
+          The following section contains intermediate CSD-derived data calculated by DNATCO (using re-implementation of https://github.com/mkowiel/nucleic-acid-validation.git).
+          The CSD-derived data, rotamer-dependent +-3 CSD-sigma,is now properly part of the NA-VAL composite validation score.
+        */}
+        {/*
         <div className="flex justify-between border-t-secondary-second border-t pt-3 mb-8">
           <div>
             <_Downloads.Title title="Naval validation reports" />
@@ -521,6 +528,7 @@ export function DownloadsValidation(props: { dnatcofication: Dnatcofication }) {
             />
           </div>
         </div>
+        */}
 
         <div className="flex justify-between border-t-secondary-second border-t pt-3 mb-8">
           <_Downloads.Title title="RSCC vs. RMSD plots" />

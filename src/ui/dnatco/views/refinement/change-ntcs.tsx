@@ -5,12 +5,13 @@ import { ChainSelect, ModelSelect } from "../structure-selectors";
 import { View } from "../view";
 import { Colors } from "../../colors";
 import { niceStepName } from "../../common";
+import { SearchBox } from "../../search-box";
 import { setDynamicTableModelColumns } from "../../util";
 import { DynamicTable as DynamicTableComp } from "../../../common/dynamic-table";
 import { NamedList, NamedListItem } from "../../../common/named-list";
 import { IconButton } from "../../../common/push-button";
 import { Tooltip } from "../../../common/tooltip";
-import { XImg } from "../../../../assets/images";
+import { MagnifyingGlassImg, XImg } from "../../../../assets/images";
 import { Cif } from "../../../../cif";
 import {
   NdbStructNtcStep,
@@ -18,7 +19,9 @@ import {
 } from "../../../../cif/categories/ndb-struct-ntc";
 import { Dnatcofication } from "../../../../dnatco/dnatcofication";
 import { NtC } from "../../../../dnatco/ntc";
+import { Step } from "../../../../dnatco/step";
 import { StepsMapper } from "../../../../dnatco/steps-mapper";
+import { parseIntStrict } from "../../../../util";
 import { DynamicTable } from "../../../../util/dynamic-table";
 import {
   EmptyStructureSelection,
@@ -34,6 +37,71 @@ export class ChangeNtCs extends View<Refinement.Props> {
   static readonly unscrollableContainer = true;
   private tableModel: DynamicTable.Model = new DynamicTable.Model([]);
   private tableTainer = React.createRef<HTMLDivElement>();
+  private searchBoxOpen = false;
+
+  private readonly Searching: SearchBox.Searching<Step> = {
+    onRenderResult: (step) => (
+      <div>
+        {step.chainAuth} -{" "}
+        {niceStepName(
+          step,
+          this.props.structureSelection.modelIndex === InvalidModelIndex
+        )}
+      </div>
+    ),
+    onSearch: (prompt) => {
+      const toks = prompt.split(" ").slice(0, 2);
+      const resNoAuth = parseIntStrict(toks.length === 2 ? toks[1] : toks[0]);
+      const chainAuth = toks.length === 2 ? toks[0] : void 0;
+
+      if (isNaN(resNoAuth)) return [];
+
+      const modelIndex = this.props.structureSelection.modelIndex;
+      const modelNum = this.modelNumFromIndex(modelIndex);
+      const chain = this.props.structureSelection.chain;
+      const filterFunc = (step: Step) => {
+        return (
+          (modelIndex === InvalidModelIndex || step.model === modelNum) &&
+          (chain === InvalidChain || chain === step.chain)
+        );
+      };
+
+      const results = [];
+      for (const step of this.props.dnatcofication.data.steps.steps.filter(
+        (x) => filterFunc(x)
+      )) {
+        if (step.resNo1Auth === resNoAuth) {
+          if (chainAuth) {
+            if (chainAuth === step.chain) results.push(step);
+          } else results.push(step);
+        }
+      }
+
+      return results;
+    },
+    onUseResult: (step) =>
+      this.props.switching.changeSelection(
+        ChangeNtCs.SelectionMaker(
+          step.id,
+          InvalidResidue,
+          InvalidAtom,
+          this.props.structureSelection.steps,
+          this.props.structureSelection.residues,
+          this.props.structureSelection.atoms,
+          this.props.dnatcofication
+        ),
+        ChangeNtCs.SelectionDisplayer
+      ),
+  };
+
+  private readonly SearchBoxProps: SearchBox.Props<Step> = {
+    anchor: "top-left",
+    xOffset: 32,
+    yOffset: 32,
+    caption: "Enter chain and residue no.\n(e.g. '2109' or 'B 2109')",
+    onClose: () => (this.searchBoxOpen = false),
+    searching: this.Searching,
+  };
 
   constructor(props: Refinement.Props) {
     super(props);
@@ -59,7 +127,24 @@ export class ChangeNtCs extends View<Refinement.Props> {
       cells: new Array<DynamicTable.Cell<string>>(),
       alignment: "center",
       notSortable: true,
-      tooltip: <div>Dinucleotide step identifier</div>,
+      elem: (
+        <div className="flex items-center justify-center gap-2">
+          <Tooltip tag={<span>Step</span>} delayMsec={300}>
+            Dinucleotide step identifier
+          </Tooltip>
+          <IconButton
+            src={MagnifyingGlassImg}
+            className="rdo-pushbutton h-6 w-6"
+            onClick={() => {
+              const tainer = this.tableTainer.current;
+              if (!tainer || this.searchBoxOpen) return;
+
+              this.searchBoxOpen = true;
+              SearchBox.create(tainer, this.SearchBoxProps);
+            }}
+          />
+        </div>
+      ),
     };
     const computedNtCColumn: DynamicTable.Column<string> = {
       name: "Computed NtC",
@@ -190,6 +275,12 @@ export class ChangeNtCs extends View<Refinement.Props> {
     }
 
     return new DynamicTable.Model(columns);
+  }
+
+  private modelNumFromIndex(modelIndex: number) {
+    return modelIndex !== InvalidModelIndex
+      ? this.props.dnatcofication.data.structures[0].models[modelIndex].num
+      : InvalidModelIndex;
   }
 
   private renderStepsTable() {

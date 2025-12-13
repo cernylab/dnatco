@@ -343,7 +343,7 @@ export class DynamicTable extends React.Component<
     return !sortingsAreSame(nextState.sorting, this.state.sorting);
   }
 
-  private scrollToHighlighted(retryCount = 0) {
+  private scrollToHighlighted() {
     if (!this.props.scrollTainer || !this.props.highlightedTag) return;
 
     const cellId = this.findFirstTaggedCellId(this.props.highlightedTag);
@@ -353,18 +353,20 @@ export class DynamicTable extends React.Component<
     const element = document.getElementById(cellId);
     if (element) {
       scrollIntoViewIfNeeded(cellId, this.props.scrollTainer);
-    } else if (retryCount < 5) {
-      // Element not found yet, retry after a delay (up to 5 retries = 500ms total)
-      setTimeout(() => this.scrollToHighlighted(retryCount + 1), 100);
+    } else {
+      // Element not rendered yet, wait for next animation frame and try again
+      // This will retry once per frame until the element appears
+      requestAnimationFrame(() => this.scrollToHighlighted());
     }
   }
 
   componentDidMount() {
     // Scroll to highlighted row on initial mount
     if (this.props.scrollTainer && this.props.highlightedTag) {
-      // Use longer setTimeout for initial mount to ensure table rows are fully rendered
-      // This is especially important when the table first appears after section activation
-      setTimeout(() => this.scrollToHighlighted(), 300);
+      // Use requestAnimationFrame to wait for React to commit the render
+      requestAnimationFrame(() => {
+        this.scrollToHighlighted();
+      });
     }
   }
 
@@ -375,32 +377,50 @@ export class DynamicTable extends React.Component<
     // Scroll if highlighted tag changed OR if scrollTainer became available
     if (this.props.scrollTainer && this.props.highlightedTag) {
       if (highlightedTagChanged) {
-        // Immediate scroll when tag changes (component already mounted)
-        this.scrollToHighlighted();
+        // Scroll when tag changes (component already mounted)
+        requestAnimationFrame(() => this.scrollToHighlighted());
       } else if (scrollTainerBecameAvailable) {
         // ScrollTainer just became available (was null/undefined, now defined)
-        // Use longer delay to ensure the container and rows are fully rendered
-        setTimeout(() => this.scrollToHighlighted(), 300);
+        // Wait for next frame to ensure the container is rendered
+        requestAnimationFrame(() => this.scrollToHighlighted());
       }
     }
+  }
+
+  private renderColGroup() {
+    return (
+      <colgroup>
+        {this.props.model.columns.map((col, idx) => (
+          <col key={idx} style={col.headerStyle} />
+        ))}
+      </colgroup>
+    );
   }
 
   render() {
     if (this.props.model.columns.length === 0) return <div></div>;
 
+    const tableClassName = `rdo-data-table ${
+      this.props.style === "wide" ? "rdo-data-table-wide w-full" : ""
+    }`;
+
     return (
-      <div className="flex flex-col">
+      <div className="flex flex-col h-full">
         {this.renderDownloadBar()}
-        <table
-          className={`rdo-data-table ${
-            this.props.style === "wide" ? "rdo-data-table-wide w-full" : ""
-          }`}
-        >
+        {/* Fixed header table */}
+        <table className={tableClassName} style={{ tableLayout: 'fixed' }}>
+          {this.renderColGroup()}
           <thead>
             <tr>{this.renderHeader()}</tr>
           </thead>
-          <tbody>{this.renderBody()}</tbody>
         </table>
+        {/* Scrollable body table */}
+        <div className="overflow-y-auto flex-1">
+          <table className={tableClassName} style={{ tableLayout: 'fixed' }}>
+            {this.renderColGroup()}
+            <tbody>{this.renderBody()}</tbody>
+          </table>
+        </div>
       </div>
     );
   }

@@ -66,7 +66,7 @@ export function SearchBox<T>(props: SearchBox.Props<T>) {
       className="rdo-search-box"
       style={positionStyle(props.anchor, props.xOffset, props.yOffset)}
     >
-      <div className="font-700">{props.caption}</div>
+      <div className="font-700" style={{ whiteSpace: "pre-line" }}>{props.caption}</div>
       <input
         autoFocus={true}
         className="text-22px"
