@@ -37,6 +37,9 @@ import { Coordinates } from "./dnatco/coordinates";
 import { DensityMap } from "./dnatco/density-map";
 import { Dnatcofication, DnatcoficationData } from "./dnatco/dnatcofication";
 import { ListOfConformers } from "./dnatco/list-of-conformers";
+import { BasePairsMapper, BasePair } from "./dnatco/base-pairs-mapper";
+import { ALM } from "./dnatco/alm";
+import { Measurements } from "./dnatco/angles-lengths/measurements";
 import { Logger } from "./log/logger";
 import { UserRemoteDatabases, isBuiltIn } from "./remote/db/register";
 import AboutTab from "./ui/about-tab";
@@ -67,6 +70,10 @@ const IsDnatcoNavigation = new RegExp(
 const Params = {
   cifcode: "",
   stepName: "",
+  basePair: "",
+  residue: "",
+  bond: "",
+  angle: "",
   db: "",
 };
 
@@ -145,6 +152,21 @@ function goToStep(stepName: string, outsideControl: OutsideControl) {
   // Use an arbitrary delay to give Molstar some time to settle
   // Not doing this may result in broken rendering
   setTimeout(() => outsideControl.selectStep.next(stepName), 250);
+}
+
+function goToBasePair(basePair: BasePair, outsideControl: OutsideControl) {
+  // Use an arbitrary delay to give Molstar some time to settle
+  setTimeout(() => outsideControl.selectBasePair.next(basePair), 250);
+}
+
+function goToResidue(
+  residue: Measurements.Residue,
+  bond: string | undefined,
+  angle: string | undefined,
+  outsideControl: OutsideControl
+) {
+  // Use an arbitrary delay to give Molstar some time to settle
+  setTimeout(() => outsideControl.selectResidue.next({ residue, bond, angle }), 250);
 }
 
 function locationToTab(appMode: keyof typeof TabsForModes, location: string) {
@@ -496,6 +518,20 @@ function App(props: { initial: Initial }) {
   const outsideControl = React.useMemo(
     () => ({
       selectStep: new Subject<string>(),
+      selectBasePair: new Subject<BasePair>(),
+      selectResidue: new Subject<{
+        residue: Measurements.Residue,
+        bond?: string,
+        angle?: string,
+      }>(),
+      openBondWindow: new Subject<{
+        residue: Measurements.Residue,
+        bondSpec: string,
+      }>(),
+      openAngleWindow: new Subject<{
+        residue: Measurements.Residue,
+        angleSpec: string,
+      }>(),
     }),
     []
   );
@@ -697,6 +733,47 @@ function App(props: { initial: Initial }) {
         const sub = vi.events.structureLoaded.subscribe(() => {
           sub.unsubscribe();
           goToStep(name, outsideControl);
+        });
+      }
+
+      // Handle basePair parameter
+      if (params.basePair) {
+        const bpName = params.basePair;
+        const sub = vi.events.structureLoaded.subscribe(() => {
+          sub.unsubscribe();
+          // Parse base pair name after dnatcofication is available
+          const bp = BasePairsMapper.byName(dh.dnatcofication, bpName);
+          if (bp) {
+            goToBasePair(bp, outsideControl);
+          } else {
+            Popup.create(
+              <div className="text-secondary-third">
+                {`Could not find base pair: ${bpName}`}
+              </div>
+            );
+          }
+        });
+      }
+
+      // Handle residue parameter (with optional bond/angle)
+      if (params.residue) {
+        const residueName = params.residue;
+        const bondSpec = params.bond;
+        const angleSpec = params.angle;
+
+        const sub = vi.events.structureLoaded.subscribe(() => {
+          sub.unsubscribe();
+          // Parse residue name after dnatcofication is available
+          const residue = ALM.residueByName(dh.dnatcofication.data.almByResidue, residueName);
+          if (residue) {
+            goToResidue(residue, bondSpec, angleSpec, outsideControl);
+          } else {
+            Popup.create(
+              <div className="text-secondary-third">
+                {`Could not find residue: ${residueName}`}
+              </div>
+            );
+          }
         });
       }
 

@@ -145,6 +145,7 @@ function Inner(props: {
   structureSelection: StructureSelection;
   switching: StructureSelectionSwitching;
   selectedCustomNtCSet: string;
+  outsideControl: OutsideControl;
 }) {
   const navigate = useNavigate();
   const views = masterModeViews(props.mode.master);
@@ -280,6 +281,7 @@ function ViewWrapper<T extends keyof Register.PropsType>(props: {
   switching: StructureSelectionSwitching;
   selectedCustomNtCSet: string;
   onCustomNtCSetChanged: (set: string) => void;
+  outsideControl: OutsideControl;
 }) {
   const scrollableElemRef = React.useRef<HTMLDivElement>(null);
 
@@ -291,6 +293,7 @@ function ViewWrapper<T extends keyof Register.PropsType>(props: {
     selectedCustomNtCSet: props.selectedCustomNtCSet,
     scrollableParent: scrollableElemRef,
     onCustomNtCSetChanged: props.onCustomNtCSetChanged,
+    outsideControl: props.outsideControl,
   });
 
   if (props.view.unscrollableContainer) {
@@ -536,9 +539,13 @@ export function MainScreen(props: {
 
     subs.push(
       props.outsideControl.selectStep.subscribe((stepName) => {
-        const mode = locationToDnatcoMode(navPath(window.location)); // See the BEWARE above
-        const view = Register.Views[mode.viewId];
+        // Navigate to backbone-quality view in validation tab
+        const currentMode = locationToDnatcoMode(navPath(window.location));
+        if (currentMode.viewId !== 'backbone-quality') {
+          navigate('/app/dnatco/validation/backbone-quality');
+        }
 
+        const view = Register.Views['backbone-quality'];
         const stepId = StepsMapper.byName(props.dnatcofication, stepName)?.id;
         if (stepId) {
           const pieces = view.selectionMaker(
@@ -551,6 +558,75 @@ export function MainScreen(props: {
             props.dnatcofication
           );
           changeSelection(pieces, view.selectionDisplayer);
+        }
+      })
+    );
+
+    subs.push(
+      props.outsideControl.selectBasePair.subscribe((basePair) => {
+        // Navigate to base-pairs view if not already there
+        const currentMode = locationToDnatcoMode(navPath(window.location));
+        if (currentMode.viewId !== 'base-pairs') {
+          navigate('/app/dnatco/annotation/base-pairs');
+        }
+
+        const view = Register.Views['base-pairs'];
+        // For base pairs view, we pass the basePair.id as newStepId
+        const pieces = view.selectionMaker(
+          basePair.id,
+          InvalidResidue,
+          InvalidAtom,
+          [],
+          [],
+          [],
+          props.dnatcofication
+        );
+        changeSelection(pieces, view.selectionDisplayer);
+      })
+    );
+
+    subs.push(
+      props.outsideControl.selectResidue.subscribe(({ residue, bond, angle }) => {
+        // Navigate to angles-lengths view if not already there
+        const currentMode = locationToDnatcoMode(navPath(window.location));
+        if (currentMode.viewId !== 'angles-lengths') {
+          navigate('/app/dnatco/validation/angles-lengths');
+        }
+
+        const view = Register.Views['angles-lengths'];
+        const residueSelection = {
+          authAsymId: residue.authChain,
+          authSeqId: residue.authSeqId,
+          compId: residue.compound,
+          insCode: residue.insCode,
+          altId: residue.altId,
+          modelNum: residue.modelNum,
+          chain: residue.chain,
+          seqId: residue.seqId
+        };
+
+        const pieces = view.selectionMaker(
+          InvalidStepId,
+          residueSelection,
+          InvalidAtom,
+          [],
+          [],
+          [],
+          props.dnatcofication
+        );
+        changeSelection(pieces, view.selectionDisplayer);
+
+        // Emit bond/angle window opening events after selection completes
+        // Use requestAnimationFrame to ensure React has processed the selection change
+        if (bond) {
+          requestAnimationFrame(() => {
+            props.outsideControl.openBondWindow.next({ residue, bondSpec: bond });
+          });
+        }
+        if (angle) {
+          requestAnimationFrame(() => {
+            props.outsideControl.openAngleWindow.next({ residue, angleSpec: angle });
+          });
         }
       })
     );
@@ -647,7 +723,11 @@ export function MainScreen(props: {
                     structureSelection.atoms,
                     props.dnatcofication
                   );
-                  changeSelection(pieces, view.selectionDisplayer);
+                  // Wait for React to render the new tab before triggering Molstar updates and scroll
+                  // This ensures the table container is laid out before we try to scroll to the highlighted row
+                  requestAnimationFrame(() => {
+                    changeSelection(pieces, view.selectionDisplayer);
+                  });
                 }
               } else {
                 // Not in one of the allowed views - propagate selection to current view
@@ -871,6 +951,7 @@ export function MainScreen(props: {
           if (props.dnatcofication.customNtCs.exists(set) || set === "")
             setSelectedCustomNtCSet(set);
         }}
+        outsideControl={props.outsideControl}
       />
     </div>
   );
