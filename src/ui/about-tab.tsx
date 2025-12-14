@@ -348,6 +348,22 @@ function Help() {
                                                         </div>
                                                     );
                                                 })}
+                                                {/* Back to top link */}
+                                                <div className='mt-4 text-right'>
+                                                    <a
+                                                        href="#toc"
+                                                        className="rdo-link underline cursor-pointer text-14px"
+                                                        onClick={(e) => {
+                                                            e.preventDefault();
+                                                            const el = document.getElementById('toc');
+                                                            if (el) {
+                                                                el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                                            }
+                                                        }}
+                                                    >
+                                                        ↑ Back to top
+                                                    </a>
+                                                </div>
                                             </div>
                                         </div>
                                     )}
@@ -364,7 +380,7 @@ function Help() {
         return (
             <>
                 {display.map((page: any, index:any) => (
-                    <div key={index} className='flex border-t-secondary-second border-t pt-3 mb-8'>
+                    <div key={index} id={page.id} className='flex border-t-secondary-second border-t pt-3 mb-8'>
                         <div className='w-[25%]'>
                             <h3 className='font-700 text-18px mb-2 uppercase'>
                                 {page.headline}
@@ -378,12 +394,28 @@ function Help() {
                                     <div className='h-3'></div>
                                 </div>
                             ))}
+                            {/* Back to top link */}
+                            <div className='mt-4 text-right'>
+                                <a
+                                    href="#toc"
+                                    className="rdo-link underline cursor-pointer text-14px"
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        const el = document.getElementById('toc');
+                                        if (el) {
+                                            el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                        }
+                                    }}
+                                >
+                                    ↑ Back to top
+                                </a>
+                            </div>
                         </div>
                     </div>
                 ))}
             </>
         )
-        
+
     }
 
     const aboutSection = display(displayAbout);
@@ -394,8 +426,65 @@ function Help() {
     const refinementSection = displayTabs(displayRefinement);
     const browseSection = displayTabs(displayBrowse);
 
+    // Collect all pages and sections for TOC with hierarchy
+    const tocStructure = [
+        ...displayAbout.map((page: any) => ({
+            headline: page.headline,
+            sections: page.sections
+        })),
+        ...displayDensityMaps.map((page: any) => ({
+            headline: page.headline,
+            sections: page.sections
+        })),
+        {
+            headline: 'Web Application Tabs',
+            sections: [
+                ...displayHome.map((page: any) => ({ id: page.id, headline: page.headline })),
+                ...displayAnnotation.map((page: any) => ({ id: page.id, headline: page.headline })),
+                ...displayValidation.map((page: any) => ({ id: page.id, headline: page.headline })),
+                ...displayRefinement.map((page: any) => ({ id: page.id, headline: page.headline })),
+                ...displayBrowse.map((page: any) => ({ id: page.id, headline: page.headline }))
+            ]
+        }
+    ];
+
     return (
         <div>
+            {/* Table of Contents */}
+            <div id="toc" className='mb-8 border-b-secondary-second border-b pb-4'>
+                <h3 className='font-700 text-18px mb-3 uppercase'>Table of Contents</h3>
+                <div className='ml-4'>
+                    {tocStructure.map((page: any, pageIdx: number) => (
+                        <div key={pageIdx} className='mb-3'>
+                            <div className='font-700 text-16px mb-1'>
+                                {page.headline}
+                            </div>
+                            {page.sections && page.sections.length > 0 && (
+                                <div className='ml-4'>
+                                    {page.sections.map((section: any, sectionIdx: number) => (
+                                        <div key={sectionIdx} className='mb-1'>
+                                            <a
+                                                href={`#${section.id}`}
+                                                className="rdo-link underline cursor-pointer text-15px"
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    const el = document.getElementById(section.id);
+                                                    if (el) {
+                                                        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                                    }
+                                                }}
+                                            >
+                                                {section.headline}
+                                            </a>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    ))}
+                </div>
+            </div>
+
             <div>{aboutSection}</div>
             <div>{densityMapsSection}</div>
             <div>{homeSection}</div>

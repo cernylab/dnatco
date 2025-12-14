@@ -49,7 +49,7 @@ export const about = [
             },
             {
                 id: 'cana',
-                headline: 'Cana',
+                headline: 'CANA',
                 paragraphs: [
                     'The Conformational Alphabet of Nucleic Acids (CANA) groups related NtC conformers into 15 three‑letter codes that capture broader structural motifs: A, B, Z forms, open and intercalated steps and more. CANA codes appear alongside NtC labels in tables, offering a high‑level overview while preserving torsion‑level detail.'
                 ],
@@ -296,6 +296,7 @@ export const densityMaps = [
 
 export const home = [
     {
+        id: 'homePage',
         headline: 'Home page',
         paragraphs: [
             'Data Input: Enter a PDB ID or upload a PDB/mmCIF file',
@@ -311,6 +312,7 @@ export const home = [
 
 export const annotation = [
     {
+        id: 'annotationPage',
         headline: 'Annotation page',
         paragraphs: [
             'Provides a concise overview of conformer assignments and structural features across five tabs:',
@@ -324,6 +326,7 @@ export const annotation = [
 
 export const validation = [
     {
+        id: 'validationPage',
         headline: 'Validation page',
         paragraphs: [
             'Delivers in-depth quality metrics via seven tabs:',
@@ -341,6 +344,7 @@ export const validation = [
 
 export const refinement = [
     {
+        id: 'refinementPage',
         headline: 'Refinement page',
         paragraphs: [
             'Facilitates real-time adjustment of NtC assignments:',
@@ -353,6 +357,7 @@ export const refinement = [
 
 export const browse = [
     {
+        id: 'browsePage',
         headline: 'Browse page',
         paragraphs: [
             'Explore conformer and base-pair resources:',
