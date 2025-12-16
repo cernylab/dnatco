@@ -127,10 +127,10 @@ function Contact() {
 
                 <div className='mb-4'>
                     <div>
-                        <span className='rdo-sup'>1</span> <a className='rdo-link' href='https://www.ibt.cas.cz/en/research/laboratory-of-structural-bioinformatics-of-proteins/' target='_blank'>Laboratory of Structural Bioinformatics of Proteins</a>, Institute of Biotechnology, Czech Academy of Sciences
+                        <span className='rdo-sup'>1</span> <a className='rdo-link' href='https://www.ibt.cas.cz/en/research-laboratories/laboratory-of-structural-bioinformatics-of-proteins' target='_blank'>Laboratory of Structural Bioinformatics of Proteins</a>, Institute of Biotechnology, Czech Academy of Sciences
                     </div>
                     <div>
-                        <span className='rdo-sup'>2</span> <a className='rdo-link' href='https://www.ibt.cas.cz/en/research/laboratory-of-biomolecular-recognition' target='_blank'>Laboratory of Biomolecular Recognition</a>, Institute of Biotechnology, Czech Academy of Sciences
+                        <span className='rdo-sup'>2</span> <a className='rdo-link' href='https://www.ibt.cas.cz/en/research-laboratories/laboratory-of-biomolecular-recognition' target='_blank'>Laboratory of Biomolecular Recognition</a>, Institute of Biotechnology, Czech Academy of Sciences
                     </div>
                 </div>
 
