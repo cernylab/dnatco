@@ -151,69 +151,106 @@ export function BasePairing({ d, viewerInterop, switching, structureSelection }:
     return (
       <div className="flex flex-col h-full" ref={tableTainerRef}>
         {/* Fixed header table */}
-        <table className="mb-2 w-full" style={{ tableLayout: 'fixed' }}>
-          {colGroup}
-          <thead>
-            <tr>
-              <th
-                colSpan={showModel ? 6 : 5}
-                className="mb-4 p-4 text-20px border-primary-first border-[.1px]"
-              >
-                <div className="flex items-center justify-center gap-2">
-                  <span>Base Pairs</span>
-                  <IconButton
-                    src={MagnifyingGlassImg}
-                    className="rdo-pushbutton h-6 w-6"
-                    onClick={() => {
-                      const tainer = tableTainerRef.current;
-                      if (!tainer || searchBoxOpen) return;
-
-                      setSearchBoxOpen(true);
-                      SearchBox.create(tainer, searchBoxProps);
-                    }}
-                  />
-                </div>
-                <div className="text-14px">Data provided by FR3D</div>
-              </th>
-            </tr>
-            <tr>
-              {showModel && <th className="py-2 border-primary-first border-[.1px]">Model</th>}
-              <th className="py-2 border-primary-first border-[.1px]">Chain 1</th>
-              <th className="py-2 border-primary-first border-[.1px]">Base 1</th>
-              <th className="py-2 border-primary-first border-[.1px]">Family</th>
-              <th className="py-2 border-primary-first border-[.1px]">Chain 2</th>
-              <th className="py-2 border-primary-first border-[.1px]">Base 2</th>
-            </tr>
-          </thead>
-        </table>
-        {/* Scrollable body table */}
-        <div className="overflow-y-auto flex-1">
-          <table className="mb-2 w-full" style={{ tableLayout: 'fixed' }}>
-            {colGroup}
-            <tbody>
-              {rows.map((r, i) => {
-                const isHighlighted = selectedBpId === r.basePairId;
-                const highlightStyle = isHighlighted ? { backgroundColor: colorToHex(Colors.CurrentStep()) } : {};
-
-                return (
-                  <tr
-                    key={i}
-                    ref={isHighlighted ? highlightedRowRef : null}
-                    onClick={() => handleRowClick(r)}
-                    className="cursor-pointer hover:bg-primary-hover"
-                    style={highlightStyle}
+        <div className="base-pairs-header" style={{ overflowY: 'hidden', scrollbarGutter: 'stable', scrollbarWidth: 'thin', scrollbarColor: 'rgba(0, 0, 0, 0.3) transparent' }}>
+          <style>{`
+            .base-pairs-header::-webkit-scrollbar {
+              width: 14px;
+            }
+          `}</style>
+          <div style={{ paddingRight: '2px' }}>
+            <table className="mb-2 w-full" style={{ tableLayout: 'fixed' }}>
+              {colGroup}
+              <thead>
+                <tr>
+                  <th
+                    colSpan={showModel ? 6 : 5}
+                    className="mb-4 p-4 text-20px border-primary-first border-[.1px]"
                   >
-                    {showModel && <td className="py-2 border-primary-first border-[.1px] text-center">{r.model}</td>}
-                    <td className="py-2 border-primary-first border-[.1px] text-center">{r.chain1}</td>
-                    <td className="py-2 border-primary-first border-[.1px] text-center">{r.base1}</td>
-                    <td className="py-2 border-primary-first border-[.1px] text-center">{r.family}</td>
-                    <td className="py-2 border-primary-first border-[.1px] text-center">{r.chain2}</td>
-                    <td className="py-2 border-primary-first border-[.1px] text-center">{r.base2}</td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                    <div className="flex items-center justify-center gap-2">
+                      <span>Base Pairs</span>
+                      <IconButton
+                        src={MagnifyingGlassImg}
+                        className="rdo-pushbutton h-6 w-6"
+                        onClick={() => {
+                          const tainer = tableTainerRef.current;
+                          if (!tainer || searchBoxOpen) return;
+
+                          setSearchBoxOpen(true);
+                          SearchBox.create(tainer, searchBoxProps);
+                        }}
+                      />
+                    </div>
+                    <div className="text-14px">Data provided by FR3D</div>
+                  </th>
+                </tr>
+                <tr>
+                  {showModel && <th className="py-2 border-primary-first border-[.1px]">Model</th>}
+                  <th className="py-2 border-primary-first border-[.1px]">Chain 1</th>
+                  <th className="py-2 border-primary-first border-[.1px]">Base 1</th>
+                  <th className="py-2 border-primary-first border-[.1px]">Family</th>
+                  <th className="py-2 border-primary-first border-[.1px]">Chain 2</th>
+                  <th className="py-2 border-primary-first border-[.1px]">Base 2</th>
+                </tr>
+              </thead>
+            </table>
+          </div>
+        </div>
+        {/* Scrollable body table */}
+        <div
+          className="flex-1 base-pairs-scroll"
+          style={{
+            overflowY: 'auto',
+            scrollbarWidth: 'thin',
+            scrollbarColor: 'rgba(0, 0, 0, 0.3) transparent',
+            scrollbarGutter: 'stable',
+          }}
+        >
+          <style>{`
+            .base-pairs-scroll::-webkit-scrollbar {
+              width: 14px;
+            }
+            .base-pairs-scroll::-webkit-scrollbar-track {
+              background: transparent;
+            }
+            .base-pairs-scroll::-webkit-scrollbar-thumb {
+              background-color: rgba(0, 0, 0, 0.2);
+              border-radius: 7px;
+              border: 4px solid transparent;
+              background-clip: padding-box;
+            }
+            .base-pairs-scroll::-webkit-scrollbar-thumb:hover {
+              background-color: rgba(0, 0, 0, 0.4);
+              border: 3px solid transparent;
+            }
+          `}</style>
+          <div style={{ paddingRight: '2px' }}>
+            <table className="mb-2 w-full" style={{ tableLayout: 'fixed' }}>
+              {colGroup}
+              <tbody>
+                {rows.map((r, i) => {
+                  const isHighlighted = selectedBpId === r.basePairId;
+                  const highlightStyle = isHighlighted ? { backgroundColor: colorToHex(Colors.CurrentStep()) } : {};
+
+                  return (
+                    <tr
+                      key={i}
+                      ref={isHighlighted ? highlightedRowRef : null}
+                      onClick={() => handleRowClick(r)}
+                      className="cursor-pointer hover:bg-primary-hover"
+                      style={highlightStyle}
+                    >
+                      {showModel && <td className="py-2 border-primary-first border-[.1px] text-center">{r.model}</td>}
+                      <td className="py-2 border-primary-first border-[.1px] text-center">{r.chain1}</td>
+                      <td className="py-2 border-primary-first border-[.1px] text-center">{r.base1}</td>
+                      <td className="py-2 border-primary-first border-[.1px] text-center">{r.family}</td>
+                      <td className="py-2 border-primary-first border-[.1px] text-center">{r.chain2}</td>
+                      <td className="py-2 border-primary-first border-[.1px] text-center">{r.base2}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     );

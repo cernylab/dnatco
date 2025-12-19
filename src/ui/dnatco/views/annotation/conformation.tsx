@@ -357,7 +357,7 @@ export class Conformation extends View<View.Props> {
           Table of assigned dinucleotide NtC classes
         </div>
         <div className="overflow-hidden flex-1" ref={this.tableTainer}>
-          <div className="rdo-scroll-vertically-with-scrollbar">
+          <div className="rdo-scroll-vertically-with-scrollbar-none">
             {this.renderStepsTable()}
           </div>
         </div>

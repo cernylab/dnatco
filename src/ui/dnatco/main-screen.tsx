@@ -298,7 +298,15 @@ function ViewWrapper<T extends keyof Register.PropsType>(props: {
 
   if (props.view.unscrollableContainer) {
     return (
-      <div className="flex flex-col overflow-scroll">
+      <div className="flex flex-col overflow-scroll" style={{
+        scrollbarWidth: 'none',
+        msOverflowStyle: 'none',
+      }}>
+        <style>{`
+          .flex.flex-col.overflow-scroll::-webkit-scrollbar {
+            display: none;
+          }
+        `}</style>
         <StructureCaption d={props.dnatcofication} />
         <div className="rdo-side-offset overflow-hidden">{rendered}</div>
       </div>

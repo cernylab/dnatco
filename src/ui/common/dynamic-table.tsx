@@ -404,22 +404,58 @@ export class DynamicTable extends React.Component<
       this.props.style === "wide" ? "rdo-data-table-wide w-full" : ""
     }`;
 
+    const scrollContainerStyle: React.CSSProperties = {
+      overflowY: 'auto',
+      scrollbarWidth: 'thin', // Firefox - thin scrollbar
+      scrollbarColor: 'rgba(0, 0, 0, 0.3) transparent', // Firefox - thumb and track colors
+      scrollbarGutter: 'stable', // Reserve space for scrollbar to prevent layout shift
+    };
+
     return (
       <div className="flex flex-col h-full">
         {this.renderDownloadBar()}
         {/* Fixed header table */}
-        <table className={tableClassName} style={{ tableLayout: 'fixed' }}>
-          {this.renderColGroup()}
-          <thead>
-            <tr>{this.renderHeader()}</tr>
-          </thead>
-        </table>
+        <div className="dynamic-table-header" style={{ overflowY: 'hidden', scrollbarGutter: 'stable', scrollbarWidth: 'thin', scrollbarColor: 'rgba(0, 0, 0, 0.3) transparent' }}>
+          <style>{`
+            .dynamic-table-header::-webkit-scrollbar {
+              width: 14px;
+            }
+          `}</style>
+          <div style={{ paddingRight: '2px' }}>
+            <table className={tableClassName} style={{ tableLayout: 'fixed', width: '100%' }}>
+              {this.renderColGroup()}
+              <thead>
+                <tr>{this.renderHeader()}</tr>
+              </thead>
+            </table>
+          </div>
+        </div>
         {/* Scrollable body table */}
-        <div className="overflow-y-auto flex-1">
-          <table className={tableClassName} style={{ tableLayout: 'fixed' }}>
-            {this.renderColGroup()}
-            <tbody>{this.renderBody()}</tbody>
-          </table>
+        <div className="flex-1 dynamic-table-scroll" style={scrollContainerStyle}>
+          <style>{`
+            .dynamic-table-scroll::-webkit-scrollbar {
+              width: 14px;
+            }
+            .dynamic-table-scroll::-webkit-scrollbar-track {
+              background: transparent;
+            }
+            .dynamic-table-scroll::-webkit-scrollbar-thumb {
+              background-color: rgba(0, 0, 0, 0.2);
+              border-radius: 7px;
+              border: 4px solid transparent;
+              background-clip: padding-box;
+            }
+            .dynamic-table-scroll::-webkit-scrollbar-thumb:hover {
+              background-color: rgba(0, 0, 0, 0.4);
+              border: 3px solid transparent;
+            }
+          `}</style>
+          <div style={{ paddingRight: '2px' }}>
+            <table className={tableClassName} style={{ tableLayout: 'fixed' }}>
+              {this.renderColGroup()}
+              <tbody>{this.renderBody()}</tbody>
+            </table>
+          </div>
         </div>
       </div>
     );
