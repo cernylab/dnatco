@@ -8,7 +8,7 @@ function DownloadSection(props: {
     files: Array<{ name: string; url: string; caption: string }>;
 }) {
     return (
-        <div className='flex border-t-secondary-second border-t pt-3 mb-8'>
+        <div className='flex border-t-secondary-second border-t pt-3 mb-8 gap-8'>
             <div className='w-[40%]'>
                 <h3 className='font-700 text-18px mb-2 uppercase'>
                     {props.title}
@@ -59,12 +59,12 @@ export function ReferenceSets() {
         {
             name: 'RS25_DNA_c2.csv',
             url: '/reference-sets/general/RS25_DNA_c2.csv',
-            caption: 'DNA chains with resolution ≤ 2.5 Å',
+            caption: 'DNA RS25 (chains with resolution ≤ 2.5 Å)',
         },
         {
             name: 'RS35_DNA_c2.csv',
             url: '/reference-sets/general/RS35_DNA_c2.csv',
-            caption: 'DNA chains with resolution ≤ 3.5 Å',
+            caption: 'DNA RS35 (chains with resolution ≤ 3.5 Å)',
         },
         {
             name: 'RS25_DNA_c2_contacts.csv',
@@ -79,12 +79,12 @@ export function ReferenceSets() {
         {
             name: 'RS25_RNA_c2.csv',
             url: '/reference-sets/general/RS25_RNA_c2.csv',
-            caption: 'RNA chains with resolution ≤ 2.5 Å',
+            caption: 'RNA RS25 (chains with resolution ≤ 2.5 Å)',
         },
         {
             name: 'RS35_RNA_c2.csv',
             url: '/reference-sets/general/RS35_RNA_c2.csv',
-            caption: 'RNA chains with resolution ≤ 3.5 Å',
+            caption: 'RNA RS35 (chains with resolution ≤ 3.5 Å)',
         },
         {
             name: 'RS25_RNA_c2_contacts.csv',
@@ -135,6 +135,7 @@ export function ReferenceSets() {
                                 <li>CQS integrates resolution, R_free, clashscore, RSCC, RSR, and model completeness</li>
                                 <li>Up to two best chains from each 90% sequence identity cluster are included</li>
                                 <li>NAs in protein complexes and naked are considered different</li>
+                                <li>The sets "with contacts" include also NA chains that are found within 4.0 Å distance from the RS chains</li>
                             </ul>
                         </>
                     }
