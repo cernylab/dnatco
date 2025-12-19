@@ -25,7 +25,12 @@ module.exports = (env, argv) => {
                 {
                     from: 'molstar/build/rednatco/imgs/*',
                     to() { return path.resolve(__dirname, DistDir, 'imgs/[name][ext]') },
-                }
+                },
+                {
+                    from: 'assets/classification',
+                    to() { return path.resolve(__dirname, DistDir, 'classification') },
+                },
+
             ],
 
             resolveFallbacks: {
