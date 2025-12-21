@@ -406,9 +406,14 @@ export namespace Dnatcofication {
 
             let basePairs = BasePairsMapper.Mapping();
             if (Cif.File.hasTable(cifData, NdbBasePairList) && Cif.File.hasTable(cifData, NdbBasePairAnnotation)) {
-                const bpListTable = Cif.File.table(cifData, NdbBasePairList);
-                const bpAnnTable = Cif.File.table(cifData, NdbBasePairAnnotation);
-                basePairs = BasePairsMapper.map(bpListTable, bpAnnTable);
+                try {
+                    const bpListTable = Cif.File.table(cifData, NdbBasePairList);
+                    const bpAnnTable = Cif.File.table(cifData, NdbBasePairAnnotation);
+                    basePairs = BasePairsMapper.map(bpListTable, bpAnnTable);
+                } catch (e) {
+                    console.log(`Could not process base pair data (${e}), continuing without base pairs`);
+                    // basePairs remains empty, processing continues
+                }
             }
 
             let connectivities;
