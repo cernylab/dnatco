@@ -644,6 +644,38 @@ a.rdo-imglink:visited {
 .rdo-scroll-vertically-with-scrollbar {
   height: 100%;
   overflow-y: scroll;
+  scrollbar-width: thin; /* Firefox - show thin scrollbar */
+  scrollbar-color: rgba(0, 0, 0, 0.3) transparent; /* Firefox - thumb and track colors */
+}
+
+/* Minimal scrollbar for Chrome, Safari and Opera */
+.rdo-scroll-vertically-with-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.rdo-scroll-vertically-with-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.rdo-scroll-vertically-with-scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.3);
+  border-radius: 4px;
+}
+
+.rdo-scroll-vertically-with-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.rdo-scroll-vertically-with-scrollbar-none {
+  height: 100%;
+  overflow-y: scroll;
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.rdo-scroll-vertically-with-scrollbar-none::-webkit-scrollbar {
+  display: none;
 }
 
 .rdo-search-box {
