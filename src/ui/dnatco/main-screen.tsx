@@ -795,7 +795,9 @@ export function MainScreen(props: {
                 basePairSelection.insCode1,
                 basePairSelection.asymId2,
                 basePairSelection.seqId2,
-                basePairSelection.insCode2
+                basePairSelection.insCode2,
+                basePairSelection.altId1,
+                basePairSelection.altId2
               );
 
               if (basePair) {
@@ -828,7 +830,9 @@ export function MainScreen(props: {
                   basePairSelection.insCode1,
                   basePairSelection.asymId2,
                   basePairSelection.seqId2,
-                  basePairSelection.insCode2
+                  basePairSelection.insCode2,
+                  basePairSelection.altId1,
+                  basePairSelection.altId2
                 );
 
                 if (basePair) {

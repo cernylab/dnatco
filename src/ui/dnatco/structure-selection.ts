@@ -42,7 +42,8 @@ export function StructureSelectionFromViewer(viewerInterop: ViewerInterop, dnatc
                 const bp = BasePairsMapper.findByResidues(
                     dnatcofication,
                     sel.asymId1, sel.seqId1, sel.insCode1,
-                    sel.asymId2, sel.seqId2, sel.insCode2
+                    sel.asymId2, sel.seqId2, sel.insCode2,
+                    sel.altId1, sel.altId2
                 );
                 if (bp)
                     basePairs.push(bp.id);
