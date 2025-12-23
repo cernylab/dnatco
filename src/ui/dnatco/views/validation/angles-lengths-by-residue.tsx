@@ -831,6 +831,7 @@ class Residue extends React.Component<
     scrollMyselfIntoView: () => void;
     events: Events;
     winTracker: WindowsTracker;
+    collapseAllOtherRows: () => void;
   }
 > {
   private collapserRef = React.createRef<CollapsibleVertical>();
@@ -866,6 +867,9 @@ class Residue extends React.Component<
             this.props.structureSelection
           );
           if (change === "expanded" && !isSelected) {
+            // First collapse any currently expanded row (single selection mode)
+            this.props.collapseAllOtherRows();
+            // Now select this residue
             AnglesLengthsCommon.selectResidue(
               this.props.residue,
               this.props.structureSelection,
@@ -1165,6 +1169,13 @@ export class AnglesLengthsByResidue extends View<
           vi={this.props.viewerInterop}
           winTracker={winTracker}
           events={this.events}
+          collapseAllOtherRows={() => {
+            for (const [id, r] of this.residueBlocksMapping.entries()) {
+              if (r.current && id !== identResName) {
+                r.current.collapseExpand("collapse");
+              }
+            }
+          }}
           autoOpenBond={shouldAutoOpenBond ? this.state.autoOpenBond!.bondSpec : undefined}
           autoOpenAngle={shouldAutoOpenAngle ? this.state.autoOpenAngle!.angleSpec : undefined}
           key={idx}
