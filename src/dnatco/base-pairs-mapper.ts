@@ -99,13 +99,19 @@ export namespace BasePairsMapper {
     export function findByResidues(
         d: Dnatcofication,
         asymId1: string, seqId1: number, insCode1: string,
-        asymId2: string, seqId2: number, insCode2: string
+        asymId2: string, seqId2: number, insCode2: string,
+        altId1?: string,
+        altId2?: string
     ): BasePair | undefined {
         return d.data.basePairs.pairs.find(bp =>
             (bp.asymId1 === asymId1 && bp.seqId1 === seqId1 && bp.insCode1 === insCode1 &&
-             bp.asymId2 === asymId2 && bp.seqId2 === seqId2 && bp.insCode2 === insCode2) ||
+             bp.asymId2 === asymId2 && bp.seqId2 === seqId2 && bp.insCode2 === insCode2 &&
+             (altId1 === undefined || bp.altId1 === altId1) &&
+             (altId2 === undefined || bp.altId2 === altId2)) ||
             (bp.asymId1 === asymId2 && bp.seqId1 === seqId2 && bp.insCode1 === insCode2 &&
-             bp.asymId2 === asymId1 && bp.seqId2 === seqId1 && bp.insCode2 === insCode1)
+             bp.asymId2 === asymId1 && bp.seqId2 === seqId1 && bp.insCode2 === insCode1 &&
+             (altId1 === undefined || bp.altId2 === altId1) &&
+             (altId2 === undefined || bp.altId1 === altId2))
         );
     }
 

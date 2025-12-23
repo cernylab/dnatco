@@ -25,16 +25,25 @@ export function BasePairing({ d, viewerInterop, switching, structureSelection }:
   const [searchBoxOpen, setSearchBoxOpen] = React.useState(false);
 
   const searching: SearchBox.Searching<BasePair> = React.useMemo(() => ({
-    onRenderResult: (bp) => (
-      <div>
-        {bp.authAsymId1} {bp.compId1} {bp.authSeqId1} - {bp.authAsymId2} {bp.compId2} {bp.authSeqId2}
-      </div>
-    ),
+    onRenderResult: (bp) => {
+      const res1 = `${bp.compId1}${bp.altId1 ? '.' + bp.altId1 : ''} ${bp.authSeqId1}${bp.insCode1 ? '.' + bp.insCode1 : ''}`;
+      const res2 = `${bp.compId2}${bp.altId2 ? '.' + bp.altId2 : ''} ${bp.authSeqId2}${bp.insCode2 ? '.' + bp.insCode2 : ''}`;
+      return (
+        <div>
+          {bp.authAsymId1} {res1} - {bp.authAsymId2} {res2}
+        </div>
+      );
+    },
     onSearch: (prompt) => {
       const toks = prompt.split(" ").filter(t => t.length > 0);
       if (toks.length === 0) return [];
 
-      const resNoAuth = parseIntStrict(toks[toks.length - 1]);
+      // Parse last token which can be: resNo, resNo.insCode
+      const lastTok = toks[toks.length - 1];
+      const dotIdx = lastTok.indexOf('.');
+      const resNoAuth = parseIntStrict(dotIdx > 0 ? lastTok.substring(0, dotIdx) : lastTok);
+      const insCode = dotIdx > 0 ? lastTok.substring(dotIdx + 1) : void 0;
+
       const chainAuth = toks.length > 1 ? toks[0] : void 0;
 
       if (isNaN(resNoAuth)) return [];
@@ -45,8 +54,10 @@ export function BasePairing({ d, viewerInterop, switching, structureSelection }:
         const matchesChain2 = !chainAuth || chainAuth === bp.authAsymId2;
         const matchesRes1 = bp.authSeqId1 === resNoAuth;
         const matchesRes2 = bp.authSeqId2 === resNoAuth;
+        const matchesIns1 = insCode === void 0 || bp.insCode1 === insCode;
+        const matchesIns2 = insCode === void 0 || bp.insCode2 === insCode;
 
-        if ((matchesChain1 && matchesRes1) || (matchesChain2 && matchesRes2)) {
+        if ((matchesChain1 && matchesRes1 && matchesIns1) || (matchesChain2 && matchesRes2 && matchesIns2)) {
           results.push(bp);
         }
       }
@@ -108,9 +119,9 @@ export function BasePairing({ d, viewerInterop, switching, structureSelection }:
         bp: bp,
         model: String(bp.model),
         chain1: bp.authAsymId1,
-        base1: `${bp.compId1} ${bp.authSeqId1}`,
+        base1: `${bp.compId1}${bp.altId1 ? '.' + bp.altId1 : ''} ${bp.authSeqId1}${bp.insCode1 ? '.' + bp.insCode1 : ''}`,
         chain2: bp.authAsymId2,
-        base2: `${bp.compId2} ${bp.authSeqId2}`,
+        base2: `${bp.compId2}${bp.altId2 ? '.' + bp.altId2 : ''} ${bp.authSeqId2}${bp.insCode2 ? '.' + bp.insCode2 : ''}`,
         family: bp.family,
       };
     }).filter((r): r is NonNullable<typeof r> => r !== null);
