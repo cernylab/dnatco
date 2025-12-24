@@ -831,7 +831,8 @@ class Residue extends React.Component<
     scrollMyselfIntoView: () => void;
     events: Events;
     winTracker: WindowsTracker;
-    collapseAllOtherRows: () => void;
+    onExpand: (id: string) => void;
+    onCollapse: (id: string) => void;
   }
 > {
   private collapserRef = React.createRef<CollapsibleVertical>();
@@ -866,25 +867,30 @@ class Residue extends React.Component<
             this.props.residue,
             this.props.structureSelection
           );
-          if (change === "expanded" && !isSelected) {
-            // First collapse any currently expanded row (single selection mode)
-            this.props.collapseAllOtherRows();
-            // Now select this residue
-            AnglesLengthsCommon.selectResidue(
-              this.props.residue,
-              this.props.structureSelection,
-              this.props.events.residueToggled,
-              this.props.d,
-              this.props.vi
-            );
-          } else if (change === "collapsed" && isSelected) {
-            AnglesLengthsCommon.deselectResidue(
-              this.props.residue,
-              this.props.structureSelection,
-              this.props.events.residueToggled,
-              this.props.d,
-              this.props.vi
-            );
+          const id = this.props.residueIdentifyingName;
+          if (change === "expanded") {
+            // First collapse the previously expanded row (single selection mode)
+            this.props.onExpand(id);
+            if (!isSelected) {
+              AnglesLengthsCommon.selectResidue(
+                this.props.residue,
+                this.props.structureSelection,
+                this.props.events.residueToggled,
+                this.props.d,
+                this.props.vi
+              );
+            }
+          } else if (change === "collapsed") {
+            this.props.onCollapse(id);
+            if (isSelected) {
+              AnglesLengthsCommon.deselectResidue(
+                this.props.residue,
+                this.props.structureSelection,
+                this.props.events.residueToggled,
+                this.props.d,
+                this.props.vi
+              );
+            }
           }
         }}
         initiallyExpanded={AnglesLengthsCommon.isResidueInSelection(
@@ -1008,6 +1014,7 @@ export class AnglesLengthsByResidue extends View<
     shownResiduesLimit: number;
     autoOpenBond?: { residue: Measurements.Residue; bondSpec: string };
     autoOpenAngle?: { residue: Measurements.Residue; angleSpec: string };
+    currentExpandedId?: string;
   }
 > {
   static readonly unscrollableContainer = true;
@@ -1084,8 +1091,26 @@ export class AnglesLengthsByResidue extends View<
       maxWorstLengths: GlobalConfig.data().anglesLengths.maxWorst,
       worstLengthsThreshold: thr,
       shownResiduesLimit: 100,
+      currentExpandedId: undefined,
     };
   }
+
+  private collapsePreviousRow = (nextId: string) => {
+    const { currentExpandedId } = this.state;
+    if (currentExpandedId && currentExpandedId !== nextId) {
+      const previousBlock = this.residueBlocksMapping.get(currentExpandedId);
+      previousBlock?.current?.collapseExpand("collapse");
+    }
+    if (currentExpandedId !== nextId) {
+      this.setState({ currentExpandedId: nextId });
+    }
+  };
+
+  private handleRowCollapsed = (id: string) => {
+    if (this.state.currentExpandedId === id) {
+      this.setState({ currentExpandedId: undefined });
+    }
+  };
 
   private renderSelection(
     tainer: React.RefObject<HTMLDivElement>,
@@ -1169,13 +1194,8 @@ export class AnglesLengthsByResidue extends View<
           vi={this.props.viewerInterop}
           winTracker={winTracker}
           events={this.events}
-          collapseAllOtherRows={() => {
-            for (const [id, r] of this.residueBlocksMapping.entries()) {
-              if (r.current && id !== identResName) {
-                r.current.collapseExpand("collapse");
-              }
-            }
-          }}
+          onExpand={(id) => this.collapsePreviousRow(id)}
+          onCollapse={(id) => this.handleRowCollapsed(id)}
           autoOpenBond={shouldAutoOpenBond ? this.state.autoOpenBond!.bondSpec : undefined}
           autoOpenAngle={shouldAutoOpenAngle ? this.state.autoOpenAngle!.angleSpec : undefined}
           key={idx}
@@ -1431,6 +1451,7 @@ export class AnglesLengthsByResidue extends View<
       for (const ref of this.residueBlocksMapping.values()) {
         if (ref.current) ref.current.collapseExpand("collapse");
       }
+      this.setState({ currentExpandedId: undefined });
       this.events.allResiduesDeselected.next();
     });
     this.subscribe(this.props.viewerInterop.events.residueRequested, (sel) => {
@@ -1475,6 +1496,9 @@ export class AnglesLengthsByResidue extends View<
       else if (transition === "deselected") {
         const block = this.residueBlocksMapping.get(id);
         block?.current?.collapseExpand("collapse");
+        if (this.state.currentExpandedId === id) {
+          this.setState({ currentExpandedId: undefined });
+        }
       }
     });
 
