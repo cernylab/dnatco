@@ -26,8 +26,8 @@ export function BasePairing({ d, viewerInterop, switching, structureSelection }:
 
   const searching: SearchBox.Searching<BasePair> = React.useMemo(() => ({
     onRenderResult: (bp) => {
-      const res1 = `${bp.compId1}${bp.altId1 ? '.' + bp.altId1 : ''} ${bp.authSeqId1}${bp.insCode1 ? '.' + bp.insCode1 : ''}`;
-      const res2 = `${bp.compId2}${bp.altId2 ? '.' + bp.altId2 : ''} ${bp.authSeqId2}${bp.insCode2 ? '.' + bp.insCode2 : ''}`;
+      const res1 = `${bp.compId1} ${bp.authSeqId1}${bp.insCode1 || ''}${bp.altId1 ? ' (alt. ' + bp.altId1 + ')' : ''}`;
+      const res2 = `${bp.compId2} ${bp.authSeqId2}${bp.insCode2 || ''}${bp.altId2 ? ' (alt. ' + bp.altId2 + ')' : ''}`;
       return (
         <div>
           {bp.authAsymId1} {res1} - {bp.authAsymId2} {res2}
@@ -119,9 +119,9 @@ export function BasePairing({ d, viewerInterop, switching, structureSelection }:
         bp: bp,
         model: String(bp.model),
         chain1: bp.authAsymId1,
-        base1: `${bp.compId1}${bp.altId1 ? '.' + bp.altId1 : ''} ${bp.authSeqId1}${bp.insCode1 ? '.' + bp.insCode1 : ''}`,
+        base1: `${bp.compId1} ${bp.authSeqId1}${bp.insCode1 || ''}${bp.altId1 ? ' (alt. ' + bp.altId1 + ')' : ''}`,
         chain2: bp.authAsymId2,
-        base2: `${bp.compId2}${bp.altId2 ? '.' + bp.altId2 : ''} ${bp.authSeqId2}${bp.insCode2 ? '.' + bp.insCode2 : ''}`,
+        base2: `${bp.compId2} ${bp.authSeqId2}${bp.insCode2 || ''}${bp.altId2 ? ' (alt. ' + bp.altId2 + ')' : ''}`,
         family: bp.family,
       };
     }).filter((r): r is NonNullable<typeof r> => r !== null);
