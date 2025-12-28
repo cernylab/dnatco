@@ -111,6 +111,7 @@ export function BasePairing({ d, viewerInterop, switching, structureSelection }:
       const bp = BasePairsMapper.byId(d, bpId);
 
       if (!bp) {
+        console.warn(`[BasePairs] Base pair ID ${bpId} not found in mapper (this should not happen)`);
         return null;
       }
 

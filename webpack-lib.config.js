@@ -3,7 +3,8 @@
 const path = require('path');
 const { createLib } = require('./webpack.common.js');
 
-const DistDir = 'bin';
+const DistDir = 'dnatco/bin';
+const DocDir = 'dnatco';
 
 module.exports = (env, argv) => {
     const productionBuild = argv.mode === 'production';
@@ -41,7 +42,7 @@ module.exports = (env, argv) => {
                 },
                 {
                     from: 'standalone_README.md',
-                    to() { return path.resolve(__dirname, DistDir, 'README.md') },
+                    to() { return path.resolve(__dirname, DocDir, 'README.md') },
                 },
                 {
                     from: 'assets/classification',
