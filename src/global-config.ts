@@ -98,6 +98,8 @@ export type GlobalConfigData = {
     cameraClippingRadius: number,
     cameraClippingFar: boolean,
     cameraClippingMinNear: number,
+    // Logger minimum severity: messages below this level are filtered out. 0=Debug, 1=Info (default), 2=Warning, 3=Error
+    minSeverity: 0 | 1 | 2 | 3,
 
     // Options relevant only for NodeJS builds
     referenceUrl: string,
@@ -167,6 +169,7 @@ const GlobalConfigData: GlobalConfigData = {
     cameraClippingRadius: 100,
     cameraClippingFar: true,
     cameraClippingMinNear: 5,
+    minSeverity: 1,
     referenceUrl: '',
     phenix: {
         rsccExec: '',

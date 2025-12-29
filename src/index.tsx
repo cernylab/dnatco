@@ -718,7 +718,7 @@ function App(props: { initial: Initial }) {
 
     const params = Net.paramsFromUrl(Params, props.initial.search);
     if (params.cifcode) {
-      if (!isPdbId(params.cifcode)) {
+      if (!isPdbId(params.cifcode, true)) {
         Popup.create(
           <div className="text-secondary-third">{`${params.cifcode} is not a valid PDB ID`}</div>
         );
@@ -961,7 +961,7 @@ async function bootstrap() {
         `Primary database ID "${configData.primaryDatabase}" is not known`
       );
 
-    Logger.initialize(configData.displayedProductName);
+    Logger.initialize(configData.displayedProductName, { minSeverity: configData.minSeverity });
 
     const initial = {
       hash: window.location.hash,

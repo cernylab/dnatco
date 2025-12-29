@@ -117,7 +117,7 @@ export const Tasks = {
     ) {
         try {
             const configData = await getConfigData();
-            Logger.initialize(configData.displayedProductName);
+            Logger.initialize(configData.displayedProductName, { minSeverity: configData.minSeverity });
             UserRemoteDatabases._import(configData.userDatabases);
 
             ctx.status = 'Reading data';
@@ -203,7 +203,7 @@ export const Tasks = {
     ) {
         try {
             const configData = await getConfigData();
-            Logger.initialize(configData.displayedProductName);
+            Logger.initialize(configData.displayedProductName, { minSeverity: configData.minSeverity });
             UserRemoteDatabases._import(configData.userDatabases);
 
             ctx.status = 'Downloading data';
@@ -240,7 +240,7 @@ export const Tasks = {
     ) {
         try {
             const configData = await getConfigData();
-            Logger.initialize(configData.displayedProductName);
+            Logger.initialize(configData.displayedProductName, { minSeverity: configData.minSeverity });
             UserRemoteDatabases._import(configData.userDatabases);
 
             ctx.status = 'Downloading data';
