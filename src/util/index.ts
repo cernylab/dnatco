@@ -6,9 +6,15 @@ const NineChar = '9'.charCodeAt(0);
 const MinusChar = '-';
 
 const FloatRegex = new RegExp('[0-9eE+.,-]');
+// Legacy: 4 characters (e.g., "100d")
 const LegacyPdbIdRegex = new RegExp('^[1-9]{1}[a-zA-Z0-9]{3}$');
-const ExtendedPdbIdLooseRegex = new RegExp('^([pP][dD][bB]_)?([0-9]){0,4}[1-9]([0-9a-zA-Z]){3}$');
-const ExtendedPdbIdStrictRegex = new RegExp('^[pP][dD][bB]_([0-9]){4}[1-9]([0-9a-zA-Z]){3}$');
+// Extended 8-char: 8 alphanumeric characters (e.g., "0000100d", "12345678")
+const Extended8CharRegex = new RegExp('^[0-9a-zA-Z]{8}$');
+// Extended 12-char: pdb_ prefix + 8 characters (e.g., "pdb_0000100d", "pdb_12345678")
+const Extended12CharRegex = new RegExp('^[pP][dD][bB]_[0-9a-zA-Z]{8}$');
+// Loose: accepts any of the above formats
+const ExtendedPdbIdLooseRegex = new RegExp('^(([pP][dD][bB]_)?[0-9a-zA-Z]{8}|[1-9]{1}[a-zA-Z0-9]{3})$');
+const ExtendedPdbIdStrictRegex = Extended12CharRegex;
 const ZeroCode = '0'.charCodeAt(0);
 
 export const Utf8Decoder = new TextDecoder('utf-8');
@@ -134,6 +140,10 @@ export function isLegacyPdbId(v: string) {
     return LegacyPdbIdRegex.test(v);
 }
 
+export function isExtended8CharPdbId(v: string) {
+    return Extended8CharRegex.test(v);
+}
+
 export function isPdbId(v: string, loose = false) {
     return loose
         ? ExtendedPdbIdLooseRegex.test(v)
@@ -247,13 +257,54 @@ export function toFixed(num: number, decimals: number, prefix?: { char: string, 
 export function toPdbId(v: string) {
     if (!isPdbId(v, true))
         throw new Error(`String "${v}" cannot be converted to a valid PDB ID`);
-    else {
-        if (isLegacyPdbId(v))
-            return v;
-        else {
-            let idx = v.indexOf('_');
-            const idPart = v.substring(idx + 1).padStart(8, '0');
-            return 'pdb_' + idPart;
-        }
+
+    const normalized = v.toLowerCase();
+
+    // Legacy 4-char format (e.g., "100d")
+    if (isLegacyPdbId(normalized)) {
+        return 'pdb_0000' + normalized;
     }
+
+    // Already in 12-char format with pdb_ prefix
+    if (normalized.startsWith('pdb_')) {
+        return normalized;
+    }
+
+    // 8-char format without prefix (e.g., "12345678")
+    if (normalized.length === 8) {
+        return 'pdb_' + normalized;
+    }
+
+    throw new Error(`Unexpected PDB ID format: "${v}"`);
+}
+
+/**
+ * Decomposes a normalized PDB ID (pdb_xxxxxxxx format) into its path components
+ * @param pdbId - Normalized PDB ID in format pdb_xxxxxxxx (e.g., "pdb_0000100d", "pdb_12345678")
+ * @returns Object containing:
+ *   - prefix: First 4 chars of the 8-char code (e.g., "0000", "1234")
+ *   - subdir: Characters at positions 6-7 of the 8-char code (e.g., "00", "67")
+ *   - code8: The full 8-character code without pdb_ prefix (e.g., "0000100d", "12345678")
+ *   - code4: Last 4 chars of the 8-char code (e.g., "100d", "5678")
+ *   - full: The full normalized ID with pdb_ prefix (e.g., "pdb_0000100d", "pdb_12345678")
+ */
+export function decomposePdbId(pdbId: string) {
+    const normalized = pdbId.toLowerCase();
+
+    if (!normalized.startsWith('pdb_') || normalized.length !== 12) {
+        throw new Error(`Expected normalized PDB ID in format pdb_xxxxxxxx, got: "${pdbId}"`);
+    }
+
+    const code8 = normalized.substring(4); // Remove "pdb_" prefix
+    const prefix = code8.substring(0, 4); // First 4 chars: "0000" or "1234"
+    const subdir = code8.substring(5, 7); // Chars 6-7: "00" or "67"
+    const code4 = code8.substring(4, 8); // Last 4 chars: "100d" or "5678"
+
+    return {
+        prefix,
+        subdir,
+        code8,
+        code4,
+        full: normalized
+    };
 }

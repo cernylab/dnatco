@@ -3,7 +3,7 @@ import { ErrorResult, OkResult } from '../../dnatco';
 import { Coordinates } from '../../dnatco/coordinates';
 import { DensityMap } from '../../dnatco/density-map';
 import { Logger } from '../../log/logger';
-import { replaceAll, Utf8Decoder } from '../../util';
+import { replaceAll, Utf8Decoder, decomposePdbId, toPdbId } from '../../util';
 import { ungzip } from '../../zip/unzip';
 
 function transformId(id: string, transformation?: IdTransformations) {
@@ -12,6 +12,43 @@ function transformId(id: string, transformation?: IdTransformations) {
     else if (transformation === 'upper-case')
         return id.toUpperCase();
     return id;
+}
+
+/**
+ * Replaces PDB ID placeholders in a URL template
+ * @param template - URL template with placeholders: ${pdbId}, ${id}, ${prefix}, ${subDir}, ${code8}, ${code4}
+ * @param pdbId - PDB ID in any format (4/8/12 char), will be normalized internally
+ * @returns URL with all placeholders replaced
+ */
+function replacePdbIdPlaceholders(template: string, pdbId: string): string {
+    let url = template;
+
+    try {
+        // Normalize the PDB ID first (4/8/12 char -> pdb_xxxxxxxx)
+        const normalized = toPdbId(pdbId);
+        const { prefix, subdir, code8, code4, full } = decomposePdbId(normalized);
+
+        // Replace individual components (with trailing slashes for directory parts)
+        url = replaceAll(url, '${prefix}', prefix + '/');
+        url = replaceAll(url, '${subDir}', subdir + '/');
+        url = replaceAll(url, '${code8}', code8);
+        url = replaceAll(url, '${code4}', code4);
+
+        // Replace full IDs
+        url = replaceAll(url, '${pdbId}', full);
+        url = replaceAll(url, '${id}', full);
+    } catch (e) {
+        // If decomposition fails (external DBs), just replace ${pdbId} and ${id} with the original
+        url = replaceAll(url, '${pdbId}', pdbId);
+        url = replaceAll(url, '${id}', pdbId);
+        // Remove any remaining placeholders
+        url = replaceAll(url, '${prefix}', '');
+        url = replaceAll(url, '${subDir}', '');
+        url = replaceAll(url, '${code8}', '');
+        url = replaceAll(url, '${code4}', '');
+    }
+
+    return url;
 }
 
 export const IdTransformations = ['lower-case', 'upper-case'] as const;
@@ -33,8 +70,8 @@ export function StaticDb(
         name,
         coordinates: async (pdbId) => {
             const id = transformId(pdbId, coords.idTransformation);
-            const sd = replaceAll(coords.link, '${subDir}', id.slice(1,3)+'/' )
-            const req = await fetch(replaceAll(sd, '${pdbId}', id));
+            const url = replacePdbIdPlaceholders(coords.link, id);
+            const req = await fetch(url);
             if (!req.ok) {
                 let errorMessage = req.statusText;
                 if (req.status === 404) {
@@ -60,9 +97,9 @@ export function StaticDb(
 
             const maps = new Array<DensityMap>();
             for (const dm of densityMaps) {
-                const _id = transformId(id, dm.idTransformation)
-                const sd = replaceAll(dm.link, '${subDir}', _id.slice(1,3)+'/' )
-                const req = await fetch(replaceAll(sd, '${id}', _id));
+                const _id = transformId(id, dm.idTransformation);
+                const url = replacePdbIdPlaceholders(dm.link, _id);
+                const req = await fetch(url);
                 if (!req.ok)
                     Logger.log(Logger.Severity.Warning, `Failed to download density map: ${req.statusText}`);
                 else {

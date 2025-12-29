@@ -2,6 +2,8 @@ import { isArr } from '../util/json';
 import { WebApi } from '../web-api';
 import { Requests } from '../web-api/requests';
 import { Serialization } from '../util/serialization';
+import { decomposePdbId, toPdbId } from '../util';
+import { Logger } from '../log/logger';
 
 export namespace Rscc {
     const Item = [ 0, 0 ] as Rscc;
@@ -38,7 +40,22 @@ export namespace Rscc {
     }
 
     export async function fetchFromDb(pdbId: string): Promise<RsccList> {
-        const req = await fetch(`/rscc/${pdbId}.rscc`);
+        let url: string;
+        try {
+            // Normalize the PDB ID first (4/8/12 char -> pdb_xxxxxxxx)
+            const normalized = toPdbId(pdbId);
+            // Use the same directory structure as CIF files
+            const { prefix, subdir, code8 } = decomposePdbId(normalized);
+            url = `/rscc/${prefix}/${subdir}/${code8}.rscc`;
+        } catch (e) {
+            // Fallback to original pdbId if normalization or decomposition fails
+            Logger.log(Logger.Severity.Warning, `Failed to decompose PDB ID "${pdbId}", falling back to legacy path: ${e}`);
+            url = `/rscc/${pdbId}.rscc`;
+        }
+
+        Logger.log(Logger.Severity.Debug, `Fetching RSCC data from: ${url}`);
+
+        const req = await fetch(url);
         if (!req.ok)
             throw new Error(req.statusText);
 
