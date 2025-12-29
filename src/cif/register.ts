@@ -9,6 +9,7 @@ import { Exptl, ExptlCrystal, ExptlCrystalGrow } from './categories/experimental
 import { NdbStructNtcOverall, NdbStructNtcStepParameters, NdbStructNtcStep, NdbStructNtcStepSummary, NdbStructSugarStepParameters } from './categories/ndb-struct-ntc';
 import { NdbBasePairList, NdbBasePairAnnotation } from './categories/ndb-base-pair';
 import { PdbxDatabaseStatus } from './categories/pdbx-database-status';
+import { PdbxStructAssembly, PdbxStructAssemblyGen } from './categories/pdbx-struct-assembly';
 import { Refine } from './categories/refine';
 import { Struct } from './categories/struct';
 
@@ -24,6 +25,7 @@ export const KnownCategories = [
     NdbStructNtcOverall, NdbStructNtcStepParameters, NdbStructNtcStep, NdbStructNtcStepSummary, NdbStructSugarStepParameters,
     NdbBasePairList, NdbBasePairAnnotation,
     PdbxDatabaseStatus,
+    PdbxStructAssembly, PdbxStructAssemblyGen,
     Refine,
     Struct,
 ];

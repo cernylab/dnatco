@@ -30,6 +30,7 @@ import { Struct } from '../cif/categories/struct';
 import { objKeys } from '../util';
 import { EventsKeeper } from '../util/events-keeper';
 import { GlobalConfigData } from '../global-config';
+import { AssemblyMapper, AssemblyMapping } from './assembly-mapper';
 
 type NavalValidationMapping = Map<number, Map<string,Map<number, number[]>>>;
 function mapNaval(naval: NavalResult): MappedNaval {
@@ -124,6 +125,8 @@ export const DnatcoficationData = {
         counts: new Map<string, number>(),
         source: 'unavailable' as 'entity-poly' | 'model' | 'unavailable'
     },
+
+    assemblyMapping: null as (AssemblyMapping|null),
 };
 export type DnatcoficationData = typeof DnatcoficationData;
 
@@ -439,6 +442,9 @@ export namespace Dnatcofication {
 
             const nucleotideCounts = Dnatcofier.countNucleotides(structures[0].models[0], entityKinds[0], cifData, ctx);
 
+            ctx.status = 'Building assembly mapping';
+            const assemblyMapping = AssemblyMapper.buildMapping(cifData, structures[0]);
+
             const tEnd = performance.now();
 
             Logger.log(Logger.Severity.Info, (`Dnatcofication process took ${((tEnd - tStart) / 1000.0).toFixed(3)} sec`));
@@ -464,6 +470,7 @@ export namespace Dnatcofication {
                 naval: mappedNaval,
                 rscc: [],
                 nucleotideCounts,
+                assemblyMapping,
             };
 
             const tEnd2 = performance.now();

@@ -30,9 +30,11 @@ import {
   InvalidStepId,
   InvalidResidue,
   StructureSelection,
+  CifResidue,
 } from "../../util/structure-selection";
 import { GlobalConfig } from "../../global-config";
 import { Filters } from "viewer-filters";
+import { AssemblyMapper } from "../../dnatco/assembly-mapper";
 
 // We are not referencing these assets anywhere in the code, we just need to pull them in
 import "assets/molstar.js";
@@ -340,6 +342,50 @@ export function MainScreen(props: {
     []
   );
 
+  const switchToAssemblyIfNeeded = async (stepIds: number[], basePairIds: number[], residues?: CifResidue[]) => {
+    const mapping = props.dnatcofication.data.assemblyMapping;
+    if (!mapping) return;
+
+    // Determine which assembly to switch to based on the selected steps/pairs/residues
+    let targetAssemblyId: string | null = null;
+
+    // Check steps first
+    if (stepIds.length > 0) {
+      targetAssemblyId = AssemblyMapper.getAssemblyForStep(mapping, props.dnatcofication, stepIds[0]);
+    }
+
+    // If no assembly found from steps, check base pairs
+    if (!targetAssemblyId && basePairIds.length > 0) {
+      targetAssemblyId = AssemblyMapper.getAssemblyForBasePair(mapping, props.dnatcofication, basePairIds[0]);
+    }
+
+    // If no assembly found from steps/pairs, check residues
+    if (!targetAssemblyId && residues && residues.length > 0) {
+      // Get the auth chain ID for this residue
+      // modelNum is 1-indexed, but models array is 0-indexed
+      const modelIndex = residues[0].modelNum - 1;
+      const model = props.dnatcofication.data.structures[0].models[modelIndex];
+      if (model) {
+        const chain = model.chains.find(c => c.name === residues[0].chain);
+        if (chain) {
+          targetAssemblyId = AssemblyMapper.getAssemblyForChain(mapping, chain.authName);
+        }
+      }
+    }
+
+    // Switch to the target assembly if found and different from current
+    if (targetAssemblyId) {
+      const currentAssemblies = props.viewerInterop.api.query('active-assemblies');
+
+      // Only switch if the target assembly is not already active
+      if (!currentAssemblies.includes(targetAssemblyId)) {
+        await props.viewerInterop.api.command(
+          ViewerApi.Commands.SwitchAssemblies([targetAssemblyId])
+        );
+      }
+    }
+  };
+
   const changeSelection = async (
     pieces: SelectedPieces,
     displayer: SelectionDisplayer
@@ -352,6 +398,10 @@ export function MainScreen(props: {
     structureSelection.residues = [...pieces.residues];
     structureSelection.atoms = [...pieces.atoms];
     structureSelection.basePairs = [...pieces.basePairs];
+
+    // Switch assembly if needed based on selected steps/pairs/residues
+    // This must complete before we try to select structures
+    await switchToAssemblyIfNeeded(pieces.steps, pieces.basePairs, pieces.residues);
 
     await displayer(
       pieces,
@@ -367,6 +417,31 @@ export function MainScreen(props: {
     await props.viewerInterop.api.command(
       ViewerApi.Commands.DeselectStructures()
     );
+
+    // Switch assembly if needed before applying the chain filter
+    if (chain !== InvalidChain) {
+      const mapping = props.dnatcofication.data.assemblyMapping;
+      if (mapping) {
+        const model =
+          props.dnatcofication.data.structures[0].models[
+            structureSelection.modelIndex === InvalidModelIndex
+              ? 0
+              : structureSelection.modelIndex
+          ];
+        const authChainId = model.chains.find((x) => x.name === chain)?.authName;
+        if (authChainId) {
+          const targetAssemblyId = AssemblyMapper.getAssemblyForChain(mapping, authChainId);
+          if (targetAssemblyId) {
+            const currentAssemblies = props.viewerInterop.api.query('active-assemblies');
+            if (!currentAssemblies.includes(targetAssemblyId)) {
+              await props.viewerInterop.api.command(
+                ViewerApi.Commands.SwitchAssemblies([targetAssemblyId])
+              );
+            }
+          }
+        }
+      }
+    }
 
     if (chain === InvalidChain)
       props.viewerInterop.api.command(
@@ -594,10 +669,11 @@ export function MainScreen(props: {
     );
 
     subs.push(
-      props.outsideControl.selectResidue.subscribe(({ residue, bond, angle }) => {
+      props.outsideControl.selectResidue.subscribe(async ({ residue, bond, angle }) => {
         // Navigate to angles-lengths view if not already there
         const currentMode = locationToDnatcoMode(navPath(window.location));
-        if (currentMode.viewId !== 'angles-lengths') {
+        const needsNavigation = currentMode.viewId !== 'angles-lengths';
+        if (needsNavigation) {
           navigate('/app/dnatco/validation/angles-lengths');
         }
 
@@ -622,20 +698,21 @@ export function MainScreen(props: {
           [],
           props.dnatcofication
         );
-        changeSelection(pieces, view.selectionDisplayer);
+        await changeSelection(pieces, view.selectionDisplayer);
 
         // Emit bond/angle window opening events after selection completes
-        // Use requestAnimationFrame to ensure React has processed the selection change
-        if (bond) {
-          requestAnimationFrame(() => {
+        const emitEvents = () => {
+          if (bond) {
             props.outsideControl.openBondWindow.next({ residue, bondSpec: bond });
-          });
-        }
-        if (angle) {
-          requestAnimationFrame(() => {
+          }
+          if (angle) {
             props.outsideControl.openAngleWindow.next({ residue, angleSpec: angle });
-          });
-        }
+          }
+        };
+
+        // Always use a delay to ensure the component has fully rendered
+        // and all ResidueBlock refs are set up
+        setTimeout(emitEvents, 200);
       })
     );
 

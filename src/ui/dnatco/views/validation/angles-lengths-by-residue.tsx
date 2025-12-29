@@ -636,9 +636,30 @@ class ResidueDetails extends React.Component<
       }
 
       if (cellRef?.current) {
+        // Capture the cell element before requestAnimationFrame to avoid closure issues
+        const cell = cellRef.current;
+
         // Use requestAnimationFrame to ensure DOM is ready
         requestAnimationFrame(() => {
-          cellRef.current?.click();
+          // Get the bounding rect to calculate proper page coordinates
+          const rect = cell.getBoundingClientRect();
+          const pageX = rect.left + rect.width / 2;
+          const pageY = rect.top + rect.height / 2;
+
+          // Create and dispatch a synthetic mouse event with proper coordinates
+          const clickEvent = new MouseEvent('click', {
+            bubbles: true,
+            cancelable: true,
+            view: window,
+            clientX: pageX,
+            clientY: pageY,
+          });
+
+          // Set pageX and pageY (they're readonly on MouseEvent, but we can create a custom object)
+          Object.defineProperty(clickEvent, 'pageX', { value: pageX });
+          Object.defineProperty(clickEvent, 'pageY', { value: pageY });
+
+          cell.dispatchEvent(clickEvent);
         });
       }
     }
@@ -659,9 +680,30 @@ class ResidueDetails extends React.Component<
       }
 
       if (cellRef?.current) {
+        // Capture the cell element before requestAnimationFrame to avoid closure issues
+        const cell = cellRef.current;
+
         // Use requestAnimationFrame to ensure DOM is ready
         requestAnimationFrame(() => {
-          cellRef.current?.click();
+          // Get the bounding rect to calculate proper page coordinates
+          const rect = cell.getBoundingClientRect();
+          const pageX = rect.left + rect.width / 2;
+          const pageY = rect.top + rect.height / 2;
+
+          // Create and dispatch a synthetic mouse event with proper coordinates
+          const clickEvent = new MouseEvent('click', {
+            bubbles: true,
+            cancelable: true,
+            view: window,
+            clientX: pageX,
+            clientY: pageY,
+          });
+
+          // Set pageX and pageY (they're readonly on MouseEvent, but we can create a custom object)
+          Object.defineProperty(clickEvent, 'pageX', { value: pageX });
+          Object.defineProperty(clickEvent, 'pageY', { value: pageY });
+
+          cell.dispatchEvent(clickEvent);
         });
       }
     }
@@ -1509,17 +1551,16 @@ export class AnglesLengthsByResidue extends View<
       // Set state first so the ResidueDetails component will have the props when it mounts
       this.setState({ ...this.state, autoOpenBond: { residue, bondSpec } }, () => {
         // After state is set, expand the "Residues" section
-        // Use requestAnimationFrame to ensure React has processed the state update
         requestAnimationFrame(() => {
           this.residuesSectionCollapserRef.current?.collapseExpand("expand");
 
-          // Expand the specific residue block immediately after
-          // React will batch the renders efficiently
+          // Wait for the residue block to render and set its ref
+          const id = AnglesLengthsCommon.residueIdentifyingName(
+            AnglesLengthsCommon.structureIdentifyingName(this.props.dnatcofication),
+            residue
+          );
+
           requestAnimationFrame(() => {
-            const id = AnglesLengthsCommon.residueIdentifyingName(
-              AnglesLengthsCommon.structureIdentifyingName(this.props.dnatcofication),
-              residue
-            );
             const block = this.residueBlocksMapping.get(id);
             if (block?.current) {
               block.current.collapseExpand("expand");
@@ -1536,17 +1577,16 @@ export class AnglesLengthsByResidue extends View<
       // Set state first so the ResidueDetails component will have the props when it mounts
       this.setState({ ...this.state, autoOpenAngle: { residue, angleSpec } }, () => {
         // After state is set, expand the "Residues" section
-        // Use requestAnimationFrame to ensure React has processed the state update
         requestAnimationFrame(() => {
           this.residuesSectionCollapserRef.current?.collapseExpand("expand");
 
-          // Expand the specific residue block immediately after
-          // React will batch the renders efficiently
+          // Wait for the residue block to render and set its ref
+          const id = AnglesLengthsCommon.residueIdentifyingName(
+            AnglesLengthsCommon.structureIdentifyingName(this.props.dnatcofication),
+            residue
+          );
+
           requestAnimationFrame(() => {
-            const id = AnglesLengthsCommon.residueIdentifyingName(
-              AnglesLengthsCommon.structureIdentifyingName(this.props.dnatcofication),
-              residue
-            );
             const block = this.residueBlocksMapping.get(id);
             if (block?.current) {
               block.current.collapseExpand("expand");
