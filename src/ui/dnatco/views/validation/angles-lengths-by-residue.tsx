@@ -26,6 +26,7 @@ import { SpinBox } from "../../../common/spin-box";
 import { Window } from "../../../common/window";
 import { MagnifyingGlassImg, TriangleDownImg } from "../../../../assets/images";
 import { ALM } from "../../../../dnatco/alm";
+import { AssemblyMapper } from "../../../../dnatco/assembly-mapper";
 import { Dnatcofication } from "../../../../dnatco/dnatcofication";
 import {
   AnglesLengths as DAnglesLengths,
@@ -304,7 +305,7 @@ function BondAngleDetails(props: {
   React.useLayoutEffect(() => {
     const cue = cueRef.current;
     if (cue && cueHeight === 0) setCueHeight(cue.clientHeight);
-  });
+  }, []);
 
   return (
     <>
@@ -334,6 +335,7 @@ function BondAngleDetails(props: {
               navalRankingClass={nrankCls}
               nearestReferenceLower={DAnglesLengths.nearestAngleReferenceLower(binIndex, props.residue.compound, props.bondAngle.triplet)}
               nearestReferenceUpper={DAnglesLengths.nearestAngleReferenceUpper(binIndex, props.residue.compound, props.bondAngle.triplet)}
+              bondOrAngleAtoms={props.bondAngle.triplet}
               xTitle={"Angle (\u00B0)"}
               yTitle="Prob. (%)"
               xTransform={(x) => M.r2d(x)}
@@ -446,7 +448,7 @@ function BondLengthDetails(props: {
   React.useLayoutEffect(() => {
     const cue = cueRef.current;
     if (cue && cueHeight === 0) setCueHeight(cue.clientHeight);
-  });
+  }, []);
 
   return (
     <>
@@ -479,6 +481,7 @@ function BondLengthDetails(props: {
               navalRankingClass={nrankCls}
               nearestReferenceLower={DAnglesLengths.nearestLengthReferenceLower(binIndex, props.residue.compound, props.bondLength.pair)}
               nearestReferenceUpper={DAnglesLengths.nearestLengthReferenceUpper(binIndex, props.residue.compound, props.bondLength.pair)}
+              bondOrAngleAtoms={props.bondLength.pair}
               xTitle={"Length (\u00C5)"}
               yTitle="Prob. (%)"
               yTransform={(y) => y * 100}
@@ -913,6 +916,22 @@ class Residue extends React.Component<
           if (change === "expanded") {
             // First collapse the previously expanded row (single selection mode)
             this.props.onExpand(id);
+
+            // Check if we need to switch assemblies
+            const mapping = this.props.d.data.assemblyMapping;
+            if (mapping) {
+              const targetAssemblyId = AssemblyMapper.getAssemblyForChain(mapping, this.props.residue.authChain);
+              if (targetAssemblyId) {
+                const currentAssemblies = this.props.vi.api.query('active-assemblies');
+                if (currentAssemblies && !currentAssemblies.includes(targetAssemblyId)) {
+                  // Switch to the assembly containing this residue
+                  this.props.vi.api.command(
+                    ViewerApi.Commands.SwitchAssemblies([targetAssemblyId])
+                  );
+                }
+              }
+            }
+
             if (!isSelected) {
               AnglesLengthsCommon.selectResidue(
                 this.props.residue,

@@ -34,7 +34,7 @@ function renderTextWithLinks(text: string): ReactNode {
                 <a
                     key={key++}
                     href={linkUrl}
-                    className="rdo-link underline cursor-pointer"
+                    className="rdo-link"
                     onClick={(e) => {
                         e.preventDefault();
                         const el = document.getElementById(targetId);
@@ -54,7 +54,7 @@ function renderTextWithLinks(text: string): ReactNode {
                     href={linkUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="rdo-link underline cursor-pointer"
+                    className="rdo-link"
                 >
                     {linkText}
                 </a>
@@ -159,13 +159,13 @@ function Downloads() {
                     </div>
                     <div className='w-[75%] mb-2'>
                         <div className='text-16px text-justify'>
-                            Table of NtC conformers - annotation and frequency of occurrence (<a className='underline cursor-pointer' href={ConformersFile} download='conformers.csv' target='_blank'>csv file</a>)
+                            Table of NtC conformers - annotation and frequency of occurrence (<a className='rdo-link' href={ConformersFile} download='conformers.csv' target='_blank'>csv file</a>)
                         </div>
                         <div className='w-[75%] text-16px mb-2 text-justify'>
-                            Definition of the NtC conformers (<Link className='underline cursor-pointer' url='/coords/NtC_averages.csv'>torsion averages</Link> and <Link className='underline cursor-pointer' url='/coords/NtC_esd.csv'>esd values</Link>)
+                            Definition of the NtC conformers (<Link className='rdo-link' url='/coords/NtC_averages.csv'>torsion averages</Link> and <Link className='rdo-link' url='/coords/NtC_esd.csv'>esd values</Link>)
                         </div>
                         <div className='w-[75%] text-16px mb-2 text-justify'>
-                            <a className='underline cursor-pointer' href='/coords/NtC_representative.zip'>Representative structures</a> of the NtC conformers (cartesian coords)
+                            <a className='rdo-link' href='/coords/NtC_representative.zip'>Representative structures</a> of the NtC conformers (cartesian coords)
                         </div>
                     </div>
                 </div>
@@ -177,10 +177,10 @@ function Downloads() {
                     </div>
                     <div className='w-[75%] mb-2'>
                         <div className='text-16px text-justify'>
-                            Uploading PDB or mmCIF formatted file using <a className='underline cursor-pointer' href='/scripts/POST_coords2dnatco.py'>python script</a>
+                            Uploading PDB or mmCIF formatted file using <a className='rdo-link' href='/scripts/POST_coords2dnatco.py'>python script</a>
                         </div>
                         <div className='w-[75%] text-16px mb-2 text-justify'>
-                            Assign a single step from <Link className='underline cursor-pointer' url='/scripts/POST_json_coords.py'>atomic coordinates</Link> or <Link className='underline cursor-pointer' url='/scripts/POST_json_torsions.py'>from torsions</Link>
+                            Assign a single step from <Link className='rdo-link' url='/scripts/POST_json_coords.py'>atomic coordinates</Link> or <Link className='rdo-link' url='/scripts/POST_json_torsions.py'>from torsions</Link>
                         </div>
                     </div>
                 </div>
@@ -192,19 +192,19 @@ function Downloads() {
                     </div>
                     <div className='w-[75%] mb-2'>
                         <div className='text-16px text-justify'>
-                            Definition of the unified DNA/RNA conformers: <a className='underline cursor-pointer' href='/papers/gkaa383.pdf'>Černý et al., NAR 48, 6367 (2020)</a>
+                            Definition of the unified DNA/RNA conformers: <a className='rdo-link' href='/papers/gkaa383.pdf'>Černý et al., NAR 48, 6367 (2020)</a>
                         </div>
                         <div className='w-[75%] text-16px mb-2 text-justify'>
-                            Description of DNATCO server version 3.2: <a className='underline cursor-pointer' href='/papers/ir5007.pdf'>Černý et al., Acta Cryst D 76, 805 (2020)</a>
+                            Description of DNATCO server version 3.2: <a className='rdo-link' href='/papers/ir5007.pdf'>Černý et al., Acta Cryst D 76, 805 (2020)</a>
                         </div>
                         <div className='w-[75%] text-16px mb-2 text-justify'>
-                            Definition of DNA conformers: <a className='underline cursor-pointer' href='/papers/rr5151.pdf'>Schneider et al., Acta Cryst D 74, 52 (2018)</a>
+                            Definition of DNA conformers: <a className='rdo-link' href='/papers/rr5151.pdf'>Schneider et al., Acta Cryst D 74, 52 (2018)</a>
                         </div>
                         <div className='w-[75%] text-16px mb-2 text-justify'>
-                            Example of application: <a className='underline cursor-pointer' href='/papers/genes-08-00278-v3.pdf'>Schneider et al., Genes 8, 278, (2017)</a>
+                            Example of application: <a className='rdo-link' href='/papers/genes-08-00278-v3.pdf'>Schneider et al., Genes 8, 278, (2017)</a>
                         </div>
                         <div className='w-[75%] text-16px mb-2 text-justify'>
-                            Description of DNATCO server version 2: <a className='underline cursor-pointer' href='/papers/gkw381.pdf'>Černý et al., NAR 44, W284 (2016)</a>
+                            Description of DNATCO server version 2: <a className='rdo-link' href='/papers/gkw381.pdf'>Černý et al., NAR 44, W284 (2016)</a>
                         </div>
                     </div>
                 </div>
@@ -352,7 +352,7 @@ function Help() {
                                                 <div className='mt-4 text-right'>
                                                     <a
                                                         href="#toc"
-                                                        className="rdo-link underline cursor-pointer text-14px"
+                                                        className="rdo-link text-14px"
                                                         onClick={(e) => {
                                                             e.preventDefault();
                                                             const el = document.getElementById('toc');
@@ -398,7 +398,7 @@ function Help() {
                             <div className='mt-4 text-right'>
                                 <a
                                     href="#toc"
-                                    className="rdo-link underline cursor-pointer text-14px"
+                                    className="rdo-link text-14px"
                                     onClick={(e) => {
                                         e.preventDefault();
                                         const el = document.getElementById('toc');
@@ -465,7 +465,7 @@ function Help() {
                                         <div key={sectionIdx} className='mb-1'>
                                             <a
                                                 href={`#${section.id}`}
-                                                className="rdo-link underline cursor-pointer text-15px"
+                                                className="rdo-link text-15px"
                                                 onClick={(e) => {
                                                     e.preventDefault();
                                                     const el = document.getElementById(section.id);
@@ -500,19 +500,19 @@ function HowToCite() {
     return (
         <div className='mt-7'>
             <div>
-                The NtC alphabet - a unified dinucleotide alphabet of both RNA and DNA conformations is described in <a className='underline cursor-pointer' href='/papers/gkaa383.pdf' target='_blank'>Černý et al., NAR 48, 6367 (2020)</a>
+                The NtC alphabet - a unified dinucleotide alphabet of both RNA and DNA conformations is described in <a className='rdo-link' href='/papers/gkaa383.pdf' target='_blank'>Černý et al., NAR 48, 6367 (2020)</a>
             </div>
             <div>
-                The web service (version 3.2) is described in <a className='underline cursor-pointer' href='/papers/rr5151.pdf' target='_blank'>Černý et al., Acta Cryst D 76, 805 (2020)</a>
+                The web service (version 3.2) is described in <a className='rdo-link' href='/papers/rr5151.pdf' target='_blank'>Černý et al., Acta Cryst D 76, 805 (2020)</a>
             </div>
             <div>
-                The DNA-based conformers and the way they were identified is described in <a className='underline cursor-pointer' href='/papers/rr5151.pdf'>Schneider et al., Acta Cryst D 74, 52 (2018)</a>
+                The DNA-based conformers and the way they were identified is described in <a className='rdo-link' href='/papers/rr5151.pdf'>Schneider et al., Acta Cryst D 74, 52 (2018)</a>
             </div>
             <div>
-                For an example application of the DNA Structural Alphabet see <a className='underline cursor-pointer' href='/papers/genes-08-00278-v3.pdf'>Schneider et al., Genes 8, 278, (2017)</a>
+                For an example application of the DNA Structural Alphabet see <a className='rdo-link' href='/papers/genes-08-00278-v3.pdf'>Schneider et al., Genes 8, 278, (2017)</a>
             </div>
             <div>
-                The web service (version 2) is described in <a className='underline cursor-pointer' href='/papers/gkw381.pdf'>Černý et al., NAR 44, W284 (2016)</a>
+                The web service (version 2) is described in <a className='rdo-link' href='/papers/gkw381.pdf'>Černý et al., NAR 44, W284 (2016)</a>
             </div>
         </div>
     );
@@ -527,7 +527,7 @@ function VersionHistory() {
             <div className='flex border-t-secondary-second border-t mt-4 pt-3 mb-8'>
                 <div className='w-[25%]'>
                     <h3 className=' font-700 text-18px mb-2 uppercase'>
-                        <a href='' target='_blank'>
+                        <a href='' target='_blank' className='rdo-link'>
                             v5.0
                         </a>
                     </h3>
@@ -546,10 +546,10 @@ function VersionHistory() {
                         Introducing the 'NtC tube', a new graphical representation of nucleic acids.
                     </div>
                     <div className=' text-16px text-justify'>
-                        Providing direct links to specific structures, dinucleotide steps, base pairs, and residues with optional bond/angle validation (<a className='underline cursor-pointer' href='#url-parameters' onClick={(e) => { e.preventDefault(); navigate({ pathname: '/app/about/help', hash: 'url-parameters' }); }}>more details here</a>).
+                        Providing direct links to specific structures, dinucleotide steps, base pairs, and residues with optional bond/angle validation (<a className='rdo-link' href='#url-parameters' onClick={(e) => { e.preventDefault(); navigate({ pathname: '/app/about/help', hash: 'url-parameters' }); }}>more details here</a>).
                     </div>
                     <div className=' text-16px text-justify'>
-                        Complete source code for DNATCO and its submodules/dependencies is now available at <a className='underline cursor-pointer' href='https://github.com/cernylab/dnatco' target='_blank'>https://github.com/cernylab/dnatco</a>.
+                        Complete source code for DNATCO and its submodules/dependencies is now available at <a className='rdo-link' href='https://github.com/cernylab/dnatco' target='_blank'>https://github.com/cernylab/dnatco</a>.
                     </div>
                 </div>
             </div>
@@ -557,7 +557,7 @@ function VersionHistory() {
             <div className='flex border-t-secondary-second border-t mt-4 pt-3 mb-8'>
                 <div className='w-[25%]'>
                     <h3 className=' font-700 text-18px mb-2 uppercase'>
-                        <a href='/v4.1' target='_blank'>
+                        <a href='/v4.1' target='_blank' className='rdo-link'>
                             v4.1
                         </a>
                     </h3>
@@ -567,7 +567,7 @@ function VersionHistory() {
                         Mol* viewer was implemented instead of JSmol.
                     </div>
                     <div className=' text-16px text-justify '>
-                        <a className='underline cursor-pointer' href='/v4.1' target='_blank'>/v4.1</a>
+                        <a className='rdo-link' href='/v4.1' target='_blank'>/v4.1</a>
                     </div>
                 </div>
             </div>
@@ -575,22 +575,22 @@ function VersionHistory() {
             <div className='flex border-t-secondary-second border-t mt-4 pt-3 mb-8'>
                 <div className='w-[25%]'>
                     <h3 className=' font-700 text-18px mb-2 uppercase'>
-                        <a href='/v3.2' target='_blank'>
+                        <a href='/v3.2' target='_blank' className='rdo-link'>
                             v3.2
                         </a>
                     </h3>
                 </div>
                 <div className='w-[75%] mb-2'>
                     <div className=' text-16px text-justify'>
-                        The version described in <a className='underline cursor-pointer' href='/papers/ir5007.pdf' target='_blank'>Černý et al., Acta Cryst D 76, 805 (2020)</a>.
+                        The version described in <a className='rdo-link' href='/papers/ir5007.pdf' target='_blank'>Černý et al., Acta Cryst D 76, 805 (2020)</a>.
                     </div>
                     <div className=' text-16px text-justify '>
                         Updated the universal set of 96+1 conformers for both DNA and RNA structures.
                     </div>
                     <div className=' text-16px text-justify'>
-                        Restraints for <a className='underline cursor-pointer' href='https://www.phenix-online.org/' target='_blank'>Phenix</a>, 
-                        <a className='underline cursor-pointer' href='https://www2.mrc-lmb.cam.ac.uk/groups/murshudov/content/refmac/refmac.html' target='_blank'>REFMAC</a>,
-                        and <a className='underline cursor-pointer' href='https://github.com/samuelflores/MMB' target='_blank'>MMB</a> can be generated.
+                        Restraints for <a className='rdo-link' href='https://www.phenix-online.org/' target='_blank'>Phenix</a>, 
+                        <a className='rdo-link' href='https://www2.mrc-lmb.cam.ac.uk/groups/murshudov/content/refmac/refmac.html' target='_blank'>REFMAC</a>,
+                        and <a className='rdo-link' href='https://github.com/samuelflores/MMB' target='_blank'>MMB</a> can be generated.
                     </div>
                     <div className=' text-16px text-justify'>
                         Support for CCP4/MRC maps was added.
@@ -605,7 +605,7 @@ function VersionHistory() {
                         Output of assignment can be downloaded as a JSON file.
                     </div>
                     <div className=' text-16px text-justify '>
-                        <a className='underline cursor-pointer' href='/v3.2' target='_blank'>/v3.2</a>
+                        <a className='rdo-link' href='/v3.2' target='_blank'>/v3.2</a>
                     </div>
                 </div>
             </div>
@@ -645,7 +645,7 @@ function VersionHistory() {
             <div className='flex border-t-secondary-second border-t mt-4 pt-3 mb-8'>
                 <div className='w-[25%]'>
                     <h3 className=' font-700 text-18px mb-2 uppercase'>
-                        <a href='/v2.3'target='_blank'>
+                        <a href='/v2.3' target='_blank' className='rdo-link'>
                             v2.3
                         </a>
                     </h3>
@@ -661,14 +661,14 @@ function VersionHistory() {
                         Tetrahedron representation of the NtC conformer introduced.
                     </div>
                     <div className=' text-16px text-justify '>
-                        <a className='underline cursor-pointer' href='/v2.3' target='_blank'>/v2.3</a>
+                        <a className='rdo-link' href='/v2.3' target='_blank'>/v2.3</a>
                     </div>
                 </div>
             </div>
             <div className='flex border-t-secondary-second border-t mt-4 pt-3 mb-8'>
                 <div className='w-[25%]'>
                     <h3 className=' font-700 text-18px mb-2 uppercase'>
-                        <a href='/v2.2' target='_blank'>
+                        <a href='/v2.2' target='_blank' className='rdo-link'>
                             v2.2
                         </a>
                     </h3>
@@ -681,44 +681,44 @@ function VersionHistory() {
                         Reporting the 'most similar' conformation for non-assigned (NANT) steps.
                     </div>
                     <div className=' text-16px text-justify '>
-                        <a className='underline cursor-pointer' href='/v2.2' target='_blank'>/v2.2</a>
+                        <a className='rdo-link' href='/v2.2' target='_blank'>/v2.2</a>
                     </div>
                 </div>
             </div>
             <div className='flex border-t-secondary-second border-t mt-4 pt-3 mb-8'>
                 <div className='w-[25%]'>
                     <h3 className=' font-700 text-18px mb-2 uppercase'>
-                        <a href='/v2' target='_blank'>
+                        <a href='/v2' target='_blank' className='rdo-link'>
                             v2
                         </a>
                     </h3>
                 </div>
                 <div className='w-[75%] mb-2'>
                     <div className=' text-16px text-justify'>
-                        The version described in <a className='underline cursor-pointer' href='/papers/gkw381.pdf' target='_blank'>Černý et al., NAR 44, W284 (2016)</a>.
+                        The version described in <a className='rdo-link' href='/papers/gkw381.pdf' target='_blank'>Černý et al., NAR 44, W284 (2016)</a>.
                     </div>
                     <div className=' text-16px text-justify '>
                         Reporting the 'most similar' conformation for non-assigned (NANT) steps.
                     </div>
                     <div className=' text-16px text-justify '>
-                        <a className='underline cursor-pointer' href='/v2' target='_blank'>/v2</a>
+                        <a className='rdo-link' href='/v2' target='_blank'>/v2</a>
                     </div>
                 </div>
             </div>
             <div className='flex border-t-secondary-second border-t mt-4 pt-3 mb-8'>
                 <div className='w-[25%]'>
                     <h3 className=' font-700 text-18px mb-2 uppercase'>
-                        <a href='/v1' target='_blank'>
+                        <a href='/v1' target='_blank' className='rdo-link'>
                             v1
                         </a>
                     </h3>
                 </div>
                 <div className='w-[75%] mb-2'>
                     <div className=' text-16px text-justify'>
-                        The initial implementation based on <a className='underline cursor-pointer' href='/papers/gkn260.pdf' target='_blank'>Svozil et al., NAR 36, 3690 (2008)</a>.
+                        The initial implementation based on <a className='rdo-link' href='/papers/gkn260.pdf' target='_blank'>Svozil et al., NAR 36, 3690 (2008)</a>.
                     </div>
                     <div className=' text-16px text-justify '>
-                        <a className='underline cursor-pointer' href='/v1'>/v1</a>
+                        <a className='rdo-link' href='/v1'>/v1</a>
                     </div>
                 </div>
             </div>

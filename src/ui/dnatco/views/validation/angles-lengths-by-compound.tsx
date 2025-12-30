@@ -534,7 +534,7 @@ function AngleMetricDetails(props: {
                         navalRankingClass={nrankCls}
                         nearestReferenceLower={DAnglesLengths.nearestAngleReferenceLower(binIndex, item.residue.compound, item.angle.triplet)}
                         nearestReferenceUpper={DAnglesLengths.nearestAngleReferenceLower(binIndex, item.residue.compound, item.angle.triplet)}
-
+                        bondOrAngleAtoms={item.angle.triplet}
                         xTitle={"Angle (\u00B0)"}
                         yTitle="Prob. (%)"
                         yTransform={(y) => y * 100}
@@ -743,6 +743,7 @@ function LengthMetricDetails(props: {
                         navalPreferredUpper={ni.csdPreferredRight}
                         nearestReferenceLower={DAnglesLengths.nearestLengthReferenceLower(binIndex, item.residue.compound, item.length.pair)}
                         nearestReferenceUpper={DAnglesLengths.nearestLengthReferenceLower(binIndex, item.residue.compound, item.length.pair)}
+                        bondOrAngleAtoms={item.length.pair}
                         navalRanking={nrank}
                         navalRankingClass={nrankCls}
                         xTitle={"Length\u00A0(\u00C5)"}

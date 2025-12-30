@@ -902,3 +902,12 @@ a.rdo-imglink:visited {
   top: 0;
   left: 0;
 }
+
+.rdo-link {
+  color: #4a9eff;
+  text-decoration: underline;
+}
+
+.rdo-link:hover {
+  color: #2b7fd9;
+}

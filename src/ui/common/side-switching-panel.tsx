@@ -90,12 +90,21 @@ export function SideSwitchingPanel<K extends string>(props: {
     selectedItemId: K,
     onSwitched: (id: K) => void,
 }) {
-    const [compact, setCompact] = useState(window.innerWidth < MinimumWidthForStandardPanel);
+    const [compact, setCompact] = useState(false);
     const [permaCompact, setPermaCompact] = useState(false);
     const [hamburgerHovered, setHamburberHovered] = useState(false);
     const [hamburgerOpen, setHamburberOpen] = useState(false);
 
     useEffect(() => {
+        const updateCompact = () => setCompact(window.innerWidth < MinimumWidthForStandardPanel);
+
+        // Wait for page to be fully loaded before reading layout properties
+        if (document.readyState === 'complete') {
+            updateCompact();
+        } else {
+            window.addEventListener('load', updateCompact, { once: true });
+        }
+
         const compactToggler = () => {
             setCompact(window.innerWidth < MinimumWidthForStandardPanel);
         };
@@ -104,8 +113,9 @@ export function SideSwitchingPanel<K extends string>(props: {
 
         return () => {
             removeEventListener('resize', compactToggler);
+            window.removeEventListener('load', updateCompact);
         };
-    });
+    }, []);
 
     useEffect(() => {
         if (props.selectedItemId === 'hide' && permaCompact) {

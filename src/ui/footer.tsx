@@ -11,12 +11,24 @@ const Footer:React.FC = () => {
     // Check if we're in a DNATCO analysis view where we want to preserve Mol* state
     const isInAnalysisView = location.pathname.match(/^\/app\/dnatco\/(annotation|validation|refinement|downloads)/);
 
-    const [compact, setCompact] = useState(window.innerWidth <1024);
+    const [compact, setCompact] = useState(false);
     useEffect(() => {
-        const handleResize = () => setCompact(window.innerWidth < 1024);
+        const updateCompact = () => setCompact(window.innerWidth < 1024);
 
+        // Wait for page to be fully loaded before reading layout properties
+        if (document.readyState === 'complete') {
+            updateCompact();
+        } else {
+            window.addEventListener('load', updateCompact, { once: true });
+        }
+
+        const handleResize = () => setCompact(window.innerWidth < 1024);
         window.addEventListener('resize', handleResize);
-        return () => window.removeEventListener('resize', handleResize);
+
+        return () => {
+            window.removeEventListener('resize', handleResize);
+            window.removeEventListener('load', updateCompact);
+        };
     }, []);
 
     return (

@@ -710,9 +710,8 @@ export function MainScreen(props: {
           }
         };
 
-        // Always use a delay to ensure the component has fully rendered
-        // and all ResidueBlock refs are set up
-        setTimeout(emitEvents, 200);
+        // Use requestAnimationFrame to wait for component to render and refs to be set
+        requestAnimationFrame(emitEvents);
       })
     );
 

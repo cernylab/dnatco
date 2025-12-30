@@ -231,6 +231,15 @@ export function NavigationBar<TK extends string>(props: {
     const [compact, setCompact] = React.useState(false);
 
     React.useEffect(() => {
+        const updateCompact = () => setCompact(window.innerWidth < MinimumWidthForStandardBar);
+
+        // Wait for page to be fully loaded before reading layout properties
+        if (document.readyState === 'complete') {
+            updateCompact();
+        } else {
+            window.addEventListener('load', updateCompact, { once: true });
+        }
+
         const compactToggler = () => {
             setCompact(window.innerWidth < MinimumWidthForStandardBar);
         };
@@ -239,12 +248,9 @@ export function NavigationBar<TK extends string>(props: {
 
         return () => {
             removeEventListener('resize', compactToggler);
+            window.removeEventListener('load', updateCompact);
         };
-    });
-
-    React.useLayoutEffect(() => {
-        setCompact(window.innerWidth < MinimumWidthForStandardBar);
-    });
+    }, []);
 
     return (
         <div>

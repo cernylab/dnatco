@@ -509,6 +509,7 @@ export type PGroupSummaryProps = {
   navalRankingClass: NavalRankingClass;
   nearestReferenceLower: Reference | undefined;
   nearestReferenceUpper: Reference | undefined;
+  bondOrAngleAtoms?: Pair | Triplet;
   xTitle: string;
   yTitle: string;
   suffix?: string;
@@ -539,6 +540,30 @@ export class PGroupSummary extends React.Component<
     };
   }
 
+  private buildReferenceUrl(ref: Reference | undefined): string | undefined {
+    if (!ref || !this.props.bondOrAngleAtoms) return undefined;
+
+    const pdbId = ref[1].toLowerCase();
+    const chain = ref[3];
+    const residueType = ref[4];
+    const seqId = ref[6];
+    const insCode = ref[7];
+
+    // Build residue identifier: e.g., "1q96_B_G_3" or "1q96_B_G_3^A" (if insCode exists)
+    const residueId = insCode
+      ? `${pdbId}_${chain}_${residueType}_${seqId}^${insCode}`
+      : `${pdbId}_${chain}_${residueType}_${seqId}`;
+
+    // Build bond/angle parameter
+    const atoms = this.props.bondOrAngleAtoms;
+    const atomsParam = atoms.join('_');
+
+    // Determine if it's a bond (2 atoms) or angle (3 atoms)
+    const paramName = atoms.length === 2 ? 'bond' : 'angle';
+
+    return `/?cifcode=${pdbId}&residue=${residueId}&${paramName}=${atomsParam}`;
+  }
+
   private renderSummary() {
     const proscoColor = colorToHex(this.props.pGroup
       ? DAnglesLengths.pGroupColor(this.props.pGroup.pGroup)
@@ -548,6 +573,40 @@ export class PGroupSummary extends React.Component<
     const nearestUpper = this.props.nearestReferenceUpper;
 
     const pGroupCat = this.props.pGroup?.pGroup;
+
+    const lowerUrl = this.buildReferenceUrl(nearestLower);
+    const upperUrl = this.buildReferenceUrl(nearestUpper);
+
+    const renderReferenceLink = (ref: Reference | undefined, url: string | undefined, icon: string) => {
+      if (url && ref) {
+        return (
+          <>
+            <div>{icon}</div>
+            <a
+              href={url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="rdo-link"
+              style={{ display: 'contents' }}
+            >
+              <div>{ref[1].toLowerCase()}</div>
+              <div>{ref[3]}</div>
+              <div>{ref[4]}</div>
+              <div>{ref[6]}</div>
+            </a>
+          </>
+        );
+      }
+      return (
+        <>
+          <div>{icon}</div>
+          <div>{ref?.[1].toLowerCase() ?? ''}</div>
+          <div>{ref?.[3] ?? ''}</div>
+          <div>{ref?.[4] ?? ''}</div>
+          <div>{ref?.[6] ?? ''}</div>
+        </>
+      );
+    };
 
     return (
       <div className="flex flex-row gap-4 font-bold">
@@ -576,17 +635,8 @@ export class PGroupSummary extends React.Component<
         <div className="flex flex-row gap-2">
             <div>RS18</div>
             <div className="gap-2" style={{ display: 'grid', gridTemplateColumns: 'auto auto auto auto auto' }}>
-                <div>{LeftwardsArrowWithBar}</div>
-                <div>{nearestLower?.[1].toUpperCase() ?? ''}</div>
-                <div>{nearestLower?.[3] ?? ''}</div>
-                <div>{nearestLower?.[4] ?? ''}</div>
-                <div>{nearestLower?.[6] ?? ''}</div>
-
-                <div>{RightwardsArrowWithBar}</div>
-                <div>{nearestUpper?.[1].toUpperCase() ?? ''}</div>
-                <div>{nearestUpper?.[3] ?? ''}</div>
-                <div>{nearestUpper?.[4] ?? ''}</div>
-                <div>{nearestUpper?.[6] ?? ''}</div>
+                {renderReferenceLink(nearestLower, lowerUrl, LeftwardsArrowWithBar)}
+                {renderReferenceLink(nearestUpper, upperUrl, RightwardsArrowWithBar)}
             </div>
         </div>
       </div>
