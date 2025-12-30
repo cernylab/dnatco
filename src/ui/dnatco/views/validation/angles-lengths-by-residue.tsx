@@ -2,6 +2,7 @@ import type { StandardLonghandProperties } from "csstype";
 import React from "react";
 import { Subject, Subscription } from "rxjs";
 import {
+  AnglesLengthsBar,
   AngstromUnit,
   AnglesLengthsCommon,
   ColorIsDarkThreshold,
@@ -10,6 +11,7 @@ import {
   PGroupSummary,
   Prosco,
   ResidueName,
+  SubstructureSummary,
   WindowsTracker,
   measuredItemColor,
 } from "./angles-lengths-common";
@@ -23,8 +25,9 @@ import { ComboBox } from "../../../common/combo-box";
 import { NamedList, NamedListItem } from "../../../common/named-list";
 import { IconButton } from "../../../common/push-button";
 import { SpinBox } from "../../../common/spin-box";
+import { Tooltip } from "../../../common/tooltip";
 import { Window } from "../../../common/window";
-import { MagnifyingGlassImg, TriangleDownImg } from "../../../../assets/images";
+import { MagnifyingGlassImg, tooltipImg, TriangleDownImg } from "../../../../assets/images";
 import { ALM } from "../../../../dnatco/alm";
 import { AssemblyMapper } from "../../../../dnatco/assembly-mapper";
 import { Dnatcofication } from "../../../../dnatco/dnatcofication";
@@ -726,22 +729,31 @@ class ResidueDetails extends React.Component<
           {this.props.residueName}
         </FloatingCue>
 
-        <table className="rdo-angles-lengths w-full">
-          <tbody>
-            <tr>
-              <td colSpan={5} className="font-700 text-center">
-                Bond lengths
-              </td>
-            </tr>
-            {makeLengthDetails(this.props, this.bondCellRefs)}
-            <tr>
-              <td colSpan={5} className="font-700 text-center">
-                Bond angles
-              </td>
-            </tr>
-            {makeAngleDetails(this.props, this.angleCellRefs)}
-          </tbody>
-        </table>
+        <div className="flex flex-row gap-4">
+          {/* Left side - Bond lengths (50%) */}
+          <table className="rdo-angles-lengths" style={{ width: '50%' }}>
+            <tbody>
+              <tr>
+                <td colSpan={5} className="font-700 text-center">
+                  Bond lengths
+                </td>
+              </tr>
+              {makeLengthDetails(this.props, this.bondCellRefs)}
+            </tbody>
+          </table>
+
+          {/* Right side - Bond angles (50%) */}
+          <table className="rdo-angles-lengths" style={{ width: '50%' }}>
+            <tbody>
+              <tr>
+                <td colSpan={5} className="font-700 text-center">
+                  Bond angles
+                </td>
+              </tr>
+              {makeAngleDetails(this.props, this.angleCellRefs)}
+            </tbody>
+          </table>
+        </div>
       </div>
     );
   }
@@ -814,8 +826,12 @@ function ResidueHeader(props: {
     }
   }, [props.counts]);
 
-    const captionColor = props.counts.kind === 'naval'
-        ? DAnglesLengths.navalRankingClassColor('allowed') : DAnglesLengths.pGroupColor('common');
+  // Reverse left side (lengths) so red is on the outside
+  const reversedLengthsCounts = {
+    exclusive: [...props.summary.lengths.exclusive].reverse(),
+    cumulative: [...props.summary.lengths.cumulative].reverse()
+  };
+  const reversedLengthsColors = [...props.colorsForStatsBar].reverse();
 
   return (
     <div
@@ -823,11 +839,6 @@ function ResidueHeader(props: {
       ref={tainerRef}
       id={props.residueIdentifyingName}
     >
-        <div className={
-            `${luminance(captionColor) < ColorIsDarkThreshold ?  "text-white" : "" } font-bold top-0 left-2 absolute z-1`}>
-        {props.caption}
-      </div>
-
       <OverallStatsBar
         name={AnglesLengthsCommon.residueIdentifyingName(
           props.structureName,
@@ -836,32 +847,119 @@ function ResidueHeader(props: {
         residues={[props.residue]}
         stats={[props.stats]}
       >
-        <div className="flex flex-col h-20">
-          <div className="flex flex-1">
-            {AnglesLengthsCommon.renderSubstructureStats(
-              props.winTracker,
-              props.caption,
-              AnglesLengthsCommon.substructureBarCaption("L", lastLengthsColor),
-              props.summary.lengths,
-              props.counts.kind === 'naval'
-                ? { kind: 'naval', counts: props.counts.lengths }
-                : { kind: 'prosco', counts: props.counts.lengths },
-              props.colorsForStatsBar,
-              { right: "var(--h2-gap)" }
-            )}
+        <div className="flex flex-row h-10 items-center relative" style={{ width: '100%' }}>
+          {/* Left side - Lengths (50%, reversed so red is on outside) */}
+          <div className="h-full relative" style={{ width: '50%', display: 'flex' }}>
+            <div className="w-full h-full flex flex-row-reverse">
+              <AnglesLengthsBar
+                counts={reversedLengthsCounts}
+                colors={reversedLengthsColors}
+              />
+            </div>
+            <div
+              className="absolute z-20 flex flex-row items-center gap-1 p-1 cursor-pointer"
+              style={{
+                color: luminance(lastLengthsColor) < ColorIsDarkThreshold ? 'white' : 'black',
+                fontWeight: 'bold',
+                left: '50%',
+                transform: 'translateX(-50%)',
+                top: '50%',
+                marginTop: '-0.75rem'
+              }}
+              onClick={(ev) => {
+                ev.preventDefault();
+                ev.stopPropagation();
+                const hwnd = Window.create(
+                  <SubstructureSummary
+                    countsInGroups={
+                      props.counts.kind === 'naval'
+                        ? { kind: 'naval', counts: props.counts.lengths }
+                        : { kind: 'prosco', counts: props.counts.lengths }
+                    }
+                  />,
+                  props.caption,
+                  { x: ev.pageX, y: ev.pageY },
+                  (hwnd) => props.winTracker.remove(hwnd)
+                );
+                props.winTracker.add(hwnd);
+              }}
+            >
+              <div>L</div>
+              <Tooltip
+                tag={
+                  <div className="cursor-pointer">
+                    <img className="w-4" src={tooltipImg} />
+                  </div>
+                }
+                delayMsec={300}
+              >
+                Click to see details
+              </Tooltip>
+            </div>
           </div>
-          <div className="flex flex-1">
-            {AnglesLengthsCommon.renderSubstructureStats(
-              props.winTracker,
-              props.caption,
-              AnglesLengthsCommon.substructureBarCaption("A", lastAnglesColor),
-              props.summary.angles,
-              props.counts.kind === 'naval'
-                ? { kind: 'naval', counts: props.counts.angles }
-                : { kind: 'prosco', counts: props.counts.angles },
-              props.colorsForStatsBar,
-              { right: "var(--h2-gap)" }
-            )}
+
+          {/* Right side - Angles (50%, normal order so red is on outside) */}
+          <div className="h-full items-center relative" style={{ width: '50%', display: 'flex' }}>
+            <div className="w-full h-full flex">
+              <AnglesLengthsBar
+                counts={props.summary.angles}
+                colors={props.colorsForStatsBar}
+              />
+            </div>
+            <div
+              className="absolute z-20 flex flex-row items-center gap-1 p-1 cursor-pointer"
+              style={{
+                color: luminance(lastAnglesColor) < ColorIsDarkThreshold ? 'white' : 'black',
+                fontWeight: 'bold',
+                left: '50%',
+                transform: 'translateX(-50%)',
+                top: '50%',
+                marginTop: '-0.75rem'
+              }}
+              onClick={(ev) => {
+                ev.preventDefault();
+                ev.stopPropagation();
+                const hwnd = Window.create(
+                  <SubstructureSummary
+                    countsInGroups={
+                      props.counts.kind === 'naval'
+                        ? { kind: 'naval', counts: props.counts.angles }
+                        : { kind: 'prosco', counts: props.counts.angles }
+                    }
+                  />,
+                  props.caption,
+                  { x: ev.pageX, y: ev.pageY },
+                  (hwnd) => props.winTracker.remove(hwnd)
+                );
+                props.winTracker.add(hwnd);
+              }}
+            >
+              <Tooltip
+                tag={
+                  <div className="cursor-pointer">
+                    <img className="w-4" src={tooltipImg} />
+                  </div>
+                }
+                delayMsec={300}
+              >
+                Click to see details
+              </Tooltip>
+              <div>A</div>
+            </div>
+          </div>
+
+          {/* Center text spanning both regions */}
+          <div
+            className="absolute z-30 flex items-center justify-center"
+            style={{
+              left: '50%',
+              top: '50%',
+              transform: 'translate(-50%, -50%)',
+              fontWeight: 'bold',
+              color: 'black'
+            }}
+          >
+            {props.caption}
           </div>
         </div>
       </OverallStatsBar>
