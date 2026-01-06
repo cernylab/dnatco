@@ -538,6 +538,40 @@ export function MainScreen(props: {
     locationToDnatcoMode(location.pathname)
   );
 
+  // Remember the last active view for each master mode (persists across component unmounts)
+  const getStoredViewMemory = (): Record<MasterMode, ViewId> => {
+    try {
+      const stored = sessionStorage.getItem('dnatco-view-memory');
+      if (stored) {
+        return JSON.parse(stored);
+      }
+    } catch (e) {
+      // Ignore errors
+    }
+    return {
+      annotation: ViewsInMode.annotation[0][0],
+      validation: ViewsInMode.validation[0][0],
+      refinement: ViewsInMode.refinement[0][0],
+    };
+  };
+
+  const lastViewForMode = React.useRef<Record<MasterMode, ViewId>>(getStoredViewMemory());
+
+  // Remember the last active master mode (for returning from downloads/home/browse)
+  const getStoredMasterMode = (): MasterMode => {
+    try {
+      const stored = sessionStorage.getItem('dnatco-master-mode');
+      if (stored && (MasterMode as readonly string[]).includes(stored)) {
+        return stored as MasterMode;
+      }
+    } catch (e) {
+      // Ignore errors
+    }
+    return 'annotation';
+  };
+
+  const lastMasterMode = React.useRef<MasterMode>(getStoredMasterMode());
+
   /*
    * I would lie if I told you that I fully understand what is going on here but here is the deal.
    * When we initially set the value of "selectedCustomNtCSet" when the component mounts, this initial
@@ -967,8 +1001,37 @@ export function MainScreen(props: {
     };
   }, []);
 
+  // Save current state whenever it changes (immediately, not waiting for navigation)
+  React.useEffect(() => {
+    lastViewForMode.current[dnatcoMode.master] = dnatcoMode.viewId;
+    lastMasterMode.current = dnatcoMode.master;
+
+    // Persist to sessionStorage
+    try {
+      sessionStorage.setItem('dnatco-view-memory', JSON.stringify(lastViewForMode.current));
+      sessionStorage.setItem('dnatco-master-mode', dnatcoMode.master);
+    } catch (e) {
+      // Ignore storage errors
+    }
+  }, [dnatcoMode.master, dnatcoMode.viewId]);
+
   React.useEffect(() => {
     const newDnatcoMode = locationToDnatcoMode(location.pathname);
+
+    // If switching master mode and URL doesn't specify a view, use the remembered view
+    if (dnatcoMode.master !== newDnatcoMode.master) {
+      const segments = location.pathname.split("/");
+      const viewIdInUrl = segments[4];
+
+      // If no view specified in URL or it's invalid, use the remembered one
+      if (!viewIdInUrl || newDnatcoMode.viewId === ViewsInMode[newDnatcoMode.master][0][0]) {
+        const rememberedView = lastViewForMode.current[newDnatcoMode.master];
+        if (rememberedView !== newDnatcoMode.viewId) {
+          navigate(`/app/dnatco/${newDnatcoMode.master}/${rememberedView}`, { replace: true });
+          return;
+        }
+      }
+    }
 
     if (props.viewerInterop.ready()) {
       // We don't have to update the viewer every single time when dnatcoMode changes.
@@ -982,7 +1045,12 @@ export function MainScreen(props: {
         currentView.visualizer !== nextView.visualizer ||
         currentView.selectionDisplayer !== nextView.selectionDisplayer
       ) {
-        const wipeSelection = currentView.granularity !== nextView.granularity;
+        // Only wipe selection when switching between visualizer tabs with incompatible granularities
+        // Preserve selection when either view has 'dont-care' granularity
+        const wipeSelection =
+          currentView.granularity !== 'dont-care' &&
+          nextView.granularity !== 'dont-care' &&
+          currentView.granularity !== nextView.granularity;
         const pieces = {
           steps: wipeSelection ? [] : [...structureSelection.steps],
           residues: wipeSelection ? [] : [...structureSelection.residues],

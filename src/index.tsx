@@ -764,7 +764,7 @@ function App(props: { initial: Initial }) {
         const sub = vi.events.structureLoaded.subscribe(() => {
           sub.unsubscribe();
           // Parse residue name after dnatcofication is available
-          const residue = ALM.residueByName(dh.dnatcofication.data.almByResidue, residueName);
+          const residue = ALM.residueByName(dh.dnatcofication.data.almByResidue, dh.dnatcofication.data.structures, dh.dnatcofication.data.entityKinds, residueName);
           if (residue) {
             goToResidue(residue, bondSpec, angleSpec, outsideControl);
           } else {
@@ -812,7 +812,25 @@ function App(props: { initial: Initial }) {
                   </div>
                 );
                 return;
-              } else navigate(`/app/dnatco/${tk}`);
+              } else {
+                // For annotation/validation/refinement, try to restore the last viewed sub-tab
+                if (["annotation", "validation", "refinement"].includes(tk)) {
+                  try {
+                    const viewMemory = sessionStorage.getItem('dnatco-view-memory');
+                    if (viewMemory) {
+                      const memory = JSON.parse(viewMemory);
+                      const lastView = memory[tk];
+                      if (lastView) {
+                        navigate(`/app/dnatco/${tk}/${lastView}`);
+                        return;
+                      }
+                    }
+                  } catch (e) {
+                    // Ignore and fall through to default navigation
+                  }
+                }
+                navigate(`/app/dnatco/${tk}`);
+              }
             } else navigate(`/app/${tk}`);
           }
         }}

@@ -556,7 +556,7 @@ export namespace ALM {
      * Example: 4qvi_B_DG_2109 or 4qvi-m2_B_DG.B_2109.A (for model 2, altId=B, insCode=A)
      * Model 1 is implicit (no suffix), other models use -mX suffix
      */
-    export function residueByName(almByResidue: ALMByResidue, name: string): Measurements.Residue | undefined {
+    export function residueByName(almByResidue: ALMByResidue, structures: any[], entityKinds: any[], name: string): Measurements.Residue | undefined {
         const parts = name.split('_');
         if (parts.length !== 4) {
             console.warn(`Invalid residue format: ${name}. Expected 4 underscore-separated parts.`);
@@ -604,16 +604,43 @@ export namespace ALM {
             return undefined;
         }
 
-        // Find residue in ALM data
+        // Build auth-to-label chain mapping from structure, filtering for nucleic acid chains only
+        const authToLabelChain = new Map<string, string>();
+        for (let structIdx = 0; structIdx < structures.length; structIdx++) {
+            const structure = structures[structIdx];
+            const entityKindsForStruct = entityKinds[structIdx];
+
+            for (const model of structure.models) {
+                if (model.num === modelNum) {
+                    for (const chain of model.chains) {
+                        const chainKind = entityKindsForStruct?.get(chain.entityId);
+                        // Only include nucleic acid chains (DNA, RNA, hybrid)
+                        if (chainKind === 'DNA' || chainKind === 'RNA' || chainKind === 'hybrid') {
+                            authToLabelChain.set(chain.authName, chain.name);
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+
+        // Convert auth chain to label chain
+        const labelChain = authToLabelChain.get(authChain);
+        if (!labelChain) {
+            console.warn(`Auth chain ${authChain} not found in model ${modelNum}`);
+            return undefined;
+        }
+
+        // Find residue in ALM data (which uses label chains as keys)
         const modelChains = almByResidue.chains.get(modelNum);
         if (!modelChains) {
             console.warn(`Model ${modelNum} not found in ALM data`);
             return undefined;
         }
 
-        const chainIndices = modelChains.get(authChain);
+        const chainIndices = modelChains.get(labelChain);
         if (!chainIndices) {
-            console.warn(`Chain ${authChain} not found in model ${modelNum}`);
+            console.warn(`Label chain ${labelChain} (auth: ${authChain}) not found in model ${modelNum}`);
             return undefined;
         }
 
@@ -628,7 +655,7 @@ export namespace ALM {
             }
         }
 
-        console.warn(`Residue not found: model=${modelNum}, chain=${authChain}, compound=${compound}, seqId=${authSeqId}, insCode=${insCode}, altId=${altId}`);
+        console.warn(`Residue not found: model=${modelNum}, authChain=${authChain}, labelChain=${labelChain}, compound=${compound}, authSeqId=${authSeqId}, insCode=${insCode}, altId=${altId}`);
         return undefined;
     }
 }
