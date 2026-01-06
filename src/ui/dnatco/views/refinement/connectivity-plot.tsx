@@ -22,6 +22,8 @@ import { objKeys } from '../../../../util';
 import { valueToSemaphore } from '../../../../util/semaphore';
 import { InvalidAtom, InvalidResidue, InvalidStepId } from '../../../../util/structure-selection';
 
+import {InputDialog} from "../../../common/input-dialog";
+
 const MinNumberOfPointsInPlot = 10;
 
 const PlotData = {
@@ -132,8 +134,26 @@ export class ConnectivityPlot extends View<Refinement.Props> {
 
     private changeCustomNtC(ntc: string, targetStep: (stepId: number) => Step | undefined) {
         const stepId = this.props.structureSelection.steps[0];
-        if (this.props.selectedCustomNtCSet === '' || stepId === undefined)
+        if (this.props.selectedCustomNtCSet === '' || stepId === undefined){
+            InputDialog.create({
+                caption: "Name of the new set",
+                description: "You need to create a new set before assigning a custom NtC.",
+                validator: (v) => {
+                    if (v === "") return "Set must have a name";
+                    return this.props.dnatcofication.customNtCs.exists(v)
+                        ? `Set named ${v} already exists`
+                        : void 0;
+                },
+                onAccepted: (v) => {
+                    this.props.dnatcofication.customNtCs.addSet(v);
+                    if (this.props.onCustomNtCSetChanged) {
+                        this.props.onCustomNtCSetChanged(v);
+                    }
+
+                },
+            });
             return;
+        }
 
         const step = targetStep(stepId);
         if (step) {
