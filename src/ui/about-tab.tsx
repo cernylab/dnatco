@@ -243,26 +243,31 @@ function Help() {
     }))
 
     const displayHome = home.map(page => ({
+        id: page.id,
         headline: page.headline,
         paragraphs: page.paragraphs.map(paragraph => paragraph)
     }));
 
     const displayAnnotation = annotation.map(page => ({
+        id: page.id,
         headline: page.headline,
         paragraphs: page.paragraphs.map(paragraph => paragraph)
     }))
 
     const displayValidation = validation.map(page => ({
+        id: page.id,
         headline: page.headline,
         paragraphs: page.paragraphs.map(paragraph => paragraph)
     }))
 
     const displayRefinement = refinement.map(page => ({
+        id: page.id,
         headline: page.headline,
         paragraphs: page.paragraphs.map(paragraph => paragraph)
     }))
 
     const displayBrowse = browse.map(page => ({
+        id: page.id,
         headline: page.headline,
         paragraphs: page.paragraphs.map(paragraph => paragraph)
     }))
@@ -439,11 +444,11 @@ function Help() {
         {
             headline: 'Web Application Tabs',
             sections: [
-                ...displayHome.map((page: any) => ({ id: page.id, headline: page.headline })),
-                ...displayAnnotation.map((page: any) => ({ id: page.id, headline: page.headline })),
-                ...displayValidation.map((page: any) => ({ id: page.id, headline: page.headline })),
-                ...displayRefinement.map((page: any) => ({ id: page.id, headline: page.headline })),
-                ...displayBrowse.map((page: any) => ({ id: page.id, headline: page.headline }))
+                ...displayHome,
+                ...displayAnnotation,
+                ...displayValidation,
+                ...displayRefinement,
+                ...displayBrowse
             ]
         }
     ];
