@@ -458,15 +458,16 @@ function Help() {
             {/* Table of Contents */}
             <div id="toc" className='mb-8 border-b-secondary-second border-b pb-4'>
                 <h3 className='font-700 text-18px mb-3 uppercase'>Table of Contents</h3>
-                <div className='ml-4'>
-                    {tocStructure.map((page: any, pageIdx: number) => (
-                        <div key={pageIdx} className='mb-3'>
+                <div className='ml-4 grid grid-cols-3 gap-x-6'>
+                    {/* Column 1 - User's Guide */}
+                    {tocStructure[0] && (
+                        <div className='mb-3'>
                             <div className='font-700 text-16px mb-1'>
-                                {page.headline}
+                                {tocStructure[0].headline}
                             </div>
-                            {page.sections && page.sections.length > 0 && (
+                            {tocStructure[0].sections && tocStructure[0].sections.length > 0 && (
                                 <div className='ml-4'>
-                                    {page.sections.map((section: any, sectionIdx: number) => (
+                                    {tocStructure[0].sections.map((section: any, sectionIdx: number) => (
                                         <div key={sectionIdx} className='mb-1'>
                                             <a
                                                 href={`#${section.id}`}
@@ -486,7 +487,67 @@ function Help() {
                                 </div>
                             )}
                         </div>
-                    ))}
+                    )}
+
+                    {/* Column 2 - Density Maps */}
+                    {tocStructure[1] && (
+                        <div className='mb-3'>
+                            <div className='font-700 text-16px mb-1'>
+                                {tocStructure[1].headline}
+                            </div>
+                            {tocStructure[1].sections && tocStructure[1].sections.length > 0 && (
+                                <div className='ml-4'>
+                                    {tocStructure[1].sections.map((section: any, sectionIdx: number) => (
+                                        <div key={sectionIdx} className='mb-1'>
+                                            <a
+                                                href={`#${section.id}`}
+                                                className="rdo-link text-15px"
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    const el = document.getElementById(section.id);
+                                                    if (el) {
+                                                        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                                    }
+                                                }}
+                                            >
+                                                {section.headline}
+                                            </a>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {/* Column 3 - Web Application Tabs */}
+                    {tocStructure[2] && (
+                        <div className='mb-3'>
+                            <div className='font-700 text-16px mb-1'>
+                                {tocStructure[2].headline}
+                            </div>
+                            {tocStructure[2].sections && tocStructure[2].sections.length > 0 && (
+                                <div className='ml-4'>
+                                    {tocStructure[2].sections.map((section: any, sectionIdx: number) => (
+                                        <div key={sectionIdx} className='mb-1'>
+                                            <a
+                                                href={`#${section.id}`}
+                                                className="rdo-link text-15px"
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    const el = document.getElementById(section.id);
+                                                    if (el) {
+                                                        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                                    }
+                                                }}
+                                            >
+                                                {section.headline}
+                                            </a>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    )}
                 </div>
             </div>
 
