@@ -187,6 +187,14 @@ export class ConnectivityPlot extends View<Refinement.Props> {
         const { PDB_model_number, label_asym_id_1, auth_asym_id_1, name } = steps;
         const { cartesian_rmsd_closest_NtC_representative } = summary;
 
+        const buttonColumn: DynamicTable.Column<string> = {
+            name: "Buttons",
+            cells: new Array<DynamicTable.Cell<string>>(),
+            alignment: "center",
+            tooltip: <div>Buttons</div>,
+            notSortable: true,
+        }
+
         const chainColumn: DynamicTable.Column<string> = {
             name: "Chain",
             cells: new Array<DynamicTable.Cell<string>>(),
@@ -251,6 +259,7 @@ export class ConnectivityPlot extends View<Refinement.Props> {
         };
 
         const columns = [
+            buttonColumn,
             chainColumn,
             stepColumn,
             NtCColumn,
@@ -275,7 +284,19 @@ export class ConnectivityPlot extends View<Refinement.Props> {
             const nextStepNtC = StepsMapper.byId(this.props.dnatcofication, StepsMapper.previousNextById(this.props.dnatcofication, _step.id).nextId).NtC;
             const prevStepNtC = StepsMapper.byId(this.props.dnatcofication, StepsMapper.previousNextById(this.props.dnatcofication, _step.id).previousId).NtC;
 
-
+            const renderSwitchButton = (direction: string) => (
+                <button
+                    className={``}
+                    onClick={(ev) => {
+                        ev.preventDefault();
+                        ev.stopPropagation();
+                        this.setConnectivityMode(direction);
+                    }}
+                    title="Buttons"
+                >
+                    {direction}
+                </button>
+            );
 
             let C5: number = 0;
             let O3: number = 0;
@@ -286,6 +307,7 @@ export class ConnectivityPlot extends View<Refinement.Props> {
                 columns,
                 tags,
                 [
+                    "",
                     Cif.Column.value(auth_asym_id_1, row)!,
                     tag,
                     currNtC,
@@ -294,6 +316,28 @@ export class ConnectivityPlot extends View<Refinement.Props> {
                     O3,
                 ],
                 [
+                    () => {
+                        if ( row === this.props.structureSelection.steps[0] - 2){
+                            return (
+                                <span>
+                                    {renderSwitchButton("Previous")}
+                                </span>
+                            );
+                        } else if (row === this.props.structureSelection.steps[0] - 1) {
+                            return (
+                                <span>
+                                    {renderSwitchButton("Current")}
+                                </span>
+                            );
+                        } else if (row === this.props.structureSelection.steps[0]){
+                            return (
+                                <span>
+                                    {renderSwitchButton("Next")}
+                                </span>
+                            );
+                        }
+                        return (<></>);
+                    },
                     void 0,
                     () => niceStepName(_step),
                     () => currNtC === "NANT" ? (
@@ -561,6 +605,14 @@ export class ConnectivityPlot extends View<Refinement.Props> {
         this.unsubscribeAll();
     }
 
+    state = {
+        connectivityMode: 'Current',
+    }
+
+    setConnectivityMode = (mode: string) => {
+        this.setState({ connectivityMode: mode});
+    }
+
     render() {
         const numModels = Dnatcofication.Structure.numberOfModels(this.props.dnatcofication);
         const numChains = this.props.dnatcofication.data.steps.chains[0].size;
@@ -718,11 +770,23 @@ export class ConnectivityPlot extends View<Refinement.Props> {
                         </div>
                     </div>
 
-                    <div className='rdo-secondary-caption'>Connectivity to previous step</div>
-                    {this.renderConnectivityPlot(prevConnPlotData, prevConnMaxHints, changeCustomNtCPrev, 'prev')}
-
-                    <div className='rdo-secondary-caption'>Connectivity to next step</div>
-                    {this.renderConnectivityPlot(nextConnPlotData, nextConnMaxHints, changeCustomNtCNext, 'next')}
+                    {(this.state.connectivityMode == 'Previous' &&
+                        (<>
+                            <div className='rdo-secondary-caption'>Connectivity to previous step</div>
+                            {this.renderConnectivityPlot(prevConnPlotData, prevConnMaxHints, changeCustomNtCPrev, 'prev')}
+                    </>))}
+                    {(this.state.connectivityMode == 'Next' &&
+                        (<>
+                            <div className='rdo-secondary-caption'>Connectivity to next step</div>
+                            {this.renderConnectivityPlot(nextConnPlotData, nextConnMaxHints, changeCustomNtCNext, 'next')}
+                    </>))}
+                    {(this.state.connectivityMode == 'Current' &&
+                        (<>
+                            <div className='rdo-secondary-caption'>Connectivity to previous step</div>
+                            {this.renderConnectivityPlot(prevConnPlotData, prevConnMaxHints, changeCustomNtCPrev, 'prev')}
+                            <div className='rdo-secondary-caption'>Connectivity to next step</div>
+                            {this.renderConnectivityPlot(nextConnPlotData, nextConnMaxHints, changeCustomNtCNext, 'next')}
+                    </>))}
                 </div>
             </div>
         );
