@@ -565,8 +565,17 @@ function Help() {
 function HowToCite() {
     return (
         <div className='mt-7'>
-            <div>
-                The NtC alphabet - a unified dinucleotide alphabet of both RNA and DNA conformations is described in <a className='rdo-link' href='/papers/gkaa383.pdf' target='_blank'>Černý et al., NAR 48, 6367 (2020)</a>
+            <div className='mb-4 text-16px'>
+                If you use this Software in a scientific or academic work, you must cite the paper(s) listed in the <a className='rdo-link' href='https://github.com/cernylab/dnatco/blob/new-style/CITATION.txt' target='_blank'>CITATION.txt</a> file that accompanies the Software. The citation(s) should be included in all academic and scientific publications, presentations, or derivative works that make use of this Software.
+            </div>
+            <div className='mb-2'>
+                <a className='rdo-link' href='/papers/gkaf1491.pdf' target='_blank'><strong>DNATCO v5.0:</strong></a> Černý, J., Malý, M., Božíková, P., Prchalová, T., Svoboda, J., Biedermannová, L. & Schneider, B. (2026). DNATCO v5.0: integrated web platform for 3D nucleic acid structure analysis. Nucleic Acids Research, 54(1), gkaf1491. <a className='rdo-link' href='https://doi.org/10.1093/nar/gkaf1491' target='_blank'>https://doi.org/10.1093/nar/gkaf1491</a>
+            </div>
+            <div className='mb-2'>
+                <a className='rdo-link' href='/papers/gkaa383.pdf' target='_blank'><strong>NtC alphabet:</strong></a> Černý, J., Božíková, P., Svoboda, J. & Schneider, B. (2020). A unified dinucleotide alphabet describing both RNA and DNA structures. Nucleic Acids Research, 48(11), 6367-6381. <a className='rdo-link' href='https://doi.org/10.1093/nar/gkaa383' target='_blank'>https://doi.org/10.1093/nar/gkaa383</a>
+            </div>
+            <div className='mb-4 mt-4 text-16px'>
+                Additional Reading:
             </div>
             <div>
                 The web service (version 3.2) is described in <a className='rdo-link' href='/papers/rr5151.pdf' target='_blank'>Černý et al., Acta Cryst D 76, 805 (2020)</a>
