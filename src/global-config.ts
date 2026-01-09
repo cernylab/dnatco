@@ -100,6 +100,8 @@ export type GlobalConfigData = {
     cameraClippingMinNear: number,
     // Logger minimum severity: messages below this level are filtered out. 0=Debug, 1=Info (default), 2=Warning, 3=Error
     minSeverity: 0 | 1 | 2 | 3,
+    // Version date override (format: YYYYMMDD). If not set, uses build-time generated date
+    versionDate?: string,
 
     // Options relevant only for NodeJS builds
     referenceUrl: string,
