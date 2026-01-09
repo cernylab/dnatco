@@ -21,6 +21,8 @@
         "summaryMetrics": "naval"
     },
 
+    "minSeverity": 1,
+
     "displayedProductName": "DNATCO",
 
     "phenix": {

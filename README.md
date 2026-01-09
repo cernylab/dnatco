@@ -114,20 +114,30 @@ node bin\dnatco.js --outputDir <path> --coords <path> [options]
 
 ```
 Usage: dnatco.js
-  --help                          Print usage and exit
-  --outputDir                     Path to output directory [VALUE] (REQUIRED)
-  --coords                        Path to file with coordinates [VALUE] (REQUIRED)
-  --reflns                        Path to file with reflections [VALUE]
-  --prefix                        Prefix for output files [VALUE]
-  --extendedCIF                   Generate mmCIF file extended with additional DNATCO categories
-  --report                        Generate comprehensive DNATCO validation report
-  --busterRestraints              Generate file with NtC restraints for Buster
-  --refmacRestraints              Generate file with NtC restraints for Refmac/Servalcat
-  --cootRestraints                Generate file with NtC restraints for Coot
-  --phenixRestraints              Generate file with NtC restraints for Phenix
-  --restraintsRmsd                Maximum allowed NtC RMSD (default 0.5Å) [VALUE]
-  --restraintsSigmaFactor         Restraints sigma factor (default 1.0) [VALUE]
-  --log                           Path to a log file [VALUE]
+  --help                                Print usage and exit
+  --outputDir                           Path to output directory [VALUE] (REQUIRED)
+  --coords                              Path to file with coordinates [VALUE] (REQUIRED)
+  --reflns                              Path to file with reflections [VALUE]
+  --prefix                              Prefix for output files [VALUE]
+  --extendedCIF                         Generate mmCIF file extended with additional DNATCO categories
+  --report                              Generate comprehensive DNATCO validation report (requires canvas)
+  --reportText                          Generate text validation report
+  --busterRestraints                    Generate file with NtC restraints for Buster
+  --refmacRestraints                    Generate file with NtC restraints for Refmac/Servalcat
+  --cootRestraints                      Generate file with NtC restraints for Coot
+  --phenixRestraints                    Generate file with NtC restraints for Phenix
+  --restraintsRmsd                      Maximum allowed NtC RMSD (default 0.5Å) [VALUE]
+  --restraintsSigmaFactor               Restraints sigma factor (default 1.0) [VALUE]
+  --ntcCsv                              Generate CSV file with assigned NtCs (summary table)
+  --ntcJson                             Generate JSON file with assigned NtCs (summary table)
+  --ntcFullCsv                          Generate CSV file with assigned NtCs including Confal Scores and RMSDs
+  --ntcFullJson                         Generate JSON file with assigned NtCs including Confal Scores and RMSDs
+  --anglesLengthsByCompoundCsv          Generate CSV file with bond angles and lengths statistics by nucleotide type
+  --anglesLengthsByCompoundJson         Generate JSON file with bond angles and lengths statistics by nucleotide type
+  --anglesLengthsByResidueCsv           Generate CSV file with bond angles and lengths by residue
+  --anglesLengthsByResidueJson          Generate JSON file with bond angles and lengths by residue
+  --rsccRmsdPlots                       Generate RSCC vs RMSD plots as SVG files (requires canvas)
+  --log                                 Path to a log file [VALUE]
 ```
 
 By default (when no output options are specified), the tool will produce a mmCIF file with additional DNATCO categories and a validation report as a PDF file.

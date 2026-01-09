@@ -245,13 +245,9 @@ function isSpace(cc: number) {
 }
 
 function parseChainAndAltId(str: string): { chain: string, altId: string } {
-    // Phenix output is not definitely parseable because not all fields
-    // are present at all lines and the format does not indicate which fields are missing.
-    // mmCif people decided to care for empty values by introducing *two*
-    // characters that denote "there is nothing here" because some values are empty
-    // but some others are even emptier.
-    // Phenix people decided to use the same character for empty value
-    // and field separator, turning this into a "import 'crystal_ball'" kind of code.
+    //
+    // Insert your favorite complaint about less-than-ideal data formats here...
+    //
 
     const len = str.length;
 
@@ -284,7 +280,7 @@ function parseSeqIdStr(str: string): PhxAtom['seqId'] {
     let nv = slice(str, idx, idx2 - idx);
     if (isAlpha(nv.charCodeAt(0))) {
         let ext = nv.charCodeAt(0) - AUpr;
-        let tv = parseTailOfPhenixWeirdNotReallyANumberStrBecauseFuckYou(slice(nv, 1));
+        let tv = parseTailOfPhenixWeirdNotReallyANumberStr(slice(nv, 1));
         num = 10000 + (Math.pow(36, 3) * ext) + tv;
     } else
         num = parseInt(nv);
@@ -298,7 +294,7 @@ function parseSeqIdStr(str: string): PhxAtom['seqId'] {
     return { num, inscode };
 }
 
-function parseTailOfPhenixWeirdNotReallyANumberStrBecauseFuckYou(fs: string) {
+function parseTailOfPhenixWeirdNotReallyANumberStr(fs: string) {
     const SPAN = ZUpr - AUpr + 11;
     const len = fs.length;
 
@@ -428,7 +424,7 @@ export namespace Phenix {
 
     export function makeContext(exec: string): Context | undefined {
         if (!isExecutable(exec)) {
-            Logger.log(Logger.Severity.Info, `Path "${exec}" does not point to an executable file. Disabling Phenix.`);
+            Logger.log(Logger.Severity.Debug, `Path "${exec}" does not point to an executable file. Disabling Phenix.`);
             return void 0;
         }
 

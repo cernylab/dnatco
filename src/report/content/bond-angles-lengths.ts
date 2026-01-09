@@ -168,9 +168,13 @@ function drawCountsTable<Output>(
 
     let clrBoxOffset;
     if (counts.kind === 'naval') {
-        clrBoxOffset = Math.max(...NavalRankingClasses.map(x => x.length));
+        clrBoxOffset = Math.max(...NavalRankingClasses.map(x => AnglesLengths.navalRankingClassName(x).length));
     } else {
-        clrBoxOffset = Math.max(...ProScoGroups.map(x => x.length));
+        clrBoxOffset = Math.max(...ProScoGroups.map(x => AnglesLengths.pGroupName(x).length));
+    }
+    // In textual mode, add 2 extra characters for glyph + space
+    if (ctx.mode === 'textual') {
+        clrBoxOffset += 2;
     }
 
     const boxXywh = NTXYWH.create(NTUnit.zero(), NTUnit.zero(), NTUnit.multiply(clrBoxOffset, ctx.tDims.characterWidth), ctx.tDims.characterHeight);
@@ -187,11 +191,12 @@ function drawCountsTable<Output>(
             const rectNClr = nrgb(rectClr);
             const box = tbl.getBox(boxXywh);
             const ref = `${tag}-${grp}`;
-            if (ctx.mode === 'textual')
-                box.lineText(Colors.colorToGlyph(rectClr), {}, ref);
-            else
+            if (ctx.mode === 'textual') {
+                box.lineText(Colors.colorToGlyphProSco(rectClr) + ' ' + AnglesLengths.pGroupName(grp), { ...CountCellText, hAlign: 'left' }, ref);
+            } else {
                 box.rect(clrXywh, { color: NRgba(rectNClr.r, rectNClr.g, rectNClr.b) }, ref);
-            box.lineText(AnglesLengths.pGroupName(grp), CountCellText, ref);
+                box.lineText(AnglesLengths.pGroupName(grp), CountCellText, ref);
+            }
 
             tbl.addRow([
                 NTTable.Cell.box(box),
@@ -221,11 +226,12 @@ function drawCountsTable<Output>(
         const rectNClr = nrgba(rectClr);
         const box = tbl.getBox(boxXywh);
         const ref = `${tag}-unique-outlier`;
-        if (ctx.mode === 'textual')
-            box.lineText(Colors.colorToGlyph(rectClr), {}, ref);
-        else
+        if (ctx.mode === 'textual') {
+            box.lineText(Colors.colorToGlyphProSco(rectClr) + ' Unique', { ...CountCellText, hAlign: 'left' }, ref);
+        } else {
             box.rect(clrXywh, { color: rectNClr }, ref);
-        box.lineText('Unique', CountCellText, ref);
+            box.lineText('Unique', CountCellText, ref);
+        }
 
         tbl.addRow([
             NTTable.Cell.box(box),
@@ -246,11 +252,12 @@ function drawCountsTable<Output>(
             const rectNClr = nrgb(rectClr);
             const box = tbl.getBox(boxXywh);
             const ref = `${tag}-${gdx}`;
-            if (ctx.mode === 'textual')
-                box.lineText(Colors.colorToGlyph(rectClr), {}, ref);
-            else
+            if (ctx.mode === 'textual') {
+                box.lineText(Colors.colorToGlyphNaval(cls) + ' ' + AnglesLengths.navalRankingClassName(cls), { ...CountCellText, hAlign: 'left' }, ref);
+            } else {
                 box.rect(clrXywh, { color: NRgba(rectNClr.r, rectNClr.g, rectNClr.b) }, ref);
-            box.lineText(AnglesLengths.navalRankingClassName(cls), CountCellText, ref);
+                box.lineText(AnglesLengths.navalRankingClassName(cls), CountCellText, ref);
+            }
 
             tbl.addRow([
                 NTTable.Cell.box(box),

@@ -101,11 +101,11 @@ function drawAnglesLengths<Output, BL extends (Measurements.BondAngle | Measurem
         const proscoClr = nrgba(proscoRgb);
 
         const navalClrCell = ctx.mode === 'textual'
-            ? NTTable.Cell.lineText(Colors.colorToGlyph(navalRgb), tbl)
+            ? NTTable.Cell.lineText(Colors.colorToGlyphNaval(nrankCls), tbl)
             : NTTable.Cell.rect(xywh, { color: navalClr });
 
         const proscoClrCell = ctx.mode === 'textual'
-            ? NTTable.Cell.lineText(Colors.colorToGlyph(proscoRgb), tbl)
+            ? NTTable.Cell.lineText(Colors.colorToGlyphProSco(proscoRgb), tbl)
             : NTTable.Cell.rect(xywh, { color: proscoClr });
 
         tbl.addRow([
