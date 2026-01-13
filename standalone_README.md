@@ -86,6 +86,7 @@ node bin\dnatco.js --outputDir <path> --coords <path> [options]
 
 ```
 Usage: dnatco.js
+  --version                             Print version information and exit
   --help                                Print usage and exit
   --outputDir                           Path to output directory [VALUE] (REQUIRED)
   --coords                              Path to file with coordinates [VALUE] (REQUIRED)
@@ -115,6 +116,36 @@ Usage: dnatco.js
 By default (when no output options are specified), the tool will produce a mmCIF file with additional DNATCO categories and, if canvas is available, a validation report as a PDF file.
 
 **NOTE:** The standalone tool relies on the entire content of the `bin` directory. If you wish to move the standalone tool to a different directory, make sure that you copy the entire `bin` directory and that its contents remain unchanged.
+
+Configuration File (config.json)
+---
+
+The standalone tool can be configured using a `config.json` file located in the `bin` directory. This file allows you to customize various aspects of the tool's behavior without modifying the source code.
+
+**Key configuration options:**
+
+- **`minSeverity`** (number): Controls which log messages are displayed. Valid values:
+  - `0` = Debug (all messages)
+  - `1` = Info (default)
+  - `2` = Warning
+  - `3` = Error (only critical messages)
+
+- **`phenix.dataLabels`** (string): Specifies the data labels (sub)string to use when calculating RSCC with Phenix. Default: `"meas"`.
+
+- **`phenix.rsccExec`** (string): Path to the Phenix executable for RSCC calculation. Required only if you want to calculate RSCC values using experimental density data.
+
+**Example config.json snippet:**
+```json
+{
+  "minSeverity": 1,
+  "phenix": {
+    "rsccExec": "/path/to/phenix.real_space_correlation",
+    "dataLabels": "meas"
+  }
+}
+```
+
+For a complete list of configuration options, see the `config.json` file in the `bin` directory.
 
 Citation and License
 ---

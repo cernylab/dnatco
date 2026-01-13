@@ -107,6 +107,7 @@ export type GlobalConfigData = {
     referenceUrl: string,
     phenix: {
         rsccExec: string,
+        dataLabels: string,
     }
 };
 const GlobalConfigData: GlobalConfigData = {
@@ -175,11 +176,13 @@ const GlobalConfigData: GlobalConfigData = {
     referenceUrl: '',
     phenix: {
         rsccExec: '',
+        dataLabels: 'meas',
     },
 };
 const AllowedPartials: Partial<{[k in keyof GlobalConfigData]: object}> = {
     anglesLengths: {},
-    basePairsLadder: {}
+    basePairsLadder: {},
+    phenix: {}
 };
 const DefaultGlobalConfigData = deepCopy(GlobalConfigData);
 

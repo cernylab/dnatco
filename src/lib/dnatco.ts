@@ -4,6 +4,7 @@ import path from 'node:path';
 import process from 'node:process';
 import { fileExists, isDirectory, isReadable, isWriteable, readBinaryFile, readTextFile, writeBinaryFile, writeTextFile } from './io';
 import { Logger } from '../log/logger';
+import { Version } from '../version';
 import { isCanvasAvailable, getCanvasInstallMessage } from '../node-util/canvas-check';
 import { Phenix } from './phenix';
 import { isError, isOk } from '../dnatco';
@@ -65,9 +66,19 @@ type Configuration = {
     doAnglesLengthsByResidueCsv: boolean,
     doAnglesLengthsByResidueJson: boolean,
     doRsccRmsdPlots: boolean,
+    phenixDataLabels: string,
 };
 
 const Parameters = [
+    {
+        cmd: '--version',
+        desc: 'Print version information and exit',
+        proc: () => {
+            printVersionInfo();
+            process.exit(EXIT_SUCCESS);
+        },
+        required: false,
+    },
     {
         cmd: '--help',
         desc: 'Print usage and exit',
@@ -285,6 +296,24 @@ const Parameters = [
         required: false,
     },
     {
+        cmd: '--phenixDataLabels',
+        desc: 'Phenix RSCC data_labels parameter (overrides config.json) [VALUE]',
+        proc: (args: string[], config: Partial<Configuration>) => {
+            if (args.length < 1) {
+                Logger.log(Logger.Severity.Error, '"phenixDataLabels" parameter requires an argument');
+                throw new Error();
+            }
+            if (!!config.phenixDataLabels) {
+                Logger.log(Logger.Severity.Error, 'Parameter "phenixDataLabels" is already set');
+                throw new Error();
+            }
+            config.phenixDataLabels = args[0];
+
+            return args.slice(1);
+        },
+        required: false,
+    },
+    {
         cmd: '--log',
         desc: 'Path to a log file [VALUE]',
         proc: (args: string[], config: Partial<Configuration>) => {
@@ -487,7 +516,7 @@ function initRsccFile(filePath: string, kind: Rscc.BackdropRsccKind) {
         throw new Error(`Cannot laod Rscc backdrop from file "${filePath}": ${res.message}.`);
 }
 
-async function initializeEverything() {
+async function initializeEverything(phenixDataLabels?: string) {
     try {
         loadConfig();
 
@@ -496,8 +525,11 @@ async function initializeEverything() {
         await initNavalContext();
         initRscc();
 
+        // Use command-line argument if provided, otherwise use config file value
+        const dataLabels = phenixDataLabels || GlobalConfig.data().phenix.dataLabels;
+
         return {
-            phenixCtx: Phenix.makeContext(GlobalConfig.data().phenix.rsccExec),
+            phenixCtx: Phenix.makeContext(GlobalConfig.data().phenix.rsccExec, dataLabels),
         };
     } catch (e) {
         console.log(`Initialization failed: ${(e as Error).message}`);
@@ -532,9 +564,18 @@ function parseCmdParams(args: string[]) {
     return cfg;
 }
 
+function printVersionInfo() {
+    console.log(`DNATCO version ${Version.tag()}`);
+}
+
 function printUsage() {
     const appName = getAppName();
-    console.log(`Usage: ${appName}`);
+    printVersionInfo();
+    console.log('Comprehensive validation and analysis tool for nucleic acid structures');
+    console.log('For more information, visit: https://dnatco.datmos.org and https://github.com/cernylab/dnatco');
+    console.log('');
+    console.log(`Usage: ${appName} [OPTIONS]`);
+    console.log('');
     for (const p of Parameters) {
         console.log(`\t${p.cmd.padEnd(25)} \t${p.desc} ${p.required ? '(REQUIRED)' : ''}`);
     }
@@ -815,6 +856,12 @@ async function writeRsccRmsdPlots(d: Dnatcofication, outputDirPath: string, outp
 }
 
 async function main(argv: string[]): Promise<ExitCode> {
+    // If no arguments provided, print version info and usage
+    if (argv.length === 0) {
+        printUsage();
+        return EXIT_SUCCESS;
+    }
+
     const runCfg = parseCmdParams(argv);
     if (runCfg === null) {
         printUsage();
@@ -826,6 +873,29 @@ async function main(argv: string[]): Promise<ExitCode> {
     const reflnsFilePath = runCfg.reflnsFilePath;
     const outputPrefix = runCfg.outputPrefix;
 
+    if (!outputDirPath) {
+        printUsage();
+        console.error('Output directory is not set');
+        return EXIT_FAILURE;
+    }
+    if (!coordsFilePath) {
+        printUsage();
+        console.error('Coordinates file is not set');
+        return EXIT_FAILURE;
+    }
+
+    if (!isDirectory(outputDirPath) || !isWriteable(outputDirPath)) {
+        console.error(`Output directory "${outputDirPath}" does not appear to be a writeable directory.`);
+        return EXIT_FAILURE;
+    }
+
+    // Initialize everything (including loading config) before initializing the Logger
+    // so that the Logger can use the correct minSeverity from config.json
+    const ctx = await initializeEverything(runCfg.phenixDataLabels);
+    if (!ctx)
+        return EXIT_FAILURE;
+
+    // Now initialize Logger with the loaded config
     Logger.initialize(getAppName(),
         {
             appId: process.pid.toString(),
@@ -833,26 +903,6 @@ async function main(argv: string[]): Promise<ExitCode> {
             minSeverity: GlobalConfig.data().minSeverity,
         }
     );
-
-    if (!outputDirPath) {
-        printUsage();
-        Logger.log(Logger.Severity.Error, 'Output directory is not set');
-        return EXIT_FAILURE;
-    }
-    if (!coordsFilePath) {
-        printUsage();
-        Logger.log(Logger.Severity.Error, 'Coordinates file is not set');
-        return EXIT_FAILURE;
-    }
-
-    if (!isDirectory(outputDirPath) || !isWriteable(outputDirPath)) {
-        Logger.log(Logger.Severity.Error, `Output directory "${outputDirPath}" does not appear to be a writeable directory.`);
-        return EXIT_FAILURE;
-    }
-
-    const ctx = await initializeEverything();
-    if (!ctx)
-        return EXIT_FAILURE;
 
     const cfg = GlobalConfig.data();
 
@@ -893,8 +943,10 @@ async function main(argv: string[]): Promise<ExitCode> {
             const rscc = Phenix.calculateRscc({ coords, filePath: coordsFilePath }, reflnsFilePath, ctx.phenixCtx);
             if (isOk(rscc)) {
                 dd.rscc = rscc.data;
-            } else
-                Logger.log(Logger.Severity.Warning, rscc.message);
+                Logger.log(Logger.Severity.Info, `Phenix RSCC calculation succeeded, calculated ${rscc.data.length} RSCC values`);
+            } else {
+                Logger.log(Logger.Severity.Warning, `Phenix RSCC calculation failed: ${rscc.message}`);
+            }
         }
 
         const d = new Dnatcofication();

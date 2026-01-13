@@ -27,6 +27,7 @@
 
     "phenix": {
         "rsccExec": "/PATH/TO/phenix.real_space_correlation",
-        "scratchDir": "/tmp/phenix_rednatco"
+        "scratchDir": "/tmp/phenix_rednatco",
+        "dataLabels": "meas"
     }
 }
