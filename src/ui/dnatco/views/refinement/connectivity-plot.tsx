@@ -180,12 +180,122 @@ export class ConnectivityPlot extends View<Refinement.Props> {
 
     private tableModel: DynamicTable.Model = new DynamicTable.Model([]);
     private tableTainer = React.createRef<HTMLDivElement>();
-    private makeTableModel(selectedModelNum: number, selectedChain?: string){
-        const steps = this.props.dnatcofication.table(NdbStructNtcStep);
-        const summary = this.props.dnatcofication.table(NdbStructNtcStepSummary);
 
-        const { PDB_model_number, label_asym_id_1, auth_asym_id_1, name } = steps;
-        const { cartesian_rmsd_closest_NtC_representative } = summary;
+    private renderSwitchButton = (direction: string) => (
+        <button
+            className={``}
+            onClick={(ev) => {
+                ev.preventDefault();
+                ev.stopPropagation();
+                this.setConnectivityMode(direction);
+            }}
+            title="Buttons"
+        >
+            {direction}
+        </button>
+    );
+
+    private addRow(row: number, label: "Previous" | "Current" | "Next", columns: DynamicTable.Column<any>[], stepId: number){
+        const _step = StepsMapper.byId(this.props.dnatcofication ,stepId);
+        const tag = _step.name;
+        const tags = [void 0, tag, tag, tag, void 0, void 0, void 0];
+        const currentNtC = getNtC(this.props.dnatcofication, _step, this.props.selectedCustomNtCSet);
+        const neighbors = StepsMapper.previousNextById(this.props.dnatcofication, _step.id);
+
+        const centredStepId = this.props.structureSelection.steps[0];
+        const centredStep = StepsMapper.byId(this.props.dnatcofication, centredStepId);
+        const centredNtC = getNtC(this.props.dnatcofication, centredStep, this.props.selectedCustomNtCSet)
+
+        const stepNew = Step.clone(_step);
+        stepNew.closestNtC = currentNtC;
+
+        const prevStep = (neighbors.previousId !== undefined && neighbors.previousId !== InvalidStepId)
+            ? StepsMapper.byId(this.props.dnatcofication, neighbors.previousId)
+            : void 0;
+
+        const nextStep = (neighbors.nextId !== undefined && neighbors.nextId !== InvalidStepId)
+            ? StepsMapper.byId(this.props.dnatcofication, neighbors.nextId)
+            : void 0;
+
+        const {backward, forward} = calculateConnectivities(
+            stepNew,
+            prevStep,
+            nextStep,
+            Cif.File.table(this.props.dnatcofication.data.cifData!, AtomSite, 0)
+        )
+        const currentRMSD = this.props.dnatcofication.getSimilarities(_step.id)?.[currentNtC]?.rmsd;
+        const stepName = niceStepName(_step);
+
+        let C5: any;
+        let O3: any;
+        if(label == "Previous"){
+            //const nextNtC = StepsMapper.byId(this.props.dnatcofication, neighbors.nextId).NtC;
+            C5 = forward?.[centredNtC]?.C5PrimeDistance;
+            O3 = forward?.[centredNtC]?.O3PrimeDistance;
+        } else if (label == "Next"){
+            //const prevNtC = StepsMapper.byId(this.props.dnatcofication, neighbors.previousId).NtC;
+            C5 = backward?.[centredNtC]?.C5PrimeDistance;
+            O3 = backward?.[centredNtC]?.O3PrimeDistance;
+        }
+
+        setDynamicTableModelColumns(
+            this.tableModel,
+            row,
+            columns,
+            tags,
+            [
+                "",
+                _step.chainAuth,
+                _step.name,
+                currentNtC,
+                currentRMSD,
+                C5,
+                O3,
+            ],
+            [
+                () => {
+                    return(
+                        <span>
+                            {this.renderSwitchButton(label)}
+                        </span>
+                    )
+                },
+                void 0,
+                () => ( <span>
+                            {stepName}
+                        </span>),
+                () => currentNtC === "NANT" ? (
+                    <Tooltip
+                        tag={
+                            <span className="text-secondary-third">
+                                    {currentNtC}
+                                </span>
+                        }
+                        delayMsec={300}
+                    >
+                        This step is unassigned.
+                    </Tooltip>
+                ) : (
+                    <span>
+                            {currentNtC}
+                        </span>
+                ),
+                () => (
+                    <span>
+                          {currentRMSD!.toFixed(3)}
+                        </span>
+                ),
+                () => {
+                    return <span>{typeof C5 === 'number' ? C5.toFixed(3) : "-"}</span>;
+                },
+                () => {
+                    return <span>{typeof O3 === 'number' ? O3.toFixed(3) : "-"}</span>;
+                },
+            ]
+        )
+    }
+
+    private makeTableModel(selectedModelNum: number, selectedChain?: string){
 
         const buttonColumn: DynamicTable.Column<string> = {
             name: "Buttons",
@@ -268,123 +378,16 @@ export class ConnectivityPlot extends View<Refinement.Props> {
             O3Column,
         ];
 
-        for (let row = this.props.structureSelection.steps[0]-2; row < this.props.structureSelection.steps[0]+1; row++) {
-            const modelNum = Cif.Column.value(PDB_model_number, row)!;
-            if (selectedModelNum !== -1 && selectedModelNum !== modelNum) continue;
-
-            const chain = Cif.Column.value(label_asym_id_1, row)!;
-            if (selectedChain && selectedChain !== chain) continue;
-
-            const tag = Cif.Column.value(name, row)!;
-            const tags = [tag, tag, tag, void 0];
-            const _step = StepsMapper.byName(this.props.dnatcofication, tag)!; // tag is the internal step name
-            const currNtC = getNtC(this.props.dnatcofication, _step, this.props.selectedCustomNtCSet);
-            const currRmsd = this.props.dnatcofication.getSimilarities(_step.id)?.[currNtC]?.rmsd;
-
-            const nextStepNtC = StepsMapper.byId(this.props.dnatcofication, StepsMapper.previousNextById(this.props.dnatcofication, _step.id).nextId).NtC;
-            const prevStepNtC = StepsMapper.byId(this.props.dnatcofication, StepsMapper.previousNextById(this.props.dnatcofication, _step.id).previousId).NtC;
-
-            const renderSwitchButton = (direction: string) => (
-                <button
-                    className={``}
-                    onClick={(ev) => {
-                        ev.preventDefault();
-                        ev.stopPropagation();
-                        this.setConnectivityMode(direction);
-                    }}
-                    title="Buttons"
-                >
-                    {direction}
-                </button>
-            );
-
-            let C5: number = 0;
-            let O3: number = 0;
-
-            setDynamicTableModelColumns(
-                this.tableModel,
-                row,
-                columns,
-                tags,
-                [
-                    "",
-                    Cif.Column.value(auth_asym_id_1, row)!,
-                    tag,
-                    currNtC,
-                    Cif.Column.value(cartesian_rmsd_closest_NtC_representative, row)!,
-                    C5,
-                    O3,
-                ],
-                [
-                    () => {
-                        if ( row === this.props.structureSelection.steps[0] - 2){
-                            return (
-                                <span>
-                                    {renderSwitchButton("Previous")}
-                                </span>
-                            );
-                        } else if (row === this.props.structureSelection.steps[0] - 1) {
-                            return (
-                                <span>
-                                    {renderSwitchButton("Current")}
-                                </span>
-                            );
-                        } else if (row === this.props.structureSelection.steps[0]){
-                            return (
-                                <span>
-                                    {renderSwitchButton("Next")}
-                                </span>
-                            );
-                        }
-                        return (<></>);
-                    },
-                    void 0,
-                    () => niceStepName(_step),
-                    () => currNtC === "NANT" ? (
-                        <Tooltip
-                            tag={
-                                <span className="text-secondary-third">
-                                    {currNtC}
-                                </span>
-                            }
-                            delayMsec={300}
-                        >
-                            This step is unassigned.
-                        </Tooltip>
-                    ) : (
-                        <span>
-                            {currNtC}
-                        </span>
-                    ),
-                    () => (
-                        <span>
-                          {currRmsd!.toFixed(3)}
-                        </span>
-                    ),
-                    () => {
-                        const conn = this.props.dnatcofication.getConnectivities(_step.id);
-                        let C5: number | undefined;
-
-                        if (row === this.props.structureSelection.steps[0] - 2) {
-                            C5 = conn.forward?.[nextStepNtC]?.C5PrimeDistance;
-                        } else if (row === this.props.structureSelection.steps[0]) {
-                            C5 = conn.backward?.[prevStepNtC]?.C5PrimeDistance;
-                        }
-                        return <span>{typeof C5 === 'number' ? C5.toFixed(3) : "-"}</span>;
-                    },
-                    () => {
-                        const conn = this.props.dnatcofication.getConnectivities(_step.id);
-                        let O3: number | undefined;
-
-                        if (row === this.props.structureSelection.steps[0] - 2) {
-                            O3 = conn.forward?.[nextStepNtC]?.O3PrimeDistance;
-                        } else if (row === this.props.structureSelection.steps[0]) {
-                            O3 = conn.backward?.[prevStepNtC]?.O3PrimeDistance;
-                        }
-                        return <span>{typeof O3 === 'number' ? O3.toFixed(3) : "-"}</span>;
-                    },
-                ]
-            )
+        this.tableModel = new DynamicTable.Model([]);
+        const _step = this.props.structureSelection.steps[0];
+        const neighbors = StepsMapper.previousNextById(this.props.dnatcofication, _step);
+        if(_step == undefined){return new DynamicTable.Model(columns);}
+        if(neighbors.previousId !== undefined){
+            this.addRow(0, "Previous", columns, neighbors.previousId);
+        }
+        this.addRow(1, "Current", columns, _step);
+        if(neighbors.nextId !== undefined){
+            this.addRow(2, "Next", columns, neighbors.nextId);
         }
         return new DynamicTable.Model(columns);
     }
