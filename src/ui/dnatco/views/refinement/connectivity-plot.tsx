@@ -182,18 +182,18 @@ export class ConnectivityPlot extends View<Refinement.Props> {
     private tableTainer = React.createRef<HTMLDivElement>();
 
     private renderSwitchButton = (direction: string) => (
-        <button
-            className={``}
-            onClick={(ev) => {
-                ev.preventDefault();
-                ev.stopPropagation();
-                this.setConnectivityMode(direction);
-            }}
-            title="Toggle buttons"
-        >
-            {direction}
-        </button>
-    );
+            <button
+                className={`font-bold cursor-pointer}`}
+                onClick={(ev) => {
+                    ev.preventDefault();
+                    ev.stopPropagation();
+                    this.setConnectivityMode(direction);
+                }}
+                title="Toggle buttons"
+            >
+                {direction}
+            </button>
+        );
 
     private addRow(row: number, label: "Previous" | "Current" | "Next", columns: DynamicTable.Column<any>[], stepId: number){
         const _step = StepsMapper.byId(this.props.dnatcofication ,stepId);
@@ -303,7 +303,7 @@ export class ConnectivityPlot extends View<Refinement.Props> {
             name: "Buttons",
             cells: new Array<DynamicTable.Cell<string>>(),
             alignment: "center",
-            tooltip: <div>Buttons</div>,
+            tooltip: <div>Select connectivity plot</div>,
             notSortable: true,
         }
 
@@ -412,8 +412,6 @@ export class ConnectivityPlot extends View<Refinement.Props> {
             <DynamicTableComp
                 model={this.tableModel}
                 onCellClicked={(data, row, colName) => {
-                    if (colName === "Custom NtC") return;
-
                     const cIdx = this.tableModel.columnNames.findIndex(
                         (cn) => cn === "Step"
                     );
