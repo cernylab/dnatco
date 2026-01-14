@@ -26,6 +26,7 @@ import { InputDialog } from "../../../common/input-dialog";
 import { DynamicTable } from "../../../../util/dynamic-table";
 import { ChangeNtCs } from "./change-ntcs";
 import { DynamicTable as DynamicTableComp } from "../../../common/dynamic-table";
+
 import { setDynamicTableModelColumns } from "../../util";
 import { niceStepName } from "../../common";
 import { Tooltip } from "../../../common/tooltip";
@@ -381,11 +382,11 @@ export class ConnectivityPlot extends View<Refinement.Props> {
         const _step = this.props.structureSelection.steps[0];
         const neighbors = StepsMapper.previousNextById(this.props.dnatcofication, _step);
         if(_step == undefined){return new DynamicTable.Model(columns);}
-        if(neighbors.previousId !== undefined){
+        if(neighbors.previousId !== undefined && neighbors.previousId !== -1){
             this.addRow(0, "Previous", columns, neighbors.previousId);
         }
         this.addRow(1, "Current", columns, _step);
-        if(neighbors.nextId !== undefined){
+        if(neighbors.nextId !== undefined && neighbors.nextId !== -1){
             this.addRow(2, "Next", columns, neighbors.nextId);
         }
         return new DynamicTable.Model(columns);
