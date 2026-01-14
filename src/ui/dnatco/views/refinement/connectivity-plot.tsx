@@ -26,7 +26,6 @@ import { InputDialog } from "../../../common/input-dialog";
 import { DynamicTable } from "../../../../util/dynamic-table";
 import { ChangeNtCs } from "./change-ntcs";
 import { DynamicTable as DynamicTableComp } from "../../../common/dynamic-table";
-import { NdbStructNtcStep, NdbStructNtcStepSummary } from "../../../../cif/categories/ndb-struct-ntc";
 import { setDynamicTableModelColumns } from "../../util";
 import { niceStepName } from "../../common";
 import { Tooltip } from "../../../common/tooltip";
