@@ -189,7 +189,7 @@ export class ConnectivityPlot extends View<Refinement.Props> {
                 ev.stopPropagation();
                 this.setConnectivityMode(direction);
             }}
-            title="Buttons"
+            title="Toggle buttons"
         >
             {direction}
         </button>
@@ -197,10 +197,13 @@ export class ConnectivityPlot extends View<Refinement.Props> {
 
     private addRow(row: number, label: "Previous" | "Current" | "Next", columns: DynamicTable.Column<any>[], stepId: number){
         const _step = StepsMapper.byId(this.props.dnatcofication ,stepId);
+        const neighbors = StepsMapper.previousNextById(this.props.dnatcofication, _step.id);
+        const currentNtC = getNtC(this.props.dnatcofication, _step, this.props.selectedCustomNtCSet);
+        const currentRMSD = this.props.dnatcofication.getSimilarities(_step.id)?.[currentNtC]?.rmsd;
+        const stepName = niceStepName(_step);
+
         const tag = _step.name;
         const tags = [void 0, tag, tag, tag, void 0, void 0, void 0];
-        const currentNtC = getNtC(this.props.dnatcofication, _step, this.props.selectedCustomNtCSet);
-        const neighbors = StepsMapper.previousNextById(this.props.dnatcofication, _step.id);
 
         const centredStepId = this.props.structureSelection.steps[0];
         const centredStep = StepsMapper.byId(this.props.dnatcofication, centredStepId);
@@ -223,17 +226,13 @@ export class ConnectivityPlot extends View<Refinement.Props> {
             nextStep,
             Cif.File.table(this.props.dnatcofication.data.cifData!, AtomSite, 0)
         )
-        const currentRMSD = this.props.dnatcofication.getSimilarities(_step.id)?.[currentNtC]?.rmsd;
-        const stepName = niceStepName(_step);
 
         let C5: any;
         let O3: any;
         if(label == "Previous"){
-            //const nextNtC = StepsMapper.byId(this.props.dnatcofication, neighbors.nextId).NtC;
             C5 = forward?.[centredNtC]?.C5PrimeDistance;
             O3 = forward?.[centredNtC]?.O3PrimeDistance;
         } else if (label == "Next"){
-            //const prevNtC = StepsMapper.byId(this.props.dnatcofication, neighbors.previousId).NtC;
             C5 = backward?.[centredNtC]?.C5PrimeDistance;
             O3 = backward?.[centredNtC]?.O3PrimeDistance;
         }
@@ -261,15 +260,18 @@ export class ConnectivityPlot extends View<Refinement.Props> {
                     )
                 },
                 void 0,
-                () => ( <span>
+                () => {
+                    return(
+                        <span>
                             {stepName}
-                        </span>),
+                        </span>
+                )},
                 () => currentNtC === "NANT" ? (
                     <Tooltip
                         tag={
                             <span className="text-secondary-third">
-                                    {currentNtC}
-                                </span>
+                                {currentNtC}
+                            </span>
                         }
                         delayMsec={300}
                     >
@@ -277,13 +279,13 @@ export class ConnectivityPlot extends View<Refinement.Props> {
                     </Tooltip>
                 ) : (
                     <span>
-                            {currentNtC}
-                        </span>
+                        {currentNtC}
+                    </span>
                 ),
                 () => (
                     <span>
-                          {currentRMSD!.toFixed(3)}
-                        </span>
+                      {currentRMSD!.toFixed(3)}
+                    </span>
                 ),
                 () => {
                     return <span>{typeof C5 === 'number' ? C5.toFixed(3) : "-"}</span>;
@@ -336,7 +338,7 @@ export class ConnectivityPlot extends View<Refinement.Props> {
             cellStyle: rmsdToColor,
             tooltip: (
                 <div>
-                    RMSD between the analyzed step and the closest NtC representative.
+                    RMSD
                 </div>
             ),
             notSortable: true,
@@ -379,13 +381,18 @@ export class ConnectivityPlot extends View<Refinement.Props> {
         ];
 
         this.tableModel = new DynamicTable.Model([]);
+
         const _step = this.props.structureSelection.steps[0];
         const neighbors = StepsMapper.previousNextById(this.props.dnatcofication, _step);
+
         if(_step == undefined){return new DynamicTable.Model(columns);}
+
         if(neighbors.previousId !== undefined && neighbors.previousId !== -1){
             this.addRow(0, "Previous", columns, neighbors.previousId);
         }
+
         this.addRow(1, "Current", columns, _step);
+
         if(neighbors.nextId !== undefined && neighbors.nextId !== -1){
             this.addRow(2, "Next", columns, neighbors.nextId);
         }
