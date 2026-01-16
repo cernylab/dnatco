@@ -664,6 +664,110 @@ function App(props: { initial: Initial }) {
     // Make sure we run this only once
     setInitialHandlingDone(true);
 
+    // PostMessage handler for GraphaRNA file transfers
+    const handlePostMessage = (event: MessageEvent) => {
+      // Security: Whitelist specific domains
+      const allowedOrigins = [
+        'https://grapharna.cs.put.poznan.pl',
+      ];
+      if (!allowedOrigins.includes(event.origin)) {
+        Logger.log(
+          Logger.Severity.Warning,
+          `Rejected postMessage from unauthorized origin: ${event.origin}`
+        );
+        return;
+      }
+
+      // Check message type
+      if (event.data && event.data.type === 'GRAPHARNA_TRANSFER') {
+        const { data: cifData, filename, fileType } = event.data;
+
+        if (!cifData || !filename) {
+          Logger.log(
+            Logger.Severity.Error,
+            'Invalid postMessage: missing data or filename'
+          );
+          return;
+        }
+
+        try {
+          // Create a File object from the received data
+          const mimeType = fileType === 'pdb'
+            ? 'chemical/x-pdb'
+            : 'chemical/x-mmcif';
+          const blob = new Blob([cifData], { type: mimeType });
+          const file = new File([blob], filename, { type: mimeType });
+
+          Logger.log(
+            Logger.Severity.Info,
+            `Loading file from GraphaRNA: ${filename}`
+          );
+
+          // Use the file upload handler with empty density maps
+          dh.fromCustomStructure(file, [], null, () => {
+            setAppMode("structure");
+            navigate("/app/dnatco/annotation");
+          });
+
+          // Send confirmation back to sender
+          if (event.source && 'postMessage' in event.source) {
+            (event.source as Window).postMessage(
+              { type: 'GRAPHARNA_TRANSFER_COMPLETE', success: true },
+              event.origin
+            );
+          }
+        } catch (e) {
+          Logger.log(
+            Logger.Severity.Error,
+            `Failed to process transferred file: ${e}`
+          );
+          // Send error back to sender
+          if (event.source && 'postMessage' in event.source) {
+            (event.source as Window).postMessage(
+              { type: 'GRAPHARNA_TRANSFER_COMPLETE', success: false, error: String(e) },
+              event.origin
+            );
+          }
+        }
+      }
+    };
+
+    // Register the listener
+    window.addEventListener('message', handlePostMessage);
+
+    // Signal to opener (GraphaRNA or test DNATCO) that DNATCO is ready
+    if (window.opener && window.opener !== window) {
+      // Try sending to each allowed origin (one will succeed, others will fail silently)
+      const targetOrigins = [
+        'https://grapharna.cs.put.poznan.pl',
+      ];
+
+      let sentSuccessfully = false;
+      for (const origin of targetOrigins) {
+        try {
+          window.opener.postMessage(
+            { type: 'DNATCO_READY' },
+            origin
+          );
+          sentSuccessfully = true;
+        } catch (e) {
+          // This is expected to fail for origins that don't match the opener
+        }
+      }
+
+      if (sentSuccessfully) {
+        Logger.log(
+          Logger.Severity.Info,
+          'Sent ready signal to opener window'
+        );
+      } else {
+        Logger.log(
+          Logger.Severity.Warning,
+          'Could not send ready signal to any target origin'
+        );
+      }
+    }
+
     // Check for MAXIT file transfer via hash
     const hash = props.initial.hash;
 
@@ -790,6 +894,11 @@ function App(props: { initial: Initial }) {
         else navigate("/app/dnatco/annotation");
       });
     }
+
+    // Cleanup: Remove PostMessage listener on unmount
+    return () => {
+      window.removeEventListener('message', handlePostMessage);
+    };
   }, [dnatcofierState]);
 
   return (
