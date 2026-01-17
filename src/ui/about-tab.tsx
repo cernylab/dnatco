@@ -574,6 +574,9 @@ function HowToCite() {
             <div className='mb-2'>
                 <a className='rdo-link' href='/papers/gkaa383.pdf' target='_blank'><strong>NtC alphabet:</strong></a> Černý, J., Božíková, P., Svoboda, J. & Schneider, B. (2020). A unified dinucleotide alphabet describing both RNA and DNA structures. Nucleic Acids Research, 48(11), 6367-6381. <a className='rdo-link' href='https://doi.org/10.1093/nar/gkaa383' target='_blank'>https://doi.org/10.1093/nar/gkaa383</a>
             </div>
+            <div className='mb-2'>
+                <a className='rdo-link' href='/papers/gkaf1335.pdf' target='_blank'><strong>Valence geometry validation:</strong></a> Černý, J., Nicholls, R. A., Brzezinski, D., Berman, H. M., Gilski, M., Joosten, R. P., Kowiel, M., Lawson, C. L., Moriarty, N. W., Richardson, J. S., Schneider, B., Vonrhein, C., Williams, C. J., Jaskólski, M. & Egli, M. (2026). New targets and procedures for validating the valence geometry of nucleic acid structures. Nucleic Acids Research, 54(1), gkaf1335. <a className='rdo-link' href='https://doi.org/10.1093/nar/gkaf1335' target='_blank'>https://doi.org/10.1093/nar/gkaf1335</a>
+            </div>
             <div className='mb-4 mt-4 text-16px'>
                 Additional Reading:
             </div>

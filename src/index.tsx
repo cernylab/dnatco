@@ -666,6 +666,15 @@ function App(props: { initial: Initial }) {
 
     // PostMessage handler for GraphaRNA file transfers
     const handlePostMessage = (event: MessageEvent) => {
+      // Log messages from same origin (DNATCO itself) for debugging
+      if (event.origin === window.location.origin) {
+        Logger.log(
+          Logger.Severity.Debug,
+          `Ignoring postMessage from same origin (DNATCO): ${JSON.stringify(event.data)}`
+        );
+        return;
+      }
+
       // Security: Whitelist specific domains
       const allowedOrigins = [
         'https://grapharna.cs.put.poznan.pl',
@@ -735,36 +744,39 @@ function App(props: { initial: Initial }) {
     // Register the listener
     window.addEventListener('message', handlePostMessage);
 
-    // Signal to opener (GraphaRNA or test DNATCO) that DNATCO is ready
+    // Signal to opener (GraphaRNA) that DNATCO is ready
     if (window.opener && window.opener !== window) {
-      // Try sending to each allowed origin (one will succeed, others will fail silently)
-      const targetOrigins = [
-        'https://grapharna.cs.put.poznan.pl',
-      ];
-
-      let sentSuccessfully = false;
-      for (const origin of targetOrigins) {
+      // Try to determine opener's origin by checking document.referrer
+      // This works when the opener is from a different origin
+      let openerOrigin: string | null = null;
+      if (document.referrer) {
         try {
-          window.opener.postMessage(
-            { type: 'DNATCO_READY' },
-            origin
-          );
-          sentSuccessfully = true;
+          const referrerUrl = new URL(document.referrer);
+          openerOrigin = referrerUrl.origin;
         } catch (e) {
-          // This is expected to fail for origins that don't match the opener
+          // Invalid referrer URL
         }
       }
 
-      if (sentSuccessfully) {
-        Logger.log(
-          Logger.Severity.Info,
-          'Sent ready signal to opener window'
-        );
-      } else {
-        Logger.log(
-          Logger.Severity.Warning,
-          'Could not send ready signal to any target origin'
-        );
+      // Only send message if opener is from GraphaRNA
+      const grapharnaOrigin = 'https://grapharna.cs.put.poznan.pl';
+      if (openerOrigin === grapharnaOrigin) {
+        try {
+          window.opener.postMessage(
+            { type: 'DNATCO_READY' },
+            grapharnaOrigin
+          );
+          Logger.log(
+            Logger.Severity.Info,
+            'Sent ready signal to opener window (GraphaRNA)'
+          );
+        } catch (e) {
+          // Failed to send message
+          Logger.log(
+            Logger.Severity.Warning,
+            `Failed to send ready signal to opener: ${e}`
+          );
+        }
       }
     }
 
