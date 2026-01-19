@@ -184,13 +184,18 @@ export class ConnectivityPlot extends View<Refinement.Props> {
     private renderSwitchButton = (direction: string) => {
         let arrow = "";
         let colour = "";
+        let tooltipText = "";
 
         if (direction === "Previous") {
             arrow = "▲";
             colour = "#" + Colors.PreviousStep().toString(16).padStart(6, '0');
+            tooltipText = `Click to show only previous connectivity plot`;
         } else if (direction === "Next"){
             arrow = "▼";
             colour = "#" + Colors.NextStep().toString(16).padStart(6, '0');
+            tooltipText = `Click to show only next connectivity plot`;
+        } else {
+            tooltipText = `Click to show both connectivity plots`
         }
 
         const arrowStyle = {
@@ -204,7 +209,7 @@ export class ConnectivityPlot extends View<Refinement.Props> {
                 ev.stopPropagation();
                 this.setConnectivityMode(direction);
             }}
-            title="Toggle buttons"
+            title={tooltipText}
         >
             {direction}{arrow && <span style={arrowStyle}>{arrow}</span>}
         </button>
@@ -317,7 +322,7 @@ export class ConnectivityPlot extends View<Refinement.Props> {
     private makeTableModel(){
 
         const buttonColumn: DynamicTable.Column<string> = {
-            name: "Buttons",
+            name: " ",
             cells: new Array<DynamicTable.Cell<string>>(),
             alignment: "center",
             tooltip: <div>Select connectivity plot</div>,
