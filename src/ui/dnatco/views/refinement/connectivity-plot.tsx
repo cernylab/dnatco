@@ -20,7 +20,7 @@ import { axesMaximumHints } from '../../util';
 import { colorToRgb, rgbToHex } from '../../../../util/colors';
 import { objKeys } from '../../../../util';
 import { valueToSemaphore } from '../../../../util/semaphore';
-import { InvalidModelIndex, InvalidChain, InvalidAtom, InvalidResidue, InvalidStepId, StructureSelection } from '../../../../util/structure-selection';
+import { InvalidAtom, InvalidResidue, InvalidStepId } from '../../../../util/structure-selection';
 
 import { InputDialog } from "../../../common/input-dialog";
 import { DynamicTable } from "../../../../util/dynamic-table";
@@ -297,7 +297,7 @@ export class ConnectivityPlot extends View<Refinement.Props> {
         )
     }
 
-    private makeTableModel(selectedModelNum: number, selectedChain?: string){
+    private makeTableModel(){
 
         const buttonColumn: DynamicTable.Column<string> = {
             name: "Buttons",
@@ -437,7 +437,7 @@ export class ConnectivityPlot extends View<Refinement.Props> {
         return (
             <DynamicTableComp
                 model={this.tableModel}
-                onCellClicked={(data, row, colName) => {
+                onCellClicked={(row) => {
                     const cIdx = this.tableModel.columnNames.findIndex(
                         (cn) => cn === "Step"
                     );
@@ -472,16 +472,8 @@ export class ConnectivityPlot extends View<Refinement.Props> {
         );
     }
 
-    private setTableModel(sel: StructureSelection) {
-        const modelNum =
-            sel.modelIndex !== InvalidModelIndex
-                ? this.props.dnatcofication.data.structures[0].models[sel.modelIndex]
-                    .num
-                : InvalidModelIndex;
-        this.tableModel = this.makeTableModel(
-            modelNum,
-            sel.chain === InvalidChain ? void 0 : sel.chain
-        );
+    private setTableModel() {
+        this.tableModel = this.makeTableModel();
     }
 
     private renderConnectivityPlot(data: PlotData, hints: [xMax: number, yMax: number], changeCustomNtC: (NtC: string) => void, uirev: string) {
@@ -622,17 +614,16 @@ export class ConnectivityPlot extends View<Refinement.Props> {
     }
 
     componentDidMount() {
-        this.subscribe(this.props.switching.events.modelSwitched, (sel) => {this.setTableModel(sel); this.forceUpdate();});
-        this.subscribe(this.props.switching.events.chainSwitched, (sel) => {this.setTableModel(sel); this.forceUpdate()});
-        this.subscribe(this.props.switching.events.selectionChanged, (sel) => {this.setTableModel(sel);  this.forceUpdate()});
+        this.subscribe(this.props.switching.events.modelSwitched, () => {this.setTableModel(); this.forceUpdate();});
+        this.subscribe(this.props.switching.events.chainSwitched, () => {this.setTableModel(); this.forceUpdate()});
+        this.subscribe(this.props.switching.events.selectionChanged, () => {this.setTableModel();  this.forceUpdate()});
         this.subscribe(this.props.dnatcofication.customNtCs.events.setChanged, (update) => {
             if (update.set === this.props.selectedCustomNtCSet) {
-                const sel = this.props.structureSelection;
-                this.setTableModel(sel);
+                this.setTableModel();
                 this.forceUpdate();
             }
         });
-        this.setTableModel(this.props.structureSelection);
+        this.setTableModel();
     }
 
     componentWillUnmount() {
