@@ -183,7 +183,7 @@ export class ConnectivityPlot extends View<Refinement.Props> {
 
     private renderSwitchButton = (direction: string) => (
             <button
-                className={`font-bold cursor-pointer}`}
+                className={`font-bold cursor-pointer`}
                 onClick={(ev) => {
                     ev.preventDefault();
                     ev.stopPropagation();
