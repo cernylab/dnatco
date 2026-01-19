@@ -305,6 +305,9 @@ export class ConnectivityPlot extends View<Refinement.Props> {
             alignment: "center",
             tooltip: <div>Select connectivity plot</div>,
             notSortable: true,
+            headerStyle: {
+                minWidth: '75px'
+            },
         }
 
         const chainColumn: DynamicTable.Column<string> = {
@@ -313,11 +316,22 @@ export class ConnectivityPlot extends View<Refinement.Props> {
             alignment: "center",
             tooltip: <div>PDB chain ID (author)</div>,
             notSortable: true,
+            headerStyle: {
+                minWidth: '60px'
+            },
         };
 
         const stepColumn: DynamicTable.Column<string> = {
             name: "Step",
             cells: new Array<DynamicTable.Cell<string>>(),
+            headerStyle: {
+                whiteSpace: 'nowrap',
+                width: '100px'
+            },
+            cellStyle: () => ({
+               whiteSpace: 'nowrap',
+               width: '100px'
+            }),
             alignment: "center",
             tooltip: <div>Dinucleotide step identifier</div>,
             notSortable: true,
@@ -327,6 +341,9 @@ export class ConnectivityPlot extends View<Refinement.Props> {
             name: "NtC",
             cells: new Array<DynamicTable.Cell<string>>(),
             alignment: "center",
+            headerStyle: {
+                minWidth: '60px'
+            },
             tooltip: <div> NtC </div>,
             notSortable: true,
         };
@@ -336,6 +353,9 @@ export class ConnectivityPlot extends View<Refinement.Props> {
             cells: new Array<DynamicTable.Cell<number>>(),
             alignment: "center",
             cellStyle: rmsdToColor,
+            headerStyle: {
+                minWidth: '60px'
+            },
             tooltip: (
                 <div>
                     RMSD
@@ -349,6 +369,9 @@ export class ConnectivityPlot extends View<Refinement.Props> {
             cells: new Array<DynamicTable.Cell<number>>(),
             alignment: "center",
             cellStyle: rmsdToColor,
+            headerStyle: {
+                minWidth: '60px'
+            },
             tooltip: (
                 <div>
                     C5.
@@ -361,6 +384,9 @@ export class ConnectivityPlot extends View<Refinement.Props> {
             name: "O3",
             cells: new Array<DynamicTable.Cell<number>>(),
             alignment: "center",
+            headerStyle: {
+                minWidth: '60px'
+            },
             cellStyle: rmsdToColor,
             tooltip: (
                 <div>
