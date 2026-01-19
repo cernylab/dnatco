@@ -181,19 +181,36 @@ export class ConnectivityPlot extends View<Refinement.Props> {
     private tableModel: DynamicTable.Model = new DynamicTable.Model([]);
     private tableTainer = React.createRef<HTMLDivElement>();
 
-    private renderSwitchButton = (direction: string) => (
-            <button
-                className={`font-bold cursor-pointer`}
-                onClick={(ev) => {
-                    ev.preventDefault();
-                    ev.stopPropagation();
-                    this.setConnectivityMode(direction);
-                }}
-                title="Toggle buttons"
-            >
-                {direction}
-            </button>
-        );
+    private renderSwitchButton = (direction: string) => {
+        let arrow = "";
+        let colour = "";
+
+        if (direction === "Previous") {
+            arrow = "▲";
+            colour = "#" + Colors.PreviousStep().toString(16).padStart(6, '0');
+        } else if (direction === "Next"){
+            arrow = "▼";
+            colour = "#" + Colors.NextStep().toString(16).padStart(6, '0');
+        }
+
+        const arrowStyle = {
+            color: colour
+        }
+
+        return (<button
+            className={`font-bold cursor-pointer`}
+            onClick={(ev) => {
+                ev.preventDefault();
+                ev.stopPropagation();
+                this.setConnectivityMode(direction);
+            }}
+            title="Toggle buttons"
+        >
+            {direction}{arrow && <span style={arrowStyle}>{arrow}</span>}
+        </button>
+    );
+    };
+
 
     private addRow(row: number, label: "Previous" | "Current" | "Next", columns: DynamicTable.Column<any>[], stepId: number){
         const _step = StepsMapper.byId(this.props.dnatcofication ,stepId);
