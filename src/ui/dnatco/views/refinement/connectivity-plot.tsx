@@ -6,7 +6,7 @@ import { ChainSelect, ModelSelect, StepSelect } from '../structure-selectors';
 import { View } from '../view';
 import { PlotPointsLegend } from '../../plot-points-legend';
 import { EmptySelectionPieces } from '../../structure-selection';
-import { NamedList, NamedListItem } from '../../../common/named-list';
+import { NamedListItem } from '../../../common/named-list';
 import { Cif } from '../../../../cif';
 import { AtomSite } from '../../../../cif/categories/atom-site';
 import { Colors } from '../../colors';
@@ -674,8 +674,10 @@ export class ConnectivityPlot extends View<Refinement.Props> {
 
         return (
             <div className='h-full'>
-                <NamedList sizing='min-content' rowSpacing='half'>
+                <div className={"flex flex-row flex-wrap gap-4 items-end"}>
+
                     {numModels > 1 && (
+                        <span>
                         <NamedListItem name='Model'>
                             <ModelSelect
                                 dnatcofication={this.props.dnatcofication}
@@ -683,8 +685,10 @@ export class ConnectivityPlot extends View<Refinement.Props> {
                                 switching={this.props.switching}
                             />
                         </NamedListItem>
+                        </span>
                     )}
                     {numChains > 1 && (
+                        <span>
                         <NamedListItem name='Chain'>
                             <ChainSelect
                                 dnatcofication={this.props.dnatcofication}
@@ -692,7 +696,9 @@ export class ConnectivityPlot extends View<Refinement.Props> {
                                 switching={this.props.switching}
                             />
                         </NamedListItem>
+                        </span>
                     )}
+                    <span>
                     <NamedListItem name='Step'>
                         <StepSelect
                             dnatcofication={this.props.dnatcofication}
@@ -706,7 +712,9 @@ export class ConnectivityPlot extends View<Refinement.Props> {
                             }}
                         />
                     </NamedListItem>
-                </NamedList>
+                    </span>
+                </div>
+
 
                 <div className='h-4' />
 
