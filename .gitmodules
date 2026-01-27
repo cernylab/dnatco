@@ -1,12 +1,12 @@
 [submodule "molstar"]
 	path = molstar
-	url = git@github.com:cernylab/molstar.git
+	url = https://github.com/cernylab/molstar.git
 [submodule "jsllka"]
 	path = jsllka
-	url = git@github.com:cernylab/jsllka.git
+	url = https://github.com/cernylab/jsllka.git
 [submodule "tscif"]
 	path = tscif
-	url = git@github.com:cernylab/tscif.git
+	url = https://github.com/cernylab/tscif.git
 [submodule "tspdb"]
 	path = tspdb
-	url = git@github.com:cernylab/tspdb.git
+	url = https://github.com/cernylab/tspdb.git
