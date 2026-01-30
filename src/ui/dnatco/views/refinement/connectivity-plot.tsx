@@ -198,8 +198,12 @@ export class ConnectivityPlot extends View<Refinement.Props> {
             tooltipText = `Click to show both connectivity plots`
         }
 
-        const arrowStyle = {
-            color: colour
+        const arrowStyle: React.CSSProperties = {
+            color: colour,
+            width: '20px',
+            textAlign: 'left',
+            flexShrink: '0',
+            display: 'inline-flex',
         }
 
         return (<button
@@ -210,8 +214,16 @@ export class ConnectivityPlot extends View<Refinement.Props> {
                 this.setConnectivityMode(direction);
             }}
             title={tooltipText}
+            style={{ display: 'inline-flex', alignItems: 'center', width: '100%', marginLeft: direction === "Current" ? "20px" : "0px" }}
         >
-            {direction}{arrow && <span style={arrowStyle}>{arrow}</span>}
+            {arrow && <span style={arrowStyle}>{arrow}</span>}
+            <span style={{
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis'
+                }}>
+                {direction}
+            </span>
         </button>
     );
     };
@@ -328,7 +340,7 @@ export class ConnectivityPlot extends View<Refinement.Props> {
             tooltip: <div>Select connectivity plot</div>,
             notSortable: true,
             headerStyle: {
-                minWidth: '75px'
+                width: '90px'
             },
         }
 
