@@ -243,26 +243,31 @@ function Help() {
     }))
 
     const displayHome = home.map(page => ({
+        id: page.id,
         headline: page.headline,
         paragraphs: page.paragraphs.map(paragraph => paragraph)
     }));
 
     const displayAnnotation = annotation.map(page => ({
+        id: page.id,
         headline: page.headline,
         paragraphs: page.paragraphs.map(paragraph => paragraph)
     }))
 
     const displayValidation = validation.map(page => ({
+        id: page.id,
         headline: page.headline,
         paragraphs: page.paragraphs.map(paragraph => paragraph)
     }))
 
     const displayRefinement = refinement.map(page => ({
+        id: page.id,
         headline: page.headline,
         paragraphs: page.paragraphs.map(paragraph => paragraph)
     }))
 
     const displayBrowse = browse.map(page => ({
+        id: page.id,
         headline: page.headline,
         paragraphs: page.paragraphs.map(paragraph => paragraph)
     }))
@@ -439,11 +444,11 @@ function Help() {
         {
             headline: 'Web Application Tabs',
             sections: [
-                ...displayHome.map((page: any) => ({ id: page.id, headline: page.headline })),
-                ...displayAnnotation.map((page: any) => ({ id: page.id, headline: page.headline })),
-                ...displayValidation.map((page: any) => ({ id: page.id, headline: page.headline })),
-                ...displayRefinement.map((page: any) => ({ id: page.id, headline: page.headline })),
-                ...displayBrowse.map((page: any) => ({ id: page.id, headline: page.headline }))
+                ...displayHome,
+                ...displayAnnotation,
+                ...displayValidation,
+                ...displayRefinement,
+                ...displayBrowse
             ]
         }
     ];
@@ -453,15 +458,16 @@ function Help() {
             {/* Table of Contents */}
             <div id="toc" className='mb-8 border-b-secondary-second border-b pb-4'>
                 <h3 className='font-700 text-18px mb-3 uppercase'>Table of Contents</h3>
-                <div className='ml-4'>
-                    {tocStructure.map((page: any, pageIdx: number) => (
-                        <div key={pageIdx} className='mb-3'>
+                <div className='ml-4 grid grid-cols-3 gap-x-6'>
+                    {/* Column 1 - User's Guide */}
+                    {tocStructure[0] && (
+                        <div className='mb-3'>
                             <div className='font-700 text-16px mb-1'>
-                                {page.headline}
+                                {tocStructure[0].headline}
                             </div>
-                            {page.sections && page.sections.length > 0 && (
+                            {tocStructure[0].sections && tocStructure[0].sections.length > 0 && (
                                 <div className='ml-4'>
-                                    {page.sections.map((section: any, sectionIdx: number) => (
+                                    {tocStructure[0].sections.map((section: any, sectionIdx: number) => (
                                         <div key={sectionIdx} className='mb-1'>
                                             <a
                                                 href={`#${section.id}`}
@@ -481,7 +487,67 @@ function Help() {
                                 </div>
                             )}
                         </div>
-                    ))}
+                    )}
+
+                    {/* Column 2 - Density Maps */}
+                    {tocStructure[1] && (
+                        <div className='mb-3'>
+                            <div className='font-700 text-16px mb-1'>
+                                {tocStructure[1].headline}
+                            </div>
+                            {tocStructure[1].sections && tocStructure[1].sections.length > 0 && (
+                                <div className='ml-4'>
+                                    {tocStructure[1].sections.map((section: any, sectionIdx: number) => (
+                                        <div key={sectionIdx} className='mb-1'>
+                                            <a
+                                                href={`#${section.id}`}
+                                                className="rdo-link text-15px"
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    const el = document.getElementById(section.id);
+                                                    if (el) {
+                                                        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                                    }
+                                                }}
+                                            >
+                                                {section.headline}
+                                            </a>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {/* Column 3 - Web Application Tabs */}
+                    {tocStructure[2] && (
+                        <div className='mb-3'>
+                            <div className='font-700 text-16px mb-1'>
+                                {tocStructure[2].headline}
+                            </div>
+                            {tocStructure[2].sections && tocStructure[2].sections.length > 0 && (
+                                <div className='ml-4'>
+                                    {tocStructure[2].sections.map((section: any, sectionIdx: number) => (
+                                        <div key={sectionIdx} className='mb-1'>
+                                            <a
+                                                href={`#${section.id}`}
+                                                className="rdo-link text-15px"
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    const el = document.getElementById(section.id);
+                                                    if (el) {
+                                                        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                                    }
+                                                }}
+                                            >
+                                                {section.headline}
+                                            </a>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    )}
                 </div>
             </div>
 
@@ -499,8 +565,20 @@ function Help() {
 function HowToCite() {
     return (
         <div className='mt-7'>
-            <div>
-                The NtC alphabet - a unified dinucleotide alphabet of both RNA and DNA conformations is described in <a className='rdo-link' href='/papers/gkaa383.pdf' target='_blank'>Černý et al., NAR 48, 6367 (2020)</a>
+            <div className='mb-4 text-16px'>
+                If you use this Software in a scientific or academic work, you must cite the paper(s) listed in the <a className='rdo-link' href='https://github.com/cernylab/dnatco/blob/new-style/CITATION.txt' target='_blank'>CITATION.txt</a> file that accompanies the Software. The citation(s) should be included in all academic and scientific publications, presentations, or derivative works that make use of this Software.
+            </div>
+            <div className='mb-2'>
+                <a className='rdo-link' href='/papers/gkaf1491.pdf' target='_blank'><strong>DNATCO v5.0:</strong></a> Černý, J., Malý, M., Božíková, P., Prchalová, T., Svoboda, J., Biedermannová, L. & Schneider, B. (2026). DNATCO v5.0: integrated web platform for 3D nucleic acid structure analysis. Nucleic Acids Research, 54(1), gkaf1491. <a className='rdo-link' href='https://doi.org/10.1093/nar/gkaf1491' target='_blank'>https://doi.org/10.1093/nar/gkaf1491</a>
+            </div>
+            <div className='mb-2'>
+                <a className='rdo-link' href='/papers/gkaa383.pdf' target='_blank'><strong>NtC alphabet:</strong></a> Černý, J., Božíková, P., Svoboda, J. & Schneider, B. (2020). A unified dinucleotide alphabet describing both RNA and DNA structures. Nucleic Acids Research, 48(11), 6367-6381. <a className='rdo-link' href='https://doi.org/10.1093/nar/gkaa383' target='_blank'>https://doi.org/10.1093/nar/gkaa383</a>
+            </div>
+            <div className='mb-2'>
+                <a className='rdo-link' href='/papers/gkaf1335.pdf' target='_blank'><strong>Valence geometry validation:</strong></a> Černý, J., Nicholls, R. A., Brzezinski, D., Berman, H. M., Gilski, M., Joosten, R. P., Kowiel, M., Lawson, C. L., Moriarty, N. W., Richardson, J. S., Schneider, B., Vonrhein, C., Williams, C. J., Jaskólski, M. & Egli, M. (2026). New targets and procedures for validating the valence geometry of nucleic acid structures. Nucleic Acids Research, 54(1), gkaf1335. <a className='rdo-link' href='https://doi.org/10.1093/nar/gkaf1335' target='_blank'>https://doi.org/10.1093/nar/gkaf1335</a>
+            </div>
+            <div className='mb-4 mt-4 text-16px'>
+                Additional Reading:
             </div>
             <div>
                 The web service (version 3.2) is described in <a className='rdo-link' href='/papers/rr5151.pdf' target='_blank'>Černý et al., Acta Cryst D 76, 805 (2020)</a>

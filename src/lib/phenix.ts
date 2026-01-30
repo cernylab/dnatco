@@ -245,13 +245,9 @@ function isSpace(cc: number) {
 }
 
 function parseChainAndAltId(str: string): { chain: string, altId: string } {
-    // Phenix output is not definitely parseable because not all fields
-    // are present at all lines and the format does not indicate which fields are missing.
-    // mmCif people decided to care for empty values by introducing *two*
-    // characters that denote "there is nothing here" because some values are empty
-    // but some others are even emptier.
-    // Phenix people decided to use the same character for empty value
-    // and field separator, turning this into a "import 'crystal_ball'" kind of code.
+    //
+    // Insert your favorite complaint about less-than-ideal data formats here...
+    //
 
     const len = str.length;
 
@@ -284,7 +280,7 @@ function parseSeqIdStr(str: string): PhxAtom['seqId'] {
     let nv = slice(str, idx, idx2 - idx);
     if (isAlpha(nv.charCodeAt(0))) {
         let ext = nv.charCodeAt(0) - AUpr;
-        let tv = parseTailOfPhenixWeirdNotReallyANumberStrBecauseFuckYou(slice(nv, 1));
+        let tv = parseTailOfPhenixWeirdNotReallyANumberStr(slice(nv, 1));
         num = 10000 + (Math.pow(36, 3) * ext) + tv;
     } else
         num = parseInt(nv);
@@ -298,7 +294,7 @@ function parseSeqIdStr(str: string): PhxAtom['seqId'] {
     return { num, inscode };
 }
 
-function parseTailOfPhenixWeirdNotReallyANumberStrBecauseFuckYou(fs: string) {
+function parseTailOfPhenixWeirdNotReallyANumberStr(fs: string) {
     const SPAN = ZUpr - AUpr + 11;
     const len = fs.length;
 
@@ -333,14 +329,15 @@ export function pdbAtomToAtomSite(pdbAtom: Pdb.Atom): AtomSite {
     };
 }
 
-function phenixCommand(exec: string, coordsFilePath: string, reflnsFilePath: string) {
+function phenixCommand(exec: string, coordsFilePath: string, reflnsFilePath: string, dataLabels: string) {
     return {
         cmd: exec,
         args: [
+            `${reflnsFilePath}`, // when using just file name without specifying "reflection_file_name=" Phenix autodetects sf/mtz vs map, otherwise it would fail if map is provided.
             `pdb_file_name="${coordsFilePath}"`,
-            `reflection_file_name="${reflnsFilePath}"`,
             'detail=atom',
-            'resolution_factor=1./8'
+            'resolution_factor=1./8',
+            `data_labels=${dataLabels}`
         ]
     };
 }
@@ -400,6 +397,7 @@ export function toStructure(atomSites: AtomSite[]): Structure {
 export namespace Phenix {
     export type Context = {
         exec: string,
+        dataLabels: string,
     };
     export type RsccElement = [atomId: number, rscc: number];
     export type Rscc = RsccElement[];
@@ -408,11 +406,15 @@ export namespace Phenix {
         const coordsFilePathNorm = path.normalize(coords.filePath);
         const reflnsFilePathNorm = path.normalize(reflnsFilePath);
 
-        const { cmd, args } = phenixCommand(ctx.exec, coordsFilePathNorm, reflnsFilePathNorm);
+        const { cmd, args } = phenixCommand(ctx.exec, coordsFilePathNorm, reflnsFilePathNorm, ctx.dataLabels);
+
+        const fullCommand = `${cmd} ${args.join(' ')}`;
+        Logger.log(Logger.Severity.Debug, `Executing Phenix RSCC command: ${fullCommand}`);
 
         try {
             const stdout = child_process.execFileSync(cmd, args);
             const phenixOutput = stdout.toString('utf8');
+
             const rscc = coords.coords.type === 'cif'
                 ? convertWithCif(coords.coords.data, phenixOutput)
                 : convertWithPdb(coords.coords.data, phenixOutput);
@@ -420,18 +422,20 @@ export namespace Phenix {
             return OkResult(rscc);
         } catch (e) {
             const _e = e as child_process.SpawnSyncReturns<Buffer>;
-            const errMsg = `Phenix process has failed with exit code ${_e.status} and stderr output: "${_e.stderr}"`;
+            const stdout = _e.stdout ? _e.stdout.toString('utf8') : '(empty)';
+            const stderr = _e.stderr ? _e.stderr.toString('utf8') : '(empty)';
+            const errMsg = `Phenix process has failed with exit code ${_e.status}\nStdout: ${stdout}\nStderr: ${stderr}`;
 
             return ErrorResult(errMsg);
         }
     }
 
-    export function makeContext(exec: string): Context | undefined {
+    export function makeContext(exec: string, dataLabels: string): Context | undefined {
         if (!isExecutable(exec)) {
-            Logger.log(Logger.Severity.Info, `Path "${exec}" does not point to an executable file. Disabling Phenix.`);
+            Logger.log(Logger.Severity.Debug, `Path "${exec}" does not point to an executable file. Disabling Phenix.`);
             return void 0;
         }
 
-        return { exec };
+        return { exec, dataLabels };
     }
 }

@@ -1,1 +1,14 @@
-Jiří Černý,￼Paulína Božíková,￼Jakub Svoboda,￼and Bohdan Schneider, "A unified dinucleotide alphabet describing both RNA and DNA structures", Nucleic Acids Research, 2020, 48(11), 6367-6381, 10.1093/nar/gkaa383
+DNATCO v5.0: integrated web platform for 3D nucleic acid structure analysis
+Jiří Černý, Michal Malý, Paulína Božíková, Terezie Prchalová, Jakub Svoboda, Lada Biedermannová, Bohdan Schneider
+Nucleic Acids Research, Volume 54, Issue 1, 13 January 2026, gkaf1491
+https://doi.org/10.1093/nar/gkaf1491
+
+A unified dinucleotide alphabet describing both RNA and DNA structures
+Jiří Černý, Paulína Božíková, Jakub Svoboda, and Bohdan Schneider
+Nucleic Acids Research, 2020, 48(11), 6367-6381
+https://doi.org/10.1093/nar/gkaa383
+
+New targets and procedures for validating the valence geometry of nucleic acid structures
+Jiří Černý, Robert A Nicholls, Dariusz Brzezinski, Helen M Berman, Miroslaw Gilski, Robbie P Joosten, Marcin Kowiel, Catherine L Lawson, Nigel W Moriarty, Jane S Richardson, Bohdan Schneider, Clemens Vonrhein, Christopher J Williams, Mariusz Jaskólski, Martin Egli
+Nucleic Acids Research, Volume 54, Issue 1, 13 January 2026, gkaf1335
+https://doi.org/10.1093/nar/gkaf1335

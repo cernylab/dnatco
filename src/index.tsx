@@ -664,6 +664,122 @@ function App(props: { initial: Initial }) {
     // Make sure we run this only once
     setInitialHandlingDone(true);
 
+    // PostMessage handler for GraphaRNA file transfers
+    const handlePostMessage = (event: MessageEvent) => {
+      // Log messages from same origin (DNATCO itself) for debugging
+      if (event.origin === window.location.origin) {
+        Logger.log(
+          Logger.Severity.Debug,
+          `Ignoring postMessage from same origin (DNATCO): ${JSON.stringify(event.data)}`
+        );
+        return;
+      }
+
+      // Security: Whitelist specific domains
+      const allowedOrigins = [
+        'https://grapharna.cs.put.poznan.pl',
+      ];
+      if (!allowedOrigins.includes(event.origin)) {
+        Logger.log(
+          Logger.Severity.Warning,
+          `Rejected postMessage from unauthorized origin: ${event.origin}`
+        );
+        return;
+      }
+
+      // Check message type
+      if (event.data && event.data.type === 'GRAPHARNA_TRANSFER') {
+        const { data: cifData, filename, fileType } = event.data;
+
+        if (!cifData || !filename) {
+          Logger.log(
+            Logger.Severity.Error,
+            'Invalid postMessage: missing data or filename'
+          );
+          return;
+        }
+
+        try {
+          // Create a File object from the received data
+          const mimeType = fileType === 'pdb'
+            ? 'chemical/x-pdb'
+            : 'chemical/x-mmcif';
+          const blob = new Blob([cifData], { type: mimeType });
+          const file = new File([blob], filename, { type: mimeType });
+
+          Logger.log(
+            Logger.Severity.Info,
+            `Loading file from GraphaRNA: ${filename}`
+          );
+
+          // Use the file upload handler with empty density maps
+          dh.fromCustomStructure(file, [], null, () => {
+            setAppMode("structure");
+            navigate("/app/dnatco/annotation");
+          });
+
+          // Send confirmation back to sender
+          if (event.source && 'postMessage' in event.source) {
+            (event.source as Window).postMessage(
+              { type: 'GRAPHARNA_TRANSFER_COMPLETE', success: true },
+              event.origin
+            );
+          }
+        } catch (e) {
+          Logger.log(
+            Logger.Severity.Error,
+            `Failed to process transferred file: ${e}`
+          );
+          // Send error back to sender
+          if (event.source && 'postMessage' in event.source) {
+            (event.source as Window).postMessage(
+              { type: 'GRAPHARNA_TRANSFER_COMPLETE', success: false, error: String(e) },
+              event.origin
+            );
+          }
+        }
+      }
+    };
+
+    // Register the listener
+    window.addEventListener('message', handlePostMessage);
+
+    // Signal to opener (GraphaRNA) that DNATCO is ready
+    if (window.opener && window.opener !== window) {
+      // Try to determine opener's origin by checking document.referrer
+      // This works when the opener is from a different origin
+      let openerOrigin: string | null = null;
+      if (document.referrer) {
+        try {
+          const referrerUrl = new URL(document.referrer);
+          openerOrigin = referrerUrl.origin;
+        } catch (e) {
+          // Invalid referrer URL
+        }
+      }
+
+      // Only send message if opener is from GraphaRNA
+      const grapharnaOrigin = 'https://grapharna.cs.put.poznan.pl';
+      if (openerOrigin === grapharnaOrigin) {
+        try {
+          window.opener.postMessage(
+            { type: 'DNATCO_READY' },
+            grapharnaOrigin
+          );
+          Logger.log(
+            Logger.Severity.Info,
+            'Sent ready signal to opener window (GraphaRNA)'
+          );
+        } catch (e) {
+          // Failed to send message
+          Logger.log(
+            Logger.Severity.Warning,
+            `Failed to send ready signal to opener: ${e}`
+          );
+        }
+      }
+    }
+
     // Check for MAXIT file transfer via hash
     const hash = props.initial.hash;
 
@@ -764,7 +880,7 @@ function App(props: { initial: Initial }) {
         const sub = vi.events.structureLoaded.subscribe(() => {
           sub.unsubscribe();
           // Parse residue name after dnatcofication is available
-          const residue = ALM.residueByName(dh.dnatcofication.data.almByResidue, residueName);
+          const residue = ALM.residueByName(dh.dnatcofication.data.almByResidue, dh.dnatcofication.data.structures, dh.dnatcofication.data.entityKinds, residueName);
           if (residue) {
             goToResidue(residue, bondSpec, angleSpec, outsideControl);
           } else {
@@ -790,6 +906,11 @@ function App(props: { initial: Initial }) {
         else navigate("/app/dnatco/annotation");
       });
     }
+
+    // Cleanup: Remove PostMessage listener on unmount
+    return () => {
+      window.removeEventListener('message', handlePostMessage);
+    };
   }, [dnatcofierState]);
 
   return (
@@ -812,7 +933,25 @@ function App(props: { initial: Initial }) {
                   </div>
                 );
                 return;
-              } else navigate(`/app/dnatco/${tk}`);
+              } else {
+                // For annotation/validation/refinement, try to restore the last viewed sub-tab
+                if (["annotation", "validation", "refinement"].includes(tk)) {
+                  try {
+                    const viewMemory = sessionStorage.getItem('dnatco-view-memory');
+                    if (viewMemory) {
+                      const memory = JSON.parse(viewMemory);
+                      const lastView = memory[tk];
+                      if (lastView) {
+                        navigate(`/app/dnatco/${tk}/${lastView}`);
+                        return;
+                      }
+                    }
+                  } catch (e) {
+                    // Ignore and fall through to default navigation
+                  }
+                }
+                navigate(`/app/dnatco/${tk}`);
+              }
             } else navigate(`/app/${tk}`);
           }
         }}

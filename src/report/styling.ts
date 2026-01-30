@@ -15,6 +15,22 @@ export namespace Colors {
         const idx = Math.round(lum * (LuminanceToChar.length - 1));
         return LuminanceToChar[idx];
     }
+
+    /** ProSco glyph mapping (inverted: bright=common, dark=unique) */
+    export function colorToGlyphProSco(clr: Rgb) {
+        const lum = luminance(rgbToColor(clr.r, clr.g, clr.b));
+        const idx = Math.round((1.0 - lum) * (LuminanceToChar.length - 1));
+        return LuminanceToChar[idx];
+    }
+
+    /** Naval glyph mapping (hardcoded: preferred=light, allowed=medium, of concern=dark) */
+    export function colorToGlyphNaval(cls: 'preferred' | 'allowed' | 'of-concern') {
+        switch (cls) {
+            case 'preferred': return '░';  // light shade
+            case 'allowed': return '▒';    // medium shade
+            case 'of-concern': return '▓'; // dark shade
+        }
+    }
 }
 
 export namespace Fonts {
