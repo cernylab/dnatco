@@ -184,7 +184,7 @@ export class ConnectivityPlot extends View<Refinement.Props> {
     private renderSwitchButton = (direction: string) => {
         let arrow = "";
         let colour = "";
-        let tooltipText = "";
+        let tooltipText: string;
 
         if (direction === "Previous") {
             arrow = "▲";
