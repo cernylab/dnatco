@@ -62,7 +62,19 @@ import {
 } from "../../../../util/structure-selection";
 import { ViewerInterop, ViewerApi } from "../../../../viewer/viewer-interop";
 
+function reverseTagTriplet(tripletTagStr: string){
+        const parts = tripletTagStr.split('^');
+        if (parts.length !== 3){
+                throw new Error(`Invalid tripletTag format: ${tripletTagStr}`);
+        }
+        return [parts[2], parts[1], parts[0]].join('^');
+    
+}
+
 function makeAngleDetails(props: ResidueDetailsProps, cellRefs: Map<string, React.RefObject<HTMLTableCellElement>>) {
+    if (!props.residue || !props.residue.bondAngles) {
+        return [];
+    }
   const displayOrder =
     AnglesLengthsDisplayOrder.Angles[props.residue.compound];
 
@@ -71,10 +83,15 @@ function makeAngleDetails(props: ResidueDetailsProps, cellRefs: Map<string, Reac
     let idx = -1;
 
     for (let _idx = 0; _idx < props.residue.bondAngles.length; _idx++) {
-      if (props.residue.bondAngles[_idx].tag === tripletTagStr) {
-        idx = _idx;
-        break;
-      }
+        if (props.residue.bondAngles[_idx].tag === tripletTagStr) {
+            idx = _idx;
+            break;
+
+        } else if (props.residue.bondAngles[_idx].tag === reverseTagTriplet(tripletTagStr)) {
+            idx = _idx;
+            break;
+        }
+
     }
     if (idx < 0) throw new Error(`Bad tripletTag ${tripletTagStr}`);
 
@@ -107,6 +124,10 @@ function makeAngleDetails(props: ResidueDetailsProps, cellRefs: Map<string, Reac
   return elems;
 }
 
+function reverseTag(pairTagStr: string){
+    return pairTagStr.split('^').reverse().join('^');
+}
+
 function makeLengthDetails(props: ResidueDetailsProps, cellRefs: Map<string, React.RefObject<HTMLTableCellElement>>) {
   const displayOrder =
     AnglesLengthsDisplayOrder.Lengths[props.residue.compound];
@@ -116,10 +137,14 @@ function makeLengthDetails(props: ResidueDetailsProps, cellRefs: Map<string, Rea
     let idx = -1;
 
     for (let _idx = 0; _idx < props.residue.bondLengths.length; _idx++) {
-      if (props.residue.bondLengths[_idx].tag === pairTagStr) {
-        idx = _idx;
-        break;
-      }
+        if (props.residue.bondLengths[_idx].tag === pairTagStr) {
+            idx = _idx;
+            break;
+        } else if (props.residue.bondLengths[_idx].tag === reverseTag(pairTagStr)) {
+            idx = _idx;
+            break;
+        }
+
     }
     if (idx < 0) throw new Error(`Bad pairTag ${pairTagStr}`);
 
