@@ -715,7 +715,7 @@ function App(props: { initial: Initial }) {
           // Use the file upload handler with empty density maps
           dh.fromCustomStructure(file, [], null, () => {
             setAppMode("structure");
-            navigate("/app/dnatco/annotation");
+            navigate("/app/dnatco/validation/overall-quality");
           });
 
           // Send confirmation back to sender
