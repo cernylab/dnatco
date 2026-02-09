@@ -169,7 +169,7 @@ export namespace Dnatcofier {
     }
 
     export function makeNavalValidation(imported: jsLLKA.LLKAImportedStructure, nvCtx: NavalContext, ctx: DnatcoficationTaskContext) {
-        ctx.status = 'Preparing Naval validation report';
+        ctx.status = 'Preparing NA-VAL validation report';
 
         return Naval.validate(imported.structure, imported.id, nvCtx.angles, nvCtx.bonds)
     }

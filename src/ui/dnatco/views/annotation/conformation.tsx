@@ -70,7 +70,7 @@ export class Conformation extends View<View.Props> {
       )) {
         if (step.resNo1Auth === resNoAuth) {
           if (chainAuth) {
-            if (chainAuth === step.chain) results.push(step);
+            if (chainAuth === step.chainAuth) results.push(step);
           } else results.push(step);
         }
       }
