@@ -5,7 +5,12 @@ import { arrowDown, arrowDownHover } from '../assets/images';
 function DownloadSection(props: {
     title: string;
     description: React.ReactNode;
-    files: Array<{ name: string; url: string; caption: string }>;
+    files?: Array<{ name: string; url: string; caption: string }>;
+    filesTitle?: string;
+    fileGroups?: Array<{
+        title: React.ReactNode;
+        files: Array<{ name: string; url: string; caption: string }>;
+    }>;
 }) {
     return (
         <div className='flex border-t-secondary-second border-t pt-3 mb-8 gap-8'>
@@ -18,24 +23,57 @@ function DownloadSection(props: {
                 </div>
             </div>
             <div className='w-[60%] flex flex-col gap-3'>
-                {props.files.map((file, idx) => (
-                    <div key={idx} className='flex justify-between items-center'>
-                        <div className='text-16px'>{file.caption}</div>
-                        <DownloadButtonComponent
-                            title='Download'
-                            defaultImage={arrowDown as string}
-                            hoverImage={arrowDownHover as string}
-                            onClick={() => {
-                                const link = document.createElement('a');
-                                link.href = file.url;
-                                link.download = file.name;
-                                document.body.appendChild(link);
-                                link.click();
-                                document.body.removeChild(link);
-                            }}
-                        />
-                    </div>
-                ))}
+                {props.filesTitle && (
+                    <h4 className='font-600 text-16px mb-1'>
+                        {props.filesTitle}
+                    </h4>
+                )}
+                {props.fileGroups
+                    ? props.fileGroups.map((group, groupIdx) => (
+                          <div key={groupIdx} className='flex flex-col gap-3'>
+                              {group.title && (
+                                  <h5 className='font-normal text-17px mt-2'>
+                                      {group.title}
+                                  </h5>
+                              )}
+                              {group.files.map((file, fileIdx) => (
+                                  <div key={fileIdx} className='flex justify-between items-center pl-4'>
+                                      <div className='text-16px'>{file.caption}</div>
+                                      <DownloadButtonComponent
+                                          title='Download'
+                                          defaultImage={arrowDown as string}
+                                          hoverImage={arrowDownHover as string}
+                                          onClick={() => {
+                                              const link = document.createElement('a');
+                                              link.href = file.url;
+                                              link.download = file.name;
+                                              document.body.appendChild(link);
+                                              link.click();
+                                              document.body.removeChild(link);
+                                          }}
+                                      />
+                                  </div>
+                              ))}
+                          </div>
+                      ))
+                    : props.files?.map((file, idx) => (
+                          <div key={idx} className='flex justify-between items-center'>
+                              <div className='text-16px'>{file.caption}</div>
+                              <DownloadButtonComponent
+                                  title='Download'
+                                  defaultImage={arrowDown as string}
+                                  hoverImage={arrowDownHover as string}
+                                  onClick={() => {
+                                      const link = document.createElement('a');
+                                      link.href = file.url;
+                                      link.download = file.name;
+                                      document.body.appendChild(link);
+                                      link.click();
+                                      document.body.removeChild(link);
+                                  }}
+                              />
+                          </div>
+                      ))}
             </div>
         </div>
     );
@@ -55,16 +93,11 @@ export function ReferenceSets() {
         },
     ];
 
-    const generalReferenceSetFiles = [
+    const rs25Files = [
         {
             name: 'RS25_DNA_c2.csv',
             url: '/reference-sets/general/RS25_DNA_c2.csv',
             caption: 'DNA RS25 (chains with resolution ≤ 2.5 Å)',
-        },
-        {
-            name: 'RS35_DNA_c2.csv',
-            url: '/reference-sets/general/RS35_DNA_c2.csv',
-            caption: 'DNA RS35 (chains with resolution ≤ 3.5 Å)',
         },
         {
             name: 'RS25_DNA_c2_contacts.csv',
@@ -72,24 +105,32 @@ export function ReferenceSets() {
             caption: 'DNA chains with resolution ≤ 2.5 Å with contacts',
         },
         {
-            name: 'RS35_DNA_c2_contacts.csv',
-            url: '/reference-sets/general/RS35_DNA_c2_contacts.csv',
-            caption: 'DNA chains with resolution ≤ 3.5 Å with contacts',
-        },
-        {
             name: 'RS25_RNA_c2.csv',
             url: '/reference-sets/general/RS25_RNA_c2.csv',
             caption: 'RNA RS25 (chains with resolution ≤ 2.5 Å)',
         },
         {
-            name: 'RS35_RNA_c2.csv',
-            url: '/reference-sets/general/RS35_RNA_c2.csv',
-            caption: 'RNA RS35 (chains with resolution ≤ 3.5 Å)',
-        },
-        {
             name: 'RS25_RNA_c2_contacts.csv',
             url: '/reference-sets/general/RS25_RNA_c2_contacts.csv',
             caption: 'RNA chains with resolution ≤ 2.5 Å with contacts',
+        },
+    ];
+
+    const rs35Files = [
+        {
+            name: 'RS35_DNA_c2.csv',
+            url: '/reference-sets/general/RS35_DNA_c2.csv',
+            caption: 'DNA RS35 (chains with resolution ≤ 3.5 Å)',
+        },
+        {
+            name: 'RS35_DNA_c2_contacts.csv',
+            url: '/reference-sets/general/RS35_DNA_c2_contacts.csv',
+            caption: 'DNA chains with resolution ≤ 3.5 Å with contacts',
+        },
+        {
+            name: 'RS35_RNA_c2.csv',
+            url: '/reference-sets/general/RS35_RNA_c2.csv',
+            caption: 'RNA RS35 (chains with resolution ≤ 3.5 Å)',
         },
         {
             name: 'RS35_RNA_c2_contacts.csv',
@@ -139,7 +180,24 @@ export function ReferenceSets() {
                             </ul>
                         </>
                     }
-                    files={generalReferenceSetFiles}
+                    fileGroups={[
+                        {
+                            title: (
+                                <>
+                                    Resolution ≤ 2.5 Å (<span className='font-bold'>RS25</span>), version 20260205
+                                </>
+                            ),
+                            files: rs25Files,
+                        },
+                        {
+                            title: (
+                                <>
+                                    Resolution ≤ 3.5 Å (<span className='font-bold'>RS35</span>), version 20260205
+                                </>
+                            ),
+                            files: rs35Files,
+                        },
+                    ]}
                 />
             </div>
         </div>

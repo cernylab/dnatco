@@ -21,6 +21,7 @@ import {
 import { copyString, isPdbId, toPdbId } from "../util";
 import { GlobalConfig, GlobalConfigData } from "../global-config";
 import { ComboBoxHome } from "./common/combo-box-home";
+import { InProgressSpinner } from "./common/in-progress-spinner";
 
 const AllowedDensityMapKinds = [...DensityMapKinds, "coefficients"] as const;
 type AllowedDensityMapKinds = (typeof AllowedDensityMapKinds)[number];
@@ -789,8 +790,9 @@ export class StartTab extends React.Component<StartTab.Props, State> {
                   </div>
                 </div>
                 {this.props.dnatcofierState === "initializing" ? (
-                  <div className="flex flex-row items-center">
-                    <div className="text-16px m-auto">
+                  <div className="flex flex-row items-center justify-center gap-2">
+                    <InProgressSpinner />
+                    <div className="text-16px">
                       Please wait for {GlobalConfig.data().displayedProductName}{" "}
                       to initialize...
                     </div>
