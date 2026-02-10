@@ -313,7 +313,7 @@ export namespace ALM {
                     a = getBondAngle(tag, r.bondAngles);
                 }catch (e) {
                     let residueName = r.compound + r.authSeqId;
-                    Logger.log(Logger.Severity.Debug, `No angle with tag ${tag} in residue ${residueName}`);
+                    Logger.log(Logger.Severity.Warning, `No angle with tag ${tag} in residue ${residueName}`);
                     continue;
                 }
 
@@ -371,7 +371,7 @@ export namespace ALM {
                     l = getBondLength(tag, r.bondLengths);
                 }catch (e) {
                     let residueName = r.compound + r.authSeqId;
-                    Logger.log(Logger.Severity.Debug, `No length with tag ${tag} in residue ${residueName}`);
+                    Logger.log(Logger.Severity.Warning, `No length with tag ${tag} in residue ${residueName}`);
                     continue;
                 }
 
