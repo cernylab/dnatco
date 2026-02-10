@@ -709,9 +709,11 @@ export function Prosco(props: { bin: ALM.MaybeBin }) {
   const renderUnavailable = (belowAbove: "below" | "above") => {
     return (
       <Tooltip
-        tag=<div className="text-right">
-          {belowAbove === "below" ? "N/A (<)" : "N/A (>)"}
-        </div>
+          tag={
+            <div className="text-right">
+                {belowAbove === "below" ? "N/A (<)" : "N/A (>)"}
+            </div>
+          }
       >
         <div>
           Relative probability is unavailable because the value is outside the
@@ -727,21 +729,23 @@ export function Prosco(props: { bin: ALM.MaybeBin }) {
     return <div className="text-right">No data</div>;
   } else if (bin === "below" || bin === "above") return renderUnavailable(bin);
   else {
-    return (
-      // Remove tooltip?
-      <Tooltip
-        tag=<div className="text-right">
-          {fmtDecimal(bin.prosco * 100, 1)}
-          {"\u00A0"}%
-        </div>
-      >
-        <div>
-          {props.bin
-            ? `Relative probability of bin [${bin.from}\u00A0-\u00A0${bin.to}] within its respective distribution.`
-            : "Relative probability is unavailable because the value is outside the range of values observed in the reference dataset."}
-        </div>
-      </Tooltip>
-    );
+      return (
+          <Tooltip
+              tag={
+                  <div className="text-right">
+                      {fmtDecimal(bin.prosco * 100, 1)}
+                      {"\u00A0"}%
+                  </div>
+              }
+          >
+              <div>
+                  {props.bin
+                          ? `Relative probability of bin [${bin.from}\u00A0-\u00A0${bin.to}] within its respective distribution.`
+                          : "Relative probability is unavailable because the value is outside the range of values observed in the reference dataset."
+                  }
+              </div>
+          </Tooltip>
+      );
   }
 }
 
