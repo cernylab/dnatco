@@ -71,18 +71,7 @@ export namespace Measurements {
 
         return lengths;
     }
-    /*
-    function pivotAtom(step: jsLLKA.LLKAStructure) {
-        const seqId = step.get(0).label_seq_id;
-        for (let idx = 1; idx < step.size(); idx++) {
-            const atom = step.get(idx);
-            if (atom.label_seq_id > seqId)
-                return atom;
-        }
 
-        return void 0;
-    }
-    */
     function getFirstResidueAtom(step: jsLLKA.LLKAStructure){
         if (step.size() > 0){
             return step.get(0);
@@ -238,40 +227,6 @@ export namespace Measurements {
             }
 
             step.delete();
-            /*
-            const firstAtom = pivotAtom(step);
-            if (!firstAtom) {
-                step.delete();
-                continue;
-            }
-
-            const altId = expandAltId(step, firstAtom.label_seq_id);
-            // We can see some residues multiple times because we are reading them from steps
-            // and steps bifrucate on altIds. It is, therefore, possible to have a step with
-            // different altId of the first step but the same altId for the second step. When that
-            // happens, we will see the second residue of such a step twice.
-            //
-            // SOMETHING TO CONSIDER:
-            // If a residue with some alt. conformation never appears as the second residue in a step,
-            // this code will not see it. This indicates that there is no reasonable connectivity between
-            // such a residue and a residue that would be the first residue in this non-existent step.
-            // Ignoring this "invisible" residue might actually be the right thing because we measure
-            // cross-residue angles and these angles would most likely turn out wrong.
-            const tag = `${firstAtom.pdbx_PDB_model_num}_${firstAtom.label_asym_id}_${firstAtom.label_seq_id}_${firstAtom.pdbx_PDB_ins_code}_${altId}`;
-            if (seenResidues.has(tag)) {
-                step.delete();
-                continue;
-            }
-
-            const residue = processResidue(firstAtom, altId, step);
-            if (residue) {
-                residues.push(residue);
-                seenResidues.add(tag);
-            }
-
-            step.delete();
-
-             */
         }
 
         return residues;
