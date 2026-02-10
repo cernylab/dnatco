@@ -78,10 +78,10 @@ function makeAngleDetails(props: ResidueDetailsProps, cellRefs: Map<string, Reac
       }
     }
     if (idx < 0) {
-        console.warn(`Bad tripletTag ${tripletTagStr}`);
+        let residueName = props.residue.compound + props.residue.authSeqId;
+        Logger.log(Logger.Severity.Debug, `Bad tripletTag ${tripletTagStr} in ${residueName}`);
         continue;
     }
-    //if (idx < 0) throw new Error(`Bad tripletTag ${tripletTagStr}`);
 
     const x = props.residue.bondAngles[idx];
     const angleTag = tripletTag(x.triplet);
@@ -128,12 +128,10 @@ function makeLengthDetails(props: ResidueDetailsProps, cellRefs: Map<string, Rea
     }
 
     if (idx < 0) {
-        let residueName = props.residue.compound + props.residue.seqId;
-        Logger.log(Logger.Severity.Debug, `Bad tripletTag ${pairTagStr} in ${residueName}`);
-        console.warn(`Bad tripletTag ${pairTagStr} in ${residueName}`);
+        let residueName = props.residue.compound + props.residue.authSeqId;
+        Logger.log(Logger.Severity.Debug, `Bad PairTag ${pairTagStr} in ${residueName}`);
         continue;
     }
-    //if (idx < 0) throw new Error(`Bad pairTag ${pairTagStr}`);
 
     const x = props.residue.bondLengths[idx];
     const bondTag = pairTag(x.pair);
