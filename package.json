@@ -3,8 +3,8 @@
     "version": "0.0.1",
     "description": "<PROTOTYPE>",
     "scripts": {
-        "build": "npm run build-tsc && npm run build-webpack",
-        "build-dev": "npm run build-tsc-dev && npm run build-webpack-dev",
+        "build": "npm run build-tsc && npm run build-webpack && tailwind",
+        "build-dev": "npm run build-tsc-dev && npm run build-webpack-dev && tailwind",
         "build-lib": "npm run build-tsc-lib && npm run build-webpack-lib",
         "build-lib-dev": "npm run build-tsc-lib-dev && npm run build-webpack-lib-dev",
         "build-server": "npm run build-tsc-server && npm run build-webpack-server",
