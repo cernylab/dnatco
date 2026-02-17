@@ -471,7 +471,7 @@ export class ConnectivityPlot extends View<Refinement.Props> {
         return (
             <DynamicTableComp
                 model={this.tableModel}
-                onCellClicked={(row) => {
+                onCellClicked={(data, row) => {
                     const cIdx = this.tableModel.columnNames.findIndex(
                         (cn) => cn === "Step"
                     );
@@ -658,6 +658,7 @@ export class ConnectivityPlot extends View<Refinement.Props> {
             }
         });
         this.setTableModel();
+        this.forceUpdate();
     }
 
     componentWillUnmount() {
