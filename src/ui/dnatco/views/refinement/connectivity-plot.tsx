@@ -831,8 +831,7 @@ export class ConnectivityPlot extends View<Refinement.Props> {
                             }}
                         />
                     </div>
-
-                    <div className="flex-1" ref={this.tableTainer}>
+                    <div className="flex-initial h-auto" ref={this.tableTainer}>
                         <div className="rdo-scroll-vertically-with-scrollbar-none">
                             {this.renderStepsTable()}
                         </div>
