@@ -187,11 +187,11 @@ export class ConnectivityPlot extends View<Refinement.Props> {
         let tooltipText: string;
 
         if (direction === "Previous") {
-            arrow = "▲";
+            arrow = "⬤";
             colour = "#" + Colors.PreviousStep().toString(16).padStart(6, '0');
             tooltipText = `Click to show only previous connectivity plot`;
         } else if (direction === "Next"){
-            arrow = "▼";
+            arrow = "⬤";
             colour = "#" + Colors.NextStep().toString(16).padStart(6, '0');
             tooltipText = `Click to show only next connectivity plot`;
         } else {
