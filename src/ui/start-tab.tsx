@@ -3,6 +3,7 @@ import { ComboBox } from "./common/combo-box";
 import { DummyIconTextButton, IconTextButton } from "./common/push-button";
 import { Popup } from "./common/popup";
 import { Tooltip } from "./common/tooltip";
+import { RadixComboBox } from "./common/radix-combo-box";
 import {
   MagnifyingGlassImg,
   MediaPlayImg,
@@ -20,7 +21,6 @@ import {
 } from "../remote/db/register";
 import { copyString, isPdbId, toPdbId } from "../util";
 import { GlobalConfig, GlobalConfigData } from "../global-config";
-import { ComboBoxHome } from "./common/combo-box-home";
 import { InProgressSpinner } from "./common/in-progress-spinner";
 
 const AllowedDensityMapKinds = [...DensityMapKinds, "coefficients"] as const;
@@ -85,7 +85,7 @@ class AnalyzeButton extends React.Component<{
         onClick={() => this.props.onClick()}
         disabled={!this.props.ready}
         className="items-center flex justify-center cursor-pointer transition-all ease-in-out w-full bg-primary-first text-16px text-secondary-first rounded-standard p-2 hover:bg-secondary-second"
-        classNameDisabled="items-center flex justify-center rounded-standard w-full p-2 text-16px bg-primary-first-disabled text-white"
+        classNameDisabled="items-center flex justify-center cursor-wait rounded-standard w-full p-2 text-16px bg-primary-first-disabled text-white"
       />
     );
   }
@@ -93,12 +93,12 @@ class AnalyzeButton extends React.Component<{
 
 class Coordinates extends React.Component<Coordinates.Props> {
   render() {
-    const customFile = !this.props.database;
+    const customFile = this.props.database === "custom";
     const examples = listOfValidExamples(GlobalConfig.data().exampleStructures);
 
     return (
       <div className="mx-auto">
-        <div className="text-39px text-center tracking-wider mb-2">
+        <div className="font-700 text-39px text-center tracking-wider mb-2">
           Analyze your structure
         </div>
         {examples.length > 0 ? (
@@ -115,9 +115,9 @@ class Coordinates extends React.Component<Coordinates.Props> {
         )}
         <div className="flex flex-col w-[430px] m-auto">
           <div className="flex mb-2">
-            <div className="text-20px text-primary-first w-[155px] my-auto">
+            <div className="font-700 text-20px text-primary-first w-[155px] my-auto">
               Select
-            </div>
+            </div>{/*
             <div className="w-300px rounded-standard">
               <ComboBoxHome
                 value={this.props.database}
@@ -125,6 +125,14 @@ class Coordinates extends React.Component<Coordinates.Props> {
                 onChange={(db) => this.props.onDatabaseChange(db)}
               />
             </div>
+            */}
+              <div className="w-300px">
+                  <RadixComboBox
+                      options={this.props.databaseOptions}
+                      value={this.props.database}
+                      onChange={this.props.onDatabaseChange}
+                  />
+              </div>
           </div>
 
           {customFile ? (
@@ -188,7 +196,7 @@ class Coordinates extends React.Component<Coordinates.Props> {
           ) : (
             <>
               <div className="flex">
-                <div className="text-20px text-primary-first w-[155px] my-auto">
+                <div className="font-700 text-20px text-primary-first w-[155px] my-auto">
                   PDB ID
                 </div>
                 <div className="w-300px rounded-standard">
@@ -541,7 +549,7 @@ class PdbIdInput extends React.Component<{
   render() {
     return (
       <input
-        className="bg-primary-first placeholder:text-white text-white rounded-standard p-4 w-full items-center flex"
+        className="bg-primary-first placeholder:text-white text-white rounded-standard p-4 w-full items-center flex outline-none"
         style={{
           ...(!isPdbId(this.props.pdbId, true) && this.props.pdbId.length > 0
             ? { color: "#FF7973" }
@@ -592,7 +600,7 @@ export class StartTab extends React.Component<StartTab.Props, State> {
       });
     }
 
-    opts.push({ caption: "Custom file", value: "" });
+    opts.push({ caption: "Custom file", value: "custom" });
 
     return opts;
   })();
@@ -687,7 +695,7 @@ export class StartTab extends React.Component<StartTab.Props, State> {
 
   private handleAnalyzeClick = () => {
     try {
-      if (this.state.database) {
+      if (this.state.database && this.state.database !== "custom") {
         this.actionPdbId(this.state.database, this.state.pdbId);
       } else {
         this.densityMapFilesRef.current?.handleAddFile();
@@ -762,10 +770,10 @@ export class StartTab extends React.Component<StartTab.Props, State> {
                         }
                       />
                     </div>
-                    {this.state.database === "" ? (
+                    {this.state.database === "custom" ? (
                       <div className="mx-auto w-[430px]">
                         <DensityMapFiles
-                          disabled={this.state.database !== ""}
+                          disabled={this.state.database !== "custom"}
                           ref={this.densityMapFilesRef}
                           files={this.state.densityMaps}
                           onAddFile={(file) => {
