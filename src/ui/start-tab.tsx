@@ -128,6 +128,7 @@ class Coordinates extends React.Component<Coordinates.Props> {
             */}
               <div className="w-300px">
                   <RadixComboBox
+                      triggerStyle={`flex w-full items-center justify-between rounded-standard p-4 outline-none transition-opacity disabled:cursor-not-allowed disabled:opacity-80`}
                       options={this.props.databaseOptions}
                       value={this.props.database}
                       onChange={this.props.onDatabaseChange}

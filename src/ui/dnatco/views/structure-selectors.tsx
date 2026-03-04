@@ -44,7 +44,7 @@ function stepsOptions(modelIndex: number, chain: string, d: Dnatcofication) {
     const _modelIndex = modelIndex !== InvalidModelIndex ? modelIndex : void 0;
 
     const opts: StepOption[] = [
-        { caption: '-', value: { name: '-', id: InvalidStepId } }
+        { caption: 'Select...', value: { name: '-', id: InvalidStepId } }
     ];
     for (const s of StepsMapper.segment(d, _modelIndex, _chain))
         opts.push({ caption: s.name, value: { name: s.name, id: s.id } });
@@ -85,7 +85,8 @@ export class ChainSelect extends WithSubscriptions<ChainSelect.Props, { modelInd
                 onChange={
                     this.props.switching.switchChain
                 }
-                placeholder={"Select.."}
+                placeholder={"All NAs"}
+                triggerValueStyle={"whitespace-nowrap m-1"}
             />
             /*
             <ComboBox
@@ -136,6 +137,7 @@ export class ModelSelect extends WithSubscriptions<ModelSelect.Props, { modelInd
                         return;
                     this.props.switching.switchModel(modelIndex);
                 }}
+                triggerValueStyle={"m-1"}
                 />
 
             /*
@@ -233,6 +235,7 @@ export class StepSelect extends WithSubscriptions<StepSelect.Props, { modelIndex
                         return;
                     this.props.onChange(stepId);
                 }}
+                triggerValueStyle={"m-1"}
 
             />
 
