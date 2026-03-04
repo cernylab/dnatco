@@ -27,13 +27,16 @@ export const RadixComboBox = ({
     const isLight = theme === "light";
     const bgColor = isLight ? "bg-secondary-second" : "bg-primary-first";
     const textColor = isLight ? "text-primary-first" : "text-white";
-
     const triggerTextColor = disabled ? "text-secondary-third" : textColor;
+
+    const defTriggerStyle = `flex w-full items-center justify-between rounded-standard p-4 outline-none transition-opacity disabled:cursor-not-allowed disabled:opacity-80 ${bgColor} ${triggerTextColor}`;
+    const defContentStyle = `overflow-hidden bg-[#2b2a33] flex w-full items-center justify-center rounded-standard p-1 outline-none text-white cursor-pointer`;
+    const defItemStyle = "relative outline-none justify-between flex p-1 data-[highlighted]:bg-[#52525e] data-[highlighted]:text-white cursor-pointer"
 
     return(
         <Select.Root value={value} onValueChange={onChange}>
             <Select.Trigger
-                className={`flex w-full items-center justify-between rounded-standard p-4 outline-none transition-opacity disabled:cursor-not-allowed disabled:opacity-80 ${bgColor} ${triggerTextColor}`}>
+                className={defTriggerStyle}>
                 <Select.Value placeholder={placeholder} />
                 <Select.Icon>
                     <TriangleDownIcon />
@@ -42,7 +45,7 @@ export const RadixComboBox = ({
 
             <Select.Portal>
                 <Select.Content
-                    className={`overflow-hidden bg-[#2b2a33] flex w-full items-center justify-center rounded-standard p-1 outline-none text-white cursor-pointer`}
+                    className={defContentStyle}
                     position="popper"
                     align="center"
                     sideOffset={4}
@@ -56,7 +59,7 @@ export const RadixComboBox = ({
                                 <Select.Item
                                     key={item.caption}
                                     value={item.value}
-                                    className="relative outline-none justify-between flex p-1 data-[highlighted]:bg-[#52525e] data-[highlighted]:text-white cursor-pointer"
+                                    className={defItemStyle}
                                 >
                                     <Select.ItemText>{item.caption}</Select.ItemText>
                                     <Select.ItemIndicator
