@@ -709,9 +709,9 @@ export function Prosco(props: { bin: ALM.MaybeBin }) {
   const renderUnavailable = (belowAbove: "below" | "above") => {
     return (
       <Tooltip
-        tag=<div className="text-right">
+        tag={<div className="text-right">
               {belowAbove === "below" ? "N/A (<)" : "N/A (>)"}
-            </div>
+            </div>}
       >
         <div>
           Relative probability is unavailable because the value is outside the
@@ -730,10 +730,10 @@ export function Prosco(props: { bin: ALM.MaybeBin }) {
     return (
       // Remove tooltip?
       <Tooltip
-        tag=<div className="text-right">
+        tag={<div className="text-right">
           {fmtDecimal(bin.prosco * 100, 1)}
           {"\u00A0"}%
-        </div>
+        </div>}
       >
         <div>
           {props.bin
