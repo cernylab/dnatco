@@ -43,12 +43,12 @@ export const RadixComboBox = ({
   const textColor = isLight ? "text-primary-first" : "text-white";
   const triggerTextColor = disabled ? "text-secondary-third" : textColor;
 
-  const defTriggerStyle = `inline-flex w-full items-center justify-between rounded-standard h-auto gap-1 m-auto mx-1 p-1 outline-none transition-opacity disabled:cursor-not-allowed disabled:opacity-80` + triggerAddStyle;
-  const defContentStyle = `overflow-hidden max-h-[var(--radix-select-content-available-height)] bg-[#2b2a33] w-full rounded-standard p-1 outline-none text-white cursor-pointer` + contentAddStyle;
-  const defItemStyle = "relative outline-none justify-between text-16px font-700 flex p-1 data-[highlighted]:bg-[#52525e] data-[highlighted]:text-white cursor-pointer" + itemAddStyle;
+  const defTriggerStyle = `inline-flex items-center justify-between rounded-standard h-auto gap-1 m-auto mx-1 p-1 outline-none transition-opacity disabled:cursor-not-allowed disabled:opacity-80 ` + triggerAddStyle;
+  const defContentStyle = `overflow-hidden max-h-[var(--radix-select-content-available-height)] bg-[#2b2a33] w-full rounded-standard p-1 outline-none text-white cursor-pointer ` + contentAddStyle;
+  const defItemStyle = "relative outline-none justify-between text-16px font-700 flex p-1 data-[highlighted]:bg-[#52525e] data-[highlighted]:text-white cursor-pointer " + itemAddStyle;
 
   let finalTriggerStyle = triggerStyle || defTriggerStyle;
-  finalTriggerStyle = finalTriggerStyle + ` ${bgColor}` + ` ${triggerTextColor}`;
+  finalTriggerStyle = finalTriggerStyle + ` ${bgColor}` + ` ${triggerTextColor} ` + ` cursor-pointer `;
   const finalContentStyle = contentStyle || defContentStyle;
   const finalItemStyle = itemStyle || defItemStyle;
   return (

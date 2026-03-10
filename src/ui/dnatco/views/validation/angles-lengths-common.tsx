@@ -710,8 +710,8 @@ export function Prosco(props: { bin: ALM.MaybeBin }) {
     return (
       <Tooltip
         tag=<div className="text-right">
-          {belowAbove === "below" ? "N/A (<)" : "N/A (>)"}
-        </div>
+              {belowAbove === "below" ? "N/A (<)" : "N/A (>)"}
+            </div>
       >
         <div>
           Relative probability is unavailable because the value is outside the

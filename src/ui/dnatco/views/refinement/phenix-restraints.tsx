@@ -1,12 +1,12 @@
 import React from "react";
 import { Refinement } from "./common";
 import { View } from "../view";
-import { ComboBox } from "../../../common/combo-box";
 import { PushButton } from "../../../common/push-button";
 import { SpinBox } from "../../../common/spin-box";
 import { Net } from "../../../../browser-util/net";
 import { Phenix } from "../../../../refine/phenix";
 import { GlobalConfig } from "../../../../global-config";
+import {RadixComboBox} from "../../../common/radix-combo-box";
 
 const LeadingWS = new RegExp(/^[ ]./);
 
@@ -67,12 +67,15 @@ export class PhenixRestraints extends View<Refinement.Props, State> {
           </div>
           <div className="items-center grid gap-4 justify-center [grid-template-columns:auto_auto_auto_auto_auto]">
             <div>NtC set:</div>
-            <ComboBox
+            <RadixComboBox
               options={Refinement.ntcSetsOptions(
                 this.props.dnatcofication.customNtCs
               )}
-              value={this.props.selectedCustomNtCSet}
-              onChange={(v) => this.props.onCustomNtCSetChanged(v)}
+              value={this.props.selectedCustomNtCSet || 'default_value'}
+              onChange={(v) => {
+                const finalNtCChange = v == "default_value" ? "" : v;
+                this.props.onCustomNtCSetChanged(finalNtCChange);  }}
+              triggerAddStyle={"min-w-[120px] flex-shrink-0 items-center px-2 height-inherit"}
             />
             <div>Maximum allowed RMSD:</div>
             <SpinBox

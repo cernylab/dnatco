@@ -1,7 +1,6 @@
 import React from 'react';
 import { StructureSelectionSwitching } from '../structure-selection';
 import { listOfChains, listOfModels } from '../util';
-//import { ComboBox } from '../../common/combo-box';
 import { WithSubscriptions } from '../../service/with-subscriptions';
 import { Dnatcofication } from '../../../dnatco/dnatcofication';
 import { StepsMapper } from '../../../dnatco/steps-mapper';
@@ -82,24 +81,14 @@ export class ChainSelect extends WithSubscriptions<ChainSelect.Props, { modelInd
             <RadixComboBox
                 options={toComboBoxOptions(chainOptions(this.state.modelIndex, this.props.dnatcofication), o => ({ caption: o.caption, value: o.value }))}
                 value={this.state.chain}
-                onChange={
-                    this.props.switching.switchChain
-                }
+                onChange={(v) => {
+                    const finalChain = v === "InvalidChain" ? "" : v;
+                    this.props.switching.switchChain(finalChain);
+                }}
                 placeholder={"All NAs"}
                 triggerValueStyle={"whitespace-nowrap m-1"}
+                triggerAddStyle={"min-w-[200px]"}
             />
-            /*
-            <ComboBox
-                options={toComboBoxOptions(chainOptions(this.state.modelIndex, this.props.dnatcofication), o => ({ caption: o.caption, value: o.value }))}
-                value={this.state.chain}
-                onChange={v => {
-                    if (v === this.state.chain)
-                        return;
-                    this.props.switching.switchChain(v);
-                }}
-                sizing='auto'
-            />
-             */
         );
     }
 }
@@ -139,21 +128,6 @@ export class ModelSelect extends WithSubscriptions<ModelSelect.Props, { modelInd
                 }}
                 triggerValueStyle={"m-1"}
                 />
-
-            /*
-            <ComboBox
-                options={toComboBoxOptions(modelOptions(this.props.dnatcofication, this.props.hideAllModelsOption ?? false), o => ({ caption: o.name, value: o.index.toString() }))}
-                value={this.state.modelIndex.toString()}
-                onChange={v => {
-                    const modelIndex = parseInt(v);
-                    if (modelIndex === this.state.modelIndex)
-                        return;
-                    this.props.switching.switchModel(modelIndex);
-                }}
-                sizing='auto'
-            />
-
-             */
         );
     }
 }
@@ -236,22 +210,9 @@ export class StepSelect extends WithSubscriptions<StepSelect.Props, { modelIndex
                     this.props.onChange(stepId);
                 }}
                 triggerValueStyle={"m-1"}
+                triggerAddStyle={"min-w-[200px] flex-shrink-0"}
 
             />
-
-        /*
-            <ComboBox
-                value={this.state.stepId.toString()}
-                options={toComboBoxOptions(stepsOptions(this.state.modelIndex, this.state.chain, this.props.dnatcofication), (o: StepOption) => ({ caption: o.caption, value: o.value.id.toString() }))}
-                onChange={v => {
-                    const stepId = parseInt(v);
-                    if (stepId === this.props.structureSelection.steps[0])
-                        return;
-                    this.props.onChange(stepId);
-                }}
-                sizing='auto'
-            />
-            */
         );
     }
 }

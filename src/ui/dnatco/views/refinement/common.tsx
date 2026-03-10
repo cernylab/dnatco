@@ -50,7 +50,7 @@ export namespace Refinement {
 
     export function ntcSetsOptions(customNtCs: CustomNtCs) {
         return [
-            { caption: '(Computed)', value: '' },
+            { caption: '(Computed)', value: 'default_value' },
             ...customNtCs.sets().map(s => ({ caption: s, value: s }))
         ];
     }

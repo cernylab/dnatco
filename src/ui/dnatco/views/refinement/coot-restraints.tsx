@@ -1,11 +1,11 @@
 import React from "react";
 import { Refinement } from "./common";
 import { View } from "../view";
-import { ComboBox } from "../../../common/combo-box";
 import { PushButton } from "../../../common/push-button";
 import { SpinBox } from "../../../common/spin-box";
 import { Net } from "../../../../browser-util/net";
 import { Coot } from "../../../../refine/coot";
+import {RadixComboBox} from "../../../common/radix-combo-box";
 
 interface State {
   maxRmsd: number;
@@ -46,12 +46,15 @@ export class CootRestraints extends View<Refinement.Props, State> {
           <div className="rdo-secondary-caption">Restraints for COOT</div>
           <div className="items-center grid gap-4 [grid-template-columns:auto_auto_auto_auto_auto] justify-center">
             <div>NtC set:</div>
-            <ComboBox
+            <RadixComboBox
               options={Refinement.ntcSetsOptions(
                 this.props.dnatcofication.customNtCs
               )}
-              value={this.props.selectedCustomNtCSet}
-              onChange={(v) => this.props.onCustomNtCSetChanged(v)}
+              value={this.props.selectedCustomNtCSet || 'default_value'}
+              onChange={(v) => {
+                const finalNtCChange = v == "default_value" ? "" : v;
+                this.props.onCustomNtCSetChanged(finalNtCChange);  }}
+              triggerAddStyle={"min-w-[120px] flex-shrink-0 items-center px-2 height-inherit"}
             />
             <div>Maximum allowed RMSD:</div>
             <SpinBox

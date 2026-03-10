@@ -2,10 +2,10 @@ import React from "react";
 import { Refinement } from "./common";
 import { View } from "../view";
 import { CheckBox } from "../../../common/check-box";
-import { ComboBox } from "../../../common/combo-box";
 import { PushButton } from "../../../common/push-button";
 import { Net } from "../../../../browser-util/net";
 import { Mmb } from "../../../../refine/mmb";
+import {RadixComboBox} from "../../../common/radix-combo-box";
 
 interface State {
   includeSequences: boolean;
@@ -39,12 +39,15 @@ export class MmbCommandsFile extends View<Refinement.Props, State> {
 
           <div className="grid gap-4 justify-center items-center grid-cols-auto-4">
             <div>NtC set:</div>
-            <ComboBox
+            <RadixComboBox
               options={Refinement.ntcSetsOptions(
                 this.props.dnatcofication.customNtCs
               )}
-              value={this.props.selectedCustomNtCSet}
-              onChange={(v) => this.props.onCustomNtCSetChanged(v)}
+              value={this.props.selectedCustomNtCSet || 'default_value'}
+              onChange={(v) => {
+                const finalNtCChange = v == "default_value" ? "" : v;
+                this.props.onCustomNtCSetChanged(finalNtCChange);  }}
+              triggerAddStyle={"min-w-[120px] flex-shrink-0 items-center px-2 height-inherit"}
             />
             <CheckBox
               caption="Add sequence definitions to the commands file"

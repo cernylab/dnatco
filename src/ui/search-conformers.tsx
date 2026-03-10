@@ -1,10 +1,10 @@
 import * as React from 'react';
-import { ComboBox } from './common/combo-box';
 import { NamedList, NamedListItem } from './common/named-list';
 import { PushButton } from './common/push-button';
 import { SpinBox } from './common/spin-box';
 import { NtC } from '../dnatco/ntc';
 import { Search } from '../remote/search';
+import {RadixComboBox} from "./common/radix-combo-box";
 
 type Redundacy = 'non-redundant' | 'all';
 
@@ -44,11 +44,11 @@ export class SearchConformers extends React.Component<SearchConformers.Props, St
                 <div className='mt-7'>
                     <NamedList sizing='min-content' rowSpacing='half'>
                         <NamedListItem name='Conformation'>
-                            <ComboBox
+                            <RadixComboBox
                                 options={NtCOptions}
                                 value={this.state.NtC}
                                 onChange={v => this.setState({ ...this.state, NtC: v as NtC.Class })}
-                                sizing='maximum-available'
+                                triggerStyle={"inline-flex items-center justify-between rounded-standard h-auto gap-1 m-auto p-1 outline-none transition-opacity disabled:cursor-not-allowed disabled:opacity-80 w-full px-4"}
                             />
                         </NamedListItem>
                         <NamedListItem name='Maximum number of results'>
@@ -62,20 +62,20 @@ export class SearchConformers extends React.Component<SearchConformers.Props, St
                             />
                         </NamedListItem>
                         <NamedListItem name='PDB structure'>
-                            <ComboBox
+                            <RadixComboBox
                                 options={RedundancyOptions}
                                 value={this.state.redundancy}
                                 onChange={v => this.setState({ ...this.state, redundancy: v as Redundacy })}
-                                sizing='maximum-available'
+                                triggerStyle={"inline-flex items-center justify-between rounded-standard h-auto gap-1 m-auto p-1 outline-none transition-opacity disabled:cursor-not-allowed disabled:opacity-80 w-full min-w-[150px] whitespace-nowrap px-4"}
                             />
                         </NamedListItem>
                         <div className='hidden'>
                             <NamedListItem name='Type of NA'>
-                                <ComboBox
+                                <RadixComboBox
                                     options={TypeOfNAOptions}
                                     value={this.state.redundancy}
                                     onChange={v => this.setState({ ...this.state, redundancy: v as Redundacy })}
-                                    sizing='maximum-available'
+                                    triggerAddStyle={"min-w-[100px]"}
                                 />
                             </NamedListItem>
                         </div>
