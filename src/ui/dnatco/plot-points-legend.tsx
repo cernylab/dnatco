@@ -1,4 +1,9 @@
 import React from "react";
+import {
+  DotFilledIcon,
+  SquareIcon,
+  Cross1Icon
+} from "@radix-ui/react-icons"
 
 const DefaultProps = {
   normal: true,
@@ -17,23 +22,22 @@ export function PlotPointsLegend(
   return (
     <div className="flex flex-row justify-center gap-4 items-center">
       {show.normal ? (
-        <div>
-          <span className="font-bold text-18px">{"\u23FA"}</span> - NtC
+        <div className="flex items-center gap-1 whitespace-nowrap">
+          <DotFilledIcon className={"text-primary-first font-bold scale-[2]"} /> - NtC
         </div>
       ) : (
         void 0
       )}
       {show.current ? (
-        <div>
-          <span className="font-bold text-18px">{"\u2715"}</span> - Currently
-          shown NtC
+        <div className="flex flex-row justify-center gap-1 items-center">
+          <Cross1Icon className={"text-primary-first [stroke-width:1.5px] [stroke:currentColor]"} /> - Currently shown NtC
         </div>
       ) : (
         void 0
       )}
       {show.computed ? (
-        <div>
-          <span className="font-bold text-18px">{"\u23F9"}</span> - Computed NtC
+        <div className="flex flex-row justify-center gap-1 items-center">
+          <SquareIcon className={"text-primary-first font-bold bg-primary-first"} /> - Computed NtC
         </div>
       ) : (
         void 0
