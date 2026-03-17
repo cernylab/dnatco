@@ -351,7 +351,7 @@ export class ConnectivityPlot extends View<Refinement.Props> {
             tooltip: <div>PDB chain ID (author)</div>,
             notSortable: true,
             headerStyle: {
-                minWidth: '60px'
+                width: '50px'
             },
         };
 
@@ -376,8 +376,13 @@ export class ConnectivityPlot extends View<Refinement.Props> {
             cells: new Array<DynamicTable.Cell<string>>(),
             alignment: "center",
             headerStyle: {
-                minWidth: '60px'
+                whiteSpace: 'nowrap',
+                width: '50px'
             },
+            cellStyle: () => ({
+                whiteSpace: 'nowrap',
+                width: '50px'
+            }),
             tooltip: <div> NtC </div>,
             notSortable: true,
         };
@@ -388,7 +393,7 @@ export class ConnectivityPlot extends View<Refinement.Props> {
             alignment: "center",
             cellStyle: rmsdToColor,
             headerStyle: {
-                minWidth: '60px'
+                width: '50px'
             },
             tooltip: (
                 <div>
@@ -404,7 +409,7 @@ export class ConnectivityPlot extends View<Refinement.Props> {
             alignment: "center",
             cellStyle: rmsdToColor,
             headerStyle: {
-                minWidth: '60px'
+                width: '45px'
             },
             tooltip: (
                 <div>
@@ -419,7 +424,7 @@ export class ConnectivityPlot extends View<Refinement.Props> {
             cells: new Array<DynamicTable.Cell<number>>(),
             alignment: "center",
             headerStyle: {
-                minWidth: '60px'
+                width: '45px'
             },
             cellStyle: rmsdToColor,
             tooltip: (
@@ -832,7 +837,7 @@ export class ConnectivityPlot extends View<Refinement.Props> {
                         />
                     </div>
                     <div className="flex-initial h-auto" ref={this.tableTainer}>
-                        <div className="rdo-scroll-vertically-with-scrollbar-none">
+                        <div className="rdo-scroll-vertically-with-scrollbar-none rdo-scroll-horizontally-none">
                             {this.renderStepsTable()}
                         </div>
                     </div>

@@ -121,12 +121,18 @@ export class ChangeNtCs extends View<Refinement.Props> {
       cells: new Array<DynamicTable.Cell<string>>(),
       alignment: "center",
       tooltip: <div>PDB chain ID (author)</div>,
+      headerStyle: {
+        width: '50px'
+      },
     };
     const stepColumn: DynamicTable.Column<string> = {
       name: "Step",
       cells: new Array<DynamicTable.Cell<string>>(),
       alignment: "center",
       notSortable: true,
+      headerStyle: {
+        width: '100px'
+      },
       elem: (
         <div className="flex items-center justify-center gap-2">
           <Tooltip tag={<span>Step</span>} delayMsec={300}>
@@ -150,6 +156,9 @@ export class ChangeNtCs extends View<Refinement.Props> {
       name: "Computed NtC",
       cells: new Array<DynamicTable.Cell<string>>(),
       alignment: "center",
+      headerStyle: {
+        width: '75px'
+      },
       tooltip: (
         <div>
           Di<span className="rdo-emphasize">N</span>ucleotide{" "}
@@ -161,6 +170,9 @@ export class ChangeNtCs extends View<Refinement.Props> {
       name: "Custom NtC",
       cells: new Array<DynamicTable.Cell<string>>(),
       notSortable: true,
+      headerStyle: {
+        width: '130px'
+      },
       tooltip: (
         <div>
           Di<span className="rdo-emphasize">N</span>ucleotide{" "}

@@ -165,12 +165,18 @@ export class ConformerQuality extends View<View.Props> {
       cells: new Array<DynamicTable.Cell<string>>(),
       alignment: "center",
       tooltip: <div>PDB chain ID (author)</div>,
+      headerStyle: {
+        width: '50px'
+      },
     };
     const stepColumn: DynamicTable.Column<string> = {
       name: "Step",
       cells: new Array<DynamicTable.Cell<string>>(),
       alignment: "center",
       notSortable: true,
+      headerStyle: {
+        width: '100px'
+      },
       elem: (
         <div className="flex items-center justify-center gap-2">
           <Tooltip tag={<span>Step</span>} delayMsec={300}>
@@ -194,6 +200,9 @@ export class ConformerQuality extends View<View.Props> {
       name: "NtC",
       cells: new Array<DynamicTable.Cell<string>>(),
       alignment: "center",
+      headerStyle: {
+        width: '50px'
+      },
       tooltip: (
         <div>
           Di<span className="rdo-emphasize">N</span>ucleotide{" "}
@@ -205,6 +214,9 @@ export class ConformerQuality extends View<View.Props> {
       name: "CANA",
       cells: new Array<DynamicTable.Cell<string>>(),
       alignment: "center",
+      headerStyle: {
+        width: '50px'
+      },
       tooltip: (
         <div>
           <span className="rdo-emphasize">C</span>onformational{" "}
@@ -219,6 +231,9 @@ export class ConformerQuality extends View<View.Props> {
       cells: new Array<DynamicTable.Cell<number>>(),
       alignment: "center",
       cellStyle: confalToColor,
+      headerStyle: {
+        width: '50px'
+      },
       tooltip: (
         <div>
           Confal Score: Score of similarity between the analyzed step and the
@@ -231,6 +246,9 @@ export class ConformerQuality extends View<View.Props> {
       cells: new Array<DynamicTable.Cell<number>>(),
       alignment: "center",
       cellStyle: rmsdToColor,
+      headerStyle: {
+        width: '50px'
+      },
       tooltip: (
         <div>
           RMSD between the analyzed step and the closest NtC representative.
