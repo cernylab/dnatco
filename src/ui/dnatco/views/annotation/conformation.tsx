@@ -129,7 +129,7 @@ export class Conformation extends View<View.Props> {
       alignment: "center",
       notSortable: true,
       headerStyle: {
-        width: '100px'
+        width: '105px'
       },
       elem: (
         <div className="flex items-center justify-center gap-2">
