@@ -13,7 +13,6 @@ import {RadixComboBox} from "../../common/radix-combo-box";
 
 function chainOptions(modelIndex: number, d: Dnatcofication) {
     if (modelIndex === InvalidModelIndex) {
-      console.error("Pada to sem " + modelIndex.toString());
       return [{caption: 'All models selected - cannot filter by chains', value: "InvalidChain"}];
     }
     const opts = [
