@@ -11,6 +11,7 @@ import { Step } from '../../../../dnatco/step';
 import { StepsMapper } from '../../../../dnatco/steps-mapper';
 import { InvalidStepId } from '../../../../util/structure-selection';
 import { ViewerInterop, ViewerApi } from '../../../../viewer/viewer-interop';
+import {RadixComboBox} from "../../../common/radix-combo-box";
 
 const NtCSelectorOptions: ComboBox.Option[] = (() => {
     return NtC.Classes.map(NtC => ({ caption: NtC, value: NtC }));
@@ -33,10 +34,10 @@ export namespace Refinement {
 
         render() {
             return (
-                <ComboBox
-                    options={NtCSelectorOptions}
-                    value={this.props.value}
-                    onChange={v => this.props.onChanged(v as NtC.ValidClass)}
+                <RadixComboBox
+                  options={NtCSelectorOptions}
+                  value={this.props.value}
+                  onChange={v => this.props.onChanged(v as NtC.ValidClass)}
                 />
             );
         }
