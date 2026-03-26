@@ -151,13 +151,13 @@ export function SideSwitchingPanel<K extends string>(props: {
                     }}
                 >
                     <img
-                        className={`rdo-side-switching-panel-hamburger-icon rdo-side-switching-panel-hamburger-icon-${hamburgerHovered ? 'active' : 'inactive'}`}
+                        className={`rdo-side-switching-panel-hamburger-icon rdo-side-switching-panel-hamburger-icon-${hamburgerHovered ? 'active' : 'inactive'} cursor-pointer`}
                         src={GridThreeUpImg}
                     />
                 </div>
                 {!compact &&(
                     <button
-                        className={`rdo-side-switching-panel-hamburger-icon rdo-side-switching-panel-hamburger-icon-${hamburgerHovered ? 'active' : 'inactive'}`}
+                        className={`rdo-side-switching-panel-hamburger-icon rdo-side-switching-panel-hamburger-icon-${hamburgerHovered ? 'active' : 'inactive'} cursor-pointer`}
                         onClick={(e) => {
                             e.preventDefault();
                             e.stopPropagation();
