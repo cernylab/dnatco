@@ -152,6 +152,7 @@ export function SideSwitchingPanel<K extends string>(props: {
                 >
                     <img
                         className={`rdo-side-switching-panel-hamburger-icon rdo-side-switching-panel-hamburger-icon-${hamburgerHovered ? 'active' : 'inactive'} cursor-pointer`}
+                        alt={"hamburger menu"}
                         src={GridThreeUpImg}
                     />
                 </div>
