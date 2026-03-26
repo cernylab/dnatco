@@ -12,9 +12,10 @@ import {
 import {RadixComboBox} from "../../common/radix-combo-box";
 
 function chainOptions(modelIndex: number, d: Dnatcofication) {
-    if (modelIndex === InvalidModelIndex)
-        return [{ caption: 'All models selected - cannot filter by chains', value: InvalidChain }];
-
+    if (modelIndex === InvalidModelIndex) {
+      console.error("Pada to sem " + modelIndex.toString());
+      return [{caption: 'All models selected - cannot filter by chains', value: "InvalidChain"}];
+    }
     const opts = [
         { caption: 'All NAs', value: "InvalidChain" },
         ...listOfChains(modelIndex, d.data.structures[0], d.data.entityKinds[modelIndex]),
@@ -63,13 +64,14 @@ export class ChainSelect extends WithSubscriptions<ChainSelect.Props, { modelInd
 
     componentDidMount() {
         this.subscribe(this.props.switching.events.chainSwitched, (sel) => this.setState({ ...this.state, modelIndex: sel.modelIndex, chain: sel.chain }));
+        this.subscribe(this.props.switching.events.modelSwitched, (sel) => this.setState({ ...this.state, modelIndex: sel.modelIndex }));
     }
 
     shouldComponentUpdate(nextProps: Readonly<ChainSelect.Props>, nextState: Readonly<{
         modelIndex: number;
         chain: string
     }>, nextContext: any): boolean {
-        return this.state.chain !== nextState.chain;
+      return this.state.chain !== nextState.chain || this.state.modelIndex !== nextState.modelIndex;
     }
 
     componentWillUnmount() {
