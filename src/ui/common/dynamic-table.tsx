@@ -314,7 +314,7 @@ export class DynamicTable extends React.Component<
             {"\u00A0"}
             {col.notSortable ? undefined : (
               <img
-                className="column-sort-button"
+                className="column-sort-button cursor-pointer"
                 src={imgSrc}
                 onClick={() => this.changeSort(idx)}
               />
