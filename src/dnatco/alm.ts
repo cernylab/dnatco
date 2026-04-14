@@ -8,6 +8,7 @@ import { MappedNaval } from './dnatcofication';
 import { objKeys } from '../util';
 import { M } from '../util/math';
 import { InvalidModelIndex } from '../util/structure-selection';
+import { Logger } from '../log/logger';
 
 export type ALMCompoundAngleLength = {
     models: Map<number, ALM.ByCompound>,
@@ -307,7 +308,15 @@ export namespace ALM {
 
             for (const angle of Angles[comp]) {
                 const tag = tripletTag(angle);
-                const a = getBondAngle(tag, r.bondAngles);
+                let a;
+                try{
+                    a = getBondAngle(tag, r.bondAngles);
+                }catch (e) {
+                    let residueName = r.compound + r.authSeqId;
+                    Logger.log(Logger.Severity.Warning, `No angle with tag ${tag} in residue ${residueName}`);
+                    continue;
+                }
+
 
                 const almM = almOfModel.angles[comp]
                 const almC = almOfChain.angles[comp];
@@ -357,7 +366,14 @@ export namespace ALM {
 
             for (const length of Lengths[r.compound]) {
                 const tag = pairTag(length);
-                const l = getBondLength(tag, r.bondLengths);
+                let l;
+                try {
+                    l = getBondLength(tag, r.bondLengths);
+                }catch (e) {
+                    let residueName = r.compound + r.authSeqId;
+                    Logger.log(Logger.Severity.Warning, `No length with tag ${tag} in residue ${residueName}`);
+                    continue;
+                }
 
                 const almM = almOfModel.lengths[comp]
                 const almC = almOfChain.lengths[comp];

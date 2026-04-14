@@ -61,6 +61,7 @@ import {
   StructureSelection,
 } from "../../../../util/structure-selection";
 import { ViewerInterop, ViewerApi } from "../../../../viewer/viewer-interop";
+import { Logger } from "../../../../log/logger";
 
 function reverseTagTriplet(tripletTagStr: string){
         const parts = tripletTagStr.split('^');
@@ -93,7 +94,11 @@ function makeAngleDetails(props: ResidueDetailsProps, cellRefs: Map<string, Reac
         }
 
     }
-    if (idx < 0) throw new Error(`Bad tripletTag ${tripletTagStr}`);
+    if (idx < 0) {
+        let residueName = props.residue.compound + props.residue.authSeqId;
+        Logger.log(Logger.Severity.Debug, `Bad tripletTag ${tripletTagStr} in ${residueName}`);
+        continue;
+    }
 
     const x = props.residue.bondAngles[idx];
     const angleTag = tripletTag(x.triplet);
@@ -146,7 +151,12 @@ function makeLengthDetails(props: ResidueDetailsProps, cellRefs: Map<string, Rea
         }
 
     }
-    if (idx < 0) throw new Error(`Bad pairTag ${pairTagStr}`);
+
+    if (idx < 0) {
+        let residueName = props.residue.compound + props.residue.authSeqId;
+        Logger.log(Logger.Severity.Debug, `Bad PairTag ${pairTagStr} in ${residueName}`);
+        continue;
+    }
 
     const x = props.residue.bondLengths[idx];
     const bondTag = pairTag(x.pair);
@@ -1329,7 +1339,6 @@ export class AnglesLengthsByResidue extends View<
         structureName,
         _r
       );
-
       const ref = React.createRef<Residue>();
 
       // Check if this residue should auto-open a bond or angle window
@@ -1770,7 +1779,6 @@ export class AnglesLengthsByResidue extends View<
     );
     const selectedResidues = selectedIndices.map((x) => alm.residues[x]);
     const selectedResidueStats = selectedIndices.map((x) => alm.stats[x]);
-
     const metrics = GlobalConfig.data().anglesLengths.summaryMetrics;
     const summary = metrics === 'naval'
       ? SummarizeNaval.substructure(selectedResidues, this.props.dnatcofication.data.naval)
