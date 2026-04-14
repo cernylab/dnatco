@@ -70,6 +70,7 @@ export class CustomNtCSets extends WithSubscriptions<
               />
             </div>
             <div className="mr-2">
+                {this.props.selectedSet != "" &&
               <IconTextButton
                 caption="Rename"
                 src={ReloadImg}
@@ -91,18 +92,20 @@ export class CustomNtCSets extends WithSubscriptions<
                     },
                   });
                 }}
-              />
+              />}
             </div>
             <div>
-              <IconTextButton
-                caption="Delete"
-                src={XImg}
-                onClick={() => {
-                  if (this.props.selectedSet !== "") {
-                    this.props.customNtCs.deleteSet(this.props.selectedSet);
-                  }
-                }}
-              />
+                {this.props.selectedSet != "" &&
+                  <IconTextButton
+                    caption="Delete"
+                    src={XImg}
+                    onClick={() => {
+                      if (this.props.selectedSet !== "") {
+                        this.props.customNtCs.deleteSet(this.props.selectedSet);
+                      }
+                    }}
+                  />
+                }
             </div>
           </div>
         </div>

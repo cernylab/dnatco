@@ -678,6 +678,77 @@ a.rdo-imglink:visited {
   display: none;
 }
 
+.rdo-scroll-horizontally {
+    width: 100%;
+    overflow-x: scroll;
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none;
+}
+
+.rdo-scroll-horizontally::-webkit-scrollbar {
+    visibility: hidden;
+}
+
+.rdo-scroll-horizontally-with-scrollbar {
+    width: 100%;
+    overflow-x: scroll;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 0, 0, 0.3) transparent;
+}
+
+/* Minimalistický scrollbar pro WebKit */
+.rdo-scroll-horizontally-with-scrollbar::-webkit-scrollbar {
+    height: 8px;
+}
+
+.rdo-scroll-horizontally-with-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.rdo-scroll-horizontally-with-scrollbar::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.3);
+    border-radius: 4px;
+}
+
+.rdo-scroll-horizontally-with-scrollbar::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.rdo-scroll-horizontally-none {
+    width: 100%;
+    overflow-x: hidden;
+}
+
+.rdo-scroll-horizontally-with-scrollbar-none {
+    width: 100%;
+    overflow-x: scroll;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+/* Schování scrollbaru pro Chrome, Safari a Operu */
+.rdo-scroll-horizontally-with-scrollbar-none::-webkit-scrollbar {
+    display: none;
+}
+
+.rdo-horizontal-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    display: block;
+    position: relative;
+
+    -webkit-overflow-scrolling: touch;
+}
+
+.rdo-horizontal-wrapper::-webkit-scrollbar {
+    display: none;
+}
+.rdo-horizontal-wrapper {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
 .rdo-search-box {
   background-color: white;
   border: var(--thickness-border) solid var(--color-a);
