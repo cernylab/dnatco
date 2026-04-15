@@ -351,7 +351,7 @@ export namespace SerializeByResidue {
         values.push(residues.flatMap(x => x.bondLengths.map(() => x.authSeqId)));
         values.push(residues.flatMap(x => x.bondLengths.map(() => x.compound)));
         values.push(residues.flatMap(x => x.bondLengths.map(l => lengthName(l.pair))));
-        values.push(residues.flatMap(x => x.bondLengths.map(l => l.length.toFixed(2))));
+        values.push(residues.flatMap(x => x.bondLengths.map(l => l.length.toFixed(4))));
         values.push(residues.flatMap((x, idx) => x.bondLengths.map((_y, jdx) => {
             const mb = stats[idx].lengths[jdx].bin;
             const binVal = maybeBinValue(mb);
