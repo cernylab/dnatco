@@ -21,6 +21,7 @@ const BackboneAnglesOrder = [
     tripletTag(["O5'", "C5'", "C4'"]),
     tripletTag(["C5'", "C4'", "C3'"]),
     tripletTag(["C4'", "C3'", "O3'"]),
+    tripletTag(["C5'", "C4'", "O4'"]),
 ];
 
 const RiboseRingAnglesOrder = [
