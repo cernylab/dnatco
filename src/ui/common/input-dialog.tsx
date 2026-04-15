@@ -57,6 +57,7 @@ export class InputDialog extends React.Component<Props, State> {
             <div className='rdo-popup absolute top-0 left-0 bg-test w-screen h-screen'>
                 <div className='rdo-popup-inner absolute top-[40%] left-[40%] bg-primary-first p-4 rounded-standard'>
                     <div className='rdo-named-list-name text-white mb-2'>{this.props.caption}</div>
+                    {this.props.description && (<div className='text-white'>{this.props.description}</div>)}
                     <input
                         ref={this.textInputRef}
                         className='text-18px w-full bg-white rounded-smaller px-2 py-1'
@@ -94,6 +95,7 @@ export class InputDialog extends React.Component<Props, State> {
 export namespace InputDialog {
     export interface Props {
         caption: string;
+        description?: string;
         onAccepted: (v: string) => void;
         validator?: (v: string) => string|undefined;
     }

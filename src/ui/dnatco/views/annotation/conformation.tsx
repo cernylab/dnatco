@@ -119,12 +119,18 @@ export class Conformation extends View<View.Props> {
       cells: new Array<DynamicTable.Cell<string>>(),
       alignment: "center",
       tooltip: <div>PDB chain ID (author)</div>,
+      headerStyle: {
+        width: '50px'
+      },
     };
     const stepColumn: DynamicTable.Column<string> = {
       name: "Step",
       cells: new Array<DynamicTable.Cell<string>>(),
       alignment: "center",
       notSortable: true,
+      headerStyle: {
+        width: '105px'
+      },
       elem: (
         <div className="flex items-center justify-center gap-2">
           <Tooltip tag={<span>Step</span>} delayMsec={300}>
@@ -148,6 +154,9 @@ export class Conformation extends View<View.Props> {
       name: "NtC",
       cells: new Array<DynamicTable.Cell<string>>(),
       alignment: "center",
+      headerStyle: {
+        width: '45px'
+      },
       tooltip: (
         <div>
           Di<span className="rdo-emphasize">N</span>ucleotide{" "}
@@ -167,6 +176,9 @@ export class Conformation extends View<View.Props> {
           <span className="rdo-emphasize">A</span>cids
         </div>
       ),
+      headerStyle: {
+        width: '50px'
+      },
     };
 
     const columns = [chainColumn, stepColumn, ntcColumn, canaColumn];

@@ -47,7 +47,7 @@ export namespace Measurements {
             const c = requiredAtoms.get(triplet[2]);
 
             if (!a || !b || !c)
-                return void 0;
+                continue;
 
             const angle = jsLLKA.measureAngle(a, b, c);
             bondAngles.push({ triplet, angle, tag: tripletTag(triplet) });
@@ -63,7 +63,7 @@ export namespace Measurements {
             const b = requiredAtoms.get(pair[1]);
 
             if (!a || !b)
-                return void 0;
+                continue;
 
             const length = jsLLKA.measureDistance(a, b);
             lengths.push({ pair, length, tag: pairTag(pair) });
@@ -72,14 +72,22 @@ export namespace Measurements {
         return lengths;
     }
 
-    function pivotAtom(step: jsLLKA.LLKAStructure) {
-        const seqId = step.get(0).label_seq_id;
+    function getFirstResidueAtom(step: jsLLKA.LLKAStructure){
+        if (step.size() > 0){
+            return step.get(0);
+        }
+        return void 0;
+    }
+    function getSecondResidueAtom(step: jsLLKA.LLKAStructure){
+        if (step.size() === 0) return void 0;
+
+        const firstSeqId = step.get(0).label_seq_id;
         for (let idx = 1; idx < step.size(); idx++) {
             const atom = step.get(idx);
-            if (atom.label_seq_id > seqId)
+            if (atom.label_seq_id > firstSeqId) {
                 return atom;
+            }
         }
-
         return void 0;
     }
 
@@ -112,7 +120,7 @@ export namespace Measurements {
             const a = findAtom(step, name, altId, seqId + shift, firstAtom.pdbx_PDB_ins_code, firstAtom.pdbx_PDB_model_num);
             if (!a) {
                 Logger.log(Logger.Severity.Warning, `AnglesLengths: Atom ${seqId + shift} ${name} (altId ${altId}) (model ${firstAtom.pdbx_PDB_model_num}) not found`);
-                return void 0;
+                continue;
             }
 
             if (shift === -1) {
@@ -188,37 +196,34 @@ export namespace Measurements {
     export function allSteps(steps: jsLLKA.LLKAStructures) {
         const residues = [];
         const seenResidues = new Set<string>();
-
         for (let idx = 0; idx < steps.size(); idx++) {
             const step = steps.get(idx);
-            const firstAtom = pivotAtom(step);
-            if (!firstAtom) {
-                step.delete();
-                continue;
+
+            const atomFirst = getFirstResidueAtom(step);
+            const atomSecond = getSecondResidueAtom(step);
+            if(atomFirst === undefined){
+                console.warn("first atom is undefined")
+            }
+            if(atomSecond === undefined){
+                console.warn("second atom is undefined");
             }
 
-            const altId = expandAltId(step, firstAtom.label_seq_id);
-            // We can see some residues multiple times because we are reading them from steps
-            // and steps bifrucate on altIds. It is, therefore, possible to have a step with
-            // different altId of the first step but the same altId for the second step. When that
-            // happens, we will see the second residue of such a step twice.
-            //
-            // SOMETHING TO CONSIDER:
-            // If a residue with some alt. conformation never appears as the second residue in a step,
-            // this code will not see it. This indicates that there is no reasonable connectivity between
-            // such a residue and a residue that would be the first residue in this non-existent step.
-            // Ignoring this "invisible" residue might actually be the right thing because we measure
-            // cross-residue angles and these angles would most likely turn out wrong.
-            const tag = `${firstAtom.pdbx_PDB_model_num}_${firstAtom.label_asym_id}_${firstAtom.label_seq_id}_${firstAtom.pdbx_PDB_ins_code}_${altId}`;
-            if (seenResidues.has(tag)) {
-                step.delete();
-                continue;
-            }
+            const atoms = [atomFirst, atomSecond].filter(a => a !== undefined);
 
-            const residue = processResidue(firstAtom, altId, step);
-            if (residue) {
-                residues.push(residue);
-                seenResidues.add(tag);
+            for (const atom of atoms){
+                const altId = expandAltId(step, atom.label_seq_id);
+
+                const tag = `${atom.pdbx_PDB_model_num}_${atom.label_asym_id}_${atom.label_seq_id}_${atom.pdbx_PDB_ins_code}_${altId}`;
+
+                if (seenResidues.has(tag)) {
+                    continue;
+                }
+
+                const residue = processResidue(atom, altId, step);
+                if (residue) {
+                    residues.push(residue);
+                    seenResidues.add(tag);
+                }
             }
 
             step.delete();

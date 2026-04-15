@@ -1,16 +1,16 @@
 import React from 'react';
 import Plot from 'react-plotly.js';
-import { Refinement } from './common';
+import { getNtC, Refinement } from './common';
 import { CustomNtCSets } from './custom-ntc-sets';
 import { ChainSelect, ModelSelect, StepSelect } from '../structure-selectors';
 import { View } from '../view';
 import { PlotPointsLegend } from '../../plot-points-legend';
 import { EmptySelectionPieces } from '../../structure-selection';
-import { NamedList, NamedListItem } from '../../../common/named-list';
+import { NamedListItem } from '../../../common/named-list';
 import { Cif } from '../../../../cif';
 import { AtomSite } from '../../../../cif/categories/atom-site';
-import { Colors } from '../../../dnatco/colors';
-import { Constants } from '../../../dnatco/constants';
+import { Colors } from '../../colors';
+import { Constants } from '../../constants';
 import { calculateConnectivities } from '../../../../dnatco/connectivity-similarity';
 import { Dnatcofication } from '../../../../dnatco/dnatcofication';
 import { NtC } from '../../../../dnatco/ntc';
@@ -22,7 +22,22 @@ import { objKeys } from '../../../../util';
 import { valueToSemaphore } from '../../../../util/semaphore';
 import { InvalidAtom, InvalidResidue, InvalidStepId } from '../../../../util/structure-selection';
 
+import { InputDialog } from "../../../common/input-dialog";
+import { DynamicTable } from "../../../../util/dynamic-table";
+import { ChangeNtCs } from "./change-ntcs";
+import { DynamicTable as DynamicTableComp } from "../../../common/dynamic-table";
+
+import { setDynamicTableModelColumns } from "../../util";
+import { niceStepName } from "../../common";
+import { Tooltip } from "../../../common/tooltip";
+
 const MinNumberOfPointsInPlot = 10;
+const CellBgAlpha = 0.5;
+
+function rmsdToColor(rmsd: number): React.CSSProperties {
+    const clr = valueToSemaphore(rmsd, Constants.GreenRMSD, Constants.RedRMSD);
+    return { backgroundColor: `rgba(${clr.r},${clr.g},${clr.b},${CellBgAlpha})` };
+}
 
 const PlotData = {
     x: new Array<number>(),
@@ -132,8 +147,26 @@ export class ConnectivityPlot extends View<Refinement.Props> {
 
     private changeCustomNtC(ntc: string, targetStep: (stepId: number) => Step | undefined) {
         const stepId = this.props.structureSelection.steps[0];
-        if (this.props.selectedCustomNtCSet === '' || stepId === undefined)
+        if (this.props.selectedCustomNtCSet === '' || stepId === undefined){
+            InputDialog.create({
+                caption: "Name of the new set",
+                description: "You need to create a new set before assigning a custom NtC.",
+                validator: (v) => {
+                    if (v === "") return "Set must have a name";
+                    return this.props.dnatcofication.customNtCs.exists(v)
+                        ? `Set named ${v} already exists`
+                        : void 0;
+                },
+                onAccepted: (v) => {
+                    this.props.dnatcofication.customNtCs.addSet(v);
+                    if (this.props.onCustomNtCSetChanged) {
+                        this.props.onCustomNtCSetChanged(v);
+                    }
+
+                },
+            });
             return;
+        }
 
         const step = targetStep(stepId);
         if (step) {
@@ -145,6 +178,342 @@ export class ConnectivityPlot extends View<Refinement.Props> {
         }
     }
 
+    private tableModel: DynamicTable.Model = new DynamicTable.Model([]);
+    private tableTainer = React.createRef<HTMLDivElement>();
+
+    private renderSwitchButton = (direction: string) => {
+        let arrow = "";
+        let colour = "";
+        let tooltipText: string;
+
+        if (direction === "Previous") {
+            arrow = "⬤";
+            colour = "#" + Colors.PreviousStep().toString(16).padStart(6, '0');
+            tooltipText = `Click to show only previous connectivity plot`;
+        } else if (direction === "Next"){
+            arrow = "⬤";
+            colour = "#" + Colors.NextStep().toString(16).padStart(6, '0');
+            tooltipText = `Click to show only next connectivity plot`;
+        } else {
+            tooltipText = `Click to show both connectivity plots`
+        }
+
+        const arrowStyle: React.CSSProperties = {
+            color: colour,
+            width: '20px',
+            textAlign: 'left',
+            flexShrink: '0',
+            display: 'inline-flex',
+        }
+
+        return (<button
+            className={`font-bold cursor-pointer`}
+            onClick={(ev) => {
+                ev.preventDefault();
+                ev.stopPropagation();
+                this.setConnectivityMode(direction);
+            }}
+            title={tooltipText}
+            style={{ display: 'inline-flex', alignItems: 'center', width: '100%', marginLeft: direction === "Current" ? "20px" : "0px" }}
+        >
+            {arrow && <span style={arrowStyle}>{arrow}</span>}
+            <span style={{
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis'
+                }}>
+                {direction}
+            </span>
+        </button>
+    );
+    };
+
+
+    private addRow(row: number, label: "Previous" | "Current" | "Next", columns: DynamicTable.Column<any>[], stepId: number){
+        const _step = StepsMapper.byId(this.props.dnatcofication ,stepId);
+        const neighbors = StepsMapper.previousNextById(this.props.dnatcofication, _step.id);
+        const currentNtC = getNtC(this.props.dnatcofication, _step, this.props.selectedCustomNtCSet);
+        const currentRMSD = this.props.dnatcofication.getSimilarities(_step.id)?.[currentNtC]?.rmsd;
+        const stepName = niceStepName(_step);
+
+        const tag = _step.name;
+        const tags = [void 0, tag, tag, tag, void 0, void 0, void 0];
+
+        const centredStepId = this.props.structureSelection.steps[0];
+        const centredStep = StepsMapper.byId(this.props.dnatcofication, centredStepId);
+        const centredNtC = getNtC(this.props.dnatcofication, centredStep, this.props.selectedCustomNtCSet)
+
+        const stepNew = Step.clone(_step);
+        stepNew.closestNtC = currentNtC;
+
+        const prevStep = (neighbors.previousId !== undefined && neighbors.previousId !== InvalidStepId)
+            ? StepsMapper.byId(this.props.dnatcofication, neighbors.previousId)
+            : void 0;
+
+        const nextStep = (neighbors.nextId !== undefined && neighbors.nextId !== InvalidStepId)
+            ? StepsMapper.byId(this.props.dnatcofication, neighbors.nextId)
+            : void 0;
+
+        const {backward, forward} = calculateConnectivities(
+            stepNew,
+            prevStep,
+            nextStep,
+            Cif.File.table(this.props.dnatcofication.data.cifData!, AtomSite, 0)
+        )
+
+        let C5: any;
+        let O3: any;
+        if(label == "Previous"){
+            C5 = forward?.[centredNtC]?.C5PrimeDistance;
+            O3 = forward?.[centredNtC]?.O3PrimeDistance;
+        } else if (label == "Next"){
+            C5 = backward?.[centredNtC]?.C5PrimeDistance;
+            O3 = backward?.[centredNtC]?.O3PrimeDistance;
+        }
+
+        setDynamicTableModelColumns(
+            this.tableModel,
+            row,
+            columns,
+            tags,
+            [
+                "",
+                _step.chainAuth,
+                _step.name,
+                currentNtC,
+                currentRMSD,
+                C5,
+                O3,
+            ],
+            [
+                () => {
+                    return(
+                        <span>
+                            {this.renderSwitchButton(label)}
+                        </span>
+                    )
+                },
+                void 0,
+                () => {
+                    return(
+                        <span>
+                            {stepName}
+                        </span>
+                )},
+                () => currentNtC === "NANT" ? (
+                    <Tooltip
+                        tag={
+                            <span className="text-secondary-third">
+                                {currentNtC}
+                            </span>
+                        }
+                        delayMsec={300}
+                    >
+                        This step is unassigned.
+                    </Tooltip>
+                ) : (
+                    <span>
+                        {currentNtC}
+                    </span>
+                ),
+                () => (
+                    <span>
+                      {currentRMSD!.toFixed(3)}
+                    </span>
+                ),
+                () => {
+                    return <span>{typeof C5 === 'number' ? C5.toFixed(3) : "-"}</span>;
+                },
+                () => {
+                    return <span>{typeof O3 === 'number' ? O3.toFixed(3) : "-"}</span>;
+                },
+            ]
+        )
+    }
+
+    private makeTableModel(){
+
+        const buttonColumn: DynamicTable.Column<string> = {
+            name: " ",
+            cells: new Array<DynamicTable.Cell<string>>(),
+            alignment: "center",
+            tooltip: <div>Select connectivity plot</div>,
+            notSortable: true,
+            headerStyle: {
+                width: '90px'
+            },
+        }
+
+        const chainColumn: DynamicTable.Column<string> = {
+            name: "Chain",
+            cells: new Array<DynamicTable.Cell<string>>(),
+            alignment: "center",
+            tooltip: <div>PDB chain ID (author)</div>,
+            notSortable: true,
+            headerStyle: {
+                width: '50px'
+            },
+        };
+
+        const stepColumn: DynamicTable.Column<string> = {
+            name: "Step",
+            cells: new Array<DynamicTable.Cell<string>>(),
+            headerStyle: {
+                whiteSpace: 'nowrap',
+                width: '100px'
+            },
+            cellStyle: () => ({
+               whiteSpace: 'nowrap',
+               width: '100px'
+            }),
+            alignment: "center",
+            tooltip: <div>Dinucleotide step identifier</div>,
+            notSortable: true,
+        };
+
+        const NtCColumn: DynamicTable.Column<string> = {
+            name: "NtC",
+            cells: new Array<DynamicTable.Cell<string>>(),
+            alignment: "center",
+            headerStyle: {
+                whiteSpace: 'nowrap',
+                width: '50px'
+            },
+            cellStyle: () => ({
+                whiteSpace: 'nowrap',
+                width: '50px'
+            }),
+            tooltip: <div> NtC </div>,
+            notSortable: true,
+        };
+
+        const rmsdColumn: DynamicTable.Column<number> = {
+            name: "RMSD",
+            cells: new Array<DynamicTable.Cell<number>>(),
+            alignment: "center",
+            cellStyle: rmsdToColor,
+            headerStyle: {
+                width: '50px'
+            },
+            tooltip: (
+                <div>
+                    RMSD
+                </div>
+            ),
+            notSortable: true,
+        };
+
+        const C5Column: DynamicTable.Column<number> = {
+            name: "C5",
+            cells: new Array<DynamicTable.Cell<number>>(),
+            alignment: "center",
+            cellStyle: rmsdToColor,
+            headerStyle: {
+                width: '45px'
+            },
+            tooltip: (
+                <div>
+                    C5.
+                </div>
+            ),
+            notSortable: true,
+        };
+
+        const O3Column: DynamicTable.Column<number> = {
+            name: "O3",
+            cells: new Array<DynamicTable.Cell<number>>(),
+            alignment: "center",
+            headerStyle: {
+                width: '45px'
+            },
+            cellStyle: rmsdToColor,
+            tooltip: (
+                <div>
+                    O3.
+                </div>
+            ),
+            notSortable: true,
+        };
+
+        const columns = [
+            buttonColumn,
+            chainColumn,
+            stepColumn,
+            NtCColumn,
+            rmsdColumn,
+            C5Column,
+            O3Column,
+        ];
+
+        this.tableModel = new DynamicTable.Model([]);
+
+        const _step = this.props.structureSelection.steps[0];
+        const neighbors = StepsMapper.previousNextById(this.props.dnatcofication, _step);
+
+        if(_step == undefined){return new DynamicTable.Model(columns);}
+
+        if(neighbors.previousId !== undefined && neighbors.previousId !== -1){
+            this.addRow(0, "Previous", columns, neighbors.previousId);
+        }
+
+        this.addRow(1, "Current", columns, _step);
+
+        if(neighbors.nextId !== undefined && neighbors.nextId !== -1){
+            this.addRow(2, "Next", columns, neighbors.nextId);
+        }
+        return new DynamicTable.Model(columns);
+    }
+
+    private renderStepsTable() {
+        const stepName =
+            this.props.structureSelection.steps.length === 0
+                ? ""
+                : StepsMapper.byId(
+                    this.props.dnatcofication,
+                    this.props.structureSelection.steps[0]
+                ).name;
+
+        return (
+            <DynamicTableComp
+                model={this.tableModel}
+                onCellClicked={(data, row) => {
+                    const cIdx = this.tableModel.columnNames.findIndex(
+                        (cn) => cn === "Step"
+                    );
+                    if (cIdx === -1) return;
+
+                    const stepName = row[cIdx].data;
+                    const stepId =
+                        StepsMapper.byName(this.props.dnatcofication, stepName)?.id ??
+                        InvalidStepId;
+                    if (stepId !== InvalidStepId) {
+                        const sel = ChangeNtCs.SelectionMaker(
+                            stepId,
+                            InvalidResidue,
+                            InvalidAtom,
+                            this.props.structureSelection.steps,
+                            this.props.structureSelection.residues,
+                            this.props.structureSelection.atoms,
+                            this.props.dnatcofication
+                        );
+                        this.props.switching.changeSelection(
+                            sel,
+                            ChangeNtCs.SelectionDisplayer
+                        );
+                    }
+                }}
+                highlightedTag={stepName}
+                highlightColor={Colors.CurrentStep()}
+                scrollTainer={this.tableTainer.current ?? void 0}
+                style="wide"
+                modelsAlwaysCompareFalse
+            />
+        );
+    }
+
+    private setTableModel() {
+        this.tableModel = this.makeTableModel();
+    }
 
     private renderConnectivityPlot(data: PlotData, hints: [xMax: number, yMax: number], changeCustomNtC: (NtC: string) => void, uirev: string) {
         return (
@@ -284,17 +653,29 @@ export class ConnectivityPlot extends View<Refinement.Props> {
     }
 
     componentDidMount() {
-        this.subscribe(this.props.switching.events.modelSwitched, () => this.forceUpdate());
-        this.subscribe(this.props.switching.events.chainSwitched, () => this.forceUpdate());
-        this.subscribe(this.props.switching.events.selectionChanged, () => this.forceUpdate());
+        this.subscribe(this.props.switching.events.modelSwitched, () => {this.setTableModel(); this.forceUpdate();});
+        this.subscribe(this.props.switching.events.chainSwitched, () => {this.setTableModel(); this.forceUpdate()});
+        this.subscribe(this.props.switching.events.selectionChanged, () => {this.setTableModel();  this.forceUpdate()});
         this.subscribe(this.props.dnatcofication.customNtCs.events.setChanged, (update) => {
-            if (update.set === this.props.selectedCustomNtCSet)
+            if (update.set === this.props.selectedCustomNtCSet) {
+                this.setTableModel();
                 this.forceUpdate();
+            }
         });
+        this.setTableModel();
+        this.forceUpdate();
     }
 
     componentWillUnmount() {
         this.unsubscribeAll();
+    }
+
+    state = {
+        connectivityMode: 'Current',
+    }
+
+    setConnectivityMode = (mode: string) => {
+        this.setState({ connectivityMode: mode});
     }
 
     render() {
@@ -333,8 +714,10 @@ export class ConnectivityPlot extends View<Refinement.Props> {
 
         return (
             <div className='h-full'>
-                <NamedList sizing='min-content' rowSpacing='half'>
+                <div className={"flex flex-row flex-wrap gap-4 items-end"}>
+
                     {numModels > 1 && (
+                        <span>
                         <NamedListItem name='Model'>
                             <ModelSelect
                                 dnatcofication={this.props.dnatcofication}
@@ -342,8 +725,10 @@ export class ConnectivityPlot extends View<Refinement.Props> {
                                 switching={this.props.switching}
                             />
                         </NamedListItem>
+                        </span>
                     )}
                     {numChains > 1 && (
+                        <span>
                         <NamedListItem name='Chain'>
                             <ChainSelect
                                 dnatcofication={this.props.dnatcofication}
@@ -351,7 +736,9 @@ export class ConnectivityPlot extends View<Refinement.Props> {
                                 switching={this.props.switching}
                             />
                         </NamedListItem>
+                        </span>
                     )}
+                    <span>
                     <NamedListItem name='Step'>
                         <StepSelect
                             dnatcofication={this.props.dnatcofication}
@@ -365,7 +752,9 @@ export class ConnectivityPlot extends View<Refinement.Props> {
                             }}
                         />
                     </NamedListItem>
-                </NamedList>
+                    </span>
+                </div>
+
 
                 <div className='h-4' />
 
@@ -447,12 +836,29 @@ export class ConnectivityPlot extends View<Refinement.Props> {
                             }}
                         />
                     </div>
+                    <div className="flex-initial h-auto" ref={this.tableTainer}>
+                        <div className="rdo-scroll-vertically-with-scrollbar-none rdo-scroll-horizontally-none">
+                            {this.renderStepsTable()}
+                        </div>
+                    </div>
 
-                    <div className='rdo-secondary-caption'>Connectivity to previous step</div>
-                    {this.renderConnectivityPlot(prevConnPlotData, prevConnMaxHints, changeCustomNtCPrev, 'prev')}
-
-                    <div className='rdo-secondary-caption'>Connectivity to next step</div>
-                    {this.renderConnectivityPlot(nextConnPlotData, nextConnMaxHints, changeCustomNtCNext, 'next')}
+                    {(this.state.connectivityMode == 'Previous' &&
+                        (<>
+                            <div className='rdo-secondary-caption'>Connectivity to previous step</div>
+                            {this.renderConnectivityPlot(prevConnPlotData, prevConnMaxHints, changeCustomNtCPrev, 'prev')}
+                    </>))}
+                    {(this.state.connectivityMode == 'Next' &&
+                        (<>
+                            <div className='rdo-secondary-caption'>Connectivity to next step</div>
+                            {this.renderConnectivityPlot(nextConnPlotData, nextConnMaxHints, changeCustomNtCNext, 'next')}
+                    </>))}
+                    {(this.state.connectivityMode == 'Current' &&
+                        (<>
+                            <div className='rdo-secondary-caption'>Connectivity to previous step</div>
+                            {this.renderConnectivityPlot(prevConnPlotData, prevConnMaxHints, changeCustomNtCPrev, 'prev')}
+                            <div className='rdo-secondary-caption'>Connectivity to next step</div>
+                            {this.renderConnectivityPlot(nextConnPlotData, nextConnMaxHints, changeCustomNtCNext, 'next')}
+                    </>))}
                 </div>
             </div>
         );

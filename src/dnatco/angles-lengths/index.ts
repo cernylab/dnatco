@@ -322,17 +322,23 @@ async function fetchReferenceData(prefix: string, resources: Resource[], loaderF
             const resp = await req;
             if (!resp.ok)
                 throw new Error(`Bad server response: ${resp.statusText}`);
+            try{
+                const data = await resp.json();
+                //const data = await resp.json();
+                checkReferenceData(data);
 
-            const data = await resp.json();
-            checkReferenceData(data);
+                averages.push([base, tag, toBins(data)]);
 
-            averages.push([base, tag, toBins(data)]);
+                const z = data.zprime;
+                const naval = Naval(z.weightedMedian, z.scaleFactorLower, z.scaleFactorUpper, z.ofConcernLower, z.ofConcernUpper);
+                navalRankings[base].set(tag, naval);
 
-            const z = data.zprime;
-            const naval = Naval(z.weightedMedian, z.scaleFactorLower, z.scaleFactorUpper, z.ofConcernLower, z.ofConcernUpper);
-            navalRankings[base].set(tag, naval);
+                referenceSets[base].set(tag, data.rs.bins);
+            } catch(e){
+                console.log(e);
+                console.log(resp);
+            }
 
-            referenceSets[base].set(tag, data.rs.bins);
         }
     }
 

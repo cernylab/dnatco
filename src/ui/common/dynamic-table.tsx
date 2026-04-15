@@ -412,17 +412,18 @@ export class DynamicTable extends React.Component<
     };
 
     return (
-      <div className="flex flex-col h-full">
+        <div className="rdo-horizontal-wrapper h-full" style={{ overflowX: 'auto', scrollbarGutter: 'stable', scrollbarWidth: 'thin', scrollbarColor: 'rgba(0, 0, 0, 0.3) transparent' }}>
+      <div className="flex flex-col h-full" style={{ minWidth: '100%', width:'min-content' }}>
         {this.renderDownloadBar()}
         {/* Fixed header table */}
-        <div className="dynamic-table-header" style={{ overflowY: 'hidden', scrollbarGutter: 'stable', scrollbarWidth: 'thin', scrollbarColor: 'rgba(0, 0, 0, 0.3) transparent' }}>
+        <div className="dynamic-table-header" style={{ overflowY: 'hidden', overflowX: 'hidden',scrollbarGutter: 'stable', scrollbarWidth: 'thin', scrollbarColor: 'rgba(0, 0, 0, 0.3) transparent' }}>
           <style>{`
             .dynamic-table-header::-webkit-scrollbar {
               width: 14px;
             }
           `}</style>
           <div style={{ paddingRight: '2px' }}>
-            <table className={tableClassName} style={{ tableLayout: 'fixed', width: '100%' }}>
+            <table className={tableClassName} style={{ tableLayout: 'fixed', minWidth: '100%' }}>
               {this.renderColGroup()}
               <thead>
                 <tr>{this.renderHeader()}</tr>
@@ -431,7 +432,7 @@ export class DynamicTable extends React.Component<
           </div>
         </div>
         {/* Scrollable body table */}
-        <div className="flex-1 dynamic-table-scroll" style={scrollContainerStyle}>
+        <div className="flex-1 dynamic-table-scroll" style={{ ...scrollContainerStyle, overflowX: 'hidden' }}>
           <style>{`
             .dynamic-table-scroll::-webkit-scrollbar {
               width: 14px;
@@ -451,13 +452,14 @@ export class DynamicTable extends React.Component<
             }
           `}</style>
           <div style={{ paddingRight: '2px' }}>
-            <table className={tableClassName} style={{ tableLayout: 'fixed' }}>
+            <table className={tableClassName} style={{ tableLayout: 'fixed', minWidth: '100%' }}>
               {this.renderColGroup()}
               <tbody>{this.renderBody()}</tbody>
             </table>
           </div>
         </div>
       </div>
+        </div>
     );
   }
 }

@@ -61,8 +61,21 @@ import {
 } from "../../../../util/structure-selection";
 import { ViewerInterop, ViewerApi } from "../../../../viewer/viewer-interop";
 import {RadixComboBox} from "../../../common/radix-combo-box";
+import { Logger } from "../../../../log/logger";
+
+function reverseTagTriplet(tripletTagStr: string){
+        const parts = tripletTagStr.split('^');
+        if (parts.length !== 3){
+                throw new Error(`Invalid tripletTag format: ${tripletTagStr}`);
+        }
+        return [parts[2], parts[1], parts[0]].join('^');
+
+}
 
 function makeAngleDetails(props: ResidueDetailsProps, cellRefs: Map<string, React.RefObject<HTMLTableCellElement>>) {
+    if (!props.residue || !props.residue.bondAngles) {
+        return [];
+    }
   const displayOrder =
     AnglesLengthsDisplayOrder.Angles[props.residue.compound];
 
@@ -71,12 +84,21 @@ function makeAngleDetails(props: ResidueDetailsProps, cellRefs: Map<string, Reac
     let idx = -1;
 
     for (let _idx = 0; _idx < props.residue.bondAngles.length; _idx++) {
-      if (props.residue.bondAngles[_idx].tag === tripletTagStr) {
-        idx = _idx;
-        break;
-      }
+        if (props.residue.bondAngles[_idx].tag === tripletTagStr) {
+            idx = _idx;
+            break;
+
+        } else if (props.residue.bondAngles[_idx].tag === reverseTagTriplet(tripletTagStr)) {
+            idx = _idx;
+            break;
+        }
+
     }
-    if (idx < 0) throw new Error(`Bad tripletTag ${tripletTagStr}`);
+    if (idx < 0) {
+        let residueName = props.residue.compound + props.residue.authSeqId;
+        Logger.log(Logger.Severity.Debug, `Bad tripletTag ${tripletTagStr} in ${residueName}`);
+        continue;
+    }
 
     const x = props.residue.bondAngles[idx];
     const angleTag = tripletTag(x.triplet);
@@ -107,6 +129,10 @@ function makeAngleDetails(props: ResidueDetailsProps, cellRefs: Map<string, Reac
   return elems;
 }
 
+function reverseTag(pairTagStr: string){
+    return pairTagStr.split('^').reverse().join('^');
+}
+
 function makeLengthDetails(props: ResidueDetailsProps, cellRefs: Map<string, React.RefObject<HTMLTableCellElement>>) {
   const displayOrder =
     AnglesLengthsDisplayOrder.Lengths[props.residue.compound];
@@ -116,12 +142,21 @@ function makeLengthDetails(props: ResidueDetailsProps, cellRefs: Map<string, Rea
     let idx = -1;
 
     for (let _idx = 0; _idx < props.residue.bondLengths.length; _idx++) {
-      if (props.residue.bondLengths[_idx].tag === pairTagStr) {
-        idx = _idx;
-        break;
-      }
+        if (props.residue.bondLengths[_idx].tag === pairTagStr) {
+            idx = _idx;
+            break;
+        } else if (props.residue.bondLengths[_idx].tag === reverseTag(pairTagStr)) {
+            idx = _idx;
+            break;
+        }
+
     }
-    if (idx < 0) throw new Error(`Bad pairTag ${pairTagStr}`);
+
+    if (idx < 0) {
+        let residueName = props.residue.compound + props.residue.authSeqId;
+        Logger.log(Logger.Severity.Debug, `Bad PairTag ${pairTagStr} in ${residueName}`);
+        continue;
+    }
 
     const x = props.residue.bondLengths[idx];
     const bondTag = pairTag(x.pair);
@@ -1304,7 +1339,6 @@ export class AnglesLengthsByResidue extends View<
         structureName,
         _r
       );
-
       const ref = React.createRef<Residue>();
 
       // Check if this residue should auto-open a bond or angle window
@@ -1745,7 +1779,6 @@ export class AnglesLengthsByResidue extends View<
     );
     const selectedResidues = selectedIndices.map((x) => alm.residues[x]);
     const selectedResidueStats = selectedIndices.map((x) => alm.stats[x]);
-
     const metrics = GlobalConfig.data().anglesLengths.summaryMetrics;
     const summary = metrics === 'naval'
       ? SummarizeNaval.substructure(selectedResidues, this.props.dnatcofication.data.naval)
