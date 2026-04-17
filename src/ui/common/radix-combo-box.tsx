@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useRef, useState} from "react";
 import * as Select from '@radix-ui/react-select';
 import {
   TriangleDownIcon,
@@ -51,10 +51,27 @@ export const RadixComboBox = ({
   finalTriggerStyle = finalTriggerStyle + ` ${bgColor}` + ` ${triggerTextColor} ` + ` cursor-pointer `;
   const finalContentStyle = contentStyle || defContentStyle;
   const finalItemStyle = itemStyle || defItemStyle;
+
+  const [_open, _setOpen] = useState(false);
+  const openLastChangeTime = useRef<number>(0);
+
+  const safeSetOpen = (openChange:boolean) => {
+    if ((Date.now() - openLastChangeTime.current) > 300) {
+      _setOpen(openChange);
+      openLastChangeTime.current = Date.now();
+    }
+  }
   return (
-    <Select.Root value={value} onValueChange={onChange}>
+    <Select.Root value={value} onValueChange={onChange} open={_open}
+                 onOpenChange={(isOpen) => {
+                   if(isOpen){
+                     safeSetOpen(true);
+                   }else {
+                     safeSetOpen(false);
+                 }}}>
       <Select.Trigger
-        className={finalTriggerStyle}>
+        className={finalTriggerStyle}
+      >
               <span className={triggerValueStyle}>
                 <Select.Value placeholder={placeholder}/>
               </span>
