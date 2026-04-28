@@ -3,8 +3,8 @@
     "version": "0.0.1",
     "description": "<PROTOTYPE>",
     "scripts": {
-        "build": "npm run build-tsc && npm run build-webpack && tailwind",
-        "build-dev": "npm run build-tsc-dev && npm run build-webpack-dev && tailwind",
+        "build": "npx @tailwindcss/cli -i ./assets/input.css -o ./assets/output.css && npm run build-tsc && npm run build-webpack",
+        "build-dev": "npx @tailwindcss/cli -i ./assets/input.css -o ./assets/output.css && npm run build-tsc-dev && npm run build-webpack-dev",
         "build-lib": "npm run build-tsc-lib && npm run build-webpack-lib",
         "build-lib-dev": "npm run build-tsc-lib-dev && npm run build-webpack-lib-dev",
         "build-server": "npm run build-tsc-server && npm run build-webpack-server",
@@ -51,10 +51,10 @@
         "@typescript-eslint/eslint-plugin": "^8.19.1",
         "@typescript-eslint/parser": "^8.19.1",
         "concurrently": "^9.1.2",
-        "copy-webpack-plugin": "^12.0.2",
+        "copy-webpack-plugin": "^14.0.0",
         "cors": "^2.8.5",
         "css-loader": "^7.1.2",
-        "css-minimizer-webpack-plugin": "^7.0.0",
+        "css-minimizer-webpack-plugin": "^8.0.0",
         "eslint": "^9.17.0",
         "eslint-plugin-react": "^7.37.3",
         "file-loader": "^6.2.0",
@@ -100,7 +100,7 @@
         "tslib": "^2.5.0",
         "tspdb": "file:./tspdb",
         "utf-8-validate": "^6.0.3",
-        "uuid": "^11.0.5",
-        "webpack-dev-server": "^5.2.0"
+        "uuid": "^14.0.0",
+        "webpack-dev-server": "^5.2.3"
     }
 }

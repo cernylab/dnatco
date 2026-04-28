@@ -3,7 +3,7 @@ import { GlobalConfig } from './global-config';
 export namespace Version {
     export const Major = 5;
     export const Minor = 0;
-    export const Date = '20260205';
+    export const Date = '20260428';
 
     export function tag() {
         const date = GlobalConfig.data().versionDate ?? Date;
