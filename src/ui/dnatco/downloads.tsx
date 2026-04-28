@@ -6,7 +6,6 @@ import { Downloads as _Downloads } from "./downloads-common";
 import { RsccPlot } from "./rscc-plot";
 import { modelOptions } from "./views/structure-selectors";
 import { CheckBox } from "../common/check-box";
-import { ComboBox } from "../common/combo-box";
 import { InProgressSpinner } from "../common/in-progress-spinner";
 import { Popup } from "../common/popup";
 import { toComboBoxOptions } from "../util";
@@ -29,6 +28,7 @@ import { Serialization } from "../../util/serialization";
 import { GlobalConfig } from "../../global-config";
 import { arrowDown, arrowDownHover } from "../../assets/images";
 import { DownloadButtonComponent } from "./common";
+import {RadixComboBox} from "../common/radix-combo-box";
 
 type ReportGenerationState = "none" | "generating";
 
@@ -237,6 +237,16 @@ function RsccRmsdDownload(props: { d: Dnatcofication; structureName: string }) {
     return (
       <_Downloads.DownloadBox>
         <div className="font-700">Model</div>
+          <RadixComboBox
+              options={toComboBoxOptions(modelOptions(props.d, true), (o) => ({
+                  caption: o.name,
+                  value: o.index.toString(),
+              }))}
+              value={modelIndex}
+              onChange={(v) => setModelIndex(v)}
+              placeholder={"223"}
+          />
+          {/*
         <ComboBox
           options={toComboBoxOptions(modelOptions(props.d, true), (o) => ({
             caption: o.name,
@@ -244,7 +254,7 @@ function RsccRmsdDownload(props: { d: Dnatcofication; structureName: string }) {
           }))}
           value={modelIndex}
           onChange={(v) => setModelIndex(v)}
-        />
+        />*/}
         {haveAssigned ? (
           <DownloadButtonComponent
             title="Assigned NtCs"

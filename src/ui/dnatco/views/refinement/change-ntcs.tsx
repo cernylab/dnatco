@@ -169,6 +169,7 @@ export class ChangeNtCs extends View<Refinement.Props> {
     const customNtCColumn: DynamicTable.Column<string> = {
       name: "Custom NtC",
       cells: new Array<DynamicTable.Cell<string>>(),
+      alignment: "center",
       notSortable: true,
       headerStyle: {
         width: '130px'
@@ -195,7 +196,7 @@ export class ChangeNtCs extends View<Refinement.Props> {
               step
             );
             return (
-              <div className="grid gap-2 [grid-template-columns:auto_2em_1fr]">
+              <div className="flex justify-center whitespace-nowrap">
                 <Refinement.NtCSelector
                   value={customNtC ?? computedNtC}
                   onChanged={(v) => {
@@ -206,7 +207,7 @@ export class ChangeNtCs extends View<Refinement.Props> {
                     );
                   }}
                 />
-                {customNtC ? (
+                {customNtC && (
                   <IconButton
                     src={XImg}
                     onClick={() =>
@@ -215,12 +216,9 @@ export class ChangeNtCs extends View<Refinement.Props> {
                         step
                       )
                     }
-                    className="rdo-icon-text-button"
+                    className="h-[32px] w-[32px]"
                   />
-                ) : (
-                  <div />
                 )}
-                <div />
               </div>
             );
           };

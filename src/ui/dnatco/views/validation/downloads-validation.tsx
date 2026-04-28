@@ -19,7 +19,6 @@ import { objKeys } from "../../../../util";
 import { Rscc } from "../../../../dnatco/rscc";
 import { isOk } from "../../../../dnatco";
 import { InProgressSpinner } from "../../../common/in-progress-spinner";
-import { ComboBox } from "../../../common/combo-box";
 import { CheckBox } from "../../../common/check-box";
 import { toComboBoxOptions } from "../../../util";
 import { modelOptions } from "./../../views/structure-selectors";
@@ -28,6 +27,7 @@ import { Popup } from "../../../common/popup";
 import { Report } from "../../../../report";
 import { ImageSerialization } from "../../../../util/image-serialization";
 import { GlobalConfig } from "../../../../global-config";
+import {RadixComboBox} from "../../../common/radix-combo-box";
 
 type ReportGenerationState = "none" | "generating";
 
@@ -238,7 +238,7 @@ function RsccRmsdDownload(props: { d: Dnatcofication; structureName: string }) {
         <div className="flex items-center h-full">
           <div className="font-700">Model</div>
         </div>
-        <ComboBox
+        <RadixComboBox
           options={toComboBoxOptions(modelOptions(props.d, true), (o) => ({
             caption: o.name,
             value: o.index.toString(),

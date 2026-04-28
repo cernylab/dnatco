@@ -1,6 +1,6 @@
 import React from "react";
 import { Refinement } from "./common";
-import { ComboBox } from "../../../common/combo-box";
+import { RadixComboBox } from "../../../common/radix-combo-box";
 import { InputDialog } from "../../../common/input-dialog";
 import { IconTextButton } from "../../../common/push-button";
 import { WithSubscriptions } from "../../../service/with-subscriptions";
@@ -40,12 +40,15 @@ export class CustomNtCSets extends WithSubscriptions<
       <div>
         <div>
           <div className="rdo-named-list-name">Sets of custom NtC</div>
-          <div className="flex">
+          <div className="flex h-9">
             <div className="mr-2">
-              <ComboBox
+              <RadixComboBox
                 options={Refinement.ntcSetsOptions(this.props.customNtCs)}
-                value={this.props.selectedSet}
-                onChange={(v) => this.props.onSetChanged(v)}
+                value={this.props.selectedSet || 'default_value'}
+                onChange={(v) => {
+                  const finalNtCChange = v == "default_value" ? "" : v;
+                  this.props.onSetChanged(finalNtCChange);  }}
+                triggerAddStyle={"min-w-[120px] flex-shrink-0 items-center px-2 height-inherit"}
               />
             </div>
             <div className="mr-2">

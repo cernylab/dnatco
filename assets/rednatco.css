@@ -157,6 +157,12 @@ html {
   overflow: hidden;
 }
 
+body[data-scroll-locked] {
+  overflow: auto !important;
+  padding-right: 0px !important;
+  pointer-events: auto !important;
+}
+
 body {
   background-color: white;
   color: var(--color-primary-first);
@@ -589,6 +595,7 @@ a.rdo-imglink:visited {
   background-color: var(--color-primary-third);
   color: var(--color-primary-first);
   border-radius: 10px;
+  cursor: pointer;
 }
 .rdo-pushbutton:hover {
   background-color: var(--color-b);
@@ -598,6 +605,7 @@ a.rdo-imglink:visited {
   background-color: var(--color-a);
   padding-left: calc(var(--thickness-border) * 2);
   padding-right: calc(var(--thickness-border) * 2);
+  cursor: not-allowed;
 }
 
 .rdo-pushbutton-text-disabled {
@@ -897,11 +905,13 @@ a.rdo-imglink:visited {
   padding: 0.5rem;
   margin: 0.5rem;
   transition: background-color var(--anim-speed);
+  cursor: not-allowed;
 }
 
 .rdo-tab-button-selected {
   color: #e89e33;
   -webkit-text-stroke: 1.5px #30595c;
+  cursor: pointer;
 }
 
 .rdo-tab-content-container {

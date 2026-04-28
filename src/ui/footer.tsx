@@ -37,7 +37,7 @@ const Footer:React.FC = () => {
                 <div className='flex flex-nowrap items-center justify-center space-x-3 lg:flex lg:justify-between mx-auto my-1 xl:max-w-[1280px] 2xl:max-w-[1440px]'>
                     <div className='flex justify-center'>
                         <div className='my-auto mx-1'>
-                            <div className='text-16px text-center'>© 2025</div>
+                            <div className='text-16px text-center cursor-default'>© 2025 - {new Date().getFullYear()}</div>
                         </div>
                         {Globals.PrimaryContacts.map((c, idx) => (
                             <div className='my-auto mx-1' key={idx}>
@@ -68,6 +68,7 @@ const Footer:React.FC = () => {
 
                     {!compact && (
                         <div className='flex justify-center'>
+                            <span className='px-3 cursor-default'>|</span>
                             <div className='hover-animation my-auto mx-3'>
                                 {isInAnalysisView ? (
                                     <a className='cursor-pointer text-16px' href='/app/about/how-to-cite' target='_blank' rel='noopener noreferrer'>
@@ -79,6 +80,7 @@ const Footer:React.FC = () => {
                                     </Link>
                                 )}
                             </div>
+                            <span className='px-3 cursor-default'>|</span>
                             <div className='hover-animation my-auto mx-3'>
                                 {isInAnalysisView ? (
                                     <a className='cursor-pointer text-16px' href='/app/about/help' target='_blank' rel='noopener noreferrer'>
@@ -90,6 +92,7 @@ const Footer:React.FC = () => {
                                     </Link>
                                 )}
                             </div>
+                            <span className='px-3 cursor-default'>|</span>
                             <div className='hover-animation my-auto mx-3'>
                                 {isInAnalysisView ? (
                                     <a className='cursor-pointer text-16px' href='/app/about/contact' target='_blank' rel='noopener noreferrer'>
@@ -101,13 +104,14 @@ const Footer:React.FC = () => {
                                     </Link>
                                 )}
                             </div>
+                            <span className='px-3 cursor-default'>|</span>
                         </div>
                     )}
 
                     <div className='flex justify-center'>
                         {!compact && (
                             <div className='my-auto mx-2'>
-                                <div className='text-18px text-center'>
+                                <div className='text-18px text-center cursor-default'>
                                     <div>Supported by</div>
                                 </div>
                             </div>

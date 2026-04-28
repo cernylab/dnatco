@@ -1,7 +1,6 @@
 import React from 'react';
 import { StructureSelectionSwitching } from '../structure-selection';
 import { listOfChains, listOfModels } from '../util';
-import { ComboBox } from '../../common/combo-box';
 import { WithSubscriptions } from '../../service/with-subscriptions';
 import { Dnatcofication } from '../../../dnatco/dnatcofication';
 import { StepsMapper } from '../../../dnatco/steps-mapper';
@@ -10,13 +9,14 @@ import {
     InvalidChain, InvalidModelIndex, InvalidStepId,
     StructureSelection,
 } from '../../../util/structure-selection';
+import {RadixComboBox} from "../../common/radix-combo-box";
 
 function chainOptions(modelIndex: number, d: Dnatcofication) {
-    if (modelIndex === InvalidModelIndex)
-        return [{ caption: 'All models selected - cannot filter by chains', value: InvalidChain }];
-
+    if (modelIndex === InvalidModelIndex) {
+      return [{caption: 'All models selected - cannot filter by chains', value: "InvalidChain"}];
+    }
     const opts = [
-        { caption: 'All NAs', value: InvalidChain },
+        { caption: 'All NAs', value: "InvalidChain" },
         ...listOfChains(modelIndex, d.data.structures[0], d.data.entityKinds[modelIndex]),
     ];
     return opts;
@@ -43,7 +43,7 @@ function stepsOptions(modelIndex: number, chain: string, d: Dnatcofication) {
     const _modelIndex = modelIndex !== InvalidModelIndex ? modelIndex : void 0;
 
     const opts: StepOption[] = [
-        { caption: '-', value: { name: '', id: InvalidStepId } }
+        { caption: 'Select...', value: { name: '-', id: InvalidStepId } }
     ];
     for (const s of StepsMapper.segment(d, _modelIndex, _chain))
         opts.push({ caption: s.name, value: { name: s.name, id: s.id } });
@@ -63,6 +63,14 @@ export class ChainSelect extends WithSubscriptions<ChainSelect.Props, { modelInd
 
     componentDidMount() {
         this.subscribe(this.props.switching.events.chainSwitched, (sel) => this.setState({ ...this.state, modelIndex: sel.modelIndex, chain: sel.chain }));
+        this.subscribe(this.props.switching.events.modelSwitched, (sel) => this.setState({ ...this.state, modelIndex: sel.modelIndex }));
+    }
+
+    shouldComponentUpdate(nextProps: Readonly<ChainSelect.Props>, nextState: Readonly<{
+        modelIndex: number;
+        chain: string
+    }>, nextContext: any): boolean {
+      return this.state.chain !== nextState.chain || this.state.modelIndex !== nextState.modelIndex;
     }
 
     componentWillUnmount() {
@@ -71,15 +79,16 @@ export class ChainSelect extends WithSubscriptions<ChainSelect.Props, { modelInd
 
     render() {
         return (
-            <ComboBox
+            <RadixComboBox
                 options={toComboBoxOptions(chainOptions(this.state.modelIndex, this.props.dnatcofication), o => ({ caption: o.caption, value: o.value }))}
                 value={this.state.chain}
-                onChange={v => {
-                    if (v === this.state.chain)
-                        return;
-                    this.props.switching.switchChain(v);
+                onChange={(v) => {
+                    const finalChain = v === "InvalidChain" ? "" : v;
+                    this.props.switching.switchChain(finalChain);
                 }}
-                sizing='auto'
+                placeholder={"All NAs"}
+                triggerValueStyle={"whitespace-nowrap m-1"}
+                triggerAddStyle={"min-w-[200px]"}
             />
         );
     }
@@ -109,7 +118,7 @@ export class ModelSelect extends WithSubscriptions<ModelSelect.Props, { modelInd
 
     render() {
         return (
-            <ComboBox
+            <RadixComboBox
                 options={toComboBoxOptions(modelOptions(this.props.dnatcofication, this.props.hideAllModelsOption ?? false), o => ({ caption: o.name, value: o.index.toString() }))}
                 value={this.state.modelIndex.toString()}
                 onChange={v => {
@@ -118,8 +127,8 @@ export class ModelSelect extends WithSubscriptions<ModelSelect.Props, { modelInd
                         return;
                     this.props.switching.switchModel(modelIndex);
                 }}
-                sizing='auto'
-            />
+                triggerValueStyle={"m-1"}
+                />
         );
     }
 }
@@ -163,21 +172,57 @@ export class StepSelect extends WithSubscriptions<StepSelect.Props, { modelIndex
     }
 
     render() {
+        const rawOptions = toComboBoxOptions(stepsOptions(this.state.modelIndex, this.state.chain, this.props.dnatcofication), (o: StepOption) => ({ caption: o.caption, value: o.value.id.toString() }));
+
+        const options: radixComboBoxOptions[] = rawOptions.map(opt => ({
+            caption: opt.caption.toString(),
+            value: opt.value.toString()
+        })).filter(opt => opt.value !== "" && opt.value !== "undefined");
+
+        const currStepId = this.state.stepId.toString();
+
+        const valueExistsInOptions = options.some(option => option.value === currStepId);
+        if(!valueExistsInOptions) {
+            console.log("error");
+            return <div className="hidden" />;
+        }else{
+            console.log("existuje " + currStepId);
+        }
+
+        const uniqueValues = new Set(options.map(o => o.value));
+        if (uniqueValues.size !== options.length){
+            console.log("DUPLICITNI KOD");
+        }else{
+            console.log(uniqueValues.size + " " + options.length);
+            options.map(option => console.log(option.value));
+        }
+
         return (
-            <ComboBox
-                value={this.state.stepId.toString()}
-                options={toComboBoxOptions(stepsOptions(this.state.modelIndex, this.state.chain, this.props.dnatcofication), (o: StepOption) => ({ caption: o.caption, value: o.value.id.toString() }))}
+            <RadixComboBox
+                value={currStepId}
+                options={options}
+                placeholder={"Select"}
                 onChange={v => {
+                    console.log("Prop");
                     const stepId = parseInt(v);
-                    if (stepId === this.props.structureSelection.steps[0])
+                    if(isNaN(stepId)) return;
+                    if (this.props.structureSelection.steps && stepId === this.props.structureSelection.steps[0])
                         return;
                     this.props.onChange(stepId);
                 }}
-                sizing='auto'
+                triggerValueStyle={"m-1"}
+                triggerAddStyle={"min-w-[200px] flex-shrink-0"}
+
             />
         );
     }
 }
+
+interface radixComboBoxOptions {
+    value: string;
+    caption: string;
+}
+
 export namespace StepSelect {
     export interface Props {
         dnatcofication: Dnatcofication;

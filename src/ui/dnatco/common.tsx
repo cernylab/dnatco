@@ -101,7 +101,7 @@ export const DownloadButtonComponent: React.FC<ButtonComponentProps> = ({
     <button
       onMouseOver={handleMouseOver}
       onMouseOut={handleMouseOut}
-      className="flex items-center bg-primary-first ml-2 px-4 py-2 rounded-smaller items-center h-fit text-white hover:bg-secondary-second hover:text-primary-first transition-all"
+      className="flex items-center bg-primary-first ml-2 px-4 py-2 rounded-smaller items-center h-fit text-white hover:bg-secondary-second hover:text-primary-first transition-all cursor-pointer"
       onClick={onClick}
     >
       <div className="image-container">

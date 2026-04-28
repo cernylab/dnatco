@@ -21,7 +21,6 @@ import { SearchBox } from "../../search-box";
 import { Common } from "../../common";
 import { colorStyle, scrollIntoViewIfNeeded } from "../../../util";
 import { CollapsibleVertical } from "../../../common/collapsible-vertical";
-import { ComboBox } from "../../../common/combo-box";
 import { NamedList, NamedListItem } from "../../../common/named-list";
 import { IconButton } from "../../../common/push-button";
 import { SpinBox } from "../../../common/spin-box";
@@ -61,6 +60,7 @@ import {
   StructureSelection,
 } from "../../../../util/structure-selection";
 import { ViewerInterop, ViewerApi } from "../../../../viewer/viewer-interop";
+import {RadixComboBox} from "../../../common/radix-combo-box";
 import { Logger } from "../../../../log/logger";
 
 function reverseTagTriplet(tripletTagStr: string){
@@ -69,7 +69,7 @@ function reverseTagTriplet(tripletTagStr: string){
                 throw new Error(`Invalid tripletTag format: ${tripletTagStr}`);
         }
         return [parts[2], parts[1], parts[0]].join('^');
-    
+
 }
 
 function makeAngleDetails(props: ResidueDetailsProps, cellRefs: Map<string, React.RefObject<HTMLTableCellElement>>) {
@@ -1995,7 +1995,7 @@ export class AnglesLengthsByResidue extends View<
             <div className="overflow-scroll">
               <NamedList sizing="min-content" rowSpacing="half">
                 <NamedListItem name="Category">
-                  <ComboBox
+                  <RadixComboBox
                     options={categoryOptions}
                     value={this.state.worstLengthsThreshold}
                     onChange={(v) =>
@@ -2043,7 +2043,7 @@ export class AnglesLengthsByResidue extends View<
             <div className="overflow-scroll">
               <NamedList sizing="min-content" rowSpacing="half">
                 <NamedListItem name="Category">
-                  <ComboBox
+                  <RadixComboBox
                     options={categoryOptions}
                     value={this.state.worstAnglesThreshold}
                     onChange={(v) =>
