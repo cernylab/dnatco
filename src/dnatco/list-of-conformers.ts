@@ -90,8 +90,8 @@ function parseList(text: string): { list: ConformerInfo[], mapping: Map<NtC.Clas
             chi1: parseFloat(elems[15]),
             chi2: parseFloat(elems[16]),
             mu: parseFloat(elems[17]),
-            CC: parseFloat(elems[18]),
-            NN: parseFloat(elems[19]),
+            NN: parseFloat(elems[18]),
+            CC: parseFloat(elems[19]),
             highlight: elems[20] === 'y',
         };
 
