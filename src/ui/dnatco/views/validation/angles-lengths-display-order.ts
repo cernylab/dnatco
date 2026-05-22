@@ -13,10 +13,12 @@ const DeoxyRiboseRingAnglesOrder = [
 
 const BackboneAnglesOrder = [
     tripletTag([shiftedName("C3'", -1), shiftedName("O3'", -1), "P"]),
+    tripletTag([shiftedName("O3'", -1), "P", "O5'"]),
     tripletTag([shiftedName("O3'", -1), "P", "OP1"]),
     tripletTag([shiftedName("O3'", -1), "P", "OP2"]),
+    tripletTag(["O5'", "P", "OP1"]),
+    tripletTag(["O5'", "P", "OP2"]),
     tripletTag(["OP1", "P", "OP2"]),
-    tripletTag([shiftedName("O3'", -1), "P", "O5'"]),
     tripletTag(["P", "O5'", "C5'"]),
     tripletTag(["O5'", "C5'", "C4'"]),
     tripletTag(["C5'", "C4'", "C3'"]),
