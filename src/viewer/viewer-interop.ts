@@ -46,11 +46,16 @@ export class ViewerInterop {
         ntcTubeAlpha?: number,
         pyramidAlpha?: number,
         pairingLadderAlpha?: number,
+        puckerSphereAlpha?: number,
         showNtcTubeSegmentForSelectedResidues?: boolean,
         cameraRadiusFactor?: number,
         cameraClippingRadius?: number,
         cameraClippingFar?: boolean,
         cameraClippingMinNear?: number,
+        puckerSpheres?: {
+            colors?: { N?: string, NE?: string, E?: string, SE?: string, S?: string, W?: string },
+            radius?: number,
+        },
     }) {
         const highlightColor = options.highlightColor ? htmlColorAsNumber(options.highlightColor) : void 0;
 
@@ -101,11 +106,23 @@ export class ViewerInterop {
                     ...(options.ntcTubeAlpha !== undefined && { ntcTubeAlpha: options.ntcTubeAlpha }),
                     ...(options.pyramidAlpha !== undefined && { pyramidAlpha: options.pyramidAlpha }),
                     ...(options.pairingLadderAlpha !== undefined && { pairingLadderAlpha: options.pairingLadderAlpha }),
+                    ...(options.puckerSphereAlpha !== undefined && { puckerSphereAlpha: options.puckerSphereAlpha }),
                     ...(options.showNtcTubeSegmentForSelectedResidues !== undefined && { showNtcTubeSegmentForSelectedResidues: options.showNtcTubeSegmentForSelectedResidues }),
                     ...(options.cameraRadiusFactor !== undefined && { cameraRadiusFactor: options.cameraRadiusFactor }),
                     ...(options.cameraClippingRadius !== undefined && { cameraClippingRadius: options.cameraClippingRadius }),
                     ...(options.cameraClippingFar !== undefined && { cameraClippingFar: options.cameraClippingFar }),
                     ...(options.cameraClippingMinNear !== undefined && { cameraClippingMinNear: options.cameraClippingMinNear }),
+                    ...(options.puckerSpheres && {
+                        puckerSpheres: {
+                            colorN:  options.puckerSpheres.colors?.N  ? htmlColorAsNumber(options.puckerSpheres.colors.N)  : 0xffff00,
+                            colorNE: options.puckerSpheres.colors?.NE ? htmlColorAsNumber(options.puckerSpheres.colors.NE) : 0xffa500,
+                            colorE:  options.puckerSpheres.colors?.E  ? htmlColorAsNumber(options.puckerSpheres.colors.E)  : 0xff0000,
+                            colorSE: options.puckerSpheres.colors?.SE ? htmlColorAsNumber(options.puckerSpheres.colors.SE) : 0x008b8b,
+                            colorS:  options.puckerSpheres.colors?.S  ? htmlColorAsNumber(options.puckerSpheres.colors.S)  : 0x0000ff,
+                            colorW:  options.puckerSpheres.colors?.W  ? htmlColorAsNumber(options.puckerSpheres.colors.W)  : 0x808080,
+                            radius: options.puckerSpheres.radius ?? 1.5,
+                        },
+                    }),
                 }
             );
 

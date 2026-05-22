@@ -758,11 +758,13 @@ export function MainScreen(props: {
         ntcTubeAlpha: GlobalConfig.data().ntcTubeAlpha,
         pyramidAlpha: GlobalConfig.data().pyramidAlpha,
         pairingLadderAlpha: GlobalConfig.data().pairingLadderAlpha,
+        puckerSphereAlpha: GlobalConfig.data().puckerSphereAlpha,
         showNtcTubeSegmentForSelectedResidues: GlobalConfig.data().showNtcTubeSegmentForSelectedResidues,
         cameraRadiusFactor: GlobalConfig.data().cameraRadiusFactor,
         cameraClippingRadius: GlobalConfig.data().cameraClippingRadius,
         cameraClippingFar: GlobalConfig.data().cameraClippingFar,
         cameraClippingMinNear: GlobalConfig.data().cameraClippingMinNear,
+        puckerSpheres: GlobalConfig.data().puckerSpheres,
       })
       .then(() => {
         subs.push(

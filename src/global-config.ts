@@ -95,11 +95,25 @@ export type GlobalConfigData = {
     ntcTubeAlpha: number,
     pyramidAlpha: number,
     pairingLadderAlpha: number,
+    puckerSphereAlpha: number,
     showNtcTubeSegmentForSelectedResidues: boolean,
     cameraRadiusFactor: number,
     cameraClippingRadius: number,
     cameraClippingFar: boolean,
     cameraClippingMinNear: number,
+
+    puckerSpheres: {
+        colors: {
+            N: string,
+            NE: string,
+            E: string,
+            SE: string,
+            S: string,
+            W: string,
+        },
+        radius: number,
+    },
+
     // Logger minimum severity: messages below this level are filtered out. 0=Debug, 1=Info (default), 2=Warning, 3=Error
     minSeverity: 0 | 1 | 2 | 3,
     // Version date override (format: YYYYMMDD). If not set, uses build-time generated date
@@ -171,11 +185,23 @@ const GlobalConfigData: GlobalConfigData = {
     ntcTubeAlpha: 0.5,
     pyramidAlpha: 0.5,
     pairingLadderAlpha: 0.5,
+    puckerSphereAlpha: 0.5,
     showNtcTubeSegmentForSelectedResidues: true,
     cameraRadiusFactor: 3,
     cameraClippingRadius: 100,
     cameraClippingFar: true,
     cameraClippingMinNear: 5,
+    puckerSpheres: {
+        colors: {
+            N: '#ffff00',
+            NE: '#ffa500',
+            E: '#ff0000',
+            SE: '#008b8b',
+            S: '#0000ff',
+            W: '#808080',
+        },
+        radius: 1.5,
+    },
     minSeverity: 1,
     referenceUrl: '',
     phenix: {
@@ -186,6 +212,7 @@ const GlobalConfigData: GlobalConfigData = {
 const AllowedPartials: Partial<{[k in keyof GlobalConfigData]: object}> = {
     anglesLengths: {},
     basePairsLadder: {},
+    puckerSpheres: {},
     phenix: {}
 };
 const DefaultGlobalConfigData = deepCopy(GlobalConfigData);
