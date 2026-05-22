@@ -40,7 +40,7 @@ export function StructureSelectionFromViewer(viewerInterop: ViewerInterop, dnatc
                     atoms.push(atom);
             } else if (sel.type === 'base-pair') {
                 const bp = BasePairsMapper.findByResidues(
-                    dnatcofication,
+                    Dnatcofication.activeBasePairs(dnatcofication.data),
                     sel.asymId1, sel.seqId1, sel.insCode1,
                     sel.asymId2, sel.seqId2, sel.insCode2,
                     sel.altId1, sel.altId2

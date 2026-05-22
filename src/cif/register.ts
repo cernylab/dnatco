@@ -7,7 +7,12 @@ import { Entity, EntityPoly, EntityPolySeq } from './categories/entity';
 import { Entry } from './categories/entry';
 import { Exptl, ExptlCrystal, ExptlCrystalGrow } from './categories/experimental';
 import { NdbStructNtcOverall, NdbStructNtcStepParameters, NdbStructNtcStep, NdbStructNtcStepSummary, NdbStructSugarStepParameters } from './categories/ndb-struct-ntc';
-import { NdbBasePairList, NdbBasePairAnnotation } from './categories/ndb-base-pair';
+import {
+    NdbBasePairList, NdbBasePairAnnotation,
+    NdbBasePairProvenance,
+    NdbBasePairValidation,
+    NdbBaseUnpairedList,
+} from './categories/ndb-base-pair';
 import { PdbxDatabaseStatus } from './categories/pdbx-database-status';
 import { PdbxStructAssembly, PdbxStructAssemblyGen } from './categories/pdbx-struct-assembly';
 import { Refine } from './categories/refine';
@@ -24,6 +29,9 @@ export const KnownCategories = [
     Exptl, ExptlCrystal, ExptlCrystalGrow,
     NdbStructNtcOverall, NdbStructNtcStepParameters, NdbStructNtcStep, NdbStructNtcStepSummary, NdbStructSugarStepParameters,
     NdbBasePairList, NdbBasePairAnnotation,
+    NdbBasePairProvenance,
+    NdbBasePairValidation,
+    NdbBaseUnpairedList,
     PdbxDatabaseStatus,
     PdbxStructAssembly, PdbxStructAssemblyGen,
     Refine,

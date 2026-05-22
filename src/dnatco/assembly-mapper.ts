@@ -110,7 +110,7 @@ export namespace AssemblyMapper {
     export function getAssemblyForBasePair(mapping: AssemblyMapping | null, dnatcofication: Dnatcofication, basePairId: number): string | null {
         if (!mapping) return null;
 
-        const basePair = dnatcofication.data.basePairs.pairs.find(bp => bp.id === basePairId);
+        const basePair = Dnatcofication.activeBasePairs(dnatcofication.data).pairs.find(bp => bp.id === basePairId);
         if (!basePair) return null;
 
         // Check both residues - base pairs can span different assemblies

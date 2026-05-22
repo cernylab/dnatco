@@ -8,6 +8,8 @@ import { NavalContext } from './naval';
 import { Logger } from '../log/logger';
 import { UserRemoteDatabases, BuiltInRemoteDatabases } from '../remote/db/register';
 import { Rscc } from '../remote/rscc';
+import { Napair } from '../remote/napair';
+import { Cif } from '../cif';
 import { GlobalConfig, GlobalConfigData } from '../global-config';
 import { getCifValue } from '../util/dnatco';
 import { Refine } from '../cif/categories/refine';
@@ -222,8 +224,20 @@ export const Tasks = {
                 Logger.log(Logger.Severity.Warning, densityMapResult.message); // Log a warning because we do not consider a density map fetch failure a hard failure
 
             let data = await tryIngestData(coordsResult, isOk(densityMapResult) ? [densityMapResult] : [], null, payload.clsfResData, payload.alCtx, payload.nvCtx, false, configData, ctx);
-            if (data)
+            if (data) {
+                // Fetch NAPAIR base pair annotation from the server (optional — missing is fine)
+                try {
+                    const napairText = await Napair.fetchFromDb(payload.pdbId);
+                    if (napairText) {
+                        ctx.status = 'Loading NAPAIR base pair annotation';
+                        const napairCifData = Cif.read(napairText);
+                        Dnatcofication.addNapairBasePairs(data, napairCifData);
+                    }
+                } catch (e) {
+                    Logger.log(Logger.Severity.Warning, `Could not load NAPAIR data for ${payload.pdbId}: ${e}`);
+                }
                 ctx.events.finished.next({ state: 'succeeded', data });
+            }
         } catch (e) {
             ctx.events.finished.next({ state: 'failed', message: (e as Error).message });
         }

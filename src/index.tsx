@@ -858,7 +858,7 @@ function App(props: { initial: Initial }) {
         const sub = vi.events.structureLoaded.subscribe(() => {
           sub.unsubscribe();
           // Parse base pair name after dnatcofication is available
-          const bp = BasePairsMapper.byName(dh.dnatcofication, bpName);
+          const bp = BasePairsMapper.byName(Dnatcofication.activeBasePairs(dh.dnatcofication.data), bpName);
           if (bp) {
             goToBasePair(bp, outsideControl);
           } else {

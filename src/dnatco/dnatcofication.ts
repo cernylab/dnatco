@@ -25,7 +25,10 @@ import {
     NdbStructNtcOverall, NdbStructNtcStepParameters, NdbStructNtcStepSummary,
     NdbStructNtcStep, NdbStructSugarStepParameters,
 } from '../cif/categories/ndb-struct-ntc';
-import { NdbBasePairList, NdbBasePairAnnotation } from '../cif/categories/ndb-base-pair';
+import {
+    NdbBasePairList, NdbBasePairAnnotation,
+    NdbBasePairProvenance, NdbBasePairValidation, NdbBaseUnpairedList,
+} from '../cif/categories/ndb-base-pair';
 import { Struct } from '../cif/categories/struct';
 import { objKeys } from '../util';
 import { EventsKeeper } from '../util/events-keeper';
@@ -106,7 +109,9 @@ export const DnatcoficationData = {
     entityKinds: [] as Dnatcofication.EntityKinds[],
     similarities: [] as (ConnSimil.Similarities|null|undefined)[], // null = no similarity, undefined = similarity data not calculated yet
     steps: StepsMapper.Mapping(),
-    basePairs: BasePairsMapper.Mapping(),
+    basePairsFr3d: BasePairsMapper.Mapping(),
+    basePairsNapair: BasePairsMapper.Mapping(),
+    pairingSource: 'fr3d' as 'fr3d' | 'napair',
     structures: new Array<_Structure>(),
     cifData: null as (Cif.Data|null),
 
@@ -309,6 +314,46 @@ export namespace Dnatcofication {
         data.rscc = rscc;
     }
 
+    /**
+     * Returns the active base pair mapping for the given data.
+     * Respects data.pairingSource; falls back to whichever source is populated.
+     */
+    export function activeBasePairs(data: DnatcoficationData): BasePairsMapper.Mapping {
+        if (data.pairingSource === 'napair' && data.basePairsNapair.pairs.length > 0)
+            return data.basePairsNapair;
+        return data.basePairsFr3d.pairs.length > 0 ? data.basePairsFr3d : data.basePairsNapair;
+    }
+
+    export function setPairingSource(data: DnatcoficationData, source: 'fr3d' | 'napair') {
+        data.pairingSource = source;
+    }
+
+    /**
+     * Load NAPAIR base pair data from a separately fetched CIF file
+     * (the main extended CIF carries FR3D data; NAPAIR comes from a distinct URL).
+     */
+    export function addNapairBasePairs(data: DnatcoficationData, napairCifData: Cif.Data) {
+        if (!Cif.File.hasTable(napairCifData, NdbBasePairList) ||
+                !Cif.File.hasTable(napairCifData, NdbBasePairAnnotation)) {
+            console.warn('NAPAIR CIF is missing ndb_base_pair_list or ndb_base_pair_annotation, skipping');
+            return;
+        }
+        try {
+            const validation = Cif.File.hasTable(napairCifData, NdbBasePairValidation)
+                ? Cif.File.table(napairCifData, NdbBasePairValidation) : undefined;
+            const unpaired = Cif.File.hasTable(napairCifData, NdbBaseUnpairedList)
+                ? Cif.File.table(napairCifData, NdbBaseUnpairedList) : undefined;
+            data.basePairsNapair = BasePairsMapper.map(
+                Cif.File.table(napairCifData, NdbBasePairList),
+                Cif.File.table(napairCifData, NdbBasePairAnnotation),
+                validation,
+                unpaired,
+            );
+        } catch (e) {
+            console.log(`Could not process NAPAIR base pair data (${e}), continuing without NAPAIR pairs`);
+        }
+    }
+
     export function ingest(
         coordinates: Coordinates,
         densityMaps: DensityMap[]|null,
@@ -407,15 +452,18 @@ export namespace Dnatcofication {
 
             ctx.status = 'Mapping base pairs';
 
-            let basePairs = BasePairsMapper.Mapping();
-            if (Cif.File.hasTable(cifData, NdbBasePairList) && Cif.File.hasTable(cifData, NdbBasePairAnnotation)) {
+            // FR3D pairs come from the main extended CIF; NAPAIR pairs come from
+            // a separate file loaded later via Dnatcofier.addNapairBasePairs().
+            let basePairsFr3d = BasePairsMapper.Mapping();
+            if (Cif.File.hasTable(cifData, NdbBasePairList) && Cif.File.hasTable(cifData, NdbBasePairAnnotation)
+                    && !Cif.File.hasTable(cifData, NdbBasePairProvenance)) {
                 try {
-                    const bpListTable = Cif.File.table(cifData, NdbBasePairList);
-                    const bpAnnTable = Cif.File.table(cifData, NdbBasePairAnnotation);
-                    basePairs = BasePairsMapper.map(bpListTable, bpAnnTable);
+                    basePairsFr3d = BasePairsMapper.map(
+                        Cif.File.table(cifData, NdbBasePairList),
+                        Cif.File.table(cifData, NdbBasePairAnnotation),
+                    );
                 } catch (e) {
-                    console.log(`Could not process base pair data (${e}), continuing without base pairs`);
-                    // basePairs remains empty, processing continues
+                    console.log(`Could not process FR3D base pair data (${e}), continuing without base pairs`);
                 }
             }
 
@@ -458,7 +506,9 @@ export namespace Dnatcofication {
                 entityKinds,
                 similarities,
                 steps,
-                basePairs,
+                basePairsFr3d,
+                basePairsNapair: BasePairsMapper.Mapping(),
+                pairingSource: 'fr3d',
                 structures,
                 cifData,
                 sourceFileName,

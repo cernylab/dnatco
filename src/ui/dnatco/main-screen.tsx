@@ -899,7 +899,7 @@ export function MainScreen(props: {
 
               // Find the base pair by residue identifiers (chain and sequence)
               const basePair = BasePairsMapper.findByResidues(
-                props.dnatcofication,
+                Dnatcofication.activeBasePairs(props.dnatcofication.data),
                 basePairSelection.asymId1,
                 basePairSelection.seqId1,
                 basePairSelection.insCode1,
@@ -934,7 +934,7 @@ export function MainScreen(props: {
 
                 // Find the base pair by residue identifiers (chain and sequence)
                 const basePair = BasePairsMapper.findByResidues(
-                  props.dnatcofication,
+                  Dnatcofication.activeBasePairs(props.dnatcofication.data),
                   basePairSelection.asymId1,
                   basePairSelection.seqId1,
                   basePairSelection.insCode1,

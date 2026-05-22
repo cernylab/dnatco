@@ -1,6 +1,7 @@
 import { Subject } from 'rxjs';
 import { ReDNATCOMspApi as ViewerApi } from 'viewer-api';
 import { DensityMap } from '../dnatco/density-map';
+import { BasePairsMapper } from '../dnatco/base-pairs-mapper';
 import { Logger } from '../log/logger';
 import { EventsKeeper } from '../util/events-keeper';
 import { htmlColorAsNumber, sleep } from '../util';
@@ -122,6 +123,33 @@ export class ViewerInterop {
             { data: cif, type: 'cif', modelNumber },
             densityMaps
         );
+    }
+
+    /**
+     * Send NAPAIR base pair data to Molstar for ladder rendering.
+     * Pass null to revert to reading pairs from the loaded CIF (FR3D).
+     */
+    async setExternalBasePairs(mapping: BasePairsMapper.Mapping | null) {
+        if (!this._api) return;
+
+        const data: ViewerApi.Payloads.ExternalBasePairsData | null = mapping === null ? null : {
+            pairs: mapping.pairs.map(bp => ({
+                model: bp.model,
+                asymId1: bp.asymId1, seqId1: bp.seqId1, insCode1: bp.insCode1, altId1: bp.altId1, authSeqId1: bp.authSeqId1, compId1: bp.compId1,
+                asymId2: bp.asymId2, seqId2: bp.seqId2, insCode2: bp.insCode2, altId2: bp.altId2, authSeqId2: bp.authSeqId2, compId2: bp.compId2,
+                orientation: bp.orientation,
+                base1Edge: bp.base1Edge,
+                base2Edge: bp.base2Edge,
+                napascoMetric: bp.validation?.napascoMetric ?? null,
+                napairRmsd: bp.validation?.napairRmsd ?? null,
+            })),
+            unpaired: mapping.unpaired.map(ur => ({
+                model: ur.model,
+                asymId: ur.asymId, seqId: ur.seqId, insCode: ur.insCode, altId: ur.altId, authSeqId: ur.authSeqId, compId: ur.compId,
+            })),
+        };
+
+        await this._api.command(ViewerApi.Commands.SetExternalBasePairs(data));
     }
 
     ready() { return this._ready; }

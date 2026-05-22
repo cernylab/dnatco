@@ -58,7 +58,9 @@
         "showBrick": true,
         "brickLength": 4.0,
         "brickWidth": 2.0,
-        "brickHeight": 0.6
+        "brickHeight": 0.6,
+        "napascoMaxGap": 0.5,
+        "napascoGapThreshold": 80
     },
     "ntcTubeAlpha": 0.5,
     "pyramidAlpha": 0.5,
