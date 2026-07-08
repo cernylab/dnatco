@@ -49,6 +49,8 @@
         "cisBallRadius": 0.6,
         "transBallRadius": 1.2,
         "unpairedBallRadius": 1.2,
+        "cisBallColor": "#363636",
+        "transBallColor": "#fafafa",
         "showPairs": true,
         "showUnpaired": true,
         "showUnpairedBall": false,
