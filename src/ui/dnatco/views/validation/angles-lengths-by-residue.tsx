@@ -933,6 +933,8 @@ function ResidueHeader(props: {
             </div>
           </div>
 
+          <div className="w-[5px] h-full bg-gray-100"></div>
+
           {/* Right side - Angles (50%, normal order so red is on outside) */}
           <div className="h-full items-center relative" style={{ width: '50%', display: 'flex' }}>
             <div className="w-full h-full flex">
@@ -990,11 +992,11 @@ function ResidueHeader(props: {
               left: '50%',
               top: '50%',
               transform: 'translate(-50%, -50%)',
-              fontWeight: 'bold',
-              color: 'black'
             }}
           >
-            {props.caption}
+            <div className="p-[4px] bg-gray-100 rounded-sm">
+              {props.caption}
+            </div>
           </div>
         </div>
       </OverallStatsBar>
