@@ -3,7 +3,7 @@ import { shiftedName } from './atoms';
 
 export type Pair = [a: string, b: string];
 
-const deoxyAdenine = [
+const dAMP = [
     ["C1'", "C2'"],
     ["C1'", "O4'"],
     ["C2'", "C3'"],
@@ -30,7 +30,7 @@ const deoxyAdenine = [
     ["C1'", "N9"],
 ] as Pair[];
 
-const deoxyCytidine = [
+const dCMP = [
     ["C1'", "C2'"],
     ["C1'", "O4'"],
     ["C2'", "C3'"],
@@ -54,7 +54,7 @@ const deoxyCytidine = [
     ["C1'", "N1"],
 ] as Pair[];
 
-const deoxyGuanosine = [
+const dGMP = [
     ["C1'", "C2'"],
     ["C1'", "O4'"],
     ["C2'", "C3'"],
@@ -82,7 +82,7 @@ const deoxyGuanosine = [
     ["C1'", "N9"],
 ] as Pair[];
 
-const deoxyUracil = [
+const dUMP = [
     ["C1'", "C2'"],
     ["C1'", "O4'"],
     ["C2'", "C3'"],
@@ -106,7 +106,7 @@ const deoxyUracil = [
     ["C1'", "N1"],
 ] as Pair[];
 
-const deoxyThymine = [
+const dTMP = [
     ["C1'", "C2'"],
     ["C1'", "O4'"],
     ["C2'", "C3'"],
@@ -131,7 +131,7 @@ const deoxyThymine = [
     ["C1'", "N1"],
 ] as Pair[];
 
-const Adenine = [
+const AMP = [
     ["C1'", "C2'"],
     ["C1'", "O4'"],
     ["C2'", "C3'"],
@@ -159,7 +159,7 @@ const Adenine = [
     ["C1'", "N9"],
 ] as Pair[];
 
-const Cytidine = [
+const CMP = [
     ["C1'", "C2'"],
     ["C1'", "O4'"],
     ["C2'", "C3'"],
@@ -184,7 +184,7 @@ const Cytidine = [
     ["C1'", "N1"],
 ] as Pair[];
 
-const Guanosine = [
+const GMP = [
     ["C1'", "C2'"],
     ["C1'", "O4'"],
     ["C2'", "C3'"],
@@ -213,7 +213,7 @@ const Guanosine = [
     ["C1'", "N9"],
 ] as Pair[];
 
-const Uracil = [
+const UMP = [
     ["C1'", "C2'"],
     ["C1'", "O4'"],
     ["C2'", "C3'"],
@@ -239,15 +239,15 @@ const Uracil = [
 ] as Pair[];
 
 export const Lengths: Record<ElementaryResidue, Pair[]> = {
-    'A': Adenine,
-    'DA': deoxyAdenine,
-    'C': Cytidine,
-    'DC': deoxyCytidine,
-    'G': Guanosine,
-    'DG': deoxyGuanosine,
-    'DT': deoxyThymine,
-    'U': Uracil,
-    'DU': deoxyUracil,
+    'A': AMP,
+    'DA': dAMP,
+    'C': CMP,
+    'DC': dCMP,
+    'G': GMP,
+    'DG': dGMP,
+    'DT': dTMP,
+    'U': UMP,
+    'DU': dUMP,
 } as const;
 
 export function pairTag(p: Pair) {

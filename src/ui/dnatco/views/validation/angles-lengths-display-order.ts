@@ -23,7 +23,9 @@ const BackboneAnglesOrder = [
     tripletTag(["O5'", "C5'", "C4'"]),
     tripletTag(["C5'", "C4'", "C3'"]),
     tripletTag(["C4'", "C3'", "O3'"]),
+    tripletTag(["C2'", "C3'", "O3'"]),
     tripletTag(["C5'", "C4'", "O4'"]),
+    tripletTag(["C4'", "C5'", "O5'"]),
 ];
 
 const RiboseRingAnglesOrder = [
@@ -33,8 +35,9 @@ const RiboseRingAnglesOrder = [
 ];
 
 const AdenineAnglesOrder = [
-    ...BackboneAnglesOrder,
-    ...RiboseRingAnglesOrder,
+    tripletTag(["C2", "N3", "C4"]),
+    tripletTag(["C4", "C5", "C6"]),
+    tripletTag(["C6", "C5", "N7"]),
     tripletTag(["O4'", "C1'", "N9"]),
     tripletTag(["C1'", "N9", "C8"]),
     tripletTag(["N7", "C8", "N9"]),
@@ -52,29 +55,19 @@ const AdenineAnglesOrder = [
     tripletTag(["C2'", "C1'", "N9"]),
 ];
 
-const deoxyAdenineAnglesOrder = [
-    ...BackboneAnglesOrder,
-    ...DeoxyRiboseRingAnglesOrder,
-    tripletTag(["O4'", "C1'", "N9"]),
-    tripletTag(["C1'", "N9", "C8"]),
-    tripletTag(["N7", "C8", "N9"]),
-    tripletTag(["C5", "N7", "C8"]),
-    tripletTag(["C4", "C5", "N7"]),
-    tripletTag(["N1", "C6", "C5"]),
-    tripletTag(["N1", "C6", "N6"]),
-    tripletTag(["N6", "C6", "C5"]),
-    tripletTag(["C2", "N1", "C6"]),
-    tripletTag(["N3", "C2", "N1"]),
-    tripletTag(["N3", "C4", "C5"]),
-    tripletTag(["N9", "C4", "C5"]),
-    tripletTag(["C8", "N9", "C4"]),
-    tripletTag(["C1'", "N9", "C4"]),
-    tripletTag(["C2'", "C1'", "N9"]),
-];
-
-const CytidineAnglesOrder = [
+const AMPAnglesOrder = [
     ...BackboneAnglesOrder,
     ...RiboseRingAnglesOrder,
+    ...AdenineAnglesOrder,
+];
+
+const dAMPAnglesOrder = [
+    ...BackboneAnglesOrder,
+    ...DeoxyRiboseRingAnglesOrder,
+    ...AdenineAnglesOrder,
+];
+
+const CytosineAnglesOrder = [
     tripletTag(["O4'", "C1'", "N1"]),
     tripletTag(["C1'", "N1", "C6"]),
     tripletTag(["C5", "C6", "N1"]),
@@ -90,28 +83,22 @@ const CytidineAnglesOrder = [
     tripletTag(["C2'", "C1'", "N1"]),
 ];
 
-const deoxyCytidineAnglesOrder = [
-    ...BackboneAnglesOrder,
-    ...DeoxyRiboseRingAnglesOrder,
-    tripletTag(["O4'", "C1'", "N1"]),
-    tripletTag(["C1'", "N1", "C6"]),
-    tripletTag(["C5", "C6", "N1"]),
-    tripletTag(["C4", "C5", "C6"]),
-    tripletTag(["N3", "C4", "C5"]),
-    tripletTag(["N4", "C4", "C5"]),
-    tripletTag(["N3", "C4", "N4"]),
-    tripletTag(["C2", "N3", "C4"]),
-    tripletTag(["N1", "C2", "N3"]),
-    tripletTag(["O2", "C2", "N3"]),
-    tripletTag(["N1", "C2", "O2"]),
-    tripletTag(["C1'", "N1", "C2"]),
-    tripletTag(["C2'", "C1'", "N1"]),
-];
-
-
-const GuanosineAnglesOrder = [
+const CMPAnglesOrder = [
     ...BackboneAnglesOrder,
     ...RiboseRingAnglesOrder,
+    ...CytosineAnglesOrder,
+];
+
+const dCMPAnglesOrder = [
+    ...BackboneAnglesOrder,
+    ...DeoxyRiboseRingAnglesOrder,
+    ...CytosineAnglesOrder,
+];
+
+const GuanineAnglesOrder = [
+    tripletTag(["C2", "N3", "C4"]),
+    tripletTag(["C4", "C5", "C6"]),
+    tripletTag(["C6", "C5", "N7"]),
     tripletTag(["O4'", "C1'", "N9"]),
     tripletTag(["C1'", "N9", "C8"]),
     tripletTag(["N7", "C8", "N9"]),
@@ -131,31 +118,19 @@ const GuanosineAnglesOrder = [
     tripletTag(["C2'", "C1'", "N9"]),
 ];
 
-const deoxyGuanosineAnglesOrder = [
+const GMPAnglesOrder = [
+    ...BackboneAnglesOrder,
+    ...RiboseRingAnglesOrder,
+    ...GuanineAnglesOrder,
+];
+
+const dGMPAnglesOrder = [
     ...BackboneAnglesOrder,
     ...DeoxyRiboseRingAnglesOrder,
-    tripletTag(["O4'", "C1'", "N9"]),
-    tripletTag(["C1'", "N9", "C8"]),
-    tripletTag(["N7", "C8", "N9"]),
-    tripletTag(["C5", "N7", "C8"]),
-    tripletTag(["C4", "C5", "N7"]),
-    tripletTag(["N1", "C6", "C5"]),
-    tripletTag(["O6", "C6", "C5"]),
-    tripletTag(["N1", "C6", "O6"]),
-    tripletTag(["C2", "N1", "C6"]),
-    tripletTag(["N3", "C2", "N1"]),
-    tripletTag(["N2", "C2", "N1"]),
-    tripletTag(["N3", "C2", "N2"]),
-    tripletTag(["N3", "C4", "C5"]),
-    tripletTag(["N9", "C4", "C5"]),
-    tripletTag(["C8", "N9", "C4"]),
-    tripletTag(["C1'", "N9", "C4"]),
-    tripletTag(["C2'", "C1'", "N9"]),
+    ...GuanineAnglesOrder,
 ];
 
 const ThymineAnglesOrder = [
-    ...BackboneAnglesOrder,
-    ...RiboseRingAnglesOrder,
     tripletTag(["O4'", "C1'", "N1"]),
     tripletTag(["C1'", "N1", "C6"]),
     tripletTag(["C5", "C6", "N1"]),
@@ -173,27 +148,13 @@ const ThymineAnglesOrder = [
     tripletTag(["C2'", "C1'", "N1"]),
 ];
 
-const UracilAnglesOrder = [
+const dTMPAnglesOrder = [
     ...BackboneAnglesOrder,
     ...RiboseRingAnglesOrder,
-    tripletTag(["O4'", "C1'", "N1"]),
-    tripletTag(["C1'", "N1", "C6"]),
-    tripletTag(["C5", "C6", "N1"]),
-    tripletTag(["C4", "C5", "C6"]),
-    tripletTag(["N3", "C4", "C5"]),
-    tripletTag(["O4", "C4", "C5"]),
-    tripletTag(["N3", "C4", "O4"]),
-    tripletTag(["C2", "N3", "C4"]),
-    tripletTag(["N1", "C2", "N3"]),
-    tripletTag(["O2", "C2", "N3"]),
-    tripletTag(["N1", "C2", "O2"]),
-    tripletTag(["C1'", "N1", "C2"]),
-    tripletTag(["C2'", "C1'", "N1"]),
+    ...ThymineAnglesOrder,
 ];
 
-const deoxyUracilAnglesOrder = [
-    ...BackboneAnglesOrder,
-    ...DeoxyRiboseRingAnglesOrder,
+const UracilAnglesOrder = [
     tripletTag(["O4'", "C1'", "N1"]),
     tripletTag(["C1'", "N1", "C6"]),
     tripletTag(["C5", "C6", "N1"]),
@@ -207,6 +168,18 @@ const deoxyUracilAnglesOrder = [
     tripletTag(["N1", "C2", "O2"]),
     tripletTag(["C1'", "N1", "C2"]),
     tripletTag(["C2'", "C1'", "N1"]),
+]
+
+const UMPAnglesOrder = [
+    ...BackboneAnglesOrder,
+    ...RiboseRingAnglesOrder,
+    ...UracilAnglesOrder,
+];
+
+const dUMPAnglesOrder = [
+    ...BackboneAnglesOrder,
+    ...DeoxyRiboseRingAnglesOrder,
+    ...UracilAnglesOrder,
 ];
 
 const BackboneLengthsOrder = [
@@ -232,26 +205,7 @@ const RiboseRingLengthsOrder = [
     pairTag(["C2'", "O2'"]),
 ];
 
-const DeoxyAdenineLengthsOrder = [
-    ...BackboneLengthsOrder,
-    ...DeoxyRiboseRingLengthsOrder,
-    pairTag(["C1'", "N9"]),
-    pairTag(["C8", "N9"]),
-    pairTag(["N7", "C8"]),
-    pairTag(["C5", "N7"]),
-    pairTag(["C4", "C5"]),
-    pairTag(["C6", "C5"]),
-    pairTag(["C6", "N6"]),
-    pairTag(["N1", "C6"]),
-    pairTag(["N9", "C4"]),
-    pairTag(["C2", "N1"]),
-    pairTag(["N3", "C2"]),
-    pairTag(["C4", "N3"]),
-];
-
 const AdenineLengthsOrder = [
-    ...BackboneLengthsOrder,
-    ...RiboseRingLengthsOrder,
     pairTag(["C1'", "N9"]),
     pairTag(["C8", "N9"]),
     pairTag(["N7", "C8"]),
@@ -266,23 +220,19 @@ const AdenineLengthsOrder = [
     pairTag(["C4", "N3"]),
 ];
 
-const CytidineLengthsOrder = [
-    ...BackboneLengthsOrder,
-    ...RiboseRingLengthsOrder,
-    pairTag(["C1'", "N1"]),
-    pairTag(["C6", "N1"]),
-    pairTag(["C5", "C6"]),
-    pairTag(["C4", "C5"]),
-    pairTag(["C4", "N4"]),
-    pairTag(["N3", "C4"]),
-    pairTag(["C2", "N3"]),
-    pairTag(["C2", "O2"]),
-    pairTag(["N1", "C2"]),
-];
-
-const DeoxyCytidineLengthsOrder = [
+const dAMPLengthsOrder = [
     ...BackboneLengthsOrder,
     ...DeoxyRiboseRingLengthsOrder,
+    ...AdenineLengthsOrder,
+];
+
+const AMPLengthsOrder = [
+    ...BackboneLengthsOrder,
+    ...RiboseRingLengthsOrder,
+    ...AdenineLengthsOrder,
+];
+
+const CytosineLengthsOrder = [
     pairTag(["C1'", "N1"]),
     pairTag(["C6", "N1"]),
     pairTag(["C5", "C6"]),
@@ -294,9 +244,19 @@ const DeoxyCytidineLengthsOrder = [
     pairTag(["N1", "C2"]),
 ];
 
-const GuanosineLengthsOrder = [
+const CMPLengthsOrder = [
     ...BackboneLengthsOrder,
     ...RiboseRingLengthsOrder,
+    ...CytosineLengthsOrder,
+];
+
+const dCMPLengthsOrder = [
+    ...BackboneLengthsOrder,
+    ...DeoxyRiboseRingLengthsOrder,
+    ...CytosineLengthsOrder
+];
+
+const GuanineLengthsOrder = [
     pairTag(["C1'", "N9"]),
     pairTag(["C8", "N9"]),
     pairTag(["N7", "C8"]),
@@ -312,55 +272,43 @@ const GuanosineLengthsOrder = [
     pairTag(["C4", "N3"]),
 ];
 
-const DeoxyGuanosineLengthsOrder = [
+const GMPLengthsOrder = [
+    ...BackboneLengthsOrder,
+    ...RiboseRingLengthsOrder,
+    ...GuanineLengthsOrder,
+];
+
+const dGMPLengthsOrder = [
     ...BackboneLengthsOrder,
     ...DeoxyRiboseRingLengthsOrder,
-    pairTag(["C1'", "N9"]),
-    pairTag(["C8", "N9"]),
-    pairTag(["N7", "C8"]),
-    pairTag(["C5", "N7"]),
-    pairTag(["C4", "C5"]),
-    pairTag(["C6", "C5"]),
-    pairTag(["C6", "O6"]),
-    pairTag(["N1", "C6"]),
-    pairTag(["N9", "C4"]),
-    pairTag(["C2", "N1"]),
-    pairTag(["C2", "N2"]),
-    pairTag(["N3", "C2"]),
-    pairTag(["C4", "N3"]),
+    ...GuanineLengthsOrder,
 ];
 
 const UracilLengthsOrder = [
+    pairTag(["C1'", "N1"]),
+    pairTag(["C6", "N1"]),
+    pairTag(["C5", "C6"]),
+    pairTag(["C4", "C5"]),
+    pairTag(["C4", "O4"]),
+    pairTag(["N3", "C4"]),
+    pairTag(["C2", "N3"]),
+    pairTag(["C2", "O2"]),
+    pairTag(["N1", "C2"]),
+];
+
+const UMPLengthsOrder = [
     ...BackboneLengthsOrder,
     ...RiboseRingLengthsOrder,
-    pairTag(["C1'", "N1"]),
-    pairTag(["C6", "N1"]),
-    pairTag(["C5", "C6"]),
-    pairTag(["C4", "C5"]),
-    pairTag(["C4", "O4"]),
-    pairTag(["N3", "C4"]),
-    pairTag(["C2", "N3"]),
-    pairTag(["C2", "O2"]),
-    pairTag(["N1", "C2"]),
+    ...UracilLengthsOrder,
 ];
 
-const DeoxyUracilLengthsOrder = [
+const dUMPLengthsOrder = [
     ...BackboneLengthsOrder,
     ...DeoxyRiboseRingLengthsOrder,
-    pairTag(["C1'", "N1"]),
-    pairTag(["C6", "N1"]),
-    pairTag(["C5", "C6"]),
-    pairTag(["C4", "C5"]),
-    pairTag(["C4", "O4"]),
-    pairTag(["N3", "C4"]),
-    pairTag(["C2", "N3"]),
-    pairTag(["C2", "O2"]),
-    pairTag(["N1", "C2"]),
+    ...UracilLengthsOrder,
 ];
 
-const DeoxyThymineLengthsOrder = [
-    ...BackboneLengthsOrder,
-    ...DeoxyRiboseRingLengthsOrder,
+const ThymineLengthsOrder = [
     pairTag(["C1'", "N1"]),
     pairTag(["C6", "N1"]),
     pairTag(["C5", "C6"]),
@@ -373,28 +321,34 @@ const DeoxyThymineLengthsOrder = [
     pairTag(["N1", "C2"]),
 ];
 
+const dTMPLengthsOrder = [
+    ...BackboneLengthsOrder,
+    ...DeoxyRiboseRingLengthsOrder,
+    ...ThymineLengthsOrder,
+];
+
 export namespace AnglesLengthsDisplayOrder {
     export const Angles: Record<ElementaryResidue, string[]> = {
-        A: AdenineAnglesOrder,
-        C: CytidineAnglesOrder,
-        G: GuanosineAnglesOrder,
-        U: UracilAnglesOrder,
-        DA: deoxyAdenineAnglesOrder,
-        DC: deoxyCytidineAnglesOrder,
-        DG: deoxyGuanosineAnglesOrder,
-        DT: ThymineAnglesOrder,
-        DU: deoxyUracilAnglesOrder,
+        A: AMPAnglesOrder,
+        C: CMPAnglesOrder,
+        G: GMPAnglesOrder,
+        U: UMPAnglesOrder,
+        DA: dAMPAnglesOrder,
+        DC: dCMPAnglesOrder,
+        DG: dGMPAnglesOrder,
+        DT: dTMPAnglesOrder,
+        DU: dUMPAnglesOrder,
     } as const;
 
     export const Lengths: Record<ElementaryResidue, string[]> = {
-        A: AdenineLengthsOrder,
-        C: CytidineLengthsOrder,
-        G: GuanosineLengthsOrder,
-        U: UracilLengthsOrder,
-        DA: DeoxyAdenineLengthsOrder,
-        DC: DeoxyCytidineLengthsOrder,
-        DG: DeoxyGuanosineLengthsOrder,
-        DT: DeoxyThymineLengthsOrder,
-        DU: DeoxyUracilLengthsOrder,
+        A: AMPLengthsOrder,
+        C: CMPLengthsOrder,
+        G: GMPLengthsOrder,
+        U: UMPLengthsOrder,
+        DA: dAMPLengthsOrder,
+        DC: dCMPLengthsOrder,
+        DG: dGMPLengthsOrder,
+        DT: dTMPLengthsOrder,
+        DU: dUMPLengthsOrder,
     } as const;
 }
