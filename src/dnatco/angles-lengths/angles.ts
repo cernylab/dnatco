@@ -3,7 +3,7 @@ import { shiftedName } from './atoms';
 
 export type Triplet = [a: string, b: string, c: string];
 
-const deoxyAdenine = [
+const dAMP = [
     ["C1'", "C2'", "C3'"],
     ["C1'", "O4'", "C4'"],
     ["C2'", "C1'", "O4'"],
@@ -43,7 +43,7 @@ const deoxyAdenine = [
     ["N9", "C1'", "O4'"],
 ] as Triplet[];
 
-const deoxyCytidine = [
+const dCMP = [
     ["C1'", "C2'", "C3'"],
     ["C1'", "O4'", "C4'"],
     ["C2'", "C1'", "O4'"],
@@ -78,7 +78,7 @@ const deoxyCytidine = [
     ["N1", "C1'", "O4'"],
 ] as Triplet[];
 
-const deoxyGuanosine = [
+const dGMP = [
     ["C1'", "C2'", "C3'"],
     ["C1'", "O4'", "C4'"],
     ["C2'", "C1'", "O4'"],
@@ -120,7 +120,7 @@ const deoxyGuanosine = [
     ["N9", "C1'", "O4'"],
 ] as Triplet[];
 
-const deoxyThymine = [
+const dTMP = [
     ["C1'", "C2'", "C3'"],
     ["C1'", "O4'", "C4'"],
     ["C2'", "C1'", "O4'"],
@@ -157,7 +157,7 @@ const deoxyThymine = [
     ["N1", "C1'", "O4'"],
 ] as Triplet[];
 
-const deoxyUracil = [
+const dUMP = [
     ["C1'", "C2'", "C3'"],
     ["C1'", "O4'", "C4'"],
     ["C2'", "C1'", "O4'"],
@@ -192,7 +192,7 @@ const deoxyUracil = [
     ["N1", "C1'", "O4'"],
 ] as Triplet[];
 
-const Adenine = [
+const AMP = [
     ["C1'", "C2'", "C3'"],
     ["C1'", "C2'", "O2'"],
     ["C1'", "O4'", "C4'"],
@@ -234,7 +234,7 @@ const Adenine = [
     ["N9", "C1'", "O4'"],
 ] as Triplet[];
 
-const Cytidine = [
+const CMP = [
     ["C1'", "C2'", "C3'"],
     ["C1'", "C2'", "O2'"],
     ["C1'", "O4'", "C4'"],
@@ -271,7 +271,7 @@ const Cytidine = [
     ["N1", "C1'", "O4'"],
 ] as Triplet[];
 
-const Guanosine = [
+const GMP = [
     ["C1'", "C2'", "C3'"],
     ["C1'", "C2'", "O2'"],
     ["C1'", "O4'", "C4'"],
@@ -315,7 +315,7 @@ const Guanosine = [
     ["N9", "C1'", "O4'"],
 ] as Triplet[];
 
-const Uracil = [
+const UMP = [
     ["C1'", "C2'", "C3'"],
     ["C1'", "C2'", "O2'"],
     ["C1'", "O4'", "C4'"],
@@ -355,15 +355,15 @@ const Uracil = [
 
 
 export const Angles: Record<ElementaryResidue, Triplet[]> = {
-    'A': Adenine,
-    'DA': deoxyAdenine,
-    'C': Cytidine,
-    'DC': deoxyCytidine,
-    'G': Guanosine,
-    'DG': deoxyGuanosine,
-    'DT': deoxyThymine,
-    'U': Uracil,
-    'DU': deoxyUracil,
+    'A': AMP,
+    'DA': dAMP,
+    'C': CMP,
+    'DC': dCMP,
+    'G': GMP,
+    'DG': dGMP,
+    'DT': dTMP,
+    'U': UMP,
+    'DU': dUMP,
 } as const;
 
 export function tripletTag(t: Triplet) {
