@@ -71,7 +71,7 @@ export function Menu<K extends string>(props: {
     });
 
     return (
-        <div className='bg-white absolute' style={{
+        <div className='bg-white absolute backdrop-blur-md' style={{
             border: 'var(--thickness-border) solid var(--color-a)',
             left: `${props.x}px`,
             top: `${props.y}px`,
