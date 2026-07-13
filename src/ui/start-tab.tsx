@@ -715,7 +715,7 @@ export class StartTab extends React.Component<StartTab.Props, State> {
   render() {
     return (
       <>
-        <div className="flex flex-col h-full overflow-y-hidden">
+        <div className="flex flex-col h-full overflow-scroll">
           <div className="hidden select-none xl:block xl:absolute xl:top-[-1rem] xl:left-0 xl:w-[20%] xl:-z-1">
             <img src={DnaLeft} alt="DNA" />
           </div>
@@ -733,7 +733,7 @@ export class StartTab extends React.Component<StartTab.Props, State> {
               <img src={Contacts} alt="Contacts" />
             </div>
           </div>
-          <div className="overflow-hidden h-full flex flex-col">
+          <div className="flex flex-col min-h-0">
             <div className="rdo-offset">
               <div className="mt-[5%]">
                 <div className="text-34px w-[720px] m-auto text-center leading-10 font-roboto-bold">

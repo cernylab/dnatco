@@ -59,22 +59,34 @@ export function Menu<K extends string>(props: {
     y: number,
     parentElement: HTMLElement,
 }) {
-    const dismisser = () => {
+    const [maxHeight, setMaxHeight] = React.useState(window.innerHeight - props.y);
+
+    const dismisser = React.useCallback(() => {
         document.body.removeChild(props.parentElement);
         document.body.removeEventListener('click', dismisser);
         props.onDismissed();
-    };
+    }, []);
+
+    const onWindowResized = React.useCallback(() => {
+        setMaxHeight(window.innerHeight - props.y);
+    }, []);
 
     useEffect(() => {
         document.body.addEventListener('click', dismisser);
         return () => document.body.removeEventListener('click', dismisser);
-    });
+    }, []);
+    useEffect(() => {
+        window.addEventListener('resize', onWindowResized);
+        return () => window.removeEventListener('resize', onWindowResized);
+    }, []);
 
     return (
-        <div className='bg-white absolute' style={{
+        <div className='bg-white absolute backdrop-blur-md' style={{
             border: 'var(--thickness-border) solid var(--color-a)',
             left: `${props.x}px`,
             top: `${props.y}px`,
+            maxHeight: `${maxHeight}px`,
+            overflow: 'scroll',
             zIndex: 100,
         }}>
             {makeList(props.items, props.selectedItemId, (id) => {
@@ -181,7 +193,7 @@ export function SideSwitchingPanel<K extends string>(props: {
         );
     } else {
         return (
-            <div className='rdo-side-switching-panel'>
+            <div className='rdo-side-switching-panel overflow-scroll'>
                 {makeList(props.items, props.selectedItemId, props.onSwitched)}
                     <button
                         className={`rdo-side-switching-panel-item rdo-side-switching-panel-item-standard hover:bg-secondary-second-hover deselected`}

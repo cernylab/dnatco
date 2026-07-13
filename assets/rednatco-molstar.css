@@ -82,6 +82,13 @@
     height: var(--rmsp-v-gap);
 }
 
+.rmsp-control-vertical-separator {
+    display: block;
+    height: 1px;
+    margin: var(--rmsp-v-gap) 0;
+    background-color: var(--rmsp-color-b);
+}
+
 .rmsp-icon-button-disabled {
     background-color: var(--rmsp-color-a);
 }
