@@ -715,7 +715,7 @@ export class StartTab extends React.Component<StartTab.Props, State> {
   render() {
     return (
       <>
-        <div className="flex flex-col h-full overflow-scroll">
+        <div className="flex flex-col h-full overflow-auto">
           <div className="hidden select-none xl:block xl:absolute xl:top-[-1rem] xl:left-0 xl:w-[20%] xl:-z-1">
             <img src={DnaLeft} alt="DNA" />
           </div>
