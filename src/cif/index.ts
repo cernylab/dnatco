@@ -15,6 +15,41 @@ function toArray<T>(list: (string|null)[], conv: (v: string) => T) {
     return array;
 }
 
+const InterningSampleSize = 4096;
+const InterningMaxUniqueRatio = 0.5;
+
+function toInternedArray(list: (string|null)[], conv: (v: string) => string) {
+    const array = new Array<string|null>(list.length);
+    let pool: Map<string, string>|null = new Map<string, string>();
+
+    for (let idx = 0; idx < list.length; idx++) {
+        const v = list[idx];
+        if (v === null) {
+            array[idx] = null;
+            continue;
+        }
+
+        const converted = conv(v);
+        if (pool === null) {
+            array[idx] = converted;
+            continue;
+        }
+
+        const interned = pool.get(converted);
+        if (interned !== void 0) {
+            array[idx] = interned;
+        } else {
+            pool.set(converted, converted);
+            array[idx] = converted;
+        }
+
+        if (idx === InterningSampleSize && pool.size > idx * InterningMaxUniqueRatio)
+            pool = null;
+    }
+
+    return array;
+}
+
 export namespace Cif {
     export type Data = {
         blocks: Block[],
@@ -70,13 +105,21 @@ export namespace Cif {
         [K in keyof S]: Column<S[K]['T']>;
     } & TableBase;
 
+    const TableSchemaCache = new WeakMap<object, Record<string, Schema.CifType<any>>>();
+
     export function TableAsSchema<S extends Schema.Schema, T = any>(table: Table<S>) {
+        const cached = TableSchemaCache.get(table);
+        if (cached)
+            return cached as S;
+
         const schema: Record<string, Schema.CifType<T>> = {};
 
         for (const key in table) {
             if (!(key in TableBase))
                 schema[key] = table[key].cifType;
         }
+
+        TableSchemaCache.set(table, schema);
 
         return schema as S;
     }
@@ -111,18 +154,18 @@ export namespace Cif {
                         accum[column] = Column(toArray(list, x => Schema.toEnum(x, col)), col);
                     } else {
                         switch (col.cifType) {
-                        case 'float':
-                            accum[column] = Column(toArray(list, Schema.toFloat), col);
-                            break;
-                        case 'int':
-                            accum[column] = Column(toArray(list, Schema.toInt), col);
-                            break;
-                        case 'str':
-                            accum[column] = Column(toArray(list, Schema.toStr), col);
-                            break;
-                        case 'time':
-                            accum[column] = Column(toArray(list, Schema.toTime), col);
-                            break;
+                            case 'float':
+                                accum[column] = Column(toArray(list, Schema.toFloat), col);
+                                break;
+                            case 'int':
+                                accum[column] = Column(toArray(list, Schema.toInt), col);
+                                break;
+                            case 'str':
+                                accum[column] = Column(toInternedArray(list, Schema.toStr), col);
+                                break;
+                            case 'time':
+                                accum[column] = Column(toArray(list, Schema.toTime), col);
+                                break;
                         }
                     }
                 } catch (e) {

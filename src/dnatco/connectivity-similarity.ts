@@ -26,9 +26,65 @@ const NumNtCs = NtCsVector.size();
 
 const NtCNames = Array.from(jsLLKA.IterateVector(NtCsVector)).map(ntc => jsLLKA.LLKA.NtCToName(ntc)) as NtC.Class[];
 
+function columnValues<T>(column: Cif.Column<T>): (T|null)[]|null {
+    return column.values as (T|null)[]|null;
+}
+
+function at<T>(column: (T|null)[]|null, row: number): T|null {
+    return column === null ? null : column[row];
+}
+
+function atomColumns(atoms: Cif.Table<AtomSite_Schema>) {
+    return {
+        auth_asym_id: columnValues(atoms.auth_asym_id),
+        auth_atom_id: columnValues(atoms.auth_atom_id),
+        auth_comp_id: columnValues(atoms.auth_comp_id),
+        auth_seq_id: columnValues(atoms.auth_seq_id),
+        Cartn_x: columnValues(atoms.Cartn_x),
+        Cartn_y: columnValues(atoms.Cartn_y),
+        Cartn_z: columnValues(atoms.Cartn_z),
+        id: columnValues(atoms.id),
+        label_alt_id: columnValues(atoms.label_alt_id),
+        label_asym_id: columnValues(atoms.label_asym_id),
+        label_atom_id: columnValues(atoms.label_atom_id),
+        label_comp_id: columnValues(atoms.label_comp_id),
+        label_entity_id: columnValues(atoms.label_entity_id),
+        label_seq_id: columnValues(atoms.label_seq_id),
+        pdbx_PDB_ins_code: columnValues(atoms.pdbx_PDB_ins_code),
+        pdbx_PDB_model_num: columnValues(atoms.pdbx_PDB_model_num),
+        type_symbol: columnValues(atoms.type_symbol),
+    };
+}
+type AtomColumns = ReturnType<typeof atomColumns>;
+
+function makeLLKAAtom(cols: AtomColumns, row: number) {
+    const labelSeqId = at(cols.label_seq_id, row)!;
+    const authSeqId = at(cols.auth_seq_id, row);
+    const altId = at(cols.label_alt_id, row);
+
+    return jsLLKA.CLLKAAtom(
+      at(cols.type_symbol, row)!,
+      at(cols.label_atom_id, row)!,
+      at(cols.label_entity_id, row)!,
+      at(cols.label_comp_id, row)!,
+      at(cols.label_asym_id, row)!,
+      at(cols.auth_atom_id, row) ?? '',
+      at(cols.auth_comp_id, row) ?? '',
+      at(cols.auth_asym_id, row) ?? '',
+      jsLLKA.CLLKAPoint(at(cols.Cartn_x, row)!, at(cols.Cartn_y, row)!, at(cols.Cartn_z, row)!),
+      at(cols.id, row)!,
+      labelSeqId,
+      authSeqId ? authSeqId : labelSeqId,
+      at(cols.pdbx_PDB_model_num, row) ?? 1,
+      at(cols.pdbx_PDB_ins_code, row) ?? jsLLKA.NO_INSCODE,
+      altId?.charCodeAt(0) ?? jsLLKA.NO_ALTID
+    );
+}
+
 function gatherStepAtoms(step: Step, atoms: Cif.Table<AtomSite_Schema>) {
     const gathered = jsLLKA.CLLKAStructure();
 
+    const cols = atomColumns(atoms);
     const pdbx_PDB_model_num = atoms.pdbx_PDB_model_num.values!;
     const label_asym_id = atoms.label_asym_id.values!;
     const label_seq_id = atoms.label_seq_id.values!;
@@ -42,50 +98,12 @@ function gatherStepAtoms(step: Step, atoms: Cif.Table<AtomSite_Schema>) {
 
         const resNo = label_seq_id[row];
         const altId = label_alt_id[row];
-        if (resNo === step.resNo1 && (altId === null || altId === step.altPos1)) {
-            const atom = Cif.Row(atoms, row);
-            gathered.push_back(
-                jsLLKA.CLLKAAtom(
-                    atom.type_symbol!,
-                    atom.label_atom_id!,
-                    atom.label_entity_id!,
-                    atom.label_comp_id!,
-                    atom.label_asym_id!,
-                    atom.auth_atom_id ?? '',
-                    atom.auth_comp_id ?? '',
-                    atom.auth_asym_id ?? '',
-                    jsLLKA.CLLKAPoint(atom.Cartn_x!, atom.Cartn_y!, atom.Cartn_z!),
-                    atom.id!,
-                    atom.label_seq_id!,
-                    atom.auth_seq_id ? atom.auth_seq_id : atom.label_seq_id!,
-                    atom.pdbx_PDB_model_num ?? 1,
-                    atom.pdbx_PDB_ins_code ?? jsLLKA.NO_INSCODE,
-                    atom.label_alt_id?.charCodeAt(0) ?? jsLLKA.NO_ALTID
-                )
-            );
-        } else if (resNo === step.resNo2 && (altId === null || altId === step.altPos2)) {
-            const atom = Cif.Row(atoms, row);
-            // REVIEW: Why do we have to distinct conditions that do the same thing?
-            gathered.push_back(
-                jsLLKA.CLLKAAtom(
-                    atom.type_symbol!,
-                    atom.label_atom_id!,
-                    atom.label_entity_id!,
-                    atom.label_comp_id!,
-                    atom.label_asym_id!,
-                    atom.auth_atom_id ?? '',
-                    atom.auth_comp_id ?? '',
-                    atom.auth_asym_id ?? '',
-                    jsLLKA.CLLKAPoint(atom.Cartn_x!, atom.Cartn_y!, atom.Cartn_z!),
-                    atom.id!,
-                    atom.label_seq_id!,
-                    atom.auth_seq_id ? atom.auth_seq_id : atom.label_seq_id!,
-                    atom.pdbx_PDB_model_num ?? 1,
-                    atom.pdbx_PDB_ins_code ?? jsLLKA.NO_INSCODE,
-                    atom.label_alt_id?.charCodeAt(0) ?? jsLLKA.NO_ALTID
-                )
-            );
-        }
+        const belongsToStep =
+          (resNo === step.resNo1 && (altId === null || altId === step.altPos1)) ||
+          (resNo === step.resNo2 && (altId === null || altId === step.altPos2));
+
+        if (belongsToStep)
+            gathered.push_back(makeLLKAAtom(cols, row));
     }
 
     return gathered;

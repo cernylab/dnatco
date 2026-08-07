@@ -383,8 +383,15 @@ class DnatcoficationHandler {
       true
     );
     const worker = BackgroundWorker<DnatcoficationData, P>();
-    worker.onerror = (ev) => {
+    let pendingTask: Task<P>|null = task;
+    const releaseWorker = () => {
+      pendingTask = null;
+      worker.onmessage = null;
+      worker.onerror = null;
       worker.terminate();
+    };
+    worker.onerror = (ev) => {
+      releaseWorker();
       InProgress.dismiss(inProgressDlg);
       this.ingestionInProgress = false;
 
@@ -410,16 +417,18 @@ class DnatcoficationHandler {
 
       if (data.type === "worker-ready") {
         InProgress.bindAbort(inProgressDlg, () => {
-          worker.terminate();
+          releaseWorker();
           InProgress.dismiss(inProgressDlg);
           this.ingestionInProgress = false;
         });
 
-        worker.postMessage({ type: "start-task", task });
+        worker.postMessage({ type: "start-task", task: pendingTask! });
+        pendingTask = null;
       } else if (data.type === "status-changed") {
         InProgress.update(inProgressDlg, "Processing structure", data.status);
         this.ingestionInProgress = false;
       } else if (data.type === "finished") {
+        releaseWorker();
         InProgress.dismiss(inProgressDlg);
         this.ingestionInProgress = false;
 
@@ -500,7 +509,7 @@ class DnatcoficationHandler {
           );
 
           onSuccess();
-        } else if (data.finished.state === "aborted") worker.terminate();
+        }
       }
     };
   }
@@ -1086,7 +1095,7 @@ function InitializationError(props: { e: Error }) {
 async function bootstrap() {
   const config = await GlobalConfig.fetchConfigFile();
   const root = RDC.createRoot(document.getElementById("app")!);
-  
+
   try {
     const configData = GlobalConfig.load(config);
     for (const db of configData.userDatabases) UserRemoteDatabases.add(db);

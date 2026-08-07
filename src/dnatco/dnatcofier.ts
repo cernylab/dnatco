@@ -100,9 +100,24 @@ export namespace Dnatcofier {
             : { counts: countNucleotidesFromModel(model, entityKinds), source: 'model' };
     }
 
+    const releasedCifData = new WeakSet<object>();
+
+    function releaseCifData(cifData: jsLLKA.LLKACifData) {
+        const blocks = cifData.blocks;
+        if (releasedCifData.has(blocks))
+            return;
+
+        releasedCifData.add(blocks);
+        blocks.delete();
+    }
+
+    export function destroyImportedCifData(imported: jsLLKA.LLKAImportedStructure) {
+        releaseCifData(imported.cifData);
+    }
+
     export function destroyImported(imported: jsLLKA.LLKAImportedStructure) {
         imported.structure.delete();
-        imported.cifData.blocks.delete();
+        destroyImportedCifData(imported);
     }
 
     export function dnatcoify(steps: jsLLKA.LLKAStructures, imported: jsLLKA.LLKAImportedStructure, clsfCtxData: ClassificationResources.Data, ctx: DnatcoficationTaskContext) {
@@ -134,12 +149,16 @@ export namespace Dnatcofier {
         if (!res2.isSuccess()) {
             const fail = res2.failure();
             res2.delete();
+            releaseCifData(cifDataDNATCO);
+            releaseCifData(imported.cifData);
 
             throw new Error(`Failed to write out extended mmCIF: ${jsLLKA.LLKA.errorToString(fail)}`);
         }
 
         const extendedCif = res2.success();
         res2.delete();
+        releaseCifData(cifDataDNATCO);
+        releaseCifData(imported.cifData);
 
         return extendedCif;
     }

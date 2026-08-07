@@ -498,8 +498,9 @@ export namespace Dnatcofication {
             Logger.log(Logger.Severity.Info, (`Dnatcofication process took ${((tEnd - tStart) / 1000.0).toFixed(3)} sec`));
 
             Dnatcofier.destroyImported(llkaImported);
-
+            ctx.status = 'Maping Naval';
             const mappedNaval = mapNaval(naval);
+            ctx.status = 'Creating dnatcofication data';
             const data: DnatcoficationData = {
                 isCustomStructure,
                 connectivities,
@@ -522,7 +523,7 @@ export namespace Dnatcofication {
                 nucleotideCounts,
                 assemblyMapping,
             };
-
+            ctx.status = 'Finishing..';
             const tEnd2 = performance.now();
             Logger.log(Logger.Severity.Info, `Dnatcofication process with finalization overhead took ${((tEnd2 - tStart) / 1000.0).toFixed(3)} sec`);
 
