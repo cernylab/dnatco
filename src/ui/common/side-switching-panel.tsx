@@ -86,7 +86,7 @@ export function Menu<K extends string>(props: {
             left: `${props.x}px`,
             top: `${props.y}px`,
             maxHeight: `${maxHeight}px`,
-            overflow: 'scroll',
+            overflow: 'auto',
             zIndex: 100,
         }}>
             {makeList(props.items, props.selectedItemId, (id) => {
@@ -193,7 +193,7 @@ export function SideSwitchingPanel<K extends string>(props: {
         );
     } else {
         return (
-            <div className='rdo-side-switching-panel overflow-scroll'>
+            <div className='rdo-side-switching-panel overflow-auto'>
                 {makeList(props.items, props.selectedItemId, props.onSwitched)}
                     <button
                         className={`rdo-side-switching-panel-item rdo-side-switching-panel-item-standard hover:bg-secondary-second-hover deselected`}
