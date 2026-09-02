@@ -45,8 +45,8 @@ function formatProSco(prosco: number): string {
 function residueWithDetails(r: Measurements.Residue, details: Detail[]): Residue {
     return {
         model: r.modelNum,
-        chain: r.authChain,
-        seqId: r.authSeqId,
+        chain: r.chain,
+        seqId: r.seqId,
         insCode: r.insCode || null,
         altId: r.altId || null,
         authChain: r.authChain,
