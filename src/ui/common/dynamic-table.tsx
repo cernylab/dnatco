@@ -13,6 +13,7 @@ import { colorToHex } from "../../util/colors";
 import { DynamicTable as _DynamicTable } from "../../util/dynamic-table";
 
 const NotHighlighted = { background: "none" };
+const PAGE_SIZE = 25;
 
 function cellShouldUpdate(
   oldCell: _DynamicTable.Cell<any>,
@@ -171,8 +172,11 @@ class DynamicTableRow extends React.Component<{
 
 export class DynamicTable extends React.Component<
   _DynamicTable.Props,
-  { sorting: _DynamicTable.Sorting }
+  { sorting: _DynamicTable.Sorting; page: number }
 > {
+  private lastModel: _DynamicTable.Model;
+  private lastHighlightedTag?: string;
+
   constructor(props: _DynamicTable.Props) {
     super(props);
 
@@ -181,7 +185,11 @@ export class DynamicTable extends React.Component<
         columnIdx: -1,
         order: "none",
       },
+      page: 0,
     };
+
+    this.lastModel = props.model;
+    this.lastHighlightedTag = props.highlightedTag;
   }
 
   private changeSort(newColumnIdx: number) {
@@ -189,16 +197,18 @@ export class DynamicTable extends React.Component<
 
     if (newColumnIdx === columnIdx) {
       if (order === "asc")
-        this.setState({ ...this.state, sorting: { columnIdx, order: "desc" } });
+        this.setState({ ...this.state, sorting: { columnIdx, order: "desc" }, page: 0 });
       else
         this.setState({
           ...this.state,
           sorting: { columnIdx: -1, order: "none" },
+          page: 0,
         });
     } else
       this.setState({
         ...this.state,
         sorting: { columnIdx: newColumnIdx, order: "asc" },
+        page: 0,
       });
   }
 
@@ -207,7 +217,7 @@ export class DynamicTable extends React.Component<
       const col = this.props.model.columns[colIdx];
       for (let rowIdx = 0; rowIdx < col.cells.length; rowIdx++) {
         const cell = col.cells[rowIdx];
-        if (cell.tag && cell.tag.startsWith(tag))
+        if (cell.tag && cell.tag === tag)
           return `${cell.tag}-${rowIdx}-${colIdx}`;
       }
     }
@@ -215,12 +225,35 @@ export class DynamicTable extends React.Component<
     return undefined;
   }
 
-  private renderBody() {
+  private findSortedRowIndexForTag(tag: string) {
     const sortedRows = this.props.model.sortedRows(this.state.sorting);
+
+    for (let idx = 0; idx < sortedRows.length; idx++) {
+      for (const cell of sortedRows[idx].row) {
+        if (cell.tag && cell.tag === tag) return idx;
+      }
+    }
+
+    return -1;
+  }
+
+  private ensurePageForHighlighted(tag: string) {
+    const idx = this.findSortedRowIndexForTag(tag);
+    if (idx === -1) return;
+
+    const page = Math.floor(idx / PAGE_SIZE);
+    this.setState((prevState) => (prevState.page !== page ? { page } : null));
+  }
+
+  private renderBody(
+    sortedRows: ReturnType<_DynamicTable.Model["sortedRows"]>,
+    page: number
+  ) {
+    const pageRows = sortedRows.slice(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE);
     const rowElems = new Array<JSX.Element>();
 
-    for (let rowIdx = 0; rowIdx < sortedRows.length; rowIdx++) {
-      const srow = sortedRows[rowIdx];
+    for (let rowIdx = 0; rowIdx < pageRows.length; rowIdx++) {
+      const srow = pageRows[rowIdx];
       rowElems.push(
         <DynamicTableRow
           model={this.props.model}
@@ -250,6 +283,37 @@ export class DynamicTable extends React.Component<
     }
 
     return rowElems;
+  }
+
+  private renderPager(totalRows: number, page: number, totalPages: number) {
+    if (totalRows <= PAGE_SIZE) return void 0;
+
+    const start = totalRows === 0 ? 0 : page * PAGE_SIZE + 1;
+    const end = Math.min(totalRows, (page + 1) * PAGE_SIZE);
+    const buttonClassName =
+      "px-3 py-1 rounded-smaller bg-primary-first text-white hover:bg-secondary-second hover:text-primary-first transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-primary-first disabled:hover:text-white";
+
+    return (
+      <div className="flex items-center justify-center gap-3 py-2 border-t border-primary-first shrink-0">
+        <button
+          className={buttonClassName}
+          disabled={page === 0}
+          onClick={() => this.setState({ page: page - 1 })}
+        >
+          Previous
+        </button>
+        <span className="text-14px whitespace-nowrap">
+          {start}–{end} of {totalRows}
+        </span>
+        <button
+          className={buttonClassName}
+          disabled={page >= totalPages - 1}
+          onClick={() => this.setState({ page: page + 1 })}
+        >
+          Next
+        </button>
+      </div>
+    );
   }
 
   private renderColumnCaption(col: _DynamicTable.Column<any>) {
@@ -329,7 +393,15 @@ export class DynamicTable extends React.Component<
 
   shouldComponentUpdate(
     nextProps: Readonly<_DynamicTable.Props>,
-    nextState: Readonly<{ sorting: _DynamicTable.Sorting }>
+    nextState: Readonly<{ sorting: _DynamicTable.Sorting; page: number }>
+  ): boolean {
+    const result = this.shouldComponentUpdateImpl(nextProps, nextState);
+    return result;
+  }
+
+  private shouldComponentUpdateImpl(
+    nextProps: Readonly<_DynamicTable.Props>,
+    nextState: Readonly<{ sorting: _DynamicTable.Sorting; page: number }>
   ): boolean {
     if (this.props.modelsAlwaysCompareFalse) return true;
 
@@ -339,6 +411,8 @@ export class DynamicTable extends React.Component<
     if (!modelsAreSame(oldModel, newModel)) return true;
 
     if (nextProps.highlightedTag !== this.props.highlightedTag) return true;
+
+    if (nextState.page !== this.state.page) return true;
 
     return !sortingsAreSame(nextState.sorting, this.state.sorting);
   }
@@ -361,6 +435,8 @@ export class DynamicTable extends React.Component<
   }
 
   componentDidMount() {
+    if (this.props.highlightedTag) this.ensurePageForHighlighted(this.props.highlightedTag);
+
     // Scroll to highlighted row on initial mount
     if (this.props.scrollTainer && this.props.highlightedTag) {
       // Use requestAnimationFrame to wait for React to commit the render
@@ -371,7 +447,18 @@ export class DynamicTable extends React.Component<
   }
 
   componentDidUpdate(prevProps: _DynamicTable.Props) {
-    const highlightedTagChanged = this.props.highlightedTag !== prevProps.highlightedTag;
+    if (this.props.model !== this.lastModel) {
+      const modelChanged = !modelsAreSame(this.lastModel, this.props.model);
+      this.lastModel = this.props.model;
+      if (modelChanged) this.setState((prevState) => (prevState.page !== 0 ? { page: 0 } : null));
+    }
+
+    const highlightedTagChanged = this.props.highlightedTag !== this.lastHighlightedTag;
+    if (highlightedTagChanged) {
+      this.lastHighlightedTag = this.props.highlightedTag;
+      if (this.props.highlightedTag) this.ensurePageForHighlighted(this.props.highlightedTag);
+    }
+
     const scrollTainerBecameAvailable = this.props.scrollTainer && !prevProps.scrollTainer;
 
     // Scroll if highlighted tag changed OR if scrollTainer became available
@@ -410,6 +497,10 @@ export class DynamicTable extends React.Component<
       scrollbarColor: 'rgba(0, 0, 0, 0.3) transparent', // Firefox - thumb and track colors
       scrollbarGutter: 'stable', // Reserve space for scrollbar to prevent layout shift
     };
+
+    const sortedRows = this.props.model.sortedRows(this.state.sorting);
+    const totalPages = Math.max(1, Math.ceil(sortedRows.length / PAGE_SIZE));
+    const page = Math.min(this.state.page, totalPages - 1);
 
     return (
         <div className="rdo-horizontal-wrapper h-full" style={{ overflowX: 'auto', scrollbarGutter: 'stable', scrollbarWidth: 'thin', scrollbarColor: 'rgba(0, 0, 0, 0.3) transparent' }}>
@@ -454,10 +545,11 @@ export class DynamicTable extends React.Component<
           <div style={{ paddingRight: '2px' }}>
             <table className={tableClassName} style={{ tableLayout: 'fixed', minWidth: '100%' }}>
               {this.renderColGroup()}
-              <tbody>{this.renderBody()}</tbody>
+              <tbody>{this.renderBody(sortedRows, page)}</tbody>
             </table>
           </div>
         </div>
+        {this.renderPager(sortedRows.length, page, totalPages)}
       </div>
         </div>
     );

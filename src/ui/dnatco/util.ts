@@ -91,9 +91,15 @@ export function makeStepSelection(dnatcofication: Dnatcofication, stepId: number
 export function setDynamicTableModelColumns(oldModel: DynamicTable.Model, rowIdx: number, columns: DynamicTable.Column<any>[], tags: (string | undefined)[], newValues: (number | string)[], newElems: ((() => JSX.Element) | undefined)[]) {
     for (let colIdx = 0; colIdx < columns.length; colIdx++) {
         const col = columns[colIdx];
-        const oldValue = oldModel.columns[colIdx]?.cells[rowIdx]?.data;
-        if (oldValue !== undefined && oldValue === newValues[colIdx])
-            col.cells.push(oldModel.columns[colIdx]!.cells[rowIdx]);
+        // `col.cells.length` is the position of the row being added within the table
+        // currently being built. This is the position that is comparable to `oldModel`,
+        // since both are built by sequentially pushing only the rows that pass the active
+        // filter (e.g. selected chain) - `rowIdx`, the row's index in the unfiltered source
+        // data, does not correspond to the same position once any filtering skips rows.
+        const cachePos = col.cells.length;
+        const oldCell = oldModel.columns[colIdx]?.cells[cachePos];
+        if (oldCell !== undefined && oldCell.data === newValues[colIdx] && oldCell.tag === tags[colIdx])
+            col.cells.push(oldCell);
         else {
             const eg = newElems[colIdx];
             col.cells.push({

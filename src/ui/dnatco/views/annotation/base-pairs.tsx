@@ -16,6 +16,7 @@ import { Tooltip } from '../../../common/tooltip';
 import { View } from "../view";
 
 const CellBgAlpha = 0.5;
+const PAGE_SIZE = 25;
 
 function bpRmsdToColor(rmsd: number): React.CSSProperties {
     const clr = valueToSemaphore(rmsd, 0.0, 0.5);
@@ -114,10 +115,56 @@ export function BasePairing({ d, viewerInterop, switching, structureSelection }:
     searching,
   }), [searching]);
 
+  const rows = React.useMemo(() => activePairs.pairs.map(bp => ({
+    basePairId: bp.id,
+    bp,
+    model: String(bp.model),
+    chain1: bp.authAsymId1,
+    base1: `${bp.compId1} ${bp.authSeqId1}${bp.insCode1 || ''}${bp.altId1 ? ' (alt. ' + bp.altId1 + ')' : ''}`,
+    chain2: bp.authAsymId2,
+    base2: `${bp.compId2} ${bp.authSeqId2}${bp.insCode2 || ''}${bp.altId2 ? ' (alt. ' + bp.altId2 + ')' : ''}`,
+    family: bp.family,
+  })), [activePairs]);
+
+  const sortedRows = React.useMemo(() => sortCol === null ? rows : [...rows].sort((a, b) => {
+    let cmp = 0;
+    switch (sortCol) {
+      case 'model':   cmp = a.bp.model - b.bp.model; break;
+      case 'chain1':  cmp = a.chain1.localeCompare(b.chain1); break;
+      case 'base1':   cmp = a.bp.authSeqId1 - b.bp.authSeqId1 || a.chain1.localeCompare(b.chain1); break;
+      case 'family':  cmp = a.family.localeCompare(b.family); break;
+      case 'chain2':  cmp = a.chain2.localeCompare(b.chain2); break;
+      case 'base2':   cmp = a.bp.authSeqId2 - b.bp.authSeqId2 || a.chain2.localeCompare(b.chain2); break;
+      case 'rmsd':    cmp = (a.bp.validation?.napairRmsd ?? 0) - (b.bp.validation?.napairRmsd ?? 0); break;
+      case 'napasco': cmp = (a.bp.validation?.napascoMetric ?? 0) - (b.bp.validation?.napascoMetric ?? 0); break;
+    }
+    return sortAsc ? cmp : -cmp;
+  }), [rows, sortCol, sortAsc]);
+
+  const [page, setPage] = React.useState(0);
+
+  // Reset to the first page whenever the dataset or sort order changes.
+  React.useEffect(() => {
+    setPage(0);
+  }, [activePairs, sortCol, sortAsc]);
+
+  // Jump to the page containing the row selected from the 3D viewer.
+  const selectedBpId = structureSelection?.basePairs?.[0];
+  React.useEffect(() => {
+    if (selectedBpId === void 0) return;
+    const idx = sortedRows.findIndex(r => r.basePairId === selectedBpId);
+    if (idx === -1) return;
+    setPage(Math.floor(idx / PAGE_SIZE));
+  }, [selectedBpId, sortedRows]);
+
+  const totalPages = Math.max(1, Math.ceil(sortedRows.length / PAGE_SIZE));
+  const currentPage = Math.min(page, totalPages - 1);
+  const pageRows = sortedRows.slice(currentPage * PAGE_SIZE, currentPage * PAGE_SIZE + PAGE_SIZE);
+
   React.useEffect(() => {
     if (highlightedRowRef.current)
       highlightedRowRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-  }, [structureSelection?.basePairs?.[0]]);
+  }, [selectedBpId, currentPage]);
 
   // Unpaired summary: always computed; shows derived count for both FR3D and NAPAIR,
   // plus explicit list comparison when NAPAIR validation is active.
@@ -206,32 +253,6 @@ export function BasePairing({ d, viewerInterop, switching, structureSelection }:
       );
     };
 
-    const rows = activePairs.pairs.map(bp => ({
-      basePairId: bp.id,
-      bp,
-      model: String(bp.model),
-      chain1: bp.authAsymId1,
-      base1: `${bp.compId1} ${bp.authSeqId1}${bp.insCode1 || ''}${bp.altId1 ? ' (alt. ' + bp.altId1 + ')' : ''}`,
-      chain2: bp.authAsymId2,
-      base2: `${bp.compId2} ${bp.authSeqId2}${bp.insCode2 || ''}${bp.altId2 ? ' (alt. ' + bp.altId2 + ')' : ''}`,
-      family: bp.family,
-    }));
-
-    const sortedRows = sortCol === null ? rows : [...rows].sort((a, b) => {
-      let cmp = 0;
-      switch (sortCol) {
-        case 'model':   cmp = a.bp.model - b.bp.model; break;
-        case 'chain1':  cmp = a.chain1.localeCompare(b.chain1); break;
-        case 'base1':   cmp = a.bp.authSeqId1 - b.bp.authSeqId1 || a.chain1.localeCompare(b.chain1); break;
-        case 'family':  cmp = a.family.localeCompare(b.family); break;
-        case 'chain2':  cmp = a.chain2.localeCompare(b.chain2); break;
-        case 'base2':   cmp = a.bp.authSeqId2 - b.bp.authSeqId2 || a.chain2.localeCompare(b.chain2); break;
-        case 'rmsd':    cmp = (a.bp.validation?.napairRmsd ?? 0) - (b.bp.validation?.napairRmsd ?? 0); break;
-        case 'napasco': cmp = (a.bp.validation?.napascoMetric ?? 0) - (b.bp.validation?.napascoMetric ?? 0); break;
-      }
-      return sortAsc ? cmp : -cmp;
-    });
-
     const handleRowClick = (row: typeof rows[0]) => {
       if (!viewerInterop || !switching) return;
       switching.changeSelection(
@@ -243,8 +264,6 @@ export function BasePairing({ d, viewerInterop, switching, structureSelection }:
     const models = new Set(rows.map(r => r.model));
     const showModel = models.size > 1;
     const numCols = (showModel ? 1 : 0) + 5 + (showMetrics ? 2 : 0);
-
-    const selectedBpId = structureSelection?.basePairs?.[0];
 
     const colGroup = (
       <colgroup>
@@ -376,7 +395,7 @@ export function BasePairing({ d, viewerInterop, switching, structureSelection }:
             <table className="mb-2 w-full" style={{ tableLayout: 'fixed' }}>
               {colGroup}
               <tbody>
-                {sortedRows.map((r, i) => {
+                {pageRows.map((r, i) => {
                   const isHighlighted = selectedBpId === r.basePairId;
                   const highlightStyle = isHighlighted ? { backgroundColor: colorToHex(Colors.CurrentStep()) } : {};
                   return (
@@ -412,6 +431,27 @@ export function BasePairing({ d, viewerInterop, switching, structureSelection }:
             </table>
           </div>
         </div>
+        {sortedRows.length > PAGE_SIZE && (
+          <div className="flex items-center justify-center gap-3 py-2 border-t border-primary-first shrink-0">
+            <button
+              className="px-3 py-1 rounded-smaller bg-primary-first text-white hover:bg-secondary-second hover:text-primary-first transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-primary-first disabled:hover:text-white"
+              disabled={currentPage === 0}
+              onClick={() => setPage(currentPage - 1)}
+            >
+              Previous
+            </button>
+            <span className="text-14px whitespace-nowrap">
+              {currentPage * PAGE_SIZE + 1}–{Math.min(sortedRows.length, (currentPage + 1) * PAGE_SIZE)} of {sortedRows.length}
+            </span>
+            <button
+              className="px-3 py-1 rounded-smaller bg-primary-first text-white hover:bg-secondary-second hover:text-primary-first transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-primary-first disabled:hover:text-white"
+              disabled={currentPage >= totalPages - 1}
+              onClick={() => setPage(currentPage + 1)}
+            >
+              Next
+            </button>
+          </div>
+        )}
       </div>
     );
   }

@@ -61,6 +61,13 @@ export function SearchBox<T>(props: SearchBox.Props<T>) {
     searchPrompt: "",
   });
 
+  // Picking a result should also dismiss the search box, otherwise its "is open" guard in the
+  // calling view never resets and the search button becomes inert until the user hits Close/Escape.
+  const useResult = (result: T) => {
+    props.searching.onUseResult(result);
+    props.onClose();
+  };
+
   return (
     <div
       className="rdo-search-box"
@@ -76,7 +83,7 @@ export function SearchBox<T>(props: SearchBox.Props<T>) {
           if (ev.code === "Enter" && state.results.length > 0) {
             ev.preventDefault();
             ev.stopPropagation();
-            props.searching.onUseResult((state as State<T>).results[0]);
+            useResult((state as State<T>).results[0]);
           } else if (ev.code === "Escape") {
             ev.preventDefault();
             ev.stopPropagation();
@@ -98,12 +105,12 @@ export function SearchBox<T>(props: SearchBox.Props<T>) {
         {(state as State<T>).results.map((x, idx) => (
           <div className="flex flex-row gap-4" key={idx}>
             <div className="flex-1">
-              {props.searching.onRenderResult(x, props.searching.onUseResult)}
+              {props.searching.onRenderResult(x, useResult)}
             </div>
             <IconButton
               className="rdo-pushbutton"
               src={ChevronRightImg}
-              onClick={() => props.searching.onUseResult(x)}
+              onClick={() => useResult(x)}
             />
           </div>
         ))}
