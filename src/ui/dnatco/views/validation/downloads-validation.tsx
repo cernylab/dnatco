@@ -1,5 +1,5 @@
 import * as React from "react";
-import type { PlotData } from "plotly.js";
+import type { Data as PlotData } from "plotly.js";
 import { Downloads as _Downloads } from "../../downloads-common";
 import { DownloadButtonComponent } from "../../common";
 import { arrowDown, arrowDownHover } from "../../../../assets/images";

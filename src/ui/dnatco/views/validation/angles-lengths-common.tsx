@@ -220,7 +220,7 @@ export class AveragesChart extends React.Component<{
     const xtFrom = xt[0];
     const xtTo = xt[xt.length - 1];
     const xAxisMargin = (xtTo - xtFrom) * 0.05;
-    const xRange = [
+    const xRange: [number, number] = [
       (xtFrom > tm ? tm : xtFrom) - xAxisMargin,
       (xtTo < tm ? tm : xtTo) + xAxisMargin,
     ];
@@ -304,7 +304,6 @@ export class AveragesChart extends React.Component<{
               },
               hoverinfo: "text",
               hovertext: "Actual value",
-              hoveron: "fills",
               showlegend: false,
             },
             {
@@ -317,7 +316,6 @@ export class AveragesChart extends React.Component<{
               },
               hoverinfo: "text",
               hovertext: "NA-VAL Of Concern Lower",
-              hoveron: "fills",
               showlegend: false,
             },
             {
@@ -330,7 +328,6 @@ export class AveragesChart extends React.Component<{
               },
               hoverinfo: "text",
               hovertext: "NA-VAL Of Concern Upper",
-              hoveron: "fills",
               showlegend: false,
             },
             {
@@ -343,7 +340,6 @@ export class AveragesChart extends React.Component<{
               },
               hoverinfo: "text",
               hovertext: "CSD preferred left",
-              hoveron: "fills",
               showlegend: false,
             },
             {
@@ -356,7 +352,6 @@ export class AveragesChart extends React.Component<{
               },
               hoverinfo: "text",
               hovertext: "CSD preferred right",
-              hoveron: "fills",
               showlegend: false,
             },
           ]}
@@ -672,9 +667,12 @@ export class PGroupSummary extends React.Component<
             });
           }}
           onRelayout={(relayout) => {
-            // This seemingly ridiculous way to get the X axis range is necessary
-            const [rangeLow , rangeHigh] = relayout["xaxis.range"]
-               ? [relayout["xaxis.range"][0], relayout["xaxis.range"][1]] as [number, number]
+            // This seemingly ridiculous way to get the X axis range is necessary.
+            // Plotly may report the range either as "xaxis.range" (array) or as
+            // "xaxis.range[0]"/"xaxis.range[1]"; plotly.js 4 types only the latter.
+            const wholeRange = (relayout as { "xaxis.range"?: [number, number] })["xaxis.range"];
+            const [rangeLow , rangeHigh] = wholeRange
+               ? [wholeRange[0], wholeRange[1]] as [number, number]
                : [relayout["xaxis.range[0]"], relayout["xaxis.range[1]"]] as [number, number];
 
             if (!!rangeLow && !!rangeHigh) {
